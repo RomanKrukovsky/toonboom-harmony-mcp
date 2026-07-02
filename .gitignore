@@ -1,0 +1,12 @@
+# Временные файлы и сборка
+node_modules/
+dist/
+.env
+*.db
+*.log
+logs/
+
+# Зарезервировано под IDE
+.vscode/
+.idea/
+.DS_Store

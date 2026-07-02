@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "toonboom-harmony": {
+      "command": "node",
+      "args": ["/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/dist/index.js"],
+      "env": {
+        "HARMONY_DRY_RUN_DEFAULT": "true",
+        "HARMONY_ALLOW_DESTRUCTIVE": "false",
+        "HARMONY_ALLOWED_ROOTS": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp,/tmp"
+      }
+    }
+  }
+}
