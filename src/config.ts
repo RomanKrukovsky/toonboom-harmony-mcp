@@ -14,6 +14,18 @@ export interface OnePromptIterationConfig {
   requireHumanApprovalForFinal: boolean;
 }
 
+export interface BackendConfig {
+  image: 'none' | 'openai' | 'stability' | 'mock';
+  audio: 'none' | 'openai' | 'elevenlabs' | 'mock';
+  llm: 'none' | 'openai' | 'anthropic' | 'mock';
+  apiKeys: {
+    openai?: string;
+    stability?: string;
+    elevenlabs?: string;
+    anthropic?: string;
+  };
+}
+
 export interface HarmonyConfig {
   harmonyInstall: string;
   harmonyCcBin: string;
@@ -30,6 +42,7 @@ export interface HarmonyConfig {
   logDir: string;
   engineMode: HarmonyEngineMode;
   onePromptIteration: OnePromptIterationConfig;
+  backends: BackendConfig;
 }
 
 function parseEngineMode(raw?: string): HarmonyEngineMode {
@@ -177,6 +190,17 @@ export const config: HarmonyConfig = {
     targetScore: parseInt(process.env.HARMONY_ONEPROMPT_TARGET_SCORE || '85', 10),
     stopIfNoImprovement: (process.env.HARMONY_ONEPROMPT_STOP_IF_NO_IMPROVEMENT ?? 'true') !== 'false',
     requireHumanApprovalForFinal: (process.env.HARMONY_ONEPROMPT_REQUIRE_HUMAN_FINAL ?? 'true') !== 'false'
+  },
+  backends: {
+    image: (process.env.HARMONY_BACKEND_IMAGE || 'none') as BackendConfig['image'],
+    audio: (process.env.HARMONY_BACKEND_AUDIO || 'none') as BackendConfig['audio'],
+    llm: (process.env.HARMONY_BACKEND_LLM || 'none') as BackendConfig['llm'],
+    apiKeys: {
+      openai: process.env.OPENAI_API_KEY,
+      stability: process.env.STABILITY_API_KEY,
+      elevenlabs: process.env.ELEVENLABS_API_KEY,
+      anthropic: process.env.ANTHROPIC_API_KEY
+    }
   }
 };
 

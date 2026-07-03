@@ -31,6 +31,7 @@ import { EpisodeAssembler } from '../episodeAssembler/index.js';
 import { FinalPackager } from '../finalPackage/index.js';
 import { LipsyncPlanner } from '../lipsyncPlanner/index.js';
 import { BackgroundPlanner } from '../backgroundPlanner/index.js';
+import { generateDialogue, generateBackground, synthesizeDialogue } from '../backends/index.js';
 
 export interface ProductionPackage {
   prompt: string;
@@ -132,13 +133,21 @@ export class OnePromptEngine {
     // 8. Acting plans
     const actingPlanner = new ActingPlanner();
     const scriptPlanner = new ScriptPlanner();
-    const script = scriptPlanner.generateScript(episodePlan, analysis);
+    let script = scriptPlanner.generateScript(episodePlan, analysis);
+    if (config.backends.llm !== 'none') {
+      script = await enhanceScriptWithLlm(script, episodePlan, analysis);
+      whatWasReal.push({ module: 'llmBackend', whatWasDone: `Dialogue enhanced via ${config.backends.llm} backend`, classification: script.origin === 'real' ? 'generated' : 'requires_external_model' });
+    }
     const actingPlans = actingPlanner.generateActingPlans(script, characterSpecs, episodePlan);
     whatWasReal.push({ module: 'actingPlanner', whatWasDone: `Сгенерированы acting plans (${actingPlans.length} сцен)`, classification: 'planned' });
 
     // 8b. Lipsync plans
     const lipsyncPlanner = new LipsyncPlanner();
-    const lipsyncPlans = lipsyncPlanner.generatePlans(script, episodePlan);
+    let lipsyncPlans = lipsyncPlanner.generatePlans(script, episodePlan);
+    if (config.backends.audio !== 'none') {
+      lipsyncPlans = await generateLipsyncAudio(lipsyncPlans);
+      whatWasReal.push({ module: 'audioBackend', whatWasDone: `Dialogue audio synthesized via ${config.backends.audio} backend`, classification: 'generated' });
+    }
     const lipsyncNeedsAudio = lipsyncPlans.some(p => p.missingAssets.includes('recorded dialogue audio'));
     whatWasReal.push({
       module: 'lipsyncPlanner',
@@ -148,7 +157,11 @@ export class OnePromptEngine {
 
     // 9. Background plans
     const backgroundPlanner = new BackgroundPlanner();
-    const backgroundPlans = backgroundPlanner.generatePlans(episodePlan);
+    let backgroundPlans = backgroundPlanner.generatePlans(episodePlan);
+    if (config.backends.image !== 'none') {
+      backgroundPlans = await generateBackgroundArt(backgroundPlans);
+      whatWasReal.push({ module: 'imageBackend', whatWasDone: `Background art generated via ${config.backends.image} backend`, classification: 'generated' });
+    }
     whatWasReal.push({ module: 'backgroundPlanner', whatWasDone: `Background plans (${backgroundPlans.length} locations)`, classification: 'placeholder' });
 
     // 10. Camera & FX plans
@@ -210,6 +223,88 @@ export class OnePromptEngine {
       whatWasReal
     };
   }
+}
+
+// Backend integration helpers — only run when a backend feature flag is enabled.
+async function enhanceScriptWithLlm(script: any, episodePlan: EpisodePlan, analysis: any): Promise<any> {
+  const enhanced = { ...script, scenes: [...script.scenes], origin: 'planned' };
+  for (const scene of enhanced.scenes) {
+    const characters = scene.characters || [];
+    if (characters.length === 0) continue;
+    const prompt = `Scene "${scene.sceneName}" in ${scene.location || 'unknown location'}. Mood: ${scene.mood || 'neutral'}.`;
+    const context = {
+      location: scene.location,
+      mood: scene.mood,
+      durationFrames: scene.durationFrames,
+      fps: episodePlan.fps
+    };
+    const result = await generateDialogue(prompt, characters, context);
+    if (result.status === 'success' && result.dialogue.length > 0) {
+      const beatNames = ['establish', 'setup', 'turn', 'punchline'];
+      scene.dialogue = result.dialogue.map((line, idx) => ({
+        speaker: line.speaker,
+        text: line.text,
+        beat: beatNames[idx % beatNames.length],
+        emotion: emotionForBeat(idx, scene.mood),
+        voiceLevel: voiceForBeat(idx, scene.mood)
+      }));
+      if (result.origin === 'real') enhanced.origin = 'real';
+    }
+  }
+  return enhanced;
+}
+
+async function generateLipsyncAudio(lipsyncPlans: any[]): Promise<any[]> {
+  return Promise.all(lipsyncPlans.map(async plan => {
+    if (!plan.dialogues || plan.dialogues.length === 0) return plan;
+    const enriched = { ...plan, generatedAudio: [] as any[], origin: config.backends.audio };
+    for (const line of plan.dialogues) {
+      if (!line.text) continue;
+      const audio = await synthesizeDialogue(line.text, 'alloy');
+      enriched.generatedAudio.push({
+        speaker: line.speaker,
+        text: line.text,
+        path: audio.outputPath,
+        origin: audio.origin,
+        status: audio.status
+      });
+    }
+    if (enriched.generatedAudio.every((a: any) => a.origin === 'real')) {
+      enriched.missingAssets = (enriched.missingAssets || []).filter((m: string) => m !== 'recorded dialogue audio');
+    }
+    return enriched;
+  }));
+}
+
+async function generateBackgroundArt(backgroundPlans: any[]): Promise<any[]> {
+  return Promise.all(backgroundPlans.map(async plan => {
+    const style = plan.style || 'animated series style';
+    const result = await generateBackground(plan.location, style);
+    return {
+      ...plan,
+      imagePath: result.outputPath,
+      imageOrigin: result.origin,
+      imageStatus: result.status,
+      imagePrompt: result.prompt
+    };
+  }));
+}
+
+function emotionForBeat(beat: number, mood: string): string {
+  const base = ['neutral', 'curious', 'alarmed', 'shock'];
+  if (mood === 'establish') return base[0];
+  if (mood === 'climax') return base[3];
+  return base[beat % base.length];
+}
+
+function voiceFromBeat(beat: number, mood: string): 'whisper' | 'normal' | 'loud' | 'shout' | 'silent' {
+  if (mood === 'climax' && beat === 3) return 'shout';
+  if (beat === 0) return 'normal';
+  return beat >= 2 ? 'loud' : 'normal';
+}
+
+function voiceForBeat(beat: number, mood: string): 'whisper' | 'normal' | 'loud' | 'shout' | 'silent' {
+  return voiceFromBeat(beat, mood);
 }
 
 // Heuristic helpers — these are deterministic prompt parsers, NOT LLMs.

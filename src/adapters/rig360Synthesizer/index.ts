@@ -154,22 +154,26 @@ export class Rig360Synthesizer {
 
   private buildRequiredAssets(character: CharacterSpec): Rig360Spec['requiredAssets'] {
     const assets: Rig360Spec['requiredAssets'] = [];
+    // Layered body/head geometry is needed for every turnaround view.
     for (const view of character.requiredViews) {
       for (const layer of [...character.layerPlan.head, ...character.layerPlan.body]) {
         assets.push({ view, layer, status: 'missing' });
       }
-      // Mouth shapes per view
-      for (const mouth of character.requiredMouthShapes) {
-        assets.push({ view, layer: `mouth_${mouth}`, status: 'missing' });
-      }
-      // Expressions per view
-      for (const expr of character.requiredExpressions) {
-        assets.push({ view, layer: `expr_${expr}`, status: 'missing' });
-      }
-      // Hand poses per view
-      for (const hand of character.requiredHandPoses) {
-        assets.push({ view, layer: `hand_${hand}`, status: 'missing' });
-      }
+    }
+    // Mouth shapes, expressions and hand poses are only required for the
+    // canonical front view in the placeholder plan. Derived views can reuse
+    // or adapt them, which keeps the asset brief honest and manageable.
+    const canonicalView = character.requiredViews.includes('front')
+      ? 'front'
+      : character.requiredViews[0] || 'front';
+    for (const mouth of character.requiredMouthShapes) {
+      assets.push({ view: canonicalView, layer: `mouth_${mouth}`, status: 'missing' });
+    }
+    for (const expr of character.requiredExpressions) {
+      assets.push({ view: canonicalView, layer: `expr_${expr}`, status: 'missing' });
+    }
+    for (const hand of character.requiredHandPoses) {
+      assets.push({ view: canonicalView, layer: `hand_${hand}`, status: 'missing' });
     }
     return assets;
   }

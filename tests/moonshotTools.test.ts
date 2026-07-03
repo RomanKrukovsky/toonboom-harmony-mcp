@@ -1,5 +1,7 @@
+import fs from 'fs';
 import { onePromptTools } from '../src/tools/onePromptTools.js';
 import { characterGenerationTools } from '../src/tools/characterGenerationTools.js';
+import { config } from '../src/config.js';
 import { rig360GenerationTools } from '../src/tools/rig360GenerationTools.js';
 import { actingTools } from '../src/tools/actingTools.js';
 import { qualityDirectorTools } from '../src/tools/qualityDirectorTools.js';
@@ -215,5 +217,44 @@ describe('Moonshot tools registration', () => {
     expect(res.autopilotResults.length).toBeGreaterThan(0);
     // All dry-run attempts should complete without real Harmony errors
     expect(res.autopilotResults.every((r: any) => r.status === 'completed')).toBe(true);
+  });
+
+  describe('run_to_final_package human approval checkpoint', () => {
+    const originalRequireHuman = config.onePromptIteration.requireHumanApprovalForFinal;
+
+    beforeEach(() => {
+      config.onePromptIteration.requireHumanApprovalForFinal = true;
+    });
+
+    afterAll(() => {
+      config.onePromptIteration.requireHumanApprovalForFinal = originalRequireHuman;
+    });
+
+    test('blocks final lock without humanApproved=true', async () => {
+      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_final_package');
+      const res: any = await tool!.handler({
+        prompt: 'A short test episode about a robot in a lab.',
+        targetDurationMinutes: 1,
+        outputDir: '/tmp/harmony_mcp_final_no_approve',
+        humanApproved: false
+      });
+      expect(res.status).toBe('waiting_human_approval');
+      expect(res.locked).toBe(false);
+      expect(res.humanCheckpoint.required).toBe(true);
+    });
+
+    test('locks package when humanApproved=true', async () => {
+      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_final_package');
+      const res: any = await tool!.handler({
+        prompt: 'A short test episode about a robot in a lab.',
+        targetDurationMinutes: 1,
+        outputDir: '/tmp/harmony_mcp_final_approved',
+        humanApproved: true
+      });
+      expect(res.locked).toBe(true);
+      expect(res.lockPath).toBeDefined();
+      expect(fs.existsSync(res.lockPath)).toBe(true);
+      expect(res.humanCheckpoint.required).toBe(false);
+    });
   });
 });
