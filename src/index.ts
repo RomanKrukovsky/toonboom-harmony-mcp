@@ -15,6 +15,14 @@ import { sceneTools } from './tools/sceneTools.js';
 import { renderTools } from './tools/renderTools.js';
 import { assetTools } from './tools/assetTools.js';
 import { workflowTools } from './tools/workflowTools.js';
+import { nodeTools } from './tools/nodeTools.js';
+import { timelineTools } from './tools/timelineTools.js';
+import { drawingTools } from './tools/drawingTools.js';
+import { paletteTools } from './tools/paletteTools.js';
+import { rigTools } from './tools/rigTools.js';
+import { lipsyncTools } from './tools/lipsyncTools.js';
+import { productionTools } from './tools/productionTools.js';
+import { auditTools } from './tools/auditTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -26,7 +34,15 @@ const allTools = [
   ...sceneTools,
   ...renderTools,
   ...assetTools,
-  ...workflowTools
+  ...workflowTools,
+  ...nodeTools,
+  ...timelineTools,
+  ...drawingTools,
+  ...paletteTools,
+  ...rigTools,
+  ...lipsyncTools,
+  ...productionTools,
+  ...auditTools
 ];
 
 class HarmonyMcpServer {

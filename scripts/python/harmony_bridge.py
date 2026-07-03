@@ -205,6 +205,147 @@ def main():
             
             respond({"status": "success", "message": f"Ресурс '{asset_path}' успешно импортирован."})
 
+        elif command == "delete_node":
+            node_path = args.get("nodePath")
+            node = find_node_by_path(project, node_path)
+            if not node:
+                respond_error("INVALID_HARMONY_OBJECT", f"Узел '{node_path}' не найден.")
+            if hasattr(node, "delete"):
+                execute_locked(lambda: node.delete())
+            elif hasattr(project, "delete_node"):
+                execute_locked(lambda: project.delete_node(node))
+            else:
+                parent_path = "/".join(node_path.split("/")[:-1])
+                parent = find_node_by_path(project, parent_path) if parent_path else getattr(project, "root_group", None)
+                if parent and hasattr(parent, "delete_node"):
+                    execute_locked(lambda: parent.delete_node(node))
+                else:
+                    respond_error("UNSUPPORTED_BY_VERSION", "API удаления узлов недоступно для этого узла или версии.")
+            respond({"status": "success", "message": f"Узел '{node_path}' успешно удален."})
+
+        elif command == "search_nodes":
+            query = args.get("query", "").lower()
+            nodes = []
+            if hasattr(project, "root_group"):
+                root = project.root_group
+                nodes = get_all_nodes(root)
+            elif hasattr(project, "nodes"):
+                nodes = [str(n) for n in project.nodes]
+            matches = [n for n in nodes if query in n.lower()]
+            respond({"status": "success", "matches": matches})
+
+        elif command == "list_drawings":
+            drawings_info = []
+            nodes_list = []
+            if hasattr(project, "root_group"):
+                nodes_list = get_all_nodes(project.root_group)
+            for np in nodes_list:
+                node = find_node_by_path(project, np)
+                if node and getattr(node, "type", "") == "READ":
+                    substitutions = []
+                    if hasattr(node, "drawings"):
+                        substitutions = [str(d) for d in node.drawings]
+                    elif hasattr(node, "drawing_elements"):
+                        substitutions = [str(d) for d in node.drawing_elements]
+                    drawings_info.append({
+                        "node_path": np,
+                        "name": getattr(node, "name", np.split("/")[-1]),
+                        "substitutions": substitutions
+                    })
+            respond({"status": "success", "drawings": drawings_info})
+
+        elif command == "list_timeline":
+            layers = []
+            nodes_list = []
+            if hasattr(project, "root_group"):
+                nodes_list = get_all_nodes(project.root_group)
+            for np in nodes_list:
+                node = find_node_by_path(project, np)
+                if node:
+                    keyframes = []
+                    if hasattr(node, "attributes"):
+                        for attr in node.attributes:
+                            if hasattr(attr, "has_keyframes") and attr.has_keyframes:
+                                for f in range(1, getattr(project, "num_frames", 100) + 1):
+                                    if hasattr(attr, "is_keyframe") and attr.is_keyframe(f):
+                                        keyframes.append({"frame": f, "attribute": attr.name, "value": attr.value_at(f)})
+                    layers.append({
+                        "node_path": np,
+                        "type": getattr(node, "type", "UNKNOWN"),
+                        "keyframes": keyframes
+                    })
+            respond({
+                "status": "success",
+                "num_frames": getattr(project, "num_frames", 1),
+                "frame_rate": getattr(project, "frame_rate", 24),
+                "layers": layers
+            })
+
+        elif command == "set_exposure":
+            node_path = args.get("nodePath")
+            start_frame = args.get("startFrame", 1)
+            duration = args.get("duration", 1)
+            drawing_name = args.get("drawingName", "")
+            node = find_node_by_path(project, node_path)
+            if not node:
+                respond_error("INVALID_HARMONY_OBJECT", f"Узел '{node_path}' не найден.")
+            if hasattr(node, "set_exposure"):
+                execute_locked(lambda: node.set_exposure(start_frame, duration, drawing_name))
+            elif hasattr(project, "set_exposure"):
+                execute_locked(lambda: project.set_exposure(node, start_frame, duration, drawing_name))
+            else:
+                respond_error("UNSUPPORTED_BY_VERSION", "API установки экспозиции недоступен в данной версии.")
+            respond({"status": "success", "message": f"Экспозиция '{drawing_name}' установлена на кадры {start_frame}-{start_frame+duration-1} для {node_path}"})
+
+        elif command == "set_keyframe":
+            node_path = args.get("nodePath")
+            attr_name = args.get("attributeName")
+            frame = args.get("frame", 1)
+            value = args.get("value")
+            node = find_node_by_path(project, node_path)
+            if not node:
+                respond_error("INVALID_HARMONY_OBJECT", f"Узел '{node_path}' не найден.")
+            if hasattr(node, "attribute"):
+                attr = node.attribute(attr_name)
+                if attr and hasattr(attr, "set_keyframe"):
+                    execute_locked(lambda: attr.set_keyframe(frame, value))
+                elif attr:
+                    execute_locked(lambda: attr.set_value_at(frame, value))
+                else:
+                    respond_error("INVALID_HARMONY_OBJECT", f"Атрибут '{attr_name}' не найден у узла '{node_path}'.")
+            else:
+                respond_error("UNSUPPORTED_BY_VERSION", "API анимации атрибутов недоступен в данной версии.")
+            respond({"status": "success", "message": f"Ключевой кадр установлен для '{attr_name}' на кадре {frame} со значением {value}"})
+
+        elif command == "audit_scene":
+            broken_connections = []
+            empty_layers = []
+            nodes_list = []
+            if hasattr(project, "root_group"):
+                nodes_list = get_all_nodes(project.root_group)
+            for np in nodes_list:
+                node = find_node_by_path(project, np)
+                if node:
+                    if hasattr(node, "inputs"):
+                        for i in range(len(node.inputs)):
+                            conn = node.inputs[i]
+                            if conn and not find_node_by_path(project, getattr(conn, "path", "")):
+                                broken_connections.append({"node_path": np, "port": i, "details": "Узел-источник не существует"})
+                    if getattr(node, "type", "") == "READ":
+                        substitutions = []
+                        if hasattr(node, "drawings"):
+                            substitutions = node.drawings
+                        if not substitutions:
+                            empty_layers.append(np)
+            respond({
+                "status": "success",
+                "audit": {
+                    "broken_connections": broken_connections,
+                    "empty_layers": empty_layers,
+                    "total_nodes": len(nodes_list)
+                }
+            })
+
         elif command == "save_project":
             if hasattr(project, "save"):
                 execute_locked(lambda: project.save())
