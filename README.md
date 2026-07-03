@@ -1,6 +1,21 @@
+<p align="center">
+  <img src="docs/images/harmony_mcp_logo.jpg" alt="Toon Boom Harmony MCP Server" width="400"/>
+</p>
+
 # Toon Boom Harmony MCP Server
 
 MCP-сервер (Model Context Protocol) промышленного уровня для автоматизации работы с Toon Boom Harmony и Harmony Server.
+
+## Архитектура и рабочий процесс
+
+<p align="center">
+  <img src="docs/images/harmony_mcp_workflow.jpg" alt="Toon Boom Harmony MCP Server Workflow" width="800"/>
+</p>
+
+Сервер выступает интеллектуальным мостом, позволяющим AI-ассистентам (таким как Claude, Cursor и др.) напрямую взаимодействовать с инструментами автоматизации Toon Boom Harmony:
+- **Интеграция с Control Center (Telnet/Batch)**: для работы с серверной инфраструктурой сцен и проектов.
+- **Harmony Python API**: для манипуляций с нодами, таймлайном и параметрами сцены.
+- **SQLite БД**: для независимого локального трекинга задач и пайплайна.
 
 ## Функциональные возможности
 
