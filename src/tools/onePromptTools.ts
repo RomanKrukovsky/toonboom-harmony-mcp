@@ -207,28 +207,39 @@ export const onePromptTools: ToolDef[] = [
 
       // Build scene plans
       const assembler = new EpisodeAssembler();
-      const scenePlans = assembler.assembleScenePlans(pkg.episodePlan, pkg.characterSpecs, pkg.cameraPlans, pkg.fxPlans);
+      let scenePlans = pkg.scenePlans?.length
+        ? pkg.scenePlans
+        : assembler.assembleScenePlans(pkg.episodePlan, pkg.characterSpecs, pkg.cameraPlans, pkg.fxPlans, pkg.actingPlans, pkg.lipsyncPlans, pkg.backgroundPlans);
 
-      // Try to write scene plans to disk
       const outRoot = args.outputDir || path.join(process.cwd(), 'output', `moonshot_${Date.now()}`);
       const scenesDir = path.join(outRoot, 'scene_plans');
+      const previewsDir = path.join(outRoot, 'previews');
       if (!fs.existsSync(scenesDir)) fs.mkdirSync(scenesDir, { recursive: true });
-      for (const sp of scenePlans) {
-        fs.writeFileSync(path.join(scenesDir, `${sp.sceneName}.scene_plan.json`), JSON.stringify(sp, null, 2));
-      }
+      if (!fs.existsSync(previewsDir)) fs.mkdirSync(previewsDir, { recursive: true });
 
-      // In hybrid/real mode, attempt to invoke Harmony Autopilot for each scene plan
+      function writeScenePlans(plans: any[]) {
+        for (const sp of plans) {
+          fs.writeFileSync(path.join(scenesDir, `${sp.sceneName}.scene_plan.json`), JSON.stringify(sp, null, 2));
+        }
+      }
+      writeScenePlans(scenePlans);
+
+      // In hybrid / real / moonshot mode, attempt to invoke Harmony Autopilot for each scene plan.
+      // moonshot runs Autopilot in dry-run so it still exercises the full path without requiring Harmony.
+      const { autopilotTools } = await import('./autopilotTools.js');
+      const runScenePlan = autopilotTools.find((t: any) => t.name === 'harmony.autopilot.run_scene_plan');
+      const renderPreview = autopilotTools.find((t: any) => t.name === 'harmony.autopilot.render_preview');
+
       const autopilotResults: any[] = [];
       let autopilotAttempted = false;
-      if (mode === 'hybrid' || mode === 'real') {
+      if (mode !== 'simulation') {
         autopilotAttempted = true;
-        const { autopilotTools } = await import('./autopilotTools.js');
-        const runScenePlan = autopilotTools.find((t: any) => t.name === 'harmony.autopilot.run_scene_plan');
+        const dryRun = mode !== 'real';
         if (runScenePlan) {
           for (const sp of scenePlans) {
             const planPath = path.join(scenesDir, `${sp.sceneName}.scene_plan.json`);
             try {
-              const res = await runScenePlan.handler({ scenePlanPath: planPath, dryRun: mode === 'hybrid' });
+              const res = await runScenePlan.handler({ scenePlanPath: planPath, dryRun });
               autopilotResults.push({ scene: sp.sceneName, status: res.status, steps: res.totalSteps, completed: res.completedSteps });
             } catch (e: any) {
               autopilotResults.push({ scene: sp.sceneName, status: 'failed', error: e.message });
@@ -237,7 +248,7 @@ export const onePromptTools: ToolDef[] = [
         }
       }
 
-      // Iteration loop (lightweight)
+      // Iteration loop: review → fix → re-assemble → render preview → score
       const maxIterations = args.maxIterations ?? config.onePromptIteration.maxIterations;
       const targetScore = args.targetScore ?? config.onePromptIteration.targetScore;
       const requireHumanApprovalForFinal = config.onePromptIteration.requireHumanApprovalForFinal;
@@ -250,7 +261,6 @@ export const onePromptTools: ToolDef[] = [
         iteration++;
         const fixes = qd.generateFixList(pkg.reviewReports);
         fixHistory.push({ iteration, score: currentScore, fixes });
-        // Apply light automated fixes
         if (currentScore < targetScore) {
           for (const s of pkg.episodePlan.scenes) {
             if (s.durationFrames < 60) s.durationFrames += 12;
@@ -276,10 +286,28 @@ export const onePromptTools: ToolDef[] = [
         pkg.reviewReports = newReports;
       }
 
+      // Re-assemble scene plans after fixes and (re)write them
+      scenePlans = assembler.assembleScenePlans(pkg.episodePlan, pkg.characterSpecs, pkg.cameraPlans, pkg.fxPlans, pkg.actingPlans, pkg.lipsyncPlans, pkg.backgroundPlans);
+      writeScenePlans(scenePlans);
+
+      // Render preview videos for each scene plan
+      const previewPaths: string[] = [];
+      if (renderPreview) {
+        for (const sp of scenePlans) {
+          const dummyProjectPath = path.join(scenesDir, `${sp.sceneName}.scene_plan.json`);
+          const previewPath = path.join(previewsDir, `${sp.sceneName}_preview.mp4`);
+          try {
+            const renderRes: any = await renderPreview.handler({ projectPath: dummyProjectPath, outputPath: previewPath });
+            if (renderRes.outputPath) previewPaths.push(renderRes.outputPath);
+          } catch (e: any) {
+            // Preview render is best-effort in preview mode
+          }
+        }
+      }
+
       // Persist full package
       const { FinalPackager } = await import('../adapters/finalPackage/index.js');
       const finalPackage = new FinalPackager().assemble({ ...pkg, scenePlans }, outRoot);
-      fs.writeFileSync(path.join(scenesDir, 'MANIFEST.txt'), `Generated ${scenePlans.length} scene plans under ${mode} mode.`);
 
       const assembledSceneCount = autopilotResults.filter((r: any) => r.status === 'completed').length;
 
@@ -287,7 +315,7 @@ export const onePromptTools: ToolDef[] = [
         ? {
             required: true,
             reason: 'Target score reached. Human creative approval required before final package lock.',
-            suggestedAction: 'Review episode_package.json and scene_plans, then call harmony.oneprompt.run_to_final_package with requireHumanApproval=false or approve manually.'
+            suggestedAction: 'Review episode_package.json and scene_plans, then call harmony.oneprompt.run_to_final_package with humanApproved=true to lock.'
           }
         : { required: false };
 
@@ -296,6 +324,8 @@ export const onePromptTools: ToolDef[] = [
         mode,
         outputDir: outRoot,
         scenePlanCount: scenePlans.length,
+        previewCount: previewPaths.length,
+        previewPaths,
         autopilotAttempted,
         assembledSceneCount,
         autopilotResults,
@@ -304,7 +334,7 @@ export const onePromptTools: ToolDef[] = [
         iterationsUsed: iteration,
         fixHistory,
         humanCheckpoint,
-        truth: `Moonshot production package generated. ${pkg.rig360Specs.filter((r: any) => r.placeholderRigCreated && !r.realRigCreated).length} placeholder rig(s). Preview assembled in ${mode} mode. ${autopilotAttempted ? `Autopilot attempted on ${autopilotResults.length} scene(s); ${assembledSceneCount} completed.` : 'Autopilot not attempted (simulation/moonshot mode).'} ${humanCheckpoint.required ? 'Human approval required before final lock.' : ''} Real Harmony execution requires assets and installed Toon Boom Harmony.`,
+        truth: `Moonshot production package generated. ${pkg.rig360Specs.filter((r: any) => r.placeholderRigCreated && !r.realRigCreated).length} placeholder rig(s). ${previewPaths.length} preview render(s) produced. ${autopilotAttempted ? `Autopilot attempted on ${autopilotResults.length} scene(s); ${assembledSceneCount} completed.` : 'Autopilot not attempted (simulation mode).'} ${humanCheckpoint.required ? 'Human approval required before final lock.' : ''} Real Harmony execution requires assets and installed Toon Boom Harmony.`,
         whatWasReal: pkg.whatWasReal,
         finalPackageSummary: finalPackage.summary
       };

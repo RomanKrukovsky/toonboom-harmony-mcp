@@ -219,6 +219,21 @@ describe('Moonshot tools registration', () => {
     expect(res.autopilotResults.every((r: any) => r.status === 'completed')).toBe(true);
   });
 
+  test('run_to_preview_episode produces preview render paths and scene plans', async () => {
+    const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
+    const res: any = await tool!.handler({
+      prompt: 'A short test episode about a robot in a lab.',
+      targetDurationMinutes: 1,
+      mode: 'moonshot',
+      outputDir: '/tmp/harmony_mcp_preview_paths_test'
+    });
+    expect(res.previewCount).toBeGreaterThan(0);
+    expect(res.previewPaths.length).toBeGreaterThan(0);
+    expect(res.scenePlanCount).toBeGreaterThan(0);
+    expect(res.finalScore).toBeGreaterThanOrEqual(0);
+    expect(res.truth).toContain('Moonshot production package generated');
+  });
+
   describe('run_to_final_package human approval checkpoint', () => {
     const originalRequireHuman = config.onePromptIteration.requireHumanApprovalForFinal;
 

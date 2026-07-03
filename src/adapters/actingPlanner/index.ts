@@ -92,7 +92,7 @@ export class ActingPlanner {
     const emotionalArc = this.generateEmotionalBeats(scene, character);
     return {
       character,
-      scene: scene.sceneId,
+      sceneId: scene.sceneId,
       emotionalArc,
       gesturePlan: this.generateGesturePlan(scene),
       blinkPlan: this.generateBlinkPlan(scene),

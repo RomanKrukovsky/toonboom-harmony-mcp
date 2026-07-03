@@ -18,7 +18,7 @@ import { DEFAULT_360_VIEWS } from '../../schemas/characterSpec.js';
 export class Rig360Synthesizer {
   generateSpec(character: CharacterSpec): Rig360Spec {
     const requiredAssets = this.buildRequiredAssets(character);
-    const missingAssets = requiredAssets.filter(a => a.status === 'missing').map(a => `${a.view}_${a.layer}`);
+    const missingAssets = this.humanizeMissingAssets(requiredAssets.filter(a => a.status === 'missing'));
 
     const masterControllers = this.buildMasterControllers(character);
     const deformers = this.buildDeformers(character);
@@ -119,7 +119,7 @@ export class Rig360Synthesizer {
    */
   buildFromAssets(character: CharacterSpec, assetPaths: Record<string, string>): Rig360Spec {
     const requiredAssets = this.buildRequiredAssets(character);
-    const missingAssets: string[] = [];
+    const missing: typeof requiredAssets = [];
     const providedAssets: string[] = [];
 
     for (const asset of requiredAssets) {
@@ -129,9 +129,10 @@ export class Rig360Synthesizer {
         providedAssets.push(key);
       } else {
         asset.status = 'missing';
-        missingAssets.push(key);
+        missing.push(asset);
       }
     }
+    const missingAssets = this.humanizeMissingAssets(missing);
 
     const realRigCreated = missingAssets.length === 0;
     return {
@@ -147,9 +148,25 @@ export class Rig360Synthesizer {
       providedAssets,
       nextBestAction: realRigCreated
         ? 'All required assets provided — import into Harmony and build the full 360 rig'
-        : `Provide ${missingAssets.length} missing assets before building a real rig`,
+        : `Provide ${missingAssets.length} missing asset groups before building a real rig`,
       origin: realRigCreated ? 'assembled' : 'placeholder'
     };
+  }
+
+  private humanizeMissingAssets(assets: Rig360Spec['requiredAssets']): string[] {
+    const groups = new Set<string>();
+    for (const a of assets) {
+      if (a.layer.startsWith('mouth_')) {
+        groups.add(`${a.view} mouth chart`);
+      } else if (a.layer.startsWith('expr_')) {
+        groups.add(`${a.view} expression sheet`);
+      } else if (a.layer.startsWith('hand_')) {
+        groups.add(`${a.view} hand poses`);
+      } else {
+        groups.add(`${a.view} ${a.layer} drawing`);
+      }
+    }
+    return Array.from(groups).sort();
   }
 
   private buildRequiredAssets(character: CharacterSpec): Rig360Spec['requiredAssets'] {

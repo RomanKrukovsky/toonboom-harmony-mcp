@@ -76,6 +76,27 @@ export const scenePlanSchema = z.object({
     preview: z.boolean().optional(),
     format: z.string().optional(),
     quality: z.string().optional()
+  }).optional(),
+
+  actingNotes: z.object({
+    emotionalArc: z.array(z.any()).optional(),
+    gestures: z.array(z.any()).optional(),
+    blinkPlan: z.array(z.any()).optional()
+  }).optional(),
+
+  lipsyncPlan: z.object({
+    language: z.string().optional(),
+    dialogues: z.array(z.any()).optional(),
+    missingAssets: z.array(z.string()).optional(),
+    generatedAudio: z.array(z.any()).optional()
+  }).optional(),
+
+  backgroundPlan: z.object({
+    location: z.string(),
+    style: z.string().optional(),
+    layers: z.array(z.any()).optional(),
+    imagePath: z.string().optional(),
+    imageOrigin: z.string().optional()
   }).optional()
 });
 

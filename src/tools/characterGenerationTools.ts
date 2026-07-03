@@ -19,7 +19,12 @@ export const characterGenerationTools = [
     handler: async (args: any) => {
       const designer = new CharacterDesigner();
       const spec = designer.buildSpecFromArgs(args);
-      return { status: 'success', characterSpec: spec };
+      return {
+        status: 'success',
+        characterSpec: spec,
+        assetBackendStatus: 'CHARACTER_ASSET_GENERATION_BACKEND_MISSING',
+        note: 'Character spec is a production-ready asset brief. Real drawings require an image generation backend or human artist.'
+      };
     }
   },
 

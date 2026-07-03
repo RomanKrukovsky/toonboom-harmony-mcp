@@ -105,4 +105,16 @@ describe('One-Prompt Engine adapters', () => {
       expect(p.production).toBe(ep.episodeTitle);
     }
   });
+
+  test('generateProductionPackage attaches shot list and scene plans', async () => {
+    const engine = new OnePromptEngine();
+    const pkg = await engine.generateProductionPackage(input);
+    expect(pkg.episodePlan.shots.length).toBeGreaterThan(0);
+    expect(pkg.scenePlans).toBeDefined();
+    expect(pkg.scenePlans!.length).toBe(pkg.episodePlan.scenes.length);
+    const firstScene = pkg.scenePlans![0];
+    expect(firstScene.actingNotes).toBeDefined();
+    expect(firstScene.backgroundPlan).toBeDefined();
+    expect(firstScene.lipsyncPlan).toBeDefined();
+  });
 });

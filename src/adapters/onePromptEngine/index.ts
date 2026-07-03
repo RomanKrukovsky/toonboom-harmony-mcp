@@ -16,7 +16,6 @@ import type { SeriesBible } from '../../schemas/seriesBible.js';
 import type { EpisodePlan } from '../../schemas/episodePlan.js';
 import type { CharacterSpec } from '../../schemas/characterSpec.js';
 import type { Rig360Spec } from '../../schemas/rig360Spec.js';
-import type { actingPlanSchema } from '../../schemas/actingPlan.js';
 import { SeriesPlanner } from '../seriesPlanner/index.js';
 import { EpisodePlanner } from '../episodePlanner/index.js';
 import { ScriptPlanner } from '../scriptPlanner/index.js';
@@ -50,6 +49,7 @@ export interface ProductionPackage {
   backgroundPlans: any[];
   renderPlan: any;
   reviewReports: any[];
+  scenePlans?: any[];
   finalPackage: any;
   whatWasReal: WhatWasRealLog[];
 }
@@ -101,6 +101,7 @@ export class OnePromptEngine {
     // 4. Shot list
     const shotPlanner = new ShotPlanner();
     const shotList = shotPlanner.generateShots(episodePlan);
+    episodePlan.shots = shotList;
     whatWasReal.push({ module: 'shotPlanner', whatWasDone: `Сгенерирован shot_list (${shotList.length} шотов)`, classification: 'planned' });
 
     // 5. Character specs
@@ -177,8 +178,9 @@ export class OnePromptEngine {
 
     // 11. Episode assembly
     const assembler = new EpisodeAssembler();
+    const scenePlans = assembler.assembleScenePlans(episodePlan, characterSpecs, cameraPlans, fxPlans, actingPlans, lipsyncPlans, backgroundPlans);
     const renderPlan = assembler.generateRenderPlan(episodePlan, cameraPlans, fxPlans);
-    whatWasReal.push({ module: 'episodeAssembler', whatWasDone: 'Render plan создан', classification: mode === 'real' ? 'assembled' : 'planned' });
+    whatWasReal.push({ module: 'episodeAssembler', whatWasDone: `Scene plans assembled (${scenePlans.length}) with acting/lipsync/background references`, classification: mode === 'real' ? 'assembled' : 'planned' });
 
     // 13. Final package
     const packager = new FinalPackager();
@@ -198,7 +200,8 @@ export class OnePromptEngine {
       fxPlans,
       backgroundPlans,
       renderPlan,
-      reviewReports
+      reviewReports,
+      scenePlans
     });
     whatWasReal.push({ module: 'finalPackager', whatWasDone: 'Собран production package', classification: 'assembled' });
 
@@ -219,6 +222,7 @@ export class OnePromptEngine {
       backgroundPlans,
       renderPlan,
       reviewReports,
+      scenePlans,
       finalPackage,
       whatWasReal
     };

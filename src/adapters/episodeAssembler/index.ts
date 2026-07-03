@@ -30,8 +30,18 @@ export class EpisodeAssembler {
     };
   }
 
-  assembleScenePlans(episodePlan: EpisodePlan, characterSpecs: any[], cameraPlans: any[], fxPlans: any[]): ScenePlan[] {
-    return episodePlan.scenes.map(scene => this.buildScenePlan(scene, episodePlan, characterSpecs, cameraPlans, fxPlans));
+  assembleScenePlans(
+    episodePlan: EpisodePlan,
+    characterSpecs: any[],
+    cameraPlans: any[],
+    fxPlans: any[],
+    actingPlans: any[] = [],
+    lipsyncPlans: any[] = [],
+    backgroundPlans: any[] = []
+  ): ScenePlan[] {
+    return episodePlan.scenes.map(scene =>
+      this.buildScenePlan(scene, episodePlan, characterSpecs, cameraPlans, fxPlans, actingPlans, lipsyncPlans, backgroundPlans)
+    );
   }
 
   private buildScenePlan(
@@ -39,11 +49,17 @@ export class EpisodeAssembler {
     episodePlan: EpisodePlan,
     characterSpecs: any[],
     cameraPlans: any[],
-    fxPlans: any[]
+    fxPlans: any[],
+    actingPlans: any[] = [],
+    lipsyncPlans: any[] = [],
+    backgroundPlans: any[] = []
   ): ScenePlan {
     const sceneShots = (episodePlan.shots || []).filter(s => s.sceneId === scene.sceneId);
     const camera = cameraPlans.find(c => c.sceneId === scene.sceneId);
     const fx = fxPlans.find(f => f.sceneId === scene.sceneId);
+    const acting = actingPlans.find(a => a.sceneId === scene.sceneId);
+    const lipsync = lipsyncPlans.find(l => l.sceneId === scene.sceneId);
+    const bgPlan = backgroundPlans.find(b => b.location === scene.location);
 
     return {
       schemaVersion: SCENE_PLAN_VERSION,
@@ -86,7 +102,25 @@ export class EpisodeAssembler {
         preview: true,
         format: 'png',
         quality: 'preview'
-      }
+      },
+      actingNotes: acting ? {
+        emotionalArc: acting.emotionalArc,
+        gestures: acting.gesturePlan,
+        blinkPlan: acting.blinkPlan
+      } : undefined,
+      lipsyncPlan: lipsync ? {
+        language: lipsync.language,
+        dialogues: lipsync.dialogues,
+        missingAssets: lipsync.missingAssets,
+        generatedAudio: lipsync.generatedAudio
+      } : undefined,
+      backgroundPlan: bgPlan ? {
+        location: bgPlan.location,
+        style: bgPlan.style,
+        layers: bgPlan.layers,
+        imagePath: bgPlan.imagePath,
+        imageOrigin: bgPlan.imageOrigin
+      } : undefined
     } as ScenePlan;
   }
 }
