@@ -5,6 +5,15 @@ import fs from 'fs';
 // Загрузка переменных окружения из .env
 dotenv.config();
 
+export type HarmonyEngineMode = 'real' | 'simulation' | 'hybrid' | 'moonshot';
+
+export interface OnePromptIterationConfig {
+  maxIterations: number;
+  targetScore: number;
+  stopIfNoImprovement: boolean;
+  requireHumanApprovalForFinal: boolean;
+}
+
 export interface HarmonyConfig {
   harmonyInstall: string;
   harmonyCcBin: string;
@@ -19,6 +28,18 @@ export interface HarmonyConfig {
   allowRawScripts: boolean;
   allowedRoots: string[];
   logDir: string;
+  engineMode: HarmonyEngineMode;
+  onePromptIteration: OnePromptIterationConfig;
+}
+
+function parseEngineMode(raw?: string): HarmonyEngineMode {
+  switch ((raw || 'moonshot').toLowerCase()) {
+    case 'real': return 'real';
+    case 'simulation': return 'simulation';
+    case 'hybrid': return 'hybrid';
+    case 'moonshot': return 'moonshot';
+    default: return 'moonshot';
+  }
 }
 
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -149,8 +170,20 @@ export const config: HarmonyConfig = {
   allowedRoots: process.env.HARMONY_ALLOWED_ROOTS 
     ? process.env.HARMONY_ALLOWED_ROOTS.split(',').map(p => path.resolve(p.trim()))
     : [path.resolve(process.cwd())],
-  logDir: process.env.HARMONY_LOG_DIR || './logs'
+  logDir: process.env.HARMONY_LOG_DIR || './logs',
+  engineMode: parseEngineMode(process.env.HARMONY_ENGINE_MODE),
+  onePromptIteration: {
+    maxIterations: parseInt(process.env.HARMONY_ONEPROMPT_MAX_ITERATIONS || '5', 10),
+    targetScore: parseInt(process.env.HARMONY_ONEPROMPT_TARGET_SCORE || '85', 10),
+    stopIfNoImprovement: (process.env.HARMONY_ONEPROMPT_STOP_IF_NO_IMPROVEMENT ?? 'true') !== 'false',
+    requireHumanApprovalForFinal: (process.env.HARMONY_ONEPROMPT_REQUIRE_HUMAN_FINAL ?? 'true') !== 'false'
+  }
 };
+
+export const DEFAULT_MOUTH_SHAPES = ['A','E','I','O','U','M','F','L','S','rest'] as const;
+export const REQUIRED_VIEWS_360 = [
+  'front','front_3q_left','side_left','back_3q_left','back','back_3q_right','side_right','front_3q_right'
+] as const;
 
 // Валидация разрешенных путей для безопасности
 export function validatePath(filePath: string): boolean {

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://toonboom-harmony-mcp/scene_plan.schema.json",
+  "schemaVersion": "1.0",
+  "production": "Mini Cartoon — Season 1",
+  "episode": "EP101",
+  "sceneName": "SH010",
+  "resolution": { "width": 1920, "height": 1080 },
+  "fps": 24,
+  "durationFrames": 192,
+  "workspaceTemplate": "cutout_scene_template",
+  "background": {
+    "file": "assets/backgrounds/park_day.psd",
+    "layerName": "BG_Park",
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "scale": 1
+  },
+  "characters": [
+    {
+      "name": "Mia",
+      "rig": "assets/rigs/mia_cutout.tpl",
+      "positionPreset": "center_left",
+      "startFrame": 1,
+      "endFrame": 192,
+      "actions": [
+        {
+          "type": "walk",
+          "name": "walk_in",
+          "frames": [1, 48],
+          "audio": "audio/mia_line01.wav",
+          "mouthChart": "mouth/mia_chart.tpl"
+        },
+        {
+          "type": "talk",
+          "name": "greeting",
+          "frames": [60, 120],
+          "audio": "audio/mia_line02.wav",
+          "mouthChart": "mouth/mia_chart.tpl"
+        }
+      ]
+    }
+  ],
+  "camera": {
+    "preset": "tracking_pan_left",
+    "startFrame": 1,
+    "endFrame": 192
+  },
+  "effects": [
+    { "type": "Blur", "target": "BG_Park", "frames": [120, 192] }
+  ],
+  "render": {
+    "preview": true,
+    "format": "png",
+    "quality": "preview"
+  }
+}

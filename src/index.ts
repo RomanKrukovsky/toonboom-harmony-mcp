@@ -28,6 +28,16 @@ import { autopilotTools } from './tools/autopilotTools.js';
 import { templateTools } from './tools/templateTools.js';
 import { sceneAssemblyTools } from './tools/sceneAssemblyTools.js';
 import { commercialWorkflowTools } from './tools/commercialWorkflowTools.js';
+import { plannerTools } from './tools/plannerTools.js';
+import { studioTools } from './tools/studioTools.js';
+import { animationBlockingTools } from './tools/animationBlockingTools.js';
+import { onePromptTools } from './tools/onePromptTools.js';
+import { seriesTools } from './tools/seriesTools.js';
+import { characterGenerationTools } from './tools/characterGenerationTools.js';
+import { rig360GenerationTools } from './tools/rig360GenerationTools.js';
+import { actingTools } from './tools/actingTools.js';
+import { episodeAssemblyTools } from './tools/episodeAssemblyTools.js';
+import { qualityDirectorTools } from './tools/qualityDirectorTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -52,7 +62,17 @@ const allTools = [
   ...autopilotTools,
   ...templateTools,
   ...sceneAssemblyTools,
-  ...commercialWorkflowTools
+  ...commercialWorkflowTools,
+  ...plannerTools,
+  ...studioTools,
+  ...animationBlockingTools,
+  ...onePromptTools,
+  ...seriesTools,
+  ...characterGenerationTools,
+  ...rig360GenerationTools,
+  ...actingTools,
+  ...episodeAssemblyTools,
+  ...qualityDirectorTools
 ];
 
 class HarmonyMcpServer {

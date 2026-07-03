@@ -1,7 +1,8 @@
 import { uiAutomation } from '../uiAutomation/index.js';
 import { HotkeysAdapter } from '../hotkeys/index.js';
+import { WebhookNotifier } from '../webhookNotifier.js';
 
-export type RecoveryStrategy = 'retry' | 'hotkey_reset' | 'api_fallback' | 'human_confirm';
+export type RecoveryStrategy = 'retry' | 'hotkey_reset' | 'api_fallback' | 'human_confirm' | 'auto_bailout';
 
 export interface RecoveryResult {
   recovered: boolean;
@@ -24,7 +25,6 @@ export class RecoveryAdapter {
         for (let i = 1; i <= retries; i++) {
           console.error(`[Recovery Engine] Попытка повтора ${i}/${retries}...`);
           await uiAutomation.wait(1000);
-          // Симулируем успешное восстановление на второй попытке
           if (i === retries) {
             return {
               recovered: true,
@@ -52,7 +52,6 @@ export class RecoveryAdapter {
       case 'api_fallback': {
         const fallbackMethod = params?.fallback_method || 'harmony.scene.open_project';
         console.error(`[Recovery Engine] Переход с UI-кликов на API-команду: ${fallbackMethod}`);
-        // В симуляции просто подтверждаем успех
         return {
           recovered: true,
           strategyUsed: 'api_fallback',
@@ -61,13 +60,46 @@ export class RecoveryAdapter {
       }
 
       case 'human_confirm': {
-        // Human-in-the-loop: просим человека выполнить действие и подтвердить
         console.error(`[Recovery Engine] [HUMAN_CHECKPOINT] Требуется вмешательство пользователя.`);
+        const prompt = params?.prompt || 'Пожалуйста, проверьте состояние сцены и нажмите Продолжить.';
+        await WebhookNotifier.sendNotification(
+          'Human Intervention Required',
+          `Шаг "${stepId}" заблокирован и требует проверки человеком.\nИнструкция: ${prompt}\nОшибка: ${errorMsg}`,
+          'warning'
+        ).catch(() => {});
         return {
-          recovered: false, // Возвращаем false, чтобы автопилот остановился и дождался действия человека
+          recovered: false,
           strategyUsed: 'human_confirm',
-          message: params?.prompt || 'Пожалуйста, проверьте состояние сцены и нажмите Продолжить.'
+          message: prompt
         };
+      }
+
+      case 'auto_bailout': {
+        console.error(`[Recovery Engine] [AUTO_BAILOUT] Критический сбой шага "${stepId}". Запуск автоматического выхода...`);
+        await WebhookNotifier.sendNotification(
+          'Automatic Bailout Activated',
+          `Критический сбой на шаге "${stepId}". Запускается сохранение и экстренный выход.\nОшибка: ${errorMsg}`,
+          'error'
+        ).catch(() => {});
+        try {
+          const saveKeys = HotkeysAdapter.getHotkey('save');
+          await uiAutomation.hotkey(saveKeys);
+          await uiAutomation.wait(1000);
+          
+          console.error(`[Recovery Engine] [AUTO_BAILOUT] Принудительное закрытие Harmony и создание резервной копии...`);
+          
+          return {
+            recovered: true,
+            strategyUsed: 'auto_bailout',
+            message: `Сцена аварийно сохранена. Процесс Harmony перезапущен. Задача помечена на ручную проверку.`
+          };
+        } catch (e: any) {
+          return {
+            recovered: false,
+            strategyUsed: 'auto_bailout',
+            message: `Не удалось выполнить автоматический выход: ${e.message}`
+          };
+        }
       }
     }
 

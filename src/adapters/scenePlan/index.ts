@@ -1,4 +1,4 @@
-import { scenePlanSchema } from '../../schemas/scenePlan.js';
+import { scenePlanSchema, assertScenePlanVersion, SCENE_PLAN_VERSION } from '../../schemas/scenePlan.js';
 import { HarmonyError } from '../../security.js';
 
 export interface PlanStep {
@@ -32,6 +32,12 @@ export interface ExecutionPlan {
 
 export class ScenePlanAdapter {
   static validate(plan: any): void {
+    // Version-lock the plan before structural validation.
+    try {
+      assertScenePlanVersion(plan);
+    } catch (e: any) {
+      throw new HarmonyError('INVALID_HARMONY_OBJECT', e.message, { schemaVersion: SCENE_PLAN_VERSION });
+    }
     const res = scenePlanSchema.safeParse(plan);
     if (!res.success) {
       throw new HarmonyError(

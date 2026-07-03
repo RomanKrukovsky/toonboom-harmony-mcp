@@ -3,6 +3,7 @@ import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { ControlCenterTelnet } from '../adapters/controlCenterTelnet.js';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { projectPathSchema } from '../schemas/common.js';
+import { FastXmlAuditor } from '../adapters/scenePlan/xmlAuditor.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runAuditBridge(command: string, args: any): Promise<any> {
@@ -29,10 +30,28 @@ export const auditTools = [
     name: 'harmony.audit.scene',
     description: 'Полный аудит открытой сцены на ошибки структуры, слоев и палитр.',
     inputSchema: z.object({
-      projectPath: projectPathSchema
+      projectPath: projectPathSchema,
+      deepScan: z.boolean().optional().describe('Выполнить глубокий аудит через API Harmony (требует лицензию).')
     }),
-    handler: async (args: { projectPath?: string }) => {
+    handler: async (args: { projectPath?: string; deepScan?: boolean }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      
+      if (checkedPath && !args.deepScan) {
+        const xmlRes = FastXmlAuditor.auditXstageFile(checkedPath);
+        return {
+          status: 'success',
+          method: 'xml_static_analysis',
+          passed: xmlRes.passed,
+          audit: {
+            broken_connections: xmlRes.issues.filter(i => i.includes('Композит') || i.includes('изолирован')).map(i => ({ details: i })),
+            empty_layers: xmlRes.issues.filter(i => i.includes('Ресурсная папка')),
+            total_nodes: xmlRes.totalNodesCount,
+            total_links: xmlRes.totalLinksCount
+          },
+          issues: xmlRes.issues
+        };
+      }
+
       return runAuditBridge('audit_scene', { projectPath: checkedPath });
     }
   },
@@ -101,10 +120,21 @@ export const auditTools = [
     name: 'harmony.audit.find_broken_nodes',
     description: 'Поиск поврежденных соединений портов и циклов в графе нод.',
     inputSchema: z.object({
-      projectPath: projectPathSchema
+      projectPath: projectPathSchema,
+      deepScan: z.boolean().optional().describe('Выполнить глубокую проверку через API (требует лицензию).')
     }),
-    handler: async (args: { projectPath?: string }) => {
+    handler: async (args: { projectPath?: string; deepScan?: boolean }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      
+      if (checkedPath && !args.deepScan) {
+        const xmlRes = FastXmlAuditor.auditXstageFile(checkedPath);
+        return {
+          status: 'success',
+          method: 'xml_static_analysis',
+          brokenConnections: xmlRes.issues.filter(i => i.includes('Композит') || i.includes('изолирован')).map(i => ({ details: i }))
+        };
+      }
+
       const res = await runAuditBridge('audit_scene', { projectPath: checkedPath });
       if (res.status === 'unsupported') return res;
       return {
@@ -117,10 +147,21 @@ export const auditTools = [
     name: 'harmony.audit.find_empty_layers',
     description: 'Поиск слоев рисования, не содержащих рисунков.',
     inputSchema: z.object({
-      projectPath: projectPathSchema
+      projectPath: projectPathSchema,
+      deepScan: z.boolean().optional().describe('Выполнить глубокую проверку через API (требует лицензию).')
     }),
-    handler: async (args: { projectPath?: string }) => {
+    handler: async (args: { projectPath?: string; deepScan?: boolean }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      
+      if (checkedPath && !args.deepScan) {
+        const xmlRes = FastXmlAuditor.auditXstageFile(checkedPath);
+        return {
+          status: 'success',
+          method: 'xml_static_analysis',
+          emptyLayers: xmlRes.issues.filter(i => i.includes('Ресурсная папка'))
+        };
+      }
+
       const res = await runAuditBridge('audit_scene', { projectPath: checkedPath });
       if (res.status === 'unsupported') return res;
       return {

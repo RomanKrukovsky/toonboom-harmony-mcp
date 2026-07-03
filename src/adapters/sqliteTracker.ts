@@ -87,6 +87,12 @@ export class SqliteTracker {
         content TEXT NOT NULL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(author_user_id) REFERENCES users(id) ON DELETE SET NULL
+      )`,
+      `CREATE TABLE IF NOT EXISTS files_cache (
+        filepath TEXT PRIMARY KEY,
+        size INTEGER,
+        mtime TEXT,
+        cached_at TEXT DEFAULT CURRENT_TIMESTAMP
       )`
     ];
 
@@ -251,6 +257,49 @@ export class SqliteTracker {
       report.push({ ...p, episodes: epDetails });
     }
     return report;
+  }
+
+  async getCachedFileStats(filepath: string): Promise<{ size: number; mtime: string } | null> {
+    const row = await this.get<{ size: number; mtime: string }>('SELECT size, mtime FROM files_cache WHERE filepath = ?', [filepath]);
+    return row || null;
+  }
+
+  async setCachedFileStats(filepath: string, size: number, mtime: string): Promise<void> {
+    await this.run(
+      'INSERT INTO files_cache (filepath, size, mtime, cached_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(filepath) DO UPDATE SET size = excluded.size, mtime = excluded.mtime, cached_at = CURRENT_TIMESTAMP',
+      [filepath, size, mtime]
+    );
+  }
+
+  async clearCachedFileStats(filepath: string): Promise<void> {
+    await this.run('DELETE FROM files_cache WHERE filepath = ?', [filepath]);
+  }
+
+  async cachedExists(filepath: string): Promise<boolean> {
+    const resolvedPath = path.resolve(filepath);
+    try {
+      const cached = await this.getCachedFileStats(resolvedPath);
+      if (cached !== null) {
+        return true;
+      }
+      const exists = fs.existsSync(resolvedPath);
+      if (exists) {
+        const stats = fs.statSync(resolvedPath);
+        await this.setCachedFileStats(resolvedPath, stats.size, stats.mtime.toISOString());
+      }
+      return exists;
+    } catch (e) {
+      return fs.existsSync(resolvedPath);
+    }
+  }
+
+  async addAuditReport(report: any): Promise<void> {
+    try {
+      await this.run(
+        'INSERT INTO notes (entity_type, entity_id, author_user_id, content) VALUES (?, ?, ?, ?)',
+        ['audit', 0, 1, JSON.stringify(report)]
+      );
+    } catch (e) {}
   }
 
   close() {

@@ -164,5 +164,151 @@ export const prompts: McpPrompt[] = [
       }
     ]
   },
+
+  // ── NEW: AI Production System prompts ────────────────────────
+
+  {
+    name: 'prompt_to_harmony_scene',
+    description:
+      'МАСТЕР-ПРОМПТ: Полный пайплайн от идеи/промпта до редактируемого проекта Harmony. ' +
+      'Активирует все этапы: разбор → планирование → сборка → аудит → ревью.',
+    arguments: [
+      { name: 'scenePrompt', description: 'Описание сцены, идея или раскадровка.', required: true },
+      { name: 'production', description: 'Название проекта.', required: false },
+      { name: 'episode', description: 'Код эпизода (например E01).', required: false },
+      { name: 'outputDir', description: 'Папка для сохранения результатов.', required: false }
+    ],
+    messages: (args: any) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `# Задача: Prompt → Editable Harmony Production
+
+## Промпт сцены:
+"${args.scenePrompt}"
+
+## Параметры:
+- Production: ${args.production || 'Untitled'}
+- Episode: ${args.episode || 'E01'}  
+- Output: ${args.outputDir || './output'}
+
+## Выполни следующий пайплайн:
+
+### Шаг 1: Разбор промпта
+Вызови \`harmony.studio.from_prompt\` с параметрами:
+- prompt: "${args.scenePrompt}"
+- production: "${args.production || 'Untitled'}"
+- episode: "${args.episode || 'E01'}"
+- saveToDir: "${args.outputDir || './output'}"
+
+Сохрани результат. Из него ты получишь: scene_plan.json, character_specs, camera_plan, lipsync_plan.
+
+### Шаг 2: Анализ ассетов
+Вызови \`harmony.studio.generate_asset_checklist\` с полученным scenePlanInline.
+Сообщи список критических ассетов которые нужно создать.
+
+### Шаг 3: 360° Rig Plan (для каждого персонажа)
+Вызови \`harmony.studio.build_360_rig_plan\` для каждого персонажа из character_specs.
+
+### Шаг 4: Animation Blocking
+Вызови \`harmony.blocking.generate_keyframe_plan\` с scenePlanInline.
+Затем \`harmony.blocking.generate_camera_moves\` с cinematicStyle=subtle.
+
+### Шаг 5: Lipsync Plan (если есть диалоги)
+Если в разборе обнаружены диалоги — вызови \`harmony.lipsync.generate_plan\`.
+
+### Шаг 6: Запуск пайплайна
+Вызови \`harmony.studio.run_full_pipeline\` с полученным scenePlanInline, dryRun=true сначала.
+Если dry-run прошёл — запусти с dryRun=false.
+
+### Шаг 7: Аудит
+Вызови \`harmony.autopilot.self_check\` с scenePlanInline и checkLevel=deep.
+
+### Шаг 8: Автофикс
+Вызови \`harmony.autopilot.auto_fix\` с полученными issues.
+
+### Шаг 9: Review Package
+Вызови \`harmony.studio.export_client_package\` для создания финального пакета.
+
+## Ожидаемый результат:
+- ✅ scene_plan.json
+- ✅ character_specs.json  
+- ✅ camera_plan.json
+- ✅ blocking_plan.json
+- ✅ lipsync_plan.json (если есть диалоги)
+- ✅ asset_requirements.json
+- ✅ review_package/
+
+Начинай с Шага 1. После каждого шага сообщай о результате.`
+        }
+      }
+    ]
+  },
+
+  {
+    name: 'parse_and_plan_scene',
+    description: 'Разбирает описание сцены и генерирует scene_plan.json + вспомогательные планы.',
+    arguments: [
+      { name: 'description', description: 'Текстовое описание сцены.', required: true },
+      { name: 'style', description: 'Стиль анимации: cutout, traditional, hybrid.', required: false }
+    ],
+    messages: (args: any) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Разбери следующее описание сцены и создай production-план для Toon Boom Harmony.
+
+## Описание:
+"${args.description}"
+
+## Задача:
+1. Вызови \`harmony.studio.from_prompt\` → получи ParsedScene
+2. Проанализируй результат: персонажи, локация, диалоги, настроение
+3. Вызови \`harmony.studio.generate_asset_checklist\` → получи список ассетов
+4. Если в сцене больше 1 персонажа или они должны двигаться в разных ракурсах — вызови \`harmony.studio.build_360_rig_plan\`
+5. Объясни что нужно сделать художнику (20% ручной работы)
+
+Стиль анимации: ${args.style || 'cutout'}`
+        }
+      }
+    ]
+  },
+
+  {
+    name: 'audit_and_fix_scene',
+    description: 'Запускает полный аудит собранной сцены и предлагает исправления.',
+    arguments: [
+      { name: 'projectPath', description: 'Путь к .xstage файлу.', required: false },
+      { name: 'scenePlan', description: 'JSON строка scene_plan.json.', required: false }
+    ],
+    messages: (args: any) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Проведи полный аудит сцены Harmony и предложи исправления.
+
+${args.projectPath ? `Проект: "${args.projectPath}"` : ''}
+${args.scenePlan ? `Scene Plan: ${args.scenePlan}` : ''}
+
+## Порядок действий:
+1. Вызови \`harmony.autopilot.self_check\` с checkLevel=deep
+2. Проанализируй все найденные issues
+3. Вызови \`harmony.autopilot.auto_fix\` для autoFixable проблем
+4. Для каждой проблемы требующей ручного исправления — объясни художнику ЧТО именно нужно сделать в Harmony
+5. Вызови \`harmony.planner.export_review_package\` если projectPath указан
+
+Верни:
+- Количество ошибок/предупреждений
+- Что исправлено автоматически  
+- Список задач для художника с примерной оценкой времени`
+        }
+      }
+    ]
+  },
+
   ...autopilotPrompts
 ];
+

@@ -280,3 +280,37 @@ if (log) {
     `);
   }
 }
+
+export class QtScriptTransaction {
+  private statements: string[] = [];
+
+  addStatement(jsCode: string) {
+    let code = jsCode;
+    code = code.replace(/function executeScript\(\) \{/g, '');
+    code = code.replace(/executeScript\(\);/g, '');
+    code = code.replace(/var log = ControlCentre\.messageLog\(\);[\s\S]*ControlCentre\.printToConsole\("\[LOG\]" \+ log\);/g, '');
+    this.statements.push(code);
+  }
+
+  compile(): string {
+    return [
+      'function executeTransaction() {',
+      '  try {',
+      this.statements.map((s, idx) => `
+    // Statement ${idx}
+    (function(){
+      ${s}
+    })();
+      `).join('\n'),
+      '  } catch(e) {',
+      '    ControlCentre.printToConsole("[RESULT]" + JSON.stringify({ status: "error", message: e.toString() }));',
+      '  }',
+      '}',
+      'executeTransaction();',
+      'var log = ControlCentre.messageLog();',
+      'if (log) {',
+      '  ControlCentre.printToConsole("[LOG]" + log);',
+      '}'
+    ].join('\n');
+  }
+}

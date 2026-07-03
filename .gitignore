@@ -10,3 +10,7 @@ logs/
 .vscode/
 .idea/
 .DS_Store
+
+# Сгенерированные артефакты демо/тестов
+output/
+examples/commercial-demo/temp_*/

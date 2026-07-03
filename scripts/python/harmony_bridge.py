@@ -3,9 +3,16 @@ import json
 import os
 import traceback
 
+class ResponseException(Exception):
+    def __init__(self, data):
+        self.data = data
+
 def respond(data):
-    print(json.dumps(data))
-    sys.exit(0)
+    if os.environ.get("HARMONY_PERSISTENT_MODE") == "true":
+        raise ResponseException(data)
+    else:
+        print(json.dumps(data))
+        sys.exit(0)
 
 def respond_error(code, message, details=None):
     respond({
@@ -15,12 +22,7 @@ def respond_error(code, message, details=None):
         "details": details
     })
 
-def main():
-    try:
-        input_data = json.loads(sys.stdin.read())
-    except Exception as e:
-        respond_error("INVALID_INPUT", f"Не удалось разобрать входящий JSON: {str(e)}")
-
+def process_command(input_data):
     command = input_data.get("command")
     args = input_data.get("args", {})
     python_packages = input_data.get("pythonPackages")
@@ -414,6 +416,56 @@ def execute_locked(func):
     if hasattr(harmony, "run_on_main"):
         return harmony.run_on_main(func)
     return func()
+
+def handle_payload(input_data):
+    try:
+        process_command(input_data)
+    except ResponseException as e:
+        print(json.dumps(e.data))
+        sys.stdout.flush()
+    except Exception as e:
+        print(json.dumps({
+            "error": True,
+            "code": "INVALID_HARMONY_OBJECT",
+            "message": f"Ошибка выполнения команды: {str(e)}",
+            "details": {"traceback": traceback.format_exc()}
+        }))
+        sys.stdout.flush()
+
+def main():
+    persistent_mode = os.environ.get("HARMONY_PERSISTENT_MODE") == "true"
+    if persistent_mode:
+        while True:
+            line = sys.stdin.readline()
+            if not line:
+                break
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                input_data = json.loads(line)
+                handle_payload(input_data)
+            except Exception as e:
+                print(json.dumps({
+                    "error": True,
+                    "code": "INVALID_INPUT",
+                    "message": f"Не удалось разобрать входящий JSON: {str(e)}"
+                }))
+                sys.stdout.flush()
+    else:
+        try:
+            raw_input = sys.stdin.read()
+            if raw_input.strip():
+                input_data = json.loads(raw_input)
+                handle_payload(input_data)
+        except Exception as e:
+            # Если не смогли распарсить JSON в обычном режиме
+            print(json.dumps({
+                "error": True,
+                "code": "INVALID_INPUT",
+                "message": f"Не удалось разобрать входящий JSON: {str(e)}"
+            }))
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()

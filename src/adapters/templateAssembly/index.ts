@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { config } from '../../config.js';
 import { HarmonyError } from '../../security.js';
+import { FastXmlAuditor } from '../scenePlan/xmlAuditor.js';
 
 export interface TemplateInfo {
   name: string;
@@ -68,10 +69,41 @@ export class TemplateAssemblyAdapter {
 
   async validateTemplate(templatePath: string): Promise<{ valid: boolean; issues: string[] }> {
     const issues: string[] = [];
-    const exists = fs.existsSync(templatePath) || templatePath.includes('default_') || templatePath.includes('scientist');
-    if (!exists) {
-      issues.push(`Шаблон отсутствует по указанному пути: "${templatePath}"`);
+    
+    if (templatePath.includes('default_') || templatePath.includes('scientist')) {
+      return { valid: true, issues: [] };
     }
+
+    const resolved = path.resolve(templatePath);
+    if (!fs.existsSync(resolved)) {
+      issues.push(`Шаблон отсутствует по указанному пути: "${templatePath}"`);
+      return { valid: false, issues };
+    }
+
+    try {
+      const stat = fs.statSync(resolved);
+      if (stat.isDirectory()) {
+        const baseName = path.basename(resolved, '.tpl');
+        const possibleFiles = [
+          path.join(resolved, `${baseName}.xstage`),
+          path.join(resolved, 'scene.xstage'),
+          path.join(resolved, 'root.xstage')
+        ];
+
+        const xstageFile = possibleFiles.find(f => fs.existsSync(f));
+        if (!xstageFile) {
+          issues.push(`В папке шаблона "${templatePath}" отсутствует запускающий файл .xstage.`);
+        } else {
+          const audit = FastXmlAuditor.auditXstageFile(xstageFile);
+          if (!audit.passed) {
+            issues.push(...audit.issues.map(i => `[Аудит XML шаблона] ${i}`));
+          }
+        }
+      }
+    } catch (e: any) {
+      issues.push(`Ошибка проверки файлов шаблона: ${e.message}`);
+    }
+
     return {
       valid: issues.length === 0,
       issues

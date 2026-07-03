@@ -67,6 +67,10 @@ export class ControlCenterTelnet {
     });
   }
 
+  static async runTransaction(transaction: { compile: () => string }): Promise<TelnetResponse> {
+    return this.runScript(transaction.compile());
+  }
+
   private static parseBuffer(buffer: string): TelnetResponse {
     const resultMatch = buffer.match(/\[RESULT\]([^\r\n]+)/);
     const logMatch = buffer.match(/\[LOG\]([\s\S]*)/);

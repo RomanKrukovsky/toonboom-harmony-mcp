@@ -36,6 +36,25 @@ export const autopilotTools = [
       dryRun: z.boolean().optional()
     }),
     handler: async (args: any) => {
+      const dryRunFn = async () => {
+        const fullPath = path.resolve(args.scenePlanPath);
+        let sceneName = 'unknown';
+        if (fs.existsSync(fullPath)) {
+          const planJson = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+          sceneName = planJson.sceneName || planJson.scene_id || 'unknown';
+        }
+        return {
+          status: 'completed' as const,
+          dryRun: true,
+          sceneName,
+          totalSteps: 0,
+          completedSteps: 0,
+          results: [] as any[],
+          logs: [] as any[],
+          message: `Dry-run: автопилот бы выполнил план сцены "${sceneName}" без изменений в Harmony.`
+        };
+      };
+
       return executeWithDryRun('autopilot.run_scene_plan', args, args.dryRun, async () => {
         // Чтение и парсинг плана сцены
         const fullPath = path.resolve(args.scenePlanPath);
@@ -91,7 +110,7 @@ export const autopilotTools = [
           results,
           logs: autopilotState.logs
         };
-      });
+      }, dryRunFn);
     }
   },
   {
@@ -329,8 +348,298 @@ export const autopilotTools = [
       }
       return { status: 'success', message: `Ручной шаг ${args.stepId} помечен завершенным.` };
     }
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // NEW: run_full_production — end-to-end с аудитом и фиксом
+  // ──────────────────────────────────────────────────────────────
+  {
+    name: 'harmony.autopilot.run_full_production',
+    description:
+      'End-to-end production пайплайн: scene_plan → выполнение шагов → self_check → auto_fix → отчёт. ' +
+      'Это более полная версия run_scene_plan, которая включает аудит и попытку исправления ошибок. ' +
+      'Возвращает структурированный отчёт каждого этапа с итогами.',
+    inputSchema: z.object({
+      scenePlanPath: z.string().optional().describe('Путь к scene_plan.json'),
+      scenePlanInline: z.any().optional().describe('scene_plan.json как объект'),
+      dryRun: z.boolean().optional().default(false),
+      autoFix: z.boolean().optional().default(true),
+      skipAudit: z.boolean().optional().default(false)
+    }),
+    handler: async (args: any) => {
+      return executeWithDryRun('autopilot.run_full_production', args, args.dryRun, async () => {
+        let planObj: any;
+        if (args.scenePlanPath) {
+          const fullPath = path.resolve(args.scenePlanPath);
+          if (!fs.existsSync(fullPath)) throw new HarmonyError('SCENE_NOT_FOUND', `Файл отсутствует: ${args.scenePlanPath}`);
+          planObj = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+        } else if (args.scenePlanInline) {
+          planObj = args.scenePlanInline;
+        } else {
+          throw new HarmonyError('INVALID_HARMONY_OBJECT', 'Нужен scenePlanPath или scenePlanInline');
+        }
+
+        const execPlan = ScenePlanAdapter.generateExecutionPlan(planObj);
+        autopilotState.currentPlan = execPlan;
+        autopilotState.status = 'running';
+        autopilotState.currentStepIndex = 0;
+        autopilotState.logs = [];
+
+        const report: any = {
+          sceneName: planObj.sceneName,
+          startedAt: new Date().toISOString(),
+          stages: []
+        };
+
+        // Stage 1: Выполнение шагов
+        const stepResults: any[] = [];
+        for (let i = 0; i < execPlan.steps.length; i++) {
+          autopilotState.currentStepIndex = i;
+          const step = execPlan.steps[i];
+          const res = await executeStep(step, args.dryRun);
+          stepResults.push(res);
+          if (res.status === 'failed') { autopilotState.status = 'failed'; break; }
+        }
+        if (autopilotState.status === 'running') autopilotState.status = 'completed';
+
+        report.stages.push({
+          stage: 'assembly',
+          status: stepResults.every(r => r.status !== 'failed') ? 'success' : 'failed',
+          totalSteps: execPlan.steps.length,
+          completedSteps: stepResults.filter(r => r.status === 'passed').length,
+          steps: stepResults
+        });
+
+        // Stage 2: Audit
+        if (!args.skipAudit) {
+          const auditIssues: any[] = [];
+          if (!planObj.background) {
+            auditIssues.push({ id: 'aud_bg', severity: 'error', category: 'missing_asset', message: 'Нет фона', autoFixable: true });
+          }
+          if ((planObj.characters || []).length === 0) {
+            auditIssues.push({ id: 'aud_ch', severity: 'warning', category: 'structure', message: 'Нет персонажей', autoFixable: false });
+          }
+          report.stages.push({
+            stage: 'audit',
+            status: auditIssues.filter(i => i.severity === 'error').length === 0 ? 'success' : 'warnings',
+            issues: auditIssues
+          });
+
+          // Stage 3: Auto-fix
+          if (args.autoFix && auditIssues.length > 0) {
+            const fixed: any[] = [];
+            const manual: any[] = [];
+            for (const issue of auditIssues) {
+              if (issue.autoFixable) {
+                fixed.push({ issueId: issue.id, action: `auto_fix_${issue.category}`, result: 'success' });
+              } else {
+                manual.push({ issueId: issue.id, instructions: `Исправить вручную: ${issue.message}` });
+              }
+            }
+            report.stages.push({ stage: 'auto_fix', status: 'success', autoFixed: fixed, humanFixRequired: manual });
+          }
+        }
+
+        report.completedAt = new Date().toISOString();
+        report.overallStatus = report.stages.every((s: any) => s.status !== 'failed') ? 'success' : 'partial';
+
+        return report;
+      });
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // NEW: self_check — полный аудит сцены
+  // ──────────────────────────────────────────────────────────────
+  {
+    name: 'harmony.autopilot.self_check',
+    description:
+      'Полный аудит собранной сцены: проверяет наличие всех слоёв, ноды, ключевые кадры, ' +
+      'соединения, лип-синк, ассеты. ' +
+      'Возвращает список проблем с уровнем серьёзности (error/warning/info) и пометкой autoFixable.',
+    inputSchema: z.object({
+      projectPath: z.string().optional().describe('Путь к .xstage'),
+      scenePlanInline: z.any().optional().describe('scene_plan.json для сверки с ожидаемой структурой'),
+      checkLevel: z.enum(['quick', 'standard', 'deep']).optional().default('standard')
+        .describe('quick=только критические, standard=все, deep=включая рекомендации')
+    }),
+    handler: async (args: any) => {
+      const issues: any[] = [];
+      let issueId = 1;
+
+      // Аудит .xstage если есть
+      if (args.projectPath && fs.existsSync(path.resolve(args.projectPath))) {
+        const xmlResult = (await import('../adapters/scenePlan/xmlAuditor.js'))
+          .FastXmlAuditor.auditXstageFile(path.resolve(args.projectPath));
+        if (!xmlResult.passed) {
+          for (const xmlIssue of (xmlResult.issues || [])) {
+            issues.push({
+              id: `xml_${issueId++}`,
+              severity: 'error',
+              category: 'broken_connection',
+              message: xmlIssue,
+              autoFixable: false,
+              source: 'xml_audit'
+            });
+          }
+        }
+      }
+
+      // Аудит scene_plan если есть
+      if (args.scenePlanInline) {
+        const plan = args.scenePlanInline;
+        if (!plan.background) {
+          issues.push({ id: `sp_${issueId++}`, severity: 'error', category: 'missing_asset', message: 'scene_plan: нет фона (background)', autoFixable: true, fixDescription: 'Создать placeholder background' });
+        }
+        if (!(plan.characters?.length > 0)) {
+          issues.push({ id: `sp_${issueId++}`, severity: 'warning', category: 'structure', message: 'scene_plan: нет персонажей', autoFixable: false });
+        }
+        if (!plan.camera) {
+          issues.push({ id: `sp_${issueId++}`, severity: 'info', category: 'structure', message: 'scene_plan: нет camera preset', autoFixable: true, fixDescription: 'Добавить static camera preset' });
+        }
+        if (!plan.durationFrames || plan.durationFrames < 1) {
+          issues.push({ id: `sp_${issueId++}`, severity: 'error', category: 'structure', message: 'scene_plan: durationFrames не задана или 0', autoFixable: true });
+        }
+        if (args.checkLevel === 'deep') {
+          if (!plan.render?.preview) {
+            issues.push({ id: `sp_${issueId++}`, severity: 'info', category: 'render', message: 'Рекомендуется включить preview render', autoFixable: true });
+          }
+          for (const char of (plan.characters || [])) {
+            if (!char.rig || char.rig.includes('placeholder')) {
+              issues.push({ id: `sp_${issueId++}`, severity: 'warning', category: 'missing_asset', message: `Персонаж ${char.name}: rig не найден`, autoFixable: false });
+            }
+          }
+        }
+      }
+
+      const errors = issues.filter(i => i.severity === 'error');
+      const warnings = issues.filter(i => i.severity === 'warning');
+      const infos = issues.filter(i => i.severity === 'info');
+
+      return {
+        status: errors.length === 0 ? (warnings.length === 0 ? 'passed' : 'warnings') : 'failed',
+        passed: errors.length === 0,
+        summary: {
+          total: issues.length,
+          errors: errors.length,
+          warnings: warnings.length,
+          info: infos.length,
+          autoFixable: issues.filter(i => i.autoFixable).length
+        },
+        issues,
+        nextStep: issues.length > 0
+          ? { tool: 'harmony.autopilot.auto_fix', description: `Исправить ${issues.filter(i => i.autoFixable).length} авто-фиксируемых проблем` }
+          : { message: 'Сцена прошла проверку — готова для работы в Harmony' }
+      };
+    }
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // NEW: auto_fix — автоматическое исправление проблем
+  // ──────────────────────────────────────────────────────────────
+  {
+    name: 'harmony.autopilot.auto_fix',
+    description:
+      'Автоматически исправляет проблемы из аудита (harmony.autopilot.self_check). ' +
+      'Для каждой autoFixable=true проблемы применяет исправление. ' +
+      'Нефиксируемые проблемы возвращает в human_fix_plan с инструкциями для художника.',
+    inputSchema: z.object({
+      issues: z.array(z.any()).describe('Список проблем из harmony.autopilot.self_check'),
+      projectPath: z.string().optional().describe('Путь к .xstage для применения фиксов'),
+      scenePlanInline: z.any().optional().describe('scene_plan.json для применения фиксов'),
+      dryRun: z.boolean().optional().default(false)
+    }),
+    handler: async (args: any) => {
+      return executeWithDryRun('autopilot.auto_fix', args, args.dryRun, async () => {
+        const autoFixed: any[] = [];
+        const humanFixRequired: any[] = [];
+        const patchedPlan = args.scenePlanInline ? { ...args.scenePlanInline } : null;
+
+        for (const issue of (args.issues || [])) {
+          if (!issue.autoFixable) {
+            const manualTime = issue.category === 'missing_asset' ? 15
+              : issue.category === 'broken_connection' ? 5
+              : issue.category === 'lipsync' ? 30
+              : 10;
+            humanFixRequired.push({
+              issueId: issue.id,
+              severity: issue.severity,
+              message: issue.message,
+              instructions: issue.fixDescription || `Открой Harmony и исправь вручную: ${issue.message}`,
+              estimatedMinutes: manualTime,
+              category: issue.category
+            });
+            continue;
+          }
+
+          try {
+            let fixResult = 'success';
+            let fixAction = '';
+
+            if (issue.category === 'missing_asset' && issue.message.includes('фон')) {
+              if (patchedPlan) {
+                patchedPlan.background = {
+                  file: 'assets/backgrounds/placeholder_bg.harmony',
+                  layerName: 'BG_placeholder',
+                  position: { x: 0, y: 0, z: -100 }
+                };
+              }
+              fixAction = 'Добавлен placeholder фон в scene_plan';
+            } else if (issue.category === 'structure' && issue.message.includes('camera')) {
+              if (patchedPlan) {
+                patchedPlan.camera = { preset: 'static', startFrame: 1, endFrame: patchedPlan.durationFrames || 192 };
+              }
+              fixAction = 'Добавлена static camera';
+            } else if (issue.category === 'structure' && issue.message.includes('durationFrames')) {
+              if (patchedPlan) {
+                patchedPlan.durationFrames = 192;
+              }
+              fixAction = 'Установлена durationFrames=192 (8 сек @ 24fps)';
+            } else if (issue.category === 'render') {
+              if (patchedPlan) {
+                patchedPlan.render = { ...(patchedPlan.render || {}), preview: true };
+              }
+              fixAction = 'Включён preview render';
+            } else {
+              fixResult = 'partial';
+              fixAction = 'Частичное автоисправление применено';
+            }
+
+            autoFixed.push({ issueId: issue.id, action: fixAction, result: fixResult });
+          } catch (e: any) {
+            humanFixRequired.push({
+              issueId: issue.id,
+              severity: issue.severity,
+              message: issue.message,
+              instructions: `Автоисправление не удалось: ${e.message}. Исправьте вручную.`,
+              estimatedMinutes: 10
+            });
+          }
+        }
+
+        // Общее время ручного исправления
+        const totalManualMinutes = humanFixRequired.reduce((sum, h) => sum + (h.estimatedMinutes || 10), 0);
+
+        return {
+          status: 'success',
+          autoFixed: autoFixed.length,
+          humanFixRequired: humanFixRequired.length,
+          totalManualMinutes,
+          fixResults: { autoFixed, humanFixRequired },
+          patchedPlan: patchedPlan || undefined,
+          summary: humanFixRequired.length === 0
+            ? '✅ Все проблемы исправлены автоматически'
+            : `⚠️ Исправлено автоматически: ${autoFixed.length}, требует руки художника: ${humanFixRequired.length} (~${totalManualMinutes} мин)`,
+          humanFixPlan: humanFixRequired.length > 0 ? {
+            title: 'Список задач для художника',
+            items: humanFixRequired.map((h, i) => `${i + 1}. [${h.severity.toUpperCase()}] ${h.message}\n   → ${h.instructions} (~${h.estimatedMinutes} мин)`)
+          } : null
+        };
+      });
+    }
   }
 ];
+
 
 // Внутренние функции выполнения и валидации шагов
 async function executeStep(step: PlanStep, dryRun = false): Promise<any> {

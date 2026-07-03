@@ -8,6 +8,7 @@ describe('Тестирование Harmony Autopilot', () => {
   });
 
   const mockPlan = {
+    schemaVersion: "1.0",
     production: "TestProd",
     episode: "EP101",
     sceneName: "SC001",
