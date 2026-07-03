@@ -1,0 +1,65 @@
+{
+  "production": "DemoSeries",
+  "episode": "EP_001",
+  "sceneName": "SC_001",
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "fps": 24,
+  "durationFrames": 192,
+  "workspaceTemplate": "default_scene_template",
+  "background": {
+    "file": "assets/backgrounds/lab.png",
+    "layerName": "BG_Lab",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": 1
+  },
+  "characters": [
+    {
+      "name": "Scientist",
+      "rig": "assets/rigs/scientist.tpl",
+      "positionPreset": "left",
+      "startFrame": 1,
+      "endFrame": 192,
+      "actions": [
+        {
+          "type": "idle",
+          "frames": [1, 48]
+        },
+        {
+          "type": "talk",
+          "frames": [49, 150],
+          "audio": "audio/sc_001.wav",
+          "mouthChart": "standard_mouth_chart"
+        },
+        {
+          "type": "gesture",
+          "name": "hand_raise",
+          "frames": [120, 150]
+        }
+      ]
+    }
+  ],
+  "camera": {
+    "preset": "slow_push_in",
+    "startFrame": 1,
+    "endFrame": 192
+  },
+  "effects": [
+    {
+      "type": "glow",
+      "target": "Portal_FX",
+      "frames": [150, 192]
+    }
+  ],
+  "render": {
+    "preview": true,
+    "format": "mp4",
+    "quality": "low"
+  }
+}

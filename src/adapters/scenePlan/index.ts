@@ -35,7 +35,7 @@ export class ScenePlanAdapter {
     const res = scenePlanSchema.safeParse(plan);
     if (!res.success) {
       throw new HarmonyError(
-        'INVALID_INPUT',
+        'INVALID_HARMONY_OBJECT',
         `Scene Plan JSON validation failed: ${res.error.message}`,
         res.error.format()
       );

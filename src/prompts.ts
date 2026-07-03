@@ -1,3 +1,5 @@
+import { autopilotPrompts } from './prompts/autopilotPrompts.js';
+
 export interface McpPrompt {
   name: string;
   description: string;
@@ -161,5 +163,6 @@ export const prompts: McpPrompt[] = [
         }
       }
     ]
-  }
+  },
+  ...autopilotPrompts
 ];

@@ -23,6 +23,11 @@ import { rigTools } from './tools/rigTools.js';
 import { lipsyncTools } from './tools/lipsyncTools.js';
 import { productionTools } from './tools/productionTools.js';
 import { auditTools } from './tools/auditTools.js';
+import { uiOperatorTools } from './tools/uiOperatorTools.js';
+import { autopilotTools } from './tools/autopilotTools.js';
+import { templateTools } from './tools/templateTools.js';
+import { sceneAssemblyTools } from './tools/sceneAssemblyTools.js';
+import { commercialWorkflowTools } from './tools/commercialWorkflowTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -42,7 +47,12 @@ const allTools = [
   ...rigTools,
   ...lipsyncTools,
   ...productionTools,
-  ...auditTools
+  ...auditTools,
+  ...uiOperatorTools,
+  ...autopilotTools,
+  ...templateTools,
+  ...sceneAssemblyTools,
+  ...commercialWorkflowTools
 ];
 
 class HarmonyMcpServer {
