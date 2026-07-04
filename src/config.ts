@@ -70,7 +70,7 @@ function detectPaths(): { install: string; ccBin: string; bin: string; pythonPac
       const parentDir = '/Applications';
       if (fs.existsSync(parentDir)) {
         const files = fs.readdirSync(parentDir);
-        const harmonyDirs = files.filter(f => f.startsWith('Toon Boom Harmony') && f.endsWith('Premium'));
+        const harmonyDirs = files.filter(f => (f.includes('Harmony') || f.includes('Toon Boom')) && f.includes('Premium'));
         // Сортировка для получения последней версии
         harmonyDirs.sort().reverse();
         if (harmonyDirs.length > 0) {
@@ -80,25 +80,31 @@ function detectPaths(): { install: string; ccBin: string; bin: string; pythonPac
     }
 
     if (install) {
-      // Поиск внутри app bundle
-      const appDirs = fs.readdirSync(install).filter(f => f.endsWith('.app'));
-      if (appDirs.length > 0) {
-        const appPath = path.join(install, appDirs[0]);
-        const macosBinPath = path.join(appPath, 'Contents/tba/macosx/bin');
-        const macosLibPath = path.join(appPath, 'Contents/tba/macosx/lib');
+      let appPath = install;
+      if (!install.endsWith('.app') && fs.lstatSync(install).isDirectory()) {
+        const appDirs = fs.readdirSync(install).filter(f => f.endsWith('.app'));
+        if (appDirs.length > 0) {
+          appPath = path.join(install, appDirs[0]);
+        }
+      }
+      const macosBinPath = path.join(appPath, 'Contents/tba/macosx/bin');
+      const macosLibPath = path.join(appPath, 'Contents/tba/macosx/lib');
 
-        if (!ccBin) {
-          const testCc = path.join(macosBinPath, 'controlcenter');
-          if (fs.existsSync(testCc)) ccBin = testCc;
+      if (!ccBin) {
+        const testCc = path.join(macosBinPath, 'controlcenter');
+        if (fs.existsSync(testCc)) ccBin = testCc;
+      }
+      if (!bin) {
+        const testBin = path.join(macosBinPath, 'Harmony Premium');
+        if (fs.existsSync(testBin)) bin = testBin;
+        else {
+          const testBin2 = path.join(appPath, 'Contents/MacOS/Harmony Premium');
+          if (fs.existsSync(testBin2)) bin = testBin2;
         }
-        if (!bin) {
-          const testBin = path.join(macosBinPath, 'HarmonyPremium');
-          if (fs.existsSync(testBin)) bin = testBin;
-        }
-        if (!pythonPackages) {
-          const testPy = path.join(macosLibPath, 'python-packages');
-          if (fs.existsSync(testPy)) pythonPackages = testPy;
-        }
+      }
+      if (!pythonPackages) {
+        const testPy = path.join(macosLibPath, 'python-packages');
+        if (fs.existsSync(testPy)) pythonPackages = testPy;
       }
     }
   } else if (platform === 'win32') {
