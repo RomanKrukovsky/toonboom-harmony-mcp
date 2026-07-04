@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { verifyPathAccess, executeWithDryRun } from '../security.js';
+import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { projectPathSchema } from '../schemas/common.js';
 
 export const lipsyncTools = [
@@ -15,10 +15,7 @@ export const lipsyncTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAudio = verifyPathAccess(args.audioFilePath);
       return executeWithDryRun('import_audio', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Аудиофайл "${checkedAudio}" успешно импортирован на таймлайн.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_audio" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -58,10 +55,7 @@ export const lipsyncTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedTiming = verifyPathAccess(args.timingFilePath);
       return executeWithDryRun('import_phoneme_timing', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Разметка фонем из "${checkedTiming}" импортирована для слоя рта "${args.mouthLayerNodePath}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_phoneme_timing" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -80,10 +74,7 @@ export const lipsyncTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('apply_mouth_chart', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Формы фонем успешно применены к слою рта "${args.mouthLayer}" на протяжении ${args.frames.length} ключевых кадров.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "apply_mouth_chart" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -117,10 +108,7 @@ export const lipsyncTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAudio = verifyPathAccess(args.audioFilePath);
       return executeWithDryRun('create_lipsync_test', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: 'Анимационный тест липсинка рта успешно настроен на таймлайне.'
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_lipsync_test" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -176,6 +164,12 @@ export const lipsyncTools = [
       const shapes: Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'X'> = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'X'];
 
       const dialogueLines = args.dialogues.map((d: any) => {
+        if (d.startFrame < 1 || d.endFrame < 1) {
+          throw new HarmonyError('INVALID_HARMONY_OBJECT', 'Кадры (startFrame/endFrame) должны быть больше или равны 1');
+        }
+        if (d.startFrame > d.endFrame) {
+          throw new HarmonyError('INVALID_HARMONY_OBJECT', 'Начальный кадр (startFrame) не может быть больше конечного (endFrame)');
+        }
         const durationFrames = d.endFrame - d.startFrame;
         const words = d.text.split(/\s+/);
         const phonemes: any[] = [];
@@ -210,12 +204,15 @@ export const lipsyncTools = [
         // Закрывающая пауза
         phonemes.push({ frame: d.endFrame, shape: 'X', character: d.character });
 
+        // Если указан аудиофайл, проверяем доступ к нему
+        const checkedAudio = d.audioFile ? verifyPathAccess(d.audioFile) : undefined;
+
         return {
           character: d.character,
           text: d.text,
           startFrame: d.startFrame,
           endFrame: d.endFrame,
-          audioFile: d.audioFile,
+          audioFile: checkedAudio,
           phonemes
         };
       });
@@ -234,9 +231,10 @@ export const lipsyncTools = [
       // Сохранение
       let savedPath: string | undefined;
       if (args.saveToPath) {
+        const checkedSavePath = verifyPathAccess(args.saveToPath);
         const { default: fs2 } = await import('fs');
         const { default: path2 } = await import('path');
-        const resolved = path2.resolve(args.saveToPath);
+        const resolved = path2.resolve(checkedSavePath);
         const dir = path2.dirname(resolved);
         if (!fs2.existsSync(dir)) fs2.mkdirSync(dir, { recursive: true });
         fs2.writeFileSync(resolved, JSON.stringify(lipsyncPlan, null, 2));
@@ -292,13 +290,14 @@ export const lipsyncTools = [
 
       let lipsyncPlan: any;
       if (args.lipsyncPlanPath) {
+        const checkedPlanPath = verifyPathAccess(args.lipsyncPlanPath);
         const { default: fs2 } = await import('fs');
         const { default: path2 } = await import('path');
-        lipsyncPlan = JSON.parse(fs2.readFileSync(path2.resolve(args.lipsyncPlanPath), 'utf-8'));
+        lipsyncPlan = JSON.parse(fs2.readFileSync(path2.resolve(checkedPlanPath), 'utf-8'));
       } else if (args.lipsyncPlanInline) {
         lipsyncPlan = args.lipsyncPlanInline;
       } else {
-        return { status: 'unsupported', reason: 'Нужен lipsyncPlanPath или lipsyncPlanInline' };
+        return { status: 'unsupported', reason: 'Нужен lipsyncPlanPath or lipsyncPlanInline' };
       }
 
       return executeWithDryRun('lipsync.apply_to_scene', args, args.dryRun, async () => {

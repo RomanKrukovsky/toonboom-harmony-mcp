@@ -18,6 +18,13 @@ export class HarmonyPython {
   private static stdoutBuffer: string = '';
   private static daemonStderr: string = '';
 
+  static killDaemon() {
+    if (this.daemonProcess && !this.daemonProcess.killed) {
+      this.daemonProcess.kill();
+      this.daemonProcess = null;
+    }
+  }
+
   private static getPythonExecutable(): string {
     const configured = process.env.PYTHON_BIN;
     if (configured) return configured;
@@ -95,8 +102,14 @@ export class HarmonyPython {
 
   static async runCommand(command: string, args: any = {}): Promise<PythonBridgeResponse> {
     const pythonBin = this.getPythonExecutable();
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
+    let scriptUrl: string | null = null;
+    try {
+      scriptUrl = (new Function('return (typeof import !== "undefined" && import.meta) ? import.meta.url : null'))();
+    } catch {
+      scriptUrl = null;
+    }
+    const currentFilename = scriptUrl ? fileURLToPath(scriptUrl) : path.resolve(process.cwd(), 'src/adapters/harmonyPython.ts');
+    const __dirname = path.dirname(currentFilename);
     const bridgeScript = path.resolve(
       path.join(__dirname, '../../scripts/python/harmony_bridge.py')
     );

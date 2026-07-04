@@ -149,5 +149,52 @@ export const resources: McpResource[] = [
 - Удаленная Telnet-сессия Control Center не имеет доступа к графическому интерфейсу Qt.
       `.trim();
     }
+  },
+  {
+    uri: 'harmony://workflow/playlist-recipes',
+    name: 'Рецепты и последовательности вызовов из Плейлиста',
+    description: 'Инструкции и пошаговые вызовы MCP-инструментов для 6 основных задач риггинга (Базовая иерархия, Рука, Нога/Таз, Глаза, Рот, Аудит).',
+    mimeType: 'text/markdown',
+    read: async () => {
+      return `
+# Пошаговые рецепты вызовов MCP-инструментов из Базы Знаний
+
+### Recipe 1: Базовая иерархия персонажа
+1. \`harmony.validate_environment\` (checkHarmonyPreferences: true)
+2. \`harmony.drawings.create_layer\` (создать слои Head, Torso, Arm_L, Arm_R, Leg_L, Leg_R)
+3. \`harmony.nodes.create\` (создать композиты Head_Comp, Torso_Comp, Pelvis_Comp, Master_Comp)
+4. \`harmony.rig.create_pegs\` (pivotMatchingPreset: true)
+5. \`harmony.nodes.connect\` (связать слои справа налево по Z-depth)
+6. \`harmony.nodes.group\` (упаковать дерево нод в единую группу)
+
+### Recipe 2: Оснащение руки (Seamless Arm)
+1. \`harmony.nodes.create_effect_chain\` (preset: "seamless_autopatch_arm", targetNodePath: "Arm_L")
+2. \`harmony.nodes.connect\` (подключить Line Art к Composite, Color Art к AutoPatch)
+3. \`harmony.rig.create_deformers\` (type: "Curve", kinematicIsolation: true)
+4. Ручная проверка в Harmony: подгонка линии локтя ластиком/Pencil Editor.
+
+### Recipe 3: Оснащение ноги и таза (Legs & Pelvis Rig)
+1. \`harmony.nodes.create\` (создать Pelvis_Comp)
+2. \`harmony.nodes.create_effect_chain\` (preset: "simple_overlay_arm", targetNodePath: "Leg_L")
+3. \`harmony.nodes.connect\` (вынести шаговый шов брюк на Overlay)
+4. \`harmony.rig.create_deformers\` (type: "Bone" для бедра/голени)
+
+### Recipe 4: Оснащение глаз (Eye Cutter Mask)
+1. \`harmony.rig.create_eye_system\` (eyeCutterPreset: true)
+2. \`harmony.rig.create_brow_system\` (создать бровь с Curve Deformer)
+3. Ручная проверка в Harmony: двойной клик на Cutter в Node View для проверки инверсии маски.
+
+### Recipe 5: Настройка рта и подстановок (Mouth Chart & Substitutions)
+1. \`harmony.rig.create_mouth_chart\` (создать узел рта с фонемами A..X)
+2. \`harmony.drawings.list_substitutions\` (проверить наличие векторных рисунков)
+3. \`harmony.drawings.replace_drawing\` (переключить фазу для анимации речи)
+
+### Recipe 6: Аудит и проверка рига (Rig Audit)
+1. \`harmony.audit.scene\` (проверить целостность нодового графа)
+2. \`harmony.rig.validate_naming\` (проверить нейминг нод)
+3. \`harmony.rig.validate_deformers\` (проверить наличие KinematicOutput)
+4. \`harmony.nodes.find_broken_connections\` (найти незамкнутые порты)
+      `.trim();
+    }
   }
 ];

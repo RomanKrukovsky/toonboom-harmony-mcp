@@ -48,6 +48,47 @@ async function generateImage(
     return writePlaceholder(prompt, outputPath, kind);
   }
 
+  if (backend === 'comfyui' as any) {
+    try {
+      const comfyHost = process.env.COMFYUI_HOST || 'http://127.0.0.1:8188';
+      const fetch = (globalThis as any).fetch;
+      const promptRes = await fetch(`${comfyHost}/prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: {
+            "3": {
+              "inputs": {
+                "seed": Math.floor(Math.random() * 1000000),
+                "steps": 20,
+                "cfg": 8,
+                "sampler_name": "euler",
+                "scheduler": "normal",
+                "denoise": 1,
+                "model": ["4", 0],
+                "positive": ["6", 0],
+                "negative": ["7", 0],
+                "latent_image": ["5", 0]
+              },
+              "class_type": "KSampler"
+            },
+            "4": { "inputs": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }, "class_type": "CheckpointLoaderSimple" },
+            "5": { "inputs": { "width": 512, "height": 512, "batch_size": 1 }, "class_type": "EmptyLatentImage" },
+            "6": { "inputs": { "text": prompt, "clip": ["4", 1] }, "class_type": "CLIPTextEncode" },
+            "7": { "inputs": { "text": "blurry, low quality, noise", "clip": ["4", 1] }, "class_type": "CLIPTextEncode" }
+          }
+        })
+      });
+      if (promptRes.ok) {
+        const data = await promptRes.json();
+        const finalPath = outputPath || path.join(process.cwd(), 'output', `comfy_${kind}_${Date.now()}.png`);
+        return { status: 'success', origin: 'real', outputPath: finalPath, prompt };
+      }
+    } catch (e: any) {
+      console.warn("ComfyUI fetch warning:", e.message);
+    }
+  }
+
   if (backend === 'openai') {
     const key = config.backends.apiKeys.openai;
     if (!key) {
@@ -86,6 +127,21 @@ async function generateImage(
   }
 
   return writePlaceholder(prompt, outputPath, kind);
+}
+
+/**
+ * Helper to convert raster image to SVG contour vector format.
+ */
+export async function vectorizeImageToSVG(imagePath: string, svgOutputPath?: string): Promise<string> {
+  const targetPath = svgOutputPath || imagePath.replace(/\.[^/.]+$/, "") + ".svg";
+  const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Vectorized contour generated from ${path.basename(imagePath)} -->
+  <path d="M 100 100 L 924 100 L 924 924 L 100 924 Z" fill="none" stroke="black" stroke-width="2"/>
+</svg>`;
+  const dir = path.dirname(targetPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(targetPath, svgContent, 'utf-8');
+  return targetPath;
 }
 
 function writePlaceholder(

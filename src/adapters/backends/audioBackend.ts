@@ -63,6 +63,56 @@ export async function synthesizeDialogue(
   return writePlaceholderAudio(text, outputPath);
 }
 
+export interface PhonemeTiming {
+  startFrame: number;
+  endFrame: number;
+  mouthShape: 'A' | 'E' | 'I' | 'O' | 'U' | 'M' | 'F' | 'L' | 'S' | 'rest';
+}
+
+/**
+ * Generate automatic lip-sync mouth shape exposures for dialogue.
+ */
+export function generatePhonemeTimings(text: string, fps: number = 24): PhonemeTiming[] {
+  const words = text.trim().split(/\s+/);
+  const result: PhonemeTiming[] = [];
+  let currentFrame = 1;
+  const shapes: Array<'A'|'E'|'I'|'O'|'U'|'M'|'F'|'L'|'S'> = ['A','E','I','O','U','M','F','L','S'];
+
+  for (const word of words) {
+    const wordDurationFrames = Math.max(3, Math.round((word.length * 0.08) * fps));
+    const subFrames = Math.max(1, Math.floor(wordDurationFrames / Math.min(word.length, 4)));
+
+    for (let i = 0; i < word.length; i++) {
+      const char = word[i].toUpperCase();
+      let shape: 'A'|'E'|'I'|'O'|'U'|'M'|'F'|'L'|'S'|'rest' = 'rest';
+
+      if (['A','E','I','O','U'].includes(char)) shape = char as any;
+      else if (['M','B','P'].includes(char)) shape = 'M';
+      else if (['F','V'].includes(char)) shape = 'F';
+      else if (['L','R','N'].includes(char)) shape = 'L';
+      else if (['S','Z','T','D','C','K'].includes(char)) shape = 'S';
+      else shape = shapes[i % shapes.length];
+
+      result.push({
+        startFrame: currentFrame,
+        endFrame: currentFrame + subFrames - 1,
+        mouthShape: shape
+      });
+      currentFrame += subFrames;
+    }
+
+    // Short rest between words
+    result.push({
+      startFrame: currentFrame,
+      endFrame: currentFrame + 1,
+      mouthShape: 'rest'
+    });
+    currentFrame += 2;
+  }
+
+  return result;
+}
+
 function writePlaceholderAudio(text: string, outputPath: string | undefined): AudioGenerationResult {
   const finalPath = outputPath || path.join(process.cwd(), 'output', `placeholder_audio_${Date.now()}.wav`);
   const dir = path.dirname(finalPath);

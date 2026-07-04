@@ -26,6 +26,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { config } from '../../config.js';
 
 export interface PackageInput {
   prompt: string;
@@ -57,24 +58,52 @@ export interface PackageOutput {
 export class FinalPackager {
   assemble(input: PackageInput, outputDir?: string): PackageOutput {
     const root = outputDir || this.defaultOutputDir();
-    if (!fs.existsSync(root)) fs.mkdirSync(root, { recursive: true });
+    
+    // Place everything inside 'episode_package' subfolder of the root
+    const pkgDir = path.join(root, 'episode_package');
+    if (!fs.existsSync(pkgDir)) fs.mkdirSync(pkgDir, { recursive: true });
 
     const artifacts: Record<string, string> = {};
 
-    // Top-level production documents
-    artifacts['series_bible.json'] = this.write(path.join(root, 'series_bible.json'), input.seriesBible);
-    artifacts['episode_plan.json'] = this.write(path.join(root, 'episode_plan.json'), input.episodePlan);
-    artifacts['script.json'] = this.write(path.join(root, 'script.json'), this.buildScriptJson(input));
-    artifacts['shot_list.json'] = this.write(path.join(root, 'shot_list.json'), input.shotList);
-    artifacts['asset_requirements.json'] = this.write(path.join(root, 'asset_requirements.json'), input.assetRequirements);
-    artifacts['character_design_specs.json'] = this.write(path.join(root, 'character_design_specs.json'), input.characterSpecs);
-    artifacts['rig_requirements.json'] = this.write(path.join(root, 'rig_requirements.json'), this.buildRigRequirements(input));
-    artifacts['rig360_plan.json'] = this.write(path.join(root, 'rig360_plan.json'), this.buildRig360Plan(input));
-    artifacts['rig360_specs.json'] = this.write(path.join(root, 'rig360_specs.json'), input.rig360Specs);
-    artifacts['render_plan.json'] = this.write(path.join(root, 'render_plan.json'), input.renderPlan);
+    const isRealHarmony = input.mode === 'real' && !!config.harmonyBin;
+    const simulated = input.mode === 'simulation' || input.mode === 'moonshot' || !config.harmonyBin;
+    const placeholder = input.rig360Specs.some((r: any) => r.placeholderRigCreated && !r.realRigCreated);
 
-    // Scene plans
-    const scenePlansDir = path.join(root, 'scene_plans');
+    // 1. production_package.json
+    const prodPackage = {
+      isRealHarmonyExecution: isRealHarmony,
+      mode: input.mode,
+      requiresRealHarmony: true,
+      simulated: simulated,
+      placeholder: placeholder,
+      createdAt: new Date().toISOString()
+    };
+    artifacts['production_package.json'] = this.write(path.join(pkgDir, 'production_package.json'), prodPackage);
+
+    // Top-level production documents
+    artifacts['series_bible.json'] = this.write(path.join(pkgDir, 'series_bible.json'), input.seriesBible);
+    artifacts['episode_plan.json'] = this.write(path.join(pkgDir, 'episode_plan.json'), input.episodePlan);
+    artifacts['script.json'] = this.write(path.join(pkgDir, 'script.json'), this.buildScriptJson(input));
+    artifacts['shot_list.json'] = this.write(path.join(pkgDir, 'shot_list.json'), input.shotList);
+    artifacts['asset_requirements.json'] = this.write(path.join(pkgDir, 'asset_requirements.json'), input.assetRequirements);
+    artifacts['render_plan.json'] = this.write(path.join(pkgDir, 'render_plan.json'), input.renderPlan);
+
+    // character_specs/ directory
+    const charSpecsDir = path.join(pkgDir, 'character_specs');
+    for (const spec of input.characterSpecs) {
+      const fileName = `${spec.name.replace(/\s+/g, '_').toLowerCase()}.json`;
+      artifacts[`character_specs/${fileName}`] = this.write(path.join(charSpecsDir, fileName), spec);
+    }
+
+    // rig_specs/ directory
+    const rigSpecsDir = path.join(pkgDir, 'rig_specs');
+    for (const spec of input.rig360Specs) {
+      const fileName = `${spec.characterName.replace(/\s+/g, '_').toLowerCase()}.json`;
+      artifacts[`rig_specs/${fileName}`] = this.write(path.join(rigSpecsDir, fileName), spec);
+    }
+
+    // scene_plans/ directory
+    const scenePlansDir = path.join(pkgDir, 'scene_plans');
     if (input.scenePlans?.length) {
       for (const sp of input.scenePlans) {
         const fileName = `${sp.sceneName || sp.sceneId || 'scene'}.scene_plan.json`;
@@ -82,57 +111,66 @@ export class FinalPackager {
       }
     }
 
-    // Animation blocking (acting plans)
-    const animationBlockingDir = path.join(root, 'animation_blocking');
+    // animation_blocking/ (acting plans)
+    const animationBlockingDir = path.join(pkgDir, 'animation_blocking');
     for (let i = 0; i < input.actingPlans.length; i++) {
       const plan = input.actingPlans[i];
       const fileName = `${plan.scene || plan.character || i}.acting_plan.json`;
       artifacts[`animation_blocking/${fileName}`] = this.write(path.join(animationBlockingDir, fileName), plan);
     }
 
-    // Camera plans
-    const cameraPlansDir = path.join(root, 'camera_plans');
+    // camera_plans/
+    const cameraPlansDir = path.join(pkgDir, 'camera_plans');
     for (let i = 0; i < input.cameraPlans.length; i++) {
       const plan = input.cameraPlans[i];
       const fileName = `${plan.sceneId || i}.camera_plan.json`;
       artifacts[`camera_plans/${fileName}`] = this.write(path.join(cameraPlansDir, fileName), plan);
     }
 
-    // Lipsync plans
-    const lipsyncPlansDir = path.join(root, 'lipsync_plans');
+    // lipsync_plans/
+    const lipsyncPlansDir = path.join(pkgDir, 'lipsync_plans');
     for (const plan of input.lipsyncPlans || []) {
       const fileName = `${plan.sceneId || 'scene'}.lipsync_plan.json`;
       artifacts[`lipsync_plans/${fileName}`] = this.write(path.join(lipsyncPlansDir, fileName), plan);
     }
 
-    // FX plans
-    const fxPlansDir = path.join(root, 'fx_plans');
+    // fx_plans/
+    const fxPlansDir = path.join(pkgDir, 'fx_plans');
     for (let i = 0; i < input.fxPlans.length; i++) {
       const plan = input.fxPlans[i];
       const fileName = `${plan.sceneId || i}.fx_plan.json`;
       artifacts[`fx_plans/${fileName}`] = this.write(path.join(fxPlansDir, fileName), plan);
     }
 
-    // Background plans
-    const backgroundPlansDir = path.join(root, 'background_plans');
-    for (const plan of input.backgroundPlans || []) {
-      const fileName = `${plan.location.replace(/\s+/g, '_').toLowerCase()}.background_plan.json`;
-      artifacts[`background_plans/${fileName}`] = this.write(path.join(backgroundPlansDir, fileName), plan);
-    }
-
-    // Review reports
-    const reviewReportsDir = path.join(root, 'review_reports');
+    // review_reports/
+    const reviewReportsDir = path.join(pkgDir, 'review_reports');
     for (let i = 0; i < input.reviewReports.length; i++) {
       const report = input.reviewReports[i];
       const fileName = `${report.type || i}.review_report.json`;
       artifacts[`review_reports/${fileName}`] = this.write(path.join(reviewReportsDir, fileName), report);
     }
 
+    // harmony_project/ placeholder directory
+    const harmonyProjectDir = path.join(pkgDir, 'harmony_project');
+    if (!fs.existsSync(harmonyProjectDir)) fs.mkdirSync(harmonyProjectDir, { recursive: true });
+
+    // previews/ placeholder directory
+    const previewsDir = path.join(pkgDir, 'previews');
+    if (!fs.existsSync(previewsDir)) fs.mkdirSync(previewsDir, { recursive: true });
+
+    // final_render/ placeholder directory
+    const finalRenderDir = path.join(pkgDir, 'final_render');
+    if (!fs.existsSync(finalRenderDir)) fs.mkdirSync(finalRenderDir, { recursive: true });
+
     // Final package summary
-    const finalPackageDir = path.join(root, 'final_package');
+    const finalPackageDir = path.join(pkgDir, 'final_package');
     const summary = {
       prompt: input.prompt,
       mode: input.mode,
+      isRealHarmonyExecution: isRealHarmony,
+      simulated: simulated,
+      placeholder: placeholder,
+      requiresRealHarmony: true,
       packageCreatedAt: new Date().toISOString(),
       sceneCount: input.episodePlan.scenes.length,
       shotCount: input.shotList.length,
@@ -146,12 +184,30 @@ export class FinalPackager {
       whatWasReal: this.summarizeWhatWasReal(input)
     };
     artifacts['final_package/summary.json'] = this.write(path.join(finalPackageDir, 'summary.json'), summary);
-    artifacts['episode_package.json'] = this.write(path.join(root, 'episode_package.json'), summary);
+    artifacts['episode_package.json'] = this.write(path.join(pkgDir, 'episode_package.json'), summary);
 
-    const manifestPath = path.join(root, 'MANIFEST.json');
+    // production_report.md
+    const reportMd = `# Production Report
+Generated on: ${new Date().toISOString()}
+Mode: ${input.mode}
+Is Real Harmony Execution: ${isRealHarmony}
+Simulated: ${simulated}
+
+## Summary
+- Scene Count: ${input.episodePlan.scenes.length}
+- Shot Count: ${input.shotList.length}
+- Character Count: ${input.characterSpecs.length}
+- Placeholder Rig Count: ${input.rig360Specs.filter((r: any) => r.placeholderRigCreated && !r.realRigCreated).length}
+
+## Truth Log
+${summary.truth}
+`;
+    artifacts['production_report.md'] = this.write(path.join(pkgDir, 'production_report.md'), reportMd);
+
+    const manifestPath = path.join(pkgDir, 'MANIFEST.json');
     artifacts['MANIFEST.json'] = this.write(manifestPath, artifacts);
 
-    return { packagePath: root, manifestPath, artifacts, summary };
+    return { packagePath: pkgDir, manifestPath, artifacts, summary };
   }
 
   private defaultOutputDir(): string {

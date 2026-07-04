@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { QtScriptBuilder } from '../adapters/qtScriptBuilder.js';
 import { ControlCenterTelnet } from '../adapters/controlCenterTelnet.js';
 import { ControlCenterBatch } from '../adapters/controlCenterBatch.js';
-import { enforceDestructiveSafety, executeWithDryRun, HarmonyError } from '../security.js';
+import { enforceDestructiveSafety, executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.js';
 import { config } from '../config.js';
 
 // Вспомогательная функция-диспетчер: пробует Telnet, при сбое переключается на пакетный режим
@@ -233,7 +233,8 @@ export const controlCenterTools = [
       dryRun: z.boolean().optional()
     }),
     handler: async (args: any) => {
-      const script = QtScriptBuilder.buildImportScenePackage(args.environmentName, args.jobName, args.packagePath);
+      const checkedPackagePath = verifyPathAccess(args.packagePath);
+      const script = QtScriptBuilder.buildImportScenePackage(args.environmentName, args.jobName, checkedPackagePath);
       return executeCcScript(script, args.dryRun, 'import_scene_package');
     }
   },
@@ -249,12 +250,13 @@ export const controlCenterTools = [
       dryRun: z.boolean().optional()
     }),
     handler: async (args: any) => {
+      const checkedPackagePath = verifyPathAccess(args.packagePath);
       const script = QtScriptBuilder.buildExportScenePackage(
         args.environmentName,
         args.jobName,
         args.sceneName,
         args.versionNumber,
-        args.packagePath
+        checkedPackagePath
       );
       return executeCcScript(script, args.dryRun, 'export_scene_package');
     }

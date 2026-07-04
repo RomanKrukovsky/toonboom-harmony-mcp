@@ -4,6 +4,7 @@ import fs from 'fs';
 import { config } from '../config.js';
 import { tracker } from '../adapters/sqliteTracker.js';
 import { HarmonyError, verifyPathAccess, executeWithDryRun } from '../security.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
 
 export const renderTools = [
   {
@@ -199,6 +200,74 @@ export const renderTools = [
           status: v.status,
           date: v.created_at
         }))
+      };
+    }
+  },
+
+  {
+    name: 'harmony.render.diagnose_heavy_nodes',
+    description: 'Поиск нод, потребляющих много памяти (Glow, Blur, Shadow, Envelope Deformer). Эти ноды — частая причина крашей при рендере (Reddit: harmony_crashes_when_using_deformers, render crash on heavy scenes). Рекомендует перевод на Image Sequence.',
+    inputSchema: z.object({
+      projectPath: z.string().optional().describe('Путь к файлу .xstage.'),
+      heavyNodeTypes: z.array(z.string()).optional().default(['Glow', 'Blur', 'Shadow', 'Tone', 'Highlight', 'EnvelopeDeformer', 'LightShading']).describe('Типы нод, считающиеся тяжёлыми.'),
+      threshold: z.number().optional().default(3).describe('Минимальное количество тяжёлых нод для предупреждения.')
+    }),
+    handler: async (args: { projectPath?: string; heavyNodeTypes?: string[]; threshold?: number }) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      const heavyTypes = args.heavyNodeTypes || ['Glow', 'Blur', 'Shadow', 'Tone', 'Highlight', 'EnvelopeDeformer', 'LightShading'];
+      const threshold = args.threshold ?? 3;
+
+      let allNodes: any[] = [];
+      try {
+        const { HarmonyPython } = await import('../adapters/harmonyPython.js');
+        const listRes = await HarmonyPython.runCommand('list_nodes', { projectPath: checkedPath });
+        allNodes = listRes.nodes || [];
+      } catch {
+        return {
+          status: 'success',
+          heavyNodes: [],
+          recommendation: 'Could not enumerate nodes. Manual check recommended: count Glow, Blur, Shadow, and Envelope Deformer nodes in Node View.',
+          renderSafetyTip: 'Always use Image Sequence (PNG/TGA) via harmony.nodes.set_write_rgba instead of direct MP4/MOV export for heavy scenes.'
+        };
+      }
+
+      const heavyNodes = allNodes.filter((n: any) => {
+        const type = (n.type || n.node_type || '').toUpperCase();
+        const name = (n.name || n.node_name || '').toUpperCase();
+        return heavyTypes.some(ht => type.includes(ht.toUpperCase()) || name.includes(ht.toUpperCase()));
+      });
+
+      const byType: Record<string, number> = {};
+      for (const hn of heavyNodes) {
+        const type = hn.type || hn.node_type || 'unknown';
+        byType[type] = (byType[type] || 0) + 1;
+      }
+
+      const isHeavy = heavyNodes.length >= threshold;
+      const hasGlowOrBlur = heavyNodes.some(n => {
+        const t = (n.type || n.node_type || '').toUpperCase();
+        return t.includes('GLOW') || t.includes('BLUR');
+      });
+
+      return {
+        status: 'success',
+        totalHeavyNodes: heavyNodes.length,
+        heavyNodes: heavyNodes.map(n => ({
+          path: n.path || n.node_path,
+          type: n.type || n.node_type,
+          name: n.name || n.node_name
+        })),
+        byType,
+        isHeavy,
+        threshold,
+        recommendation: isHeavy
+          ? `${heavyNodes.length} heavy node(s) detected (threshold: ${threshold}). HIGH CRASH RISK for MP4/MOV render. RECOMMENDED: Use harmony.nodes.set_write_rgba to switch all Write nodes to PNG Image Sequence. This allows resuming from the crashed frame.`
+          : `${heavyNodes.length} heavy node(s) detected (below threshold of ${threshold}). Standard render should be safe, but Image Sequence is still recommended for production.`,
+        renderSafetyTip: 'Always use Image Sequence (PNG/TGA) via harmony.nodes.set_write_rgba instead of direct MP4/MOV export for heavy scenes. If render crashes, you can resume from the last completed frame.',
+        hasGlowOrBlur,
+        glowBlurWarning: hasGlowOrBlur
+          ? 'Glow/Blur nodes are the #1 cause of render crashes on heavy scenes (Reddit consensus). Consider temporarily disabling or simplifying these effects for preview renders.'
+          : null
       };
     }
   }

@@ -48,6 +48,16 @@ describe('Тестирование безопасности', () => {
     }).not.toThrow();
   });
 
+  test('import_scene_package и export_scene_package должны проверять пути к пакетам на выход за разрешенные директории', () => {
+    expect(() => {
+      verifyPathAccess('/Users/romanmolodyko/Documents/../../etc/passwd');
+    }).toThrow(HarmonyError);
+
+    expect(() => {
+      verifyPathAccess('/var/tmp/external_file.zip');
+    }).toThrow(HarmonyError);
+  });
+
   test('executeWithDryRun должно перехватывать и симулировать выполнение при dryRun=true', async () => {
     const spy = jest.fn();
     const res = await executeWithDryRun('test_op', {}, true, spy);

@@ -96,10 +96,7 @@ export const drawingTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_drawing_element', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Пустой рисунок "${args.drawingName}" успешно добавлен в слой "${args.layerNodePath}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_drawing" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -139,10 +136,7 @@ export const drawingTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedFolder = verifyPathAccess(args.sequenceFolderPath);
       return executeWithDryRun('import_sequence', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Последовательность кадров из папки "${checkedFolder}" импортирована в слой "${args.layerNodePath}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_sequence" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -160,10 +154,7 @@ export const drawingTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedImg = verifyPathAccess(args.newImagePath);
       return executeWithDryRun('replace_drawing', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Рисунок подстановки "${args.drawingName}" в слое "${args.layerNodePath}" успешно заменен.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "replace_drawing" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -211,6 +202,128 @@ export const drawingTools = [
           status: 'success',
           stdout
         };
+      });
+    }
+  },
+  {
+    name: 'harmony.drawings.clean_unused_substitutions',
+    description: 'Поиск и удаление неиспользуемых файлов рисунков (.tvg) из папки элемента сцены.',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      dryRun: z.boolean().optional()
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('clean_unused_substitutions', args, args.dryRun, () => {
+        return runDrawingBridge('clean_unused_substitutions', {
+          projectPath: checkedPath
+        });
+      });
+    }
+  },
+  {
+    name: 'harmony.drawings.sync_substitutions_pivots',
+    description: 'Пакетная синхронизация пивотов векторных рисунков между субституциями указанного слоя. Возвращает отчёт о расхождениях до и после синхронизации (diff report) — какие субституции имели неверные пивоты и какие координаты были установлены.',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      layerNodePath: z.string().describe('Путь к слою рисования (Read ноде).'),
+      sourceSubName: z.string().describe('Имя эталонной субституции, с которой копируется пивот.'),
+      targetSubNames: z.array(z.string()).optional().describe('Опциональный список целевых субституций. Если опущен — копируется на все.'),
+      syncWithParentPeg: z.boolean().optional().describe('Синхронизировать опорную точку со связанным родительским Peg нодой.'),
+      dryRun: z.boolean().optional()
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+
+      let beforeDiff: any[] = [];
+      let sourcePivot: { x: number; y: number } | null = null;
+
+      try {
+        const subsRes = await runDrawingBridge('list_drawings', { projectPath: checkedPath });
+        if (subsRes.status !== 'unsupported') {
+          const found = (subsRes.drawings || []).find((d: any) => d.node_path === args.layerNodePath);
+          if (found) {
+            const subs = found.substitutions || [];
+            const sourceSub = subs.find((s: any) => (s.name || s.drawing_name) === args.sourceSubName);
+            if (sourceSub) {
+              sourcePivot = {
+                x: parseFloat(sourceSub.pivot_x || sourceSub.PIVOT_X || 0),
+                y: parseFloat(sourceSub.pivot_y || sourceSub.PIVOT_Y || 0)
+              };
+            }
+
+            for (const sub of subs) {
+              const subName = sub.name || sub.drawing_name;
+              if (subName === args.sourceSubName) continue;
+              if (args.targetSubNames && !args.targetSubNames.includes(subName)) continue;
+
+              const subPivot = {
+                x: parseFloat(sub.pivot_x || sub.PIVOT_X || 0),
+                y: parseFloat(sub.pivot_y || sub.PIVOT_Y || 0)
+              };
+
+              if (sourcePivot) {
+                const dx = Math.abs(subPivot.x - sourcePivot.x);
+                const dy = Math.abs(subPivot.y - sourcePivot.y);
+                if (dx > 0.1 || dy > 0.1) {
+                  beforeDiff.push({
+                    substitution: subName,
+                    beforePivot: subPivot,
+                    targetPivot: sourcePivot,
+                    delta: { x: dx.toFixed(2), y: dy.toFixed(2) },
+                    willChange: true
+                  });
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Pre-check not available — proceed with sync
+      }
+
+      return executeWithDryRun('sync_substitutions_pivots', args, args.dryRun, async () => {
+        const syncRes = await runDrawingBridge('sync_substitutions_pivots', {
+          projectPath: checkedPath,
+          layerNodePath: args.layerNodePath,
+          sourceSubName: args.sourceSubName,
+          targetSubNames: args.targetSubNames,
+          syncWithParentPeg: args.syncWithParentPeg
+        });
+
+        return {
+          ...syncRes,
+          sourcePivot,
+          pivotDiffReport: {
+            substitutionsWithMismatchedPivots: beforeDiff.length,
+            details: beforeDiff,
+            sourceSubName: args.sourceSubName,
+            syncWithParentPeg: args.syncWithParentPeg || false
+          },
+          recommendation: beforeDiff.length > 0
+            ? `${beforeDiff.length} substitution(s) had mismatched pivots. All have been synced to source "${args.sourceSubName}". Verify in Camera View that elements no longer jump when switching drawings.`
+            : 'All substitutions already had matching pivots. No changes were needed.'
+        };
+      });
+    }
+  },
+  {
+    name: 'harmony.drawings.duplicate_active_exposure',
+    description: 'Разрыв связи экспозиции с дублированием рисунка (.tvg) на диске для создания независимого кадра.',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      nodePath: z.string().describe('Путь к слою рисования (Read ноде).'),
+      frame: z.number().describe('Кадр таймлайна с рисунком для дублирования.'),
+      dryRun: z.boolean().optional()
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('duplicate_active_exposure', args, args.dryRun, () => {
+        return runDrawingBridge('duplicate_active_exposure', {
+          projectPath: checkedPath,
+          nodePath: args.nodePath,
+          frame: args.frame
+        });
       });
     }
   }

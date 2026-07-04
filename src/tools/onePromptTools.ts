@@ -83,6 +83,39 @@ export const onePromptTools: ToolDef[] = [
   },
 
   {
+    name: 'harmony.oneprompt.generate_series_bible',
+    description: 'Сгенерировать series_bible.json из промпта.',
+    inputSchema: z.object({
+      prompt: z.string().min(1),
+      targetDurationMinutes: z.number().optional()
+    }),
+    handler: async (args: any) => {
+      const { SeriesPlanner } = await import('../adapters/seriesPlanner/index.js');
+      const engine = new OnePromptEngine();
+      const analysis = engine.analyzePrompt(args);
+      const bible = new SeriesPlanner().createBible(analysis, args);
+      return { status: 'success', seriesBible: bible };
+    }
+  },
+
+  {
+    name: 'harmony.oneprompt.generate_script',
+    description: 'Сгенерировать script.json из промпта и episode plan.',
+    inputSchema: z.object({
+      prompt: z.string().min(1),
+      episodePlan: z.any().describe('episode_plan.json объект.')
+    }),
+    handler: async (args: any) => {
+      const { ScriptPlanner } = await import('../adapters/scriptPlanner/index.js');
+      const engine = new OnePromptEngine();
+      const analysis = engine.analyzePrompt(args);
+      const planner = new ScriptPlanner();
+      const script = planner.generateScript(args.episodePlan, analysis);
+      return { status: 'success', script };
+    }
+  },
+
+  {
     name: 'harmony.oneprompt.generate_episode_plan',
     description: 'Сгенерировать episode_plan.json из промпта.',
     inputSchema: z.object({
@@ -192,7 +225,8 @@ export const onePromptTools: ToolDef[] = [
       outputDir: z.string().optional(),
       mode: z.enum(['real','simulation','hybrid','moonshot']).optional(),
       maxIterations: z.number().optional(),
-      targetScore: z.number().optional()
+      targetScore: z.number().optional(),
+      executeInHarmony: z.boolean().optional()
     }),
     handler: async (args: any) => {
       const mode = args.mode ?? config.engineMode;
@@ -290,6 +324,40 @@ export const onePromptTools: ToolDef[] = [
       scenePlans = assembler.assembleScenePlans(pkg.episodePlan, pkg.characterSpecs, pkg.cameraPlans, pkg.fxPlans, pkg.actingPlans, pkg.lipsyncPlans, pkg.backgroundPlans);
       writeScenePlans(scenePlans);
 
+      // Execute in Harmony if option enabled
+      let realExecutionResults: any[] = [];
+      let realExecutionSkipped = false;
+      let skippedReason = '';
+
+      if (args.executeInHarmony === true) {
+        const isHarmonyAvailable = !!config.harmonyBin;
+        if (!isHarmonyAvailable) {
+          realExecutionSkipped = true;
+          skippedReason = 'Harmony not configured';
+        } else {
+          const { RealSceneExecutor } = await import('../adapters/realSceneExecutor/index.js');
+          const executor = new RealSceneExecutor();
+          for (const sp of scenePlans) {
+            try {
+              const res = await executor.executeScenePlan(sp, {
+                mode: mode === 'simulation' ? 'simulation' : (mode === 'real' ? 'real' : 'hybrid'),
+                outputDir: outRoot
+              });
+              realExecutionResults.push({
+                scene: sp.sceneName,
+                status: res.ok ? 'success' : 'failed',
+                performedSteps: res.performedSteps,
+                skippedSteps: res.skippedSteps,
+                warnings: res.warnings,
+                error: res.error
+              });
+            } catch (e: any) {
+              realExecutionResults.push({ scene: sp.sceneName, status: 'error', error: e.message });
+            }
+          }
+        }
+      }
+
       // Render preview videos for each scene plan
       const previewPaths: string[] = [];
       if (renderPreview) {
@@ -336,7 +404,10 @@ export const onePromptTools: ToolDef[] = [
         humanCheckpoint,
         truth: `Moonshot production package generated. ${pkg.rig360Specs.filter((r: any) => r.placeholderRigCreated && !r.realRigCreated).length} placeholder rig(s). ${previewPaths.length} preview render(s) produced. ${autopilotAttempted ? `Autopilot attempted on ${autopilotResults.length} scene(s); ${assembledSceneCount} completed.` : 'Autopilot not attempted (simulation mode).'} ${humanCheckpoint.required ? 'Human approval required before final lock.' : ''} Real Harmony execution requires assets and installed Toon Boom Harmony.`,
         whatWasReal: pkg.whatWasReal,
-        finalPackageSummary: finalPackage.summary
+        finalPackageSummary: finalPackage.summary,
+        realExecutionSkipped,
+        ...(realExecutionSkipped ? { reason: skippedReason } : {}),
+        realExecutionResults: realExecutionResults.length > 0 ? realExecutionResults : undefined
       };
     }
   },

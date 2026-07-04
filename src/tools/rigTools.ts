@@ -1,6 +1,8 @@
+import { z } from 'zod';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import * as schemas from '../schemas/rig.js';
+import { projectPathSchema } from '../schemas/common.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runRigBridge(command: string, args: any): Promise<any> {
@@ -67,15 +69,7 @@ export const rigTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedPsd = verifyPathAccess(args.psdPath);
       return executeWithDryRun('import_layered_character', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          importedPsdPath: checkedPsd,
-          manualSteps: [
-            'Используйте диалоговое окно Import PSD в Harmony для выбора опций группировки.',
-            'Назначьте правильные правила векторизации для импортируемых слоев.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_layered_character" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -86,48 +80,29 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_cutout_hierarchy', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Свяжите Peg-узлы конечностей с Peg-узлом туловища.',
-            'Подключите Peg головы к Peg шеи.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_cutout_hierarchy" требует подключённого Python API Harmony.');
       });
     }
   },
   {
     name: 'harmony.rig.create_pegs',
-    description: 'Автоматическое создание управляющих Peg-нод для выбранного списка слоев.',
+    description: 'Автоматическое создание управляющих Peg-нод для выбранных слоев с поддержкой пресета Pivot Matching (Уроки #4, #5).',
     inputSchema: schemas.createPegsSchema,
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_pegs', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Созданы управляющие Peg-ноды для ${args.nodePaths.length} узлов.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_pegs" требует подключённого Python API Harmony.');
       });
     }
   },
   {
     name: 'harmony.rig.create_deformers',
-    description: 'Добавление деформаторов (Bone, Curve, Envelope) к выбранному слою.',
+    description: 'Добавление деформаторов (Bone, Curve, Envelope) с пресетом Kinematic Isolation (Уроки #9, #11). Перед созданием проверяет существующие деформеры на том же элементе для предотвращения конфликтов.',
     inputSchema: schemas.createDeformersSchema,
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_deformers', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          nodePath: args.nodePath,
-          deformerType: args.type,
-          manualSteps: [
-            `Выберите ноду "${args.nodePath}" в Node View.`,
-            'Активируйте инструмент Rigging Tool на панели инструментов.',
-            `Создайте опорные точки деформации типа "${args.type}" кликом мыши на холсте.`
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_deformers" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -183,7 +158,7 @@ export const rigTools = [
   },
   {
     name: 'harmony.rig.create_mouth_chart',
-    description: 'Создание структуры рта со стандартным набором фонем (A, B, C, D, E, F, G, X).',
+    description: 'Создание структуры рта со стандартным набором фонем (A, B, C, D, E, F, G, X) и подстановками рисунков (Урок #13).',
     inputSchema: schemas.createMouthChartSchema,
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
@@ -197,19 +172,23 @@ export const rigTools = [
   },
   {
     name: 'harmony.rig.create_eye_system',
-    description: 'Сборка иерархии узлов для глаз (со зрачком, маской обрезки и Peg-контроллерами).',
+    description: 'Сборка иерархии нод глаз с пресетом Eye Cutter Mask (инвертированная маска зрачка под белок, Урок #10) и поддержкой 4 веков (Урок #17).',
     inputSchema: schemas.createEyeSystemSchema,
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_eye_system', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Подключите ноду зрачка (Pupil) во вход Cutter.',
-            'Подключите ноду глазного яблока (Eyeball) в качестве маски Cutter.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_eye_system" требует подключённого Python API Harmony.');
+      });
+    }
+  },
+  {
+    name: 'harmony.rig.create_constraint',
+    description: 'Создание и наложение ноды ограничения (TwoPointConstraint) для сохранения объемов суставов при растяжении и сжатии (Уроки #19, #21).',
+    inputSchema: schemas.createConstraintSchema,
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('create_constraint', args, args.dryRun, async () => {
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_constraint" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -220,14 +199,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_brow_system', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Назначьте деформаторы типа Curve для бровей для гибкой мимики.',
-            'Привяжите Peg-бровей к Peg-головной структуры.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_brow_system" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -238,11 +210,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_hand_swaps', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          handNodePath: args.handNodePath,
-          message: `Создано ${args.handDrawingsCount} пустых подстановок кистей рук.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_hand_swaps" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -267,37 +235,187 @@ export const rigTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedPose = verifyPathAccess(args.poseTemplatePath);
       return executeWithDryRun('apply_pose', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Шаблон позы "${checkedPose}" применен к узлу "${args.targetNodePath}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "apply_pose" требует подключённого Python API Harmony.');
       });
     }
   },
   {
     name: 'harmony.rig.validate',
-    description: 'Валидация рига на битые связи, отсутствующие опорные точки и ошибки в иерархии.',
+    description: 'Валидация рига на битые связи, отсутствующие опорные точки, ошибки в иерархии, двойную трансформацию (double transformation), Drawing Keyframe Pollution, неправильные режимы Composite и отрицательный масштаб на пегах с деформерами.',
     inputSchema: schemas.validateRigSchema,
     handler: async (args: { projectPath?: string }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const res = await runRigBridge('audit_scene', { projectPath: checkedPath });
       if (res.status === 'unsupported') return res;
+      
+      const issues: string[] = [];
+      const warnings: string[] = [];
+      const audit = res.audit || {};
+      const repairRecipes: any[] = [];
+      
+      if (audit.broken_connections) {
+        audit.broken_connections.forEach((c: any) => {
+          issues.push(`Broken Connection: Node "${c.node_path}" port ${c.port} (${c.details})`);
+        });
+        repairRecipes.push({
+          recipe: 'reconnect_broken',
+          priority: 'critical',
+          steps: [
+            { tool: 'harmony.nodes.find_broken_connections', params: { projectPath: args.projectPath } },
+            { tool: 'harmony.nodes.connect', params: { srcNodePath: '<source>', destNodePath: '<dest>' } }
+          ]
+        });
+      }
+      if (audit.drawing_keyframes_pollution) {
+        audit.drawing_keyframes_pollution.forEach((c: any) => {
+          issues.push(`Drawing Keyframe Pollution: Node "${c.node_path}" contains keyframes on animatable attributes: ${(c.attributes || []).join(', ')}. Move keys to parent Peg and enable "Can Never Enter Drawing Mode".`);
+          repairRecipes.push({
+            recipe: 'fix_drawing_keyframe_pollution',
+            priority: 'high',
+            steps: [
+              { tool: 'harmony.timeline.get', params: { projectPath: args.projectPath } },
+              { action: 'manual', description: 'Move keyframes from Drawing node to parent Peg node' },
+              { tool: 'harmony.nodes.set_attr', params: { nodePath: c.node_path, attributeName: 'CAN_NEVER_ENTER_DRAWING_MODE', value: true } }
+            ]
+          });
+        });
+      }
+      if (audit.flat_composites) {
+        audit.flat_composites.forEach((c: any) => {
+          issues.push(`Bitmap Composite Masking Conflict: Composite node "${c.node_path}" is set to "${c.mode}" mode, which can flatten masking Z-depth and break Cutter masks in render.`);
+          repairRecipes.push({
+            recipe: 'fix_composite_passthrough',
+            priority: 'high',
+            steps: [
+              { tool: 'harmony.nodes.set_composite_passthrough', params: { compositeNodePath: c.node_path, mode: 'Pass Through' } }
+            ]
+          });
+        });
+      }
+      if (audit.double_transformation) {
+        audit.double_transformation.forEach((c: any) => {
+          issues.push(`Double Transformation: Drawing node "${c.drawing_path}" is connected to both Peg "${c.peg_path}" and deformer group "${c.deformer_path}" which is child of the same Peg. Transform is applied twice.`);
+          repairRecipes.push({
+            recipe: 'fix_double_transformation',
+            priority: 'high',
+            steps: [
+              { action: 'manual', description: `Remove direct Peg→Drawing connection for "${c.drawing_path}". Keep only Peg→Deformer→Drawing path.` },
+              { tool: 'harmony.nodes.disconnect', params: { destNodePath: c.drawing_path } }
+            ]
+          });
+        });
+      }
+      if (audit.negative_scale_on_deformer_pegs) {
+        audit.negative_scale_on_deformer_pegs.forEach((c: any) => {
+          warnings.push(`Negative Scale: Peg "${c.node_path}" has SCALE_X = ${c.scale_x}. This inverts deformer normals and may break Envelope/Curve deformers (common in flip rigs with Scale X = -1).`);
+        });
+      }
+      if (audit.missing_kinematic_output) {
+        audit.missing_kinematic_output.forEach((c: any) => {
+          issues.push(`Missing Kinematic Output: Deformer "${c.deformer_path}" has child Peg "${c.child_peg_path}" without Kinematic Output. Child limbs will be deformed by parent deformer.`);
+          repairRecipes.push({
+            recipe: 'fix_kinematic_output',
+            priority: 'high',
+            steps: [
+              { tool: 'harmony.rig.attach_kinematic_accessory', params: { deformedNodePath: c.deformer_path, accessoryPegPath: c.child_peg_path } }
+            ]
+          });
+        });
+      }
+      if (audit.cutter_inverted_mismatch) {
+        audit.cutter_inverted_mismatch.forEach((c: any) => {
+          warnings.push(`Cutter Polarity: Cutter "${c.node_path}" may have inverted matte/image ports. OpenGL shows correct, but render may be inverted. Check port order (matte=port 0, image=port 1).`);
+          repairRecipes.push({
+            recipe: 'fix_cutter_polarity',
+            priority: 'medium',
+            steps: [
+              { tool: 'harmony.nodes.disconnect', params: { destNodePath: c.node_path, destPort: 0 } },
+              { tool: 'harmony.nodes.connect', params: { srcNodePath: '<matte_source>', destNodePath: c.node_path, semanticPort: 'cutter_matte' } },
+              { tool: 'harmony.nodes.connect', params: { srcNodePath: '<image_source>', destNodePath: c.node_path, semanticPort: 'cutter_image' } }
+            ]
+          });
+        });
+      }
+      
       return {
         status: 'success',
-        issues: res.audit?.broken_connections || [],
-        valid: (res.audit?.broken_connections || []).length === 0
+        issues,
+        warnings,
+        valid: issues.length === 0,
+        issueCount: issues.length,
+        warningCount: warnings.length,
+        repairRecipes,
+        auditDetails: audit
       };
     }
   },
   {
     name: 'harmony.rig.validate_deformers',
-    description: 'Проверка целостности и корректности деформаторов в сцене.',
+    description: 'Проверка целостности и корректности иерархии деформаторов: порядок Peg→Deformer→Drawing, наличие Kinematic Output, конфликтующие деформационные цепи на одном элементе, отрицательный масштаб на пегах с деформерами.',
     inputSchema: schemas.validateDeformersSchema,
     handler: async (args: { projectPath?: string }) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      const res = await runRigBridge('validate_deformer_hierarchy', { projectPath: checkedPath });
+      if (res.status === 'unsupported') return res;
+      
+      const issues: any[] = [];
+      const warnings: any[] = [];
+      const repairRecipes: any[] = [];
+      const rawIssues = res.issues || [];
+
+      for (const issue of rawIssues) {
+        if (typeof issue === 'string') {
+          issues.push({ type: 'general', message: issue });
+        } else {
+          issues.push(issue);
+        }
+      }
+
+      for (const issue of issues) {
+        const msg = typeof issue === 'string' ? issue : issue.message || JSON.stringify(issue);
+
+        if (msg.includes('Peg') && msg.includes('Deformer') && (msg.includes('order') || msg.includes('below') || msg.includes('above'))) {
+          repairRecipes.push({
+            recipe: 'fix_deformer_order',
+            priority: 'critical',
+            description: 'Deformer hierarchy order is wrong. Correct order: Peg (top) → Deformer → Drawing (bottom).',
+            steps: [
+              { tool: 'harmony.nodes.disconnect', params: { destNodePath: '<deformer_or_drawing>' } },
+              { tool: 'harmony.nodes.connect', params: { srcNodePath: '<peg>', destNodePath: '<deformer>', semanticPort: 'default' } },
+              { tool: 'harmony.nodes.connect', params: { srcNodePath: '<deformer>', destNodePath: '<drawing>', semanticPort: 'default' } }
+            ]
+          });
+        }
+
+        if (msg.includes('Kinematic') || msg.includes('kinematic')) {
+          repairRecipes.push({
+            recipe: 'fix_kinematic_output',
+            priority: 'high',
+            description: 'Missing Kinematic Output between deformer and child peg. Child limbs are being deformed by parent.',
+            steps: [
+              { tool: 'harmony.rig.attach_kinematic_accessory', params: { deformedNodePath: '<deformer_path>', accessoryPegPath: '<child_peg_path>' } }
+            ]
+          });
+        }
+
+        if (msg.includes('duplicate') || msg.includes('conflict') || msg.includes('multiple deformer')) {
+          warnings.push({
+            type: 'duplicate_deformer_chains',
+            message: msg,
+            recommendation: 'Use harmony.rig.find_duplicate_deformer_chains to identify conflicting chains on the same element.'
+          });
+        }
+      }
+      
       return {
         status: 'success',
-        valid: true,
-        issues: []
+        valid: issues.length === 0,
+        issueCount: issues.length,
+        warningCount: warnings.length,
+        issues,
+        warnings,
+        repairRecipes,
+        hierarchyRule: 'Peg (top) → Deformer → Drawing (bottom). Child Pegs must connect through Kinematic Output, not directly to deformed Drawing.'
       };
     }
   },
@@ -321,10 +439,7 @@ export const rigTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedDest = verifyPathAccess(args.templateDestinationPath);
       return executeWithDryRun('export_rig_template', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Шаблон рига успешно сохранен в "${checkedDest}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_rig_template" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -335,10 +450,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_test_animation', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: 'Анимационный тест рига успешно создан на первых 48 кадрах таймлайна.'
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_test_animation" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -367,14 +479,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_head_360', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Объедините все слои лица в одну общую группу Face.',
-            'Примените общий Peg для перемещения лица внутри маски головы.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_head_360_structure" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -385,29 +490,18 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_body_360', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Настройте Peg-узлы для смещения торса, таза и плеч.',
-            'Используйте переключатели подстановок (drawings) для смены ракурсов конечностей.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_body_360_structure" требует подключённого Python API Harmony.');
       });
     }
   },
   {
     name: 'harmony.rig360.map_drawings_to_angles',
-    description: 'Привязка конкретных подстановок рисунков к определенным углам разворота.',
+    description: 'Привязка конкретных подстановок рисунков к определенным углам разворота с авто-созданием уникальных цепей деформации (Create New Deformation Chain, Урок #12).',
     inputSchema: schemas.mapDrawingsToAnglesSchema,
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('map_drawings_to_angles', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          nodePath: args.nodePath,
-          mappedCount: args.angleMappings.length
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "map_drawings_to_angles" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -418,14 +512,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_angle_controls', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Запустите Slider Wizard.',
-            'Настройте слайдер горизонтального поворота от 0 до 7 для 8 ракурсов.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_angle_controls" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -436,14 +523,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_face_controls', args, args.dryRun, async () => {
-        return {
-          status: 'partial_success',
-          characterName: args.characterName,
-          manualSteps: [
-            'Настройте 2D Point Widget для смещения зрачков.',
-            'Назначьте ограничения движения виджета границами глаз.'
-          ]
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_face_controls" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -480,10 +560,7 @@ export const rigTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_turn_test', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: 'Анимационный тест разворота на 360 градусов успешно добавлен на таймлайн.'
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_turn_test" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -495,11 +572,150 @@ export const rigTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedDest = verifyPathAccess(args.templateDestinationPath);
       return executeWithDryRun('export_360_rig_template', args, args.dryRun, async () => {
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_360_rig_template" требует подключённого Python API Harmony.');
+      });
+    }
+  },
+  {
+    name: 'harmony.rig.create_autopatch_joint',
+    description: 'Автоматическое создание бесшовного сустава Auto-Patch между двумя сегментами конечности (плечо-предплечье, бедро-голень).',
+    inputSchema: schemas.createAutopatchJointSchema,
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('create_autopatch_joint', args, args.dryRun, async () => {
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_autopatch_joint" требует подключённого Python API Harmony.');
+      });
+    }
+  },
+  {
+    name: 'harmony.rig.attach_kinematic_accessory',
+    description: 'Автоматическая привязка аксессуара (часы, браслет, пуговица) к деформируемому слою через ноду Kinematic Output.',
+    inputSchema: schemas.attachKinematicAccessorySchema,
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('attach_kinematic_accessory', args, args.dryRun, async () => {
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "attach_kinematic_accessory" требует подключённого Python API Harmony.');
+      });
+    }
+  },
+  {
+    name: 'harmony.rig.zero_out_peg',
+    description: 'Сброс координат пивота выбранной Peg-ноды к исходному локальному нулю (Zero-Out).',
+    inputSchema: schemas.zeroOutPegSchema,
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('zero_out_peg', args, args.dryRun, () => {
+        return runRigBridge('zero_out_peg', {
+          projectPath: checkedPath,
+          pegNodePath: args.pegNodePath
+        });
+      });
+    }
+  },
+  {
+    name: 'harmony.rig.find_duplicate_deformer_chains',
+    description: 'Поиск конфликтующих деформационных цепей на одном элементе (Drawing node). Несколько деформеров на одном элементе могут ломать друг друга (Reddit: rig_deformer_bug, problems_with_rigs).',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      nodePath: z.string().optional().describe('Опционально: проверить конкретную ноду. Если не указано — проверяются все ноды сцены.')
+    }),
+    handler: async (args: { projectPath?: string; nodePath?: string }) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      const res = await runRigBridge('validate_deformer_hierarchy', { projectPath: checkedPath });
+      if (res.status === 'unsupported') return res;
+
+      const allIssues = res.issues || [];
+      const duplicates: any[] = [];
+
+      for (const issue of allIssues) {
+        const msg = typeof issue === 'string' ? issue : issue?.message || '';
+        if (msg.includes('duplicate') || msg.includes('conflict') || msg.includes('multiple deformer') || msg.includes('same element')) {
+          if (args.nodePath && !msg.includes(args.nodePath)) continue;
+          duplicates.push({
+            issue: typeof issue === 'string' ? issue : issue,
+            recommendation: 'Create a separate Read node for the second deformer chain instead of attaching both to the same element.',
+            fixSteps: [
+              '1. Create a new Read node (harmony.drawings.create_layer)',
+              '2. Copy or import the drawing to the new node (harmony.drawings.import_image)',
+              '3. Create the deformer on the new Read node (harmony.rig.create_deformers)',
+              '4. Connect the new chain to the parent Peg (harmony.nodes.connect)'
+            ]
+          });
+        }
+      }
+
+      return {
+        status: 'success',
+        duplicateChainsFound: duplicates.length,
+        duplicates,
+        hasConflicts: duplicates.length > 0,
+        recommendation: duplicates.length > 0
+          ? `${duplicates.length} conflicting deformer chain(s) detected. Multiple deformer chains on the same Drawing element cause deformation conflicts. Create separate Read nodes for each chain.`
+          : 'No conflicting deformer chains detected.'
+      };
+    }
+  },
+  {
+    name: 'harmony.rig.validate_deformer_pivots',
+    description: 'Проверка расхождения координат пивотов деформера и родительского Peg. Рассинхрон вызывает улетание элементов при подключении к главному Peg (Reddit: simple_rig_help).',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      deformerNodePath: z.string().describe('Путь к ноде деформера.'),
+      pegNodePath: z.string().describe('Путь к родительскому Peg-узлу.'),
+      tolerance: z.number().optional().default(0.5).describe('Допустимое расхождение в пикселях.')
+    }),
+    handler: async (args: { projectPath?: string; deformerNodePath: string; pegNodePath: string; tolerance?: number }) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      const tolerance = args.tolerance ?? 0.5;
+
+      let deformerPivot: { x: number; y: number } | null = null;
+      let pegPivot: { x: number; y: number } | null = null;
+
+      try {
+        const defRes = await runRigBridge('get_node_attrs', { projectPath: checkedPath, nodePath: args.deformerNodePath });
+        if (defRes.attributes) {
+          deformerPivot = {
+            x: parseFloat(defRes.attributes.PIVOT_X || defRes.attributes.pivot_x || 0),
+            y: parseFloat(defRes.attributes.PIVOT_Y || defRes.attributes.pivot_y || 0)
+          };
+        }
+      } catch { /* not available */ }
+
+      try {
+        const pegRes = await runRigBridge('get_node_attrs', { projectPath: checkedPath, nodePath: args.pegNodePath });
+        if (pegRes.attributes) {
+          pegPivot = {
+            x: parseFloat(pegRes.attributes.PIVOT_X || pegRes.attributes.pivot_x || 0),
+            y: parseFloat(pegRes.attributes.PIVOT_Y || pegRes.attributes.pivot_y || 0)
+          };
+        }
+      } catch { /* not available */ }
+
+      if (!deformerPivot || !pegPivot) {
         return {
           status: 'success',
-          message: `360-риг персонажа "${args.characterName}" успешно экспортирован в "${checkedDest}".`
+          deformerPivot,
+          pegPivot,
+          aligned: true,
+          message: 'Could not read pivot coordinates from one or both nodes. Manual verification recommended.'
         };
-      });
+      }
+
+      const dx = Math.abs(deformerPivot.x - pegPivot.x);
+      const dy = Math.abs(deformerPivot.y - pegPivot.y);
+      const misaligned = dx > tolerance || dy > tolerance;
+
+      return {
+        status: 'success',
+        deformerPivot,
+        pegPivot,
+        delta: { x: dx, y: dy },
+        tolerance,
+        aligned: !misaligned,
+        recommendation: misaligned
+          ? `Pivot mismatch: delta X=${dx.toFixed(2)}, Y=${dy.toFixed(2)} (tolerance=${tolerance}). Use harmony.rig.zero_out_peg on the Peg, then set the correct pivot coordinates with harmony.nodes.set_attr (PIVOT_X, PIVOT_Y).`
+          : 'Deformer and Peg pivots are aligned.'
+      };
     }
   }
 ];

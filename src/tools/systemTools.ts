@@ -116,11 +116,12 @@ export const systemTools = [
   },
   {
     name: 'harmony.validate_environment',
-    description: 'Проверка существования, прав записи и доступности директории в списке разрешенных путей.',
+    description: 'Проверка существования, прав записи, разрешенных путей и правил окружения Harmony (Default Separate Position, Element Node Creation из Урока #1).',
     inputSchema: z.object({
-      path: z.string().describe('Абсолютный путь к директории/файлу для проверки.')
+      path: z.string().describe('Абсолютный путь к директории/файлу для проверки.'),
+      checkHarmonyPreferences: z.boolean().optional().default(true).describe('Выполнить проверку критических настроек сцены (Separate Position = True, Element Node Creation = False).')
     }),
-    handler: async (args: { path: string }) => {
+    handler: async (args: { path: string; checkHarmonyPreferences?: boolean }) => {
       const resolved = path.resolve(args.path);
       const isAllowed = config.allowedRoots.some(root => resolved.startsWith(root));
       if (!isAllowed) {
@@ -143,12 +144,34 @@ export const systemTools = [
         }
       }
 
+      const preferenceRules = args.checkHarmonyPreferences ? [
+        {
+          rule: 'separate_position_axes',
+          status: 'RECOMMENDED',
+          requirement: 'Preferences -> General -> Default Separate Position = TRUE',
+          reason: 'Гарантирует независимые кривые X, Y, Z для анимации пегов (Урок #1).'
+        },
+        {
+          rule: 'element_node_creation',
+          status: 'RECOMMENDED',
+          requirement: 'Preferences -> Advanced -> Disable Element Node Creation = TRUE',
+          reason: 'Исключает случайное создание ключевых кадров анимации на рисунках (Drawing nodes).'
+        },
+        {
+          rule: 'sublayer_support',
+          status: 'RECOMMENDED',
+          requirement: 'Preferences -> Advanced -> Support Overlay and Underlay = TRUE',
+          reason: 'Подготавливает 4 суб-слоя (Line Art, Color Art, Overlay, Underlay) для AutoPatch и выноса складок (Уроки #6a, #6b).'
+        }
+      ] : [];
+
       return {
         path: args.path,
         resolved,
         valid: true,
         exists,
-        writable
+        writable,
+        harmonyPreferencesCheck: preferenceRules
       };
     }
   },

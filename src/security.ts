@@ -33,7 +33,8 @@ export class HarmonyError extends Error {
   details?: any;
 
   constructor(code: HarmonyErrorCode, message: string, details?: any) {
-    super(message);
+    const fullMessage = message.includes(code) ? message : `[${code}] ${message}`;
+    super(fullMessage);
     this.name = 'HarmonyError';
     this.code = code;
     this.details = details;

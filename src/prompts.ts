@@ -37,7 +37,7 @@ export const prompts: McpPrompt[] = [
   },
   {
     name: 'create_character_rig_from_design',
-    description: 'Формирует детальный план сборки иерархии и перекладки персонажа по концепт-арту или описанию.',
+    description: 'Формирует детальный план сборки иерархии и перекладки персонажа по концепт-арту или описанию с учетом всех стандартов индустрии.',
     arguments: [
       { name: 'characterName', description: 'Имя персонажа.', required: true },
       { name: 'designDescription', description: 'Описание дизайна персонажа или ссылка на референс.', required: true }
@@ -47,7 +47,7 @@ export const prompts: McpPrompt[] = [
         role: 'user',
         content: {
           type: 'text',
-          text: `Нам необходимо разработать перекладочный риг (cut-out rig) для персонажа "${args.characterName}" со следующим описанием дизайна:\n"${args.designDescription}"\n\nРазработайте подробный план сборки в Harmony. Опишите иерархию Peg-узлов, композитов и деформаторов. Укажите, какие инструменты (harmony.rig.create_character_structure, harmony.rig.create_pegs, harmony.rig.create_deformers) следует использовать.`
+          text: `Нам необходимо разработать профессиональный перекладочный риг (cut-out rig) для персонажа "${args.characterName}" со следующим описанием дизайна:\n"${args.designDescription}"\n\nРазработайте подробный план сборки в Harmony с применением стандартов из базы визуальных знаний риггинга:\n1. 10-этапный пайплайн сборки (от Asset Prep до Rest Pose & .tpl).\n2. Настройка Peg-нод в режим Separate (Separate Position X/Y/Z).\n3. Запрет анимации на Drawing-нодах (Can Never Enter Drawing Mode).\n4. Бесшовные суставы с окружностями одинакового радиуса и ` + "`harmony.rig.create_autopatch_joint`" + `.\n5. Использование Micro Z-Offset (0.0001B) для локального перекрытия деталей.\n6. Обязательное внедрение ` + "`harmony.rig.attach_kinematic_accessory`" + ` (Kinematic Output) для аксессуаров на деформируемых конечностях.\n7. Цветовая кодировка Backdrops (Зеленый - Голова, Синий - Торс, Желтый/Оранжевый - Руки, Фиолетовый - Ноги, Красный - Master Controllers).\n\nУкажите точную последовательность вызова инструментов (harmony.rig.create_character_structure, harmony.rig.create_pegs, harmony.rig.create_deformers, harmony.rig.create_autopatch_joint, harmony.rig.attach_kinematic_accessory).`
         }
       }
     ]
@@ -304,6 +304,32 @@ ${args.scenePlan ? `Scene Plan: ${args.scenePlan}` : ''}
 - Количество ошибок/предупреждений
 - Что исправлено автоматически  
 - Список задач для художника с примерной оценкой времени`
+        }
+      }
+    ]
+  },
+  {
+    name: 'playlist_rigging_workflow',
+    description: 'Инструктирует агента по созданию рига персонажа в Toon Boom Harmony на основе Базы Знаний учебного плейлиста.',
+    arguments: [
+      { name: 'characterName', description: 'Имя персонажа (например: Morty).', required: true },
+      { name: 'taskType', description: 'Тип задачи (base_hierarchy | arm | leg | eye | mouth | rig_audit).', required: true }
+    ],
+    messages: (args: any) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Сформируй пошаговый план выполнения задачи "${args.taskType}" для персонажа "${args.characterName}" с использованием рецептов из ресурса \`harmony://workflow/playlist-recipes\`.
+
+Используй пресеты из плейлиста:
+- Pivot Matching (привязка пивотов к центрам суставов)
+- Seamless Joint / AutoPatch (для бесшовных рук и ног)
+- Eye Cutter Mask (инвертированная маска зрачка)
+- Kinematic Isolation (вставка KinematicOutput для деформеров)
+- Multi-Angle Deformation (поворот 360)
+
+Укажи точные последовательности MCP-вызовов и отметь этапы, требующие ручного контроля в интерфейсе Harmony.`
         }
       }
     ]

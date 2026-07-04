@@ -38,6 +38,8 @@ import { rig360GenerationTools } from './tools/rig360GenerationTools.js';
 import { actingTools } from './tools/actingTools.js';
 import { episodeAssemblyTools } from './tools/episodeAssemblyTools.js';
 import { qualityDirectorTools } from './tools/qualityDirectorTools.js';
+import { promptToSceneTools } from './tools/promptToSceneTools.js';
+import { reviewLoopTools } from './tools/reviewLoopTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -72,7 +74,9 @@ const allTools = [
   ...rig360GenerationTools,
   ...actingTools,
   ...episodeAssemblyTools,
-  ...qualityDirectorTools
+  ...qualityDirectorTools,
+  ...promptToSceneTools,
+  ...reviewLoopTools
 ];
 
 class HarmonyMcpServer {

@@ -59,3 +59,7 @@ export const listVectorizeQueueSchema = z.object({});
 export const retryFailedVectorizationsSchema = z.object({
   dryRun: z.boolean().optional()
 });
+
+export const diagnoseHeavyNodesSchema = z.object({
+  projectPath: projectPathSchema
+});

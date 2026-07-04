@@ -6,7 +6,7 @@ import { uiAutomation } from '../adapters/uiAutomation/index.js';
 import { VisualStateEngine } from '../adapters/visualState/index.js';
 import { RecoveryAdapter } from '../adapters/recovery/index.js';
 import { templateAssembly } from '../adapters/templateAssembly/index.js';
-import { HarmonyError, executeWithDryRun } from '../security.js';
+import { HarmonyError, executeWithDryRun, verifyPathAccess } from '../security.js';
 import { config } from '../config.js';
 
 interface AutopilotState {
@@ -468,19 +468,22 @@ export const autopilotTools = [
       let issueId = 1;
 
       // Аудит .xstage если есть
-      if (args.projectPath && fs.existsSync(path.resolve(args.projectPath))) {
-        const xmlResult = (await import('../adapters/scenePlan/xmlAuditor.js'))
-          .FastXmlAuditor.auditXstageFile(path.resolve(args.projectPath));
-        if (!xmlResult.passed) {
-          for (const xmlIssue of (xmlResult.issues || [])) {
-            issues.push({
-              id: `xml_${issueId++}`,
-              severity: 'error',
-              category: 'broken_connection',
-              message: xmlIssue,
-              autoFixable: false,
-              source: 'xml_audit'
-            });
+      if (args.projectPath) {
+        const checkedProj = verifyPathAccess(args.projectPath);
+        if (fs.existsSync(path.resolve(checkedProj))) {
+          const xmlResult = (await import('../adapters/scenePlan/xmlAuditor.js'))
+            .FastXmlAuditor.auditXstageFile(path.resolve(checkedProj));
+          if (!xmlResult.passed) {
+            for (const xmlIssue of (xmlResult.issues || [])) {
+              issues.push({
+                id: `xml_${issueId++}`,
+                severity: 'error',
+                category: 'broken_connection',
+                message: xmlIssue,
+                autoFixable: false,
+                source: 'xml_audit'
+              });
+            }
           }
         }
       }

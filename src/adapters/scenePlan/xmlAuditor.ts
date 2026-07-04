@@ -73,7 +73,19 @@ export class FastXmlAuditor {
         }
       }
 
-      // 3. Сканируем файлы ресурсов (картинки, звуки)
+      // 3. Аудит правил из уроков риггинга (Separate Mode, Kinematic Output, Drawing Lock)
+      const pegs = nodes.filter(n => n.type === 'PEG');
+      if (content.includes('separatePosition="false"')) {
+        issues.push(`Обнаружены Peg-узлы в режиме 3D Path вместо Separate Mode. Рекомендуется включить Separate Position.`);
+      }
+
+      const deformers = nodes.filter(n => n.type && n.type.toLowerCase().includes('deform'));
+      const kinematicOutputs = nodes.filter(n => n.type === 'KINEMATIC_OUTPUT');
+      if (deformers.length > 0 && kinematicOutputs.length === 0) {
+        issues.push(`Обнаружены деформаторы без нод Kinematic Output. Дочерние элементы могут слетать при деформации.`);
+      }
+
+      // 4. Сканируем файлы ресурсов (картинки, звуки)
       // Пример: <elementName val="drawing_name"/> или пути в атрибутах
       const elementFolderRegex = /<elementName\s+val="([^"]+)"/g;
       let elementFolderMatch;
@@ -101,5 +113,58 @@ export class FastXmlAuditor {
       totalNodesCount,
       totalLinksCount
     };
+  }
+
+  /**
+   * Генерация Mermaid-диаграммы графа нод из файла .xstage
+   * @param filePath Абсолютный путь к файлу .xstage
+   */
+  static generateMermaidGraph(filePath: string): string {
+    if (!fs.existsSync(filePath)) {
+      return 'graph TD\n  error["Файл проекта не найден"]';
+    }
+
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      
+      // 1. Поиск объявлений нод (модулей)
+      const moduleRegex = /<module\s+[^>]*type="([^"]+)"\s+name="([^"]+)"/g;
+      let moduleMatch;
+      const nodes: { id: string; name: string; type: string }[] = [];
+      
+      while ((moduleMatch = moduleRegex.exec(content)) !== null) {
+        const type = moduleMatch[1];
+        const name = moduleMatch[2];
+        const id = name.replace(/[^a-zA-Z0-9]/g, '_');
+        nodes.push({ id, name, type });
+      }
+
+      // 2. Поиск связей (линков)
+      const linkRegex = /<link\s+[^>]*from="([^"]+)"\s+to="([^"]+)"/g;
+      let linkMatch;
+      const links: { fromId: string; toId: string }[] = [];
+
+      while ((linkMatch = linkRegex.exec(content)) !== null) {
+        const fromId = linkMatch[1].replace(/[^a-zA-Z0-9]/g, '_');
+        const toId = linkMatch[2].replace(/[^a-zA-Z0-9]/g, '_');
+        links.push({ fromId, toId });
+      }
+
+      if (nodes.length === 0) {
+        return 'graph TD\n  empty["Граф нод пуст"]';
+      }
+
+      let mermaid = 'graph TD\n';
+      for (const node of nodes) {
+        mermaid += `  ${node.id}["${node.name} (${node.type})"]\n`;
+      }
+      for (const link of links) {
+        mermaid += `  ${link.fromId} --> ${link.toId}\n`;
+      }
+
+      return mermaid;
+    } catch (e: any) {
+      return `graph TD\n  error["Ошибка чтения/парсинга XML: ${e.message}"]`;
+    }
   }
 }

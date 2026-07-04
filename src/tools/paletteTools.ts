@@ -46,10 +46,7 @@ export const paletteTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_palette', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Палитра "${args.paletteName}" успешно создана в проекте.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_palette" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -65,11 +62,7 @@ export const paletteTools = [
       const checkedPlt = verifyPathAccess(args.paletteFilePath);
       const checkedBackup = verifyPathAccess(args.backupDirectoryPath);
       return executeWithDryRun('backup_palette', args, args.dryRun, async () => {
-        // Логика копирования
-        return {
-          status: 'success',
-          message: `Резервная копия палитры сохранена в "${checkedBackup}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "backup_palette" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -85,10 +78,7 @@ export const paletteTools = [
       const checkedSrc = verifyPathAccess(args.sourcePaletteFilePath);
       const checkedTarget = verifyPathAccess(args.targetPaletteLibraryPath);
       return executeWithDryRun('import_palette', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: 'Палитра успешно импортирована.'
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_palette" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -104,10 +94,7 @@ export const paletteTools = [
       const checkedPlt = verifyPathAccess(args.paletteFilePath);
       const checkedDest = verifyPathAccess(args.exportDestinationPath);
       return executeWithDryRun('export_palette', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: 'Палитра успешно экспортирована.'
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_palette" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -136,10 +123,7 @@ export const paletteTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_colour', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Цвет "${args.colourName}" [${args.rgba.join(',')}] успешно добавлен в палитру "${args.paletteName}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_colour" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -156,10 +140,7 @@ export const paletteTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('rename_colour', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Цвет переименован в "${args.newColourName}".`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "rename_colour" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -176,10 +157,7 @@ export const paletteTools = [
     handler: async (args: any) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('replace_colour', args, args.dryRun, async () => {
-        return {
-          status: 'success',
-          message: `Значение цвета "${args.colourName}" в палитре "${args.paletteName}" изменено.`
-        };
+        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "replace_colour" требует подключённого Python API Harmony.');
       });
     }
   },
@@ -192,10 +170,9 @@ export const paletteTools = [
     }),
     handler: async (args: { projectPath?: string; paletteName: string }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
-      return {
-        status: 'success',
-        unusedColours: []
-      };
+      const res = await runPaletteBridge('find_unused_colours', { projectPath: checkedPath, paletteName: args.paletteName });
+      if (res.status === 'unsupported') return res;
+      return res;
     }
   },
   {
@@ -206,13 +183,30 @@ export const paletteTools = [
     }),
     handler: async (args: { projectPath?: string }) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
-      const res = await runPaletteBridge('list_palettes', { projectPath: checkedPath });
+      const res = await runPaletteBridge('validate_palettes', { projectPath: checkedPath });
       if (res.status === 'unsupported') return res;
       return {
         status: 'success',
-        valid: true,
+        valid: res.valid !== false,
+        missingPaletteLayers: res.missing_palette_layers || [],
         palettesCount: (res.palettes || []).length
       };
+    }
+  },
+  {
+    name: 'harmony.palette.merge_duplicates',
+    description: 'Поиск и автоматическое слияние дублирующихся по названию цветов во всех палитрах сцены.',
+    inputSchema: z.object({
+      projectPath: projectPathSchema,
+      dryRun: z.boolean().optional()
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      return executeWithDryRun('merge_duplicate_colours', args, args.dryRun, () => {
+        return runPaletteBridge('merge_duplicate_colours', {
+          projectPath: checkedPath
+        });
+      });
     }
   }
 ];

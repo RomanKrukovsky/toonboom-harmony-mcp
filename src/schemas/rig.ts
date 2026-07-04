@@ -24,14 +24,29 @@ export const createCutoutHierarchySchema = z.object({
 export const createPegsSchema = z.object({
   projectPath: projectPathSchema,
   nodePaths: z.array(z.string()).describe('Ноды, для которых нужно создать управляющие Pegs.'),
+  pivotMatchingPreset: z.boolean().optional().describe('Пресет Pivot Matching: автоматическая привязка точек вращения Pegs к центрам суставов.'),
+  jointCenterMarkers: z.array(z.object({
+    nodePath: z.string(),
+    pivotX: z.number(),
+    pivotY: z.number()
+  })).optional().describe('Список точных координат пивотов суставов для точного совпадения.'),
+  useSeparateCoordinates: z.boolean().optional().default(true).describe('Использовать раздельные координаты (Separate) вместо 3D Path для предотвращения багов с интерполяцией.'),
+  dryRun: z.boolean().optional().describe('Симуляция создания пегов и установки пивотов.')
+});
+
+export const zeroOutPegSchema = z.object({
+  projectPath: projectPathSchema,
+  pegNodePath: z.string().describe('Путь к ноде Peg для сброса пивота.'),
   dryRun: z.boolean().optional()
 });
+
 
 export const createDeformersSchema = z.object({
   projectPath: projectPathSchema,
   nodePath: z.string().describe('Путь к ноде рисунка для добавления деформатора.'),
-  type: z.enum(['Curve', 'Bone', 'Envelope']).describe('Тип деформатора.'),
-  dryRun: z.boolean().optional()
+  type: z.enum(['Curve', 'Bone', 'Envelope']).describe('Тип деформатора (Curve для гибких рук/волос, Bone для костей, Envelope для замыканий).'),
+  kinematicIsolation: z.boolean().optional().default(true).describe('Пресет Kinematic Isolation: автоматически добавить ноду Kinematic Output для дочерних веток.'),
+  dryRun: z.boolean().optional().describe('Симуляция создания деформатора без изменения сцены.')
 });
 
 export const createMasterControllerPlanSchema = z.object({
@@ -60,7 +75,16 @@ export const createMouthChartSchema = z.object({
 export const createEyeSystemSchema = z.object({
   projectPath: projectPathSchema,
   characterName: z.string(),
-  dryRun: z.boolean().optional()
+  eyeCutterPreset: z.boolean().optional().default(true).describe('Пресет Eye Cutter Mask: инвертированная маска зрачка под белок глаза.'),
+  eyelidCount: z.number().optional().default(4).describe('Количество веков для мимики глаза (по умолчанию 4 века из Урока #17).'),
+  dryRun: z.boolean().optional().describe('Симуляция создания глазной системы.')
+});
+
+export const createConstraintSchema = z.object({
+  projectPath: projectPathSchema,
+  targetNodePath: z.string().describe('Узел назначения для наложения ограничения.'),
+  constraintType: z.enum(['TwoPointConstraint', 'PositionConstraint', 'RotationConstraint']).optional().default('TwoPointConstraint').describe('Тип ограничения (TwoPointConstraint для сохранения объемов при растяжении конечностей из Уроков #19, #21).'),
+  dryRun: z.boolean().optional().describe('Симуляция создания констрейнта.')
 });
 
 export const createBrowSystemSchema = z.object({
@@ -136,6 +160,7 @@ export const mapDrawingsToAnglesSchema = z.object({
     angle: z.enum(['front', 'front_3q_left', 'side_left', 'back_3q_left', 'back', 'back_3q_right', 'side_right', 'front_3q_right']),
     drawingName: z.string()
   })),
+  createNewDeformationChains: z.boolean().optional().default(true).describe('Автоматическое создание уникальных деформация-групп (Create New Deformation Chain) под каждый ракурс (Урок #12).'),
   dryRun: z.boolean().optional()
 });
 
@@ -171,5 +196,23 @@ export const export360RigTemplateSchema = z.object({
   projectPath: projectPathSchema,
   characterName: z.string(),
   templateDestinationPath: z.string(),
+  dryRun: z.boolean().optional()
+});
+
+export const createAutopatchJointSchema = z.object({
+  projectPath: projectPathSchema,
+  upperLimbNodePath: z.string().describe('Путь к родительскому слою конечности (например, Top/Bicep_D).'),
+  lowerLimbNodePath: z.string().describe('Путь к дочернему слою конечности (например, Top/Forearm_D).'),
+  jointName: z.string().optional().default('Elbow_Joint').describe('Имя создаваемого сустава.'),
+  roundJointAlignment: z.boolean().optional().default(true).describe('Правило выравнивания круглых контуров (Perfect Circle Joint Rule).'),
+  colorArtPaletteMatch: z.boolean().optional().default(true).describe('Проверка совпадения палитровых цветов для Line Art и Color Art.'),
+  dryRun: z.boolean().optional()
+});
+
+export const attachKinematicAccessorySchema = z.object({
+  projectPath: projectPathSchema,
+  deformedNodePath: z.string().describe('Путь к ноде деформируемого слоя (например, Top/Arm_D).'),
+  accessoryPegPath: z.string().describe('Путь к Peg ноде прикрепляемого аксессуара (например, Top/Bracelet_P).'),
+  accessoryName: z.string().optional().default('Accessory').describe('Имя аксессуара.'),
   dryRun: z.boolean().optional()
 });

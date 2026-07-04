@@ -80,6 +80,8 @@ HARMONY_ALLOW_DESTRUCTIVE=false
 ## Документация (на русском языке)
 
 Подробное руководство находится в папке [docs](docs/):
+- [База Знаний Курса по Риггингу (13 Уроков)](playlist_knowledge_base.md)
+- [Инструкции и Workflow Плейлиста для Агента](docs/PLAYLIST_WORKFLOWS.md)
 - [Инструкция по установке](docs/INSTALL.md)
 - [Руководство по конфигурации](docs/CONFIGURATION.md)
 - [Правила безопасности](docs/SECURITY.md)

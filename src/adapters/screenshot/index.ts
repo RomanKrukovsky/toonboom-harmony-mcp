@@ -49,14 +49,7 @@ export class ScreenshotAdapter {
     return new Promise((resolve, reject) => {
       exec(cmd, (error) => {
         if (error) {
-          // При ошибке реального захвата откатываемся на симуляцию
-          const mockBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-          fs.writeFileSync(outPath, Buffer.from(mockBase64, 'base64'));
-          return resolve({
-            status: 'success',
-            imagePath: outPath,
-            base64: mockBase64
-          });
+          return reject(new Error(`Ошибка создания скриншота: ${error.message}`));
         }
 
         try {

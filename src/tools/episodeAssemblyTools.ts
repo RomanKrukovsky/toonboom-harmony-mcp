@@ -35,5 +35,25 @@ export const episodeAssemblyTools = [
       const plan = assembler.generateRenderPlan(args.episodePlan, args.cameraPlans || [], args.fxPlans || []);
       return { status: 'success', renderPlan: plan };
     }
+  },
+
+  {
+    name: 'harmony.episode.build_review_package',
+    description: 'Собрать final_package c previews, final_render, и отчётами.',
+    inputSchema: z.object({
+      packageInput: z.any().describe('Объект production package для сборки.'),
+      outputDir: z.string().optional()
+    }),
+    handler: async (args: any) => {
+      const { FinalPackager } = await import('../adapters/finalPackage/index.js');
+      const packager = new FinalPackager();
+      const res = packager.assemble(args.packageInput, args.outputDir);
+      return {
+        status: 'success',
+        packagePath: res.packagePath,
+        manifestPath: res.manifestPath,
+        summary: res.summary
+      };
+    }
   }
 ];

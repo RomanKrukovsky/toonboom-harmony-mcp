@@ -65,6 +65,26 @@ describe('Harmony MCP Codebase Optimizations', () => {
       const result = FastXmlAuditor.auditXstageFile(tempXstage);
       expect(result.issues.filter(i => i.includes('Композит') || i.includes('изолирован')).length).toBe(0);
     });
+
+    test('should generate a valid Mermaid graph', () => {
+      const mockXml = `<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <nodes>
+    <module type="READ" name="Drawing node"/>
+    <module type="COMPOSITE" name="Composite"/>
+  </nodes>
+  <links>
+    <link from="Drawing node" to="Composite"/>
+  </links>
+</project>`;
+      
+      fs.writeFileSync(tempXstage, mockXml);
+      const graph = FastXmlAuditor.generateMermaidGraph(tempXstage);
+      expect(graph).toContain('graph TD');
+      expect(graph).toContain('Drawing_node["Drawing node (READ)"]');
+      expect(graph).toContain('Composite["Composite (COMPOSITE)"]');
+      expect(graph).toContain('Drawing_node --> Composite');
+    });
   });
 
   describe('QtScriptTransaction', () => {

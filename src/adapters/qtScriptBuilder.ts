@@ -279,6 +279,41 @@ if (log) {
       }));
     `);
   }
+
+  static buildCreateDeformerChain(targetNodePath: string, deformerType: 'bone' | 'curve' | 'envelope', chainName: string): string {
+    const escTarget = escapeString(targetNodePath);
+    const escName = escapeString(chainName);
+    return this.wrapScript(`
+      var targetNode = node.subNode("${escTarget}");
+      if (!targetNode) throw new Error("Целевой узел не найден: " + "${escTarget}");
+      var parentGroup = node.parentNode("${escTarget}");
+      var defGroup = node.add(parentGroup, "${escName}_DeformerGroup", "Group", 0, 0, 0);
+      var bone1 = node.add(defGroup, "${escName}_Bone1", "BONE_MODULE", 0, 0, 0);
+      var bone2 = node.add(defGroup, "${escName}_Bone2", "BONE_MODULE", 0, 50, 0);
+      var kinOutput = node.add(defGroup, "${escName}_Kinematic", "KinematicOutput", 0, 100, 0);
+      node.link(bone1, 0, bone2, 0);
+      node.link(bone2, 0, kinOutput, 0);
+      ControlCentre.printToConsole("[RESULT]" + JSON.stringify({
+        status: "success",
+        deformerGroup: defGroup,
+        message: "Цепочка деформеров успешно создана"
+      }));
+    `);
+  }
+
+  static buildMasterControllerScript(characterName: string, controllerType: 'grid' | 'slider', specJson: string): string {
+    const escChar = escapeString(characterName);
+    const escSpec = escapeString(specJson);
+    return this.wrapScript(`
+      var mcNode = node.add("Top", "${escChar}_MasterController", "MasterController", 0, 0, 0);
+      node.setTextAttr(mcNode, "SPECIFICATION", 1, "${escSpec}");
+      ControlCentre.printToConsole("[RESULT]" + JSON.stringify({
+        status: "success",
+        masterControllerNode: mcNode,
+        message: "Master Controller создан для " + "${escChar}"
+      }));
+    `);
+  }
 }
 
 export class QtScriptTransaction {
