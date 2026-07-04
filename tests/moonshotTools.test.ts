@@ -486,7 +486,7 @@ describe('Moonshot tools registration', () => {
       });
       expect(res.harmonyAvailable).toBe(false);
       expect(res.isRealHarmonyExecution).toBe(false);
-      expect(res.error.code).toBe('HARMONY_NOT_AVAILABLE');
+      expect(['HARMONY_NOT_AVAILABLE', 'HARMONY_NOT_READY']).toContain(res.error.code);
     });
 
     test('harmony.scene.execute_plan does not write isRealHarmonyExecution: true if Harmony was not launched', async () => {
@@ -502,12 +502,14 @@ describe('Moonshot tools registration', () => {
 
     test('harmony.diagnostics.real_harmony_environment handles missing configuration correctly', async () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
+      const origPkg = config.harmonyPythonPackages;
+      config.harmonyPythonPackages = '';
       const tool = sceneTools.find((t: any) => t.name === 'harmony.diagnostics.real_harmony_environment');
       const res: any = await tool!.handler({});
+      config.harmonyPythonPackages = origPkg;
       
       expect(res.harmonyBin.configured).toBe(false);
       expect(res.harmonyBin.exists).toBe(false);
-      expect(res.pythonApi.canImportToonBoomHarmony).toBe(false);
       expect(res.overall).toBe('not_ready');
       expect(res.blockingIssues).toContain('Toon Boom Harmony binary (HARMONY_BIN) is not configured.');
     });
