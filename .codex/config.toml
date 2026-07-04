@@ -2,7 +2,7 @@
 # Trust this project in Codex to load the server automatically.
 
 [mcp_servers.toon-boom-harmony]
-command = "/opt/homebrew/bin/node"
+command = "node"
 args = ["/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/dist/index.js"]
 env_vars = ["HARMONY_BACKEND_IMAGE", "HARMONY_BACKEND_AUDIO", "HARMONY_BACKEND_LLM"]
 
