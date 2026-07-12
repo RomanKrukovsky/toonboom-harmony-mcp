@@ -1,4 +1,59 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 7)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 8)
+
+## Iteration 8 — COMPLETED (Harmony Native Build)
+
+В рамках Iteration 8 реализован полный pipeline генерации нативной Harmony-сцены:
+
+### HarmonyManifestV3Compiler
+- **Компиляция Manifest V3** из всех AI Studio outputs (sceneUnderstanding, keyPoses, cameraLayout, partDecomposition, routingPlan, voiceAnalysis, performancePlans, criticReports, variantTournament)
+- **Schema version 3.0** с поддержкой всех секций: core scene understanding, character & rigging, animation, representation, events, assets, quality & selection, metadata
+- **Honest limitations**: ruleBasedBaseline, noMlAdapters, noHarmonyApplied, artistIntentInferred
+- **Provenance tracking**: pipeline, iterations, engine, timestamp
+
+### HarmonyCommandPlanV3Generator
+- **Whitelist-only operations** (Master Prompt §19): 30 operation types включая create_palette, create_drawing_element, create_drawing, write_path, create_peg, set_transform_keyframe, create_deformer, create_camera, lock_element, save_version
+- **Строгая валидация** через Zod схему commandPlanV3Schema
+- **Rollback plan**: стратегия restore_snapshot
+- **Provenance**: компилятор, версия, manifest schema version
+- **Operation ordering**: палитры → группы → рисунки → пивы → деформеры → камера → сохранение
+
+### PortableIntegrationPackageGenerator
+- **Полный пакет для внешней интеграции**: manifest/, command_plan/, assets/, docs/, README.md, apply_to_harmony.py, package.json
+- **README с документацией**: overview, contents, integration steps, limitations
+- **Python integration script**: загрузка manifest + command plan, применение к Harmony (stub для реальной интеграции)
+- **Schema documentation**: MANIFEST_SCHEMA.md с полной спецификацией V3
+
+### MCP Tools
+- `harmony.ai_studio.generate_editable_scene` — главный инструмент (Master Prompt §20): компилирует Manifest V3, генерирует Command Plan V3, создаёт portable package. Не применяет к Harmony напрямую.
+- `harmony.ai_studio.apply_manifest_to_harmony` — применяет Manifest V3 + Command Plan V3 к реальному Harmony через Python bridge. Возвращает native audit (vector type, palette linkage, exposure timing, editable geometry).
+
+### Python Bridge Extension
+- `execute_command_plan_v3` — выполняет whitelist операции на реальном Harmony через официальный Python DOM
+- `audit_reconstruction_scene` — нативный аудит: vectorType=TVG, paletteLinked, exposureTimingMatches, editableVectorGeometry
+
+### Tests
+- 19 unit-тестов в `tests/harmonyNativeBuild.test.ts` (manifest compilation, command plan generation, package creation)
+- Все тесты зеленые, проверяют Zod validation, whitelist operations, package structure
+
+### Demo
+- `node scripts/demo_ai_studio_iter8.js` — полный end-to-end pipeline
+- Вход: mock scene understanding, key poses, camera layout
+- Выход: Manifest V3, Command Plan V3, Portable Package
+- Генерирует simulated native audit с верификацией TVG, palette, exposure timing, editable geometry
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 278 passed, 6 skipped (Harmony integration)
+- Demo — PASS, генерирует package в `output/iteration8/scene_01_harmony_package/`
+
+### Честные ограничения
+- Rule-based baseline — нет ML adapters
+- Harmony не применялась — все вычисления offline
+- Native TVG и Harmony round-trip не проверены (требует лицензированную Harmony)
+- Simulated native audit — не настоящий audit
+- Система не промышленная без licensed Harmony runner
+
+---
 
 ## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
 

@@ -28,6 +28,11 @@ import { CameraLayoutDirector } from '../adapters/cameraLayoutDirector/index.js'
 import { cameraLayoutPlanSchema } from '../schemas/cameraLayout.js';
 import { AnimationCritic } from '../adapters/animationCritic/index.js';
 import { VariantTournament } from '../adapters/variantTournament/index.js';
+import { HarmonyManifestV3Compiler } from '../adapters/harmonyManifestV3/index.js';
+import { HarmonyCommandPlanV3Generator } from '../adapters/harmonyCommandPlanV3Generator/index.js';
+import { PortableIntegrationPackageGenerator } from '../adapters/portableIntegrationPackage/index.js';
+import { harmonyManifestV3Schema } from '../schemas/harmonyManifestV3.js';
+import { commandPlanV3Schema } from '../schemas/harmonyCommandPlanV3.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -558,6 +563,175 @@ export const aiStudioTools = [
           refinementIsSimulated: true
         }
       };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.generate_editable_scene',
+    description: 'Generate Editable Scene (Master Prompt §20, Iteration 8). Главный MCP-инструмент: компилирует Harmony Manifest V3 из всех AI Studio outputs, генерирует whitelist-only Command Plan V3, создаёт portable integration package. Не применяет к Harmony напрямую — возвращает package для external integration.',
+    inputSchema: z.object({
+      sceneId: z.string().min(1),
+      sceneUnderstanding: sceneUnderstandingSchema.optional(),
+      keyPoses: keyPoseSetSchema.optional(),
+      cameraLayout: cameraLayoutPlanSchema.optional(),
+      partDecomposition: partDecompositionSchema.optional(),
+      routingPlan: routingPlanSchema.optional(),
+      voiceAnalysis: voiceAnalysisSchema.optional(),
+      performancePlan: performancePlanSchema.optional(),
+      criticReport: z.any().optional(),
+      outputDir: z.string().optional(),
+      packageName: z.string().optional()
+    }).strict(),
+    handler: async (args: any) => {
+      try {
+        // Compile Harmony Manifest V3
+        const manifestCompiler = new HarmonyManifestV3Compiler();
+        const manifest = manifestCompiler.compile({
+          sceneId: args.sceneId,
+          sceneUnderstanding: args.sceneUnderstanding,
+          keyPoses: args.keyPoses,
+          cameraLayout: args.cameraLayout,
+          partDecomposition: args.partDecomposition,
+          routingPlan: args.routingPlan,
+          voiceAnalysis: args.voiceAnalysis,
+          performancePlans: args.performancePlan ? [args.performancePlan] : undefined,
+          criticReports: args.criticReport ? [args.criticReport] : undefined
+        });
+
+        // Generate Command Plan V3
+        const commandPlanGenerator = new HarmonyCommandPlanV3Generator();
+        const commandPlan = commandPlanGenerator.generate(manifest);
+
+        // Generate portable integration package
+        let packageResult: any = null;
+        if (args.outputDir) {
+          const verifiedDir = verifyPathAccess(args.outputDir);
+          const packageGenerator = new PortableIntegrationPackageGenerator();
+          packageResult = await packageGenerator.generate({
+            manifest,
+            commandPlan,
+            outputDir: verifiedDir,
+            packageName: args.packageName
+          });
+        }
+
+        return {
+          status: 'success',
+          sceneId: args.sceneId,
+          manifestId: manifest.manifestId,
+          planId: commandPlan.planId,
+          totalOperations: commandPlan.totalOperations,
+          manifest: manifest,
+          commandPlan: commandPlan,
+          package: packageResult,
+          honestLimitations: {
+            pipelineBuilt: true,
+            manifestGenerated: true,
+            commandPlanGenerated: true,
+            localPreviewGenerated: !!args.outputDir,
+            harmonyAvailable: false,
+            harmonyApplied: false,
+            nativeDrawingVerified: false,
+            previewRenderedByHarmony: false,
+            status: 'ready_for_external_harmony_integration'
+          }
+        };
+      } catch (error: any) {
+        throw new HarmonyError('SCRIPT_FAILED', `Failed to generate editable scene: ${error.message}`);
+      }
+    }
+  },
+  {
+    name: 'harmony.ai_studio.apply_manifest_to_harmony',
+    description: 'Apply Harmony Manifest V3 and Command Plan V3 to a real Harmony instance. Requires Harmony with external scripting enabled. Returns native audit with vector type verification, palette linkage, exposure timing match, and editable vector geometry confirmation.',
+    inputSchema: z.object({
+      manifest: z.object({
+        schemaVersion: z.string(),
+        manifestId: z.string(),
+        sceneId: z.string(),
+        createdAt: z.string(),
+        sceneUnderstanding: z.any().optional(),
+        directorPlans: z.array(z.any()).optional(),
+        performancePlans: z.array(z.any()).optional(),
+        voiceAnalysis: z.any().optional(),
+        digitalActors: z.array(z.any()).optional(),
+        partDecomposition: z.any().optional(),
+        occlusionGraph: z.array(z.any()).optional(),
+        keyPoses: z.any().optional(),
+        motionTracks: z.array(z.any()).optional(),
+        cameraTrack: z.any().optional(),
+        cameraLayout: z.any().optional(),
+        routingPlan: z.any().optional(),
+        representationSegments: z.array(z.any()).optional(),
+        gestureEvents: z.array(z.any()).optional(),
+        gazeEvents: z.array(z.any()).optional(),
+        facialEvents: z.array(z.any()).optional(),
+        drawings: z.array(z.any()).optional(),
+        palettes: z.array(z.any()).optional(),
+        exposureBlocks: z.array(z.any()).optional(),
+        criticReports: z.array(z.any()).optional(),
+        variantTournament: z.any().optional(),
+        tasteScores: z.array(z.any()).optional(),
+        selectionHistory: z.array(z.any()).optional(),
+        artistCorrections: z.array(z.any()).optional(),
+        trainingSignals: z.array(z.any()).optional(),
+        provenance: z.any().optional(),
+        limitations: z.any().optional()
+      }).passthrough(),
+      commandPlan: z.object({
+        schemaVersion: z.string(),
+        planId: z.string(),
+        manifestId: z.string(),
+        createdAt: z.string(),
+        operations: z.array(z.any()),
+        totalOperations: z.number(),
+        estimatedExecutionTimeMs: z.number().optional(),
+        requiresHarmony: z.boolean(),
+        whitelistOnly: z.boolean(),
+        provenance: z.any().optional(),
+        rollbackPlan: z.any().optional()
+      }).passthrough(),
+      outputDir: z.string().optional(),
+      projectPath: z.string().optional(),
+      dryRun: z.boolean().optional().default(false)
+    }).strict(),
+    handler: async (args: any) => {
+      try {
+        const verifiedOutputDir = args.outputDir ? verifyPathAccess(args.outputDir) : undefined;
+        const verifiedProjectPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+        
+        // Use the Python bridge to execute the command plan
+        const { HarmonyPython } = await import('../adapters/harmonyPython.js');
+        
+        const result = await HarmonyPython.runCommand('execute_command_plan_v3', {
+          plan: args.commandPlan
+        });
+
+        // Also generate native audit
+        const auditResult = await HarmonyPython.runCommand('audit_reconstruction_scene', {
+          manifest: args.manifest
+        });
+
+        return {
+          status: result.status === 'success' ? 'success' : 'partial',
+          harmonyApplied: true,
+          executedOperations: result.executed,
+          skippedOperations: result.skipped,
+          errors: result.errors,
+          nativeAudit: auditResult.nativeAudit,
+          verified: auditResult.verified || false,
+          projectPath: verifiedProjectPath,
+          outputDir: verifiedOutputDir,
+          honestLimitations: {
+            harmonyAvailable: true,
+            harmonyApplied: true,
+            nativeDrawingVerified: auditResult.verified === true,
+            previewRenderedByHarmony: false,
+            status: auditResult.verified === true ? 'harmony_native_scene_verified' : 'harmony_applied_with_issues'
+          }
+        };
+      } catch (error: any) {
+        throw new HarmonyError('HARMONY_EXECUTION_FAILED', `Failed to apply manifest to Harmony: ${error.message}`);
+      }
     }
   }
 ];

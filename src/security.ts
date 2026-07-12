@@ -30,7 +30,8 @@ export type HarmonyErrorCode =
   | 'HARMONY_SCENE_VERIFICATION_FAILED'
   | 'WEBCC_UNAVAILABLE'
   | 'HELPER_UNAVAILABLE'
-  | 'CAPABILITY_NOT_DETECTED';
+  | 'CAPABILITY_NOT_DETECTED'
+  | 'HARMONY_EXECUTION_FAILED';
 
 /**
  * Unified result verification status for all tools.
