@@ -42,7 +42,7 @@ describe('MCP tool registration coexistence', () => {
   test('combined tool arrays are non-empty for each subsystem', () => {
     expect(reconstructionTools.length).toBeGreaterThan(6);
     expect(retargetingTools.length).toBe(3);
-    expect(aiStudioTools.length).toBe(5);
+    expect(aiStudioTools.length).toBe(6);
   });
 
   test('every tool has a non-empty name and a handler function', () => {

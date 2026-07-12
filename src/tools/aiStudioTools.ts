@@ -16,6 +16,7 @@ import { voiceAnalysisSchema, performancePlanSchema, performanceStyleSchema, VOI
 import { VoicePerformanceAnalyzer } from '../adapters/voicePerformanceAnalyzer/index.js';
 import { PerformanceGenerator, ALL_PERFORMANCE_STYLES } from '../adapters/performanceGenerator/index.js';
 import { VoicePerformanceReportBuilder } from '../adapters/voicePerformanceReport/index.js';
+import { DigitalActorRegistry } from '../adapters/digitalActorRegistry/index.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -119,6 +120,13 @@ const mixPerformanceSchema = z.object({
   acting: performancePlanSchema,
   gestureTiming: performancePlanSchema,
   finalPose: performancePlanSchema
+}).strict();
+
+const buildDigitalActorSchema = z.object({
+  name: z.string().min(1).describe('Имя персонажа.'),
+  sourceType: z.enum(['manifest', 'psd', 'svg', 'png_dir', 'harmony_template', 'harmony_scene']).describe('Тип источника.'),
+  sourcePath: z.string().min(1).describe('Путь к источнику под HARMONY_ALLOWED_ROOTS.'),
+  outputDir: z.string().optional().describe('Каталог для сохранения (под HARMONY_ALLOWED_ROOTS).')
 }).strict();
 
 const engine = new SceneUnderstandingEngine();
@@ -270,5 +278,44 @@ export const aiStudioTools = [
     description: 'Смешивает общую игру из одного варианта, тайминг жестов из второго и позы из третьего.',
     inputSchema: mixPerformanceSchema,
     handler: async (args:any) => ({status:'success',schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION,performance:performanceGenerator.mix(args.acting,args.gestureTiming,args.finalPose)})
+  },
+  {
+    name: 'harmony.ai_studio.build_digital_actor',
+    description: 'Digital Actor baseline (Iteration 3). Импортирует персонажа из PSD, SVG, PNG layers, Harmony template, Harmony scene или reconstruction manifest. Проверяет полноту ассета, вычисляет pivots и строит Zod-валидный DigitalActor.',
+    inputSchema: buildDigitalActorSchema,
+    handler: async (args: any) => {
+      const sourcePath = verifyPathAccess(args.sourcePath);
+      const outputDir = args.outputDir ? verifyPathAccess(args.outputDir) : undefined;
+      const registry = new DigitalActorRegistry(outputDir);
+      
+      let actor: any;
+      if (args.sourceType === 'manifest') {
+        actor = registry.importFromReconstructionManifest(sourcePath, args.name);
+      } else {
+        actor = registry.importFromFile(args.sourceType, sourcePath, args.name);
+      }
+      
+      const validation = registry.validate(actor);
+      let regResult = null;
+      if (validation.valid) {
+        regResult = registry.register(actor);
+      }
+      
+      return {
+        status: validation.valid ? 'success' : 'failed',
+        schemaVersion: actor.schemaVersion,
+        actorId: actor.actorId,
+        valid: validation.valid,
+        validation,
+        actor,
+        filePath: regResult?.filePath || null,
+        sha256: regResult?.sha256 || null,
+        honestLimitations: {
+          viewsInferred: true,
+          hierarchyRequiresVerification: true,
+          noHarmonyProvesNativeTvg: false
+        }
+      };
+    }
   }
 ];

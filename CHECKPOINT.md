@@ -1,4 +1,23 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION FACTORY — PHASE 1)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 3)
+
+## Phase 2 — COMPLETED (Offline validation & bundle verified, requires licensed Harmony for live execution)
+
+Код и тесты Phase 2 полностью реализованы, проверены локально через офлайн-валидацию и зафиксированы коммитом. Офлайн-валидация и сборка переносимого пакета `output/harmony-phase2-offline-bundle` с 44 командами, контрольными суммами и Python-раннером работают. Jest тесты и Python тесты проходят.
+
+## Iteration 3 — COMPLETED (Digital Actor Registry)
+
+В рамках Iteration 3 полностью спроектирован и реализован реестр Digital Actor:
+- **Zod-схемы**: в `src/schemas/digitalActor.ts` определены детальные структуры `DigitalActor` и `DigitalActorValidation` для персистентного описания персонажа.
+- **Registry**: `DigitalActorRegistry` в `src/adapters/digitalActorRegistry/index.ts` поддерживает импорт из PSD, SVG, PNG layers, Harmony template, Harmony scene или reconstruction manifest.
+- **Validation**: встроенные проверки на missing views (по 8 ракурсам 360), conflicting palette IDs, invalid hierarchy (циклы в графе частей тела), missing pivots и incomplete substitutions. Все сгенерированные/приблизительные параметры помечаются как `inferred: true` или с origin `generated`.
+- **MCP Tool**: добавлен `harmony.ai_studio.build_digital_actor`.
+- **Тесты**: 8 новых unit-тестов в `tests/digitalActor.test.ts` полностью зеленые (проверяют импорт, валидацию, детекцию циклов, сохранение и чтение).
+- **Demo**: `npm run demo:ai_studio_iter3` импортирует Masha (из манифеста) и Ivan (из папки PNG), валидирует, проверяет warnings/errors и сохраняет в `output/factory/actors/`.
+
+Команда демонстрации: `npm run demo:ai_studio_iter3`.
+Честный статус: PSD/SVG импорт и расчет pivots реализованы через офлайн CPU fallback; live Harmony не требуется.
+
+---
 
 ## Phase 1 — Foundation acceptance
 
