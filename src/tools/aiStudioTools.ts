@@ -17,6 +17,9 @@ import { VoicePerformanceAnalyzer } from '../adapters/voicePerformanceAnalyzer/i
 import { PerformanceGenerator, ALL_PERFORMANCE_STYLES } from '../adapters/performanceGenerator/index.js';
 import { VoicePerformanceReportBuilder } from '../adapters/voicePerformanceReport/index.js';
 import { DigitalActorRegistry } from '../adapters/digitalActorRegistry/index.js';
+import { KeyPoseGenerator } from '../adapters/keyPoseGenerator/index.js';
+import { MotionSynthesizer } from '../adapters/motionSynthesizer/index.js';
+import { keyPoseSetSchema } from '../schemas/keyPoseMotion.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -129,12 +132,29 @@ const buildDigitalActorSchema = z.object({
   outputDir: z.string().optional().describe('Каталог для сохранения (под HARMONY_ALLOWED_ROOTS).')
 }).strict();
 
+const generateKeyPosesSchema = z.object({
+  sceneUnderstanding: sceneUnderstandingSchema,
+  performancePlan: performancePlanSchema,
+  actorId: z.string().min(1).describe('Идентификатор Digital Actor персонажа.'),
+  outputDir: z.string().optional().describe('Каталог с реестром акторов для загрузки актора (под HARMONY_ALLOWED_ROOTS).')
+}).strict();
+
+const synthesizeMotionSchema = z.object({
+  sceneUnderstanding: sceneUnderstandingSchema,
+  keyPoseSet: keyPoseSetSchema,
+  actorId: z.string().min(1).describe('Идентификатор Digital Actor персонажа.'),
+  tolerance: z.number().optional().default(0.05).describe('Порог сжатия (key reduction tolerance).'),
+  outputDir: z.string().optional()
+}).strict();
+
 const engine = new SceneUnderstandingEngine();
 const director = new ScriptDirector();
 const reportBuilder = new SceneIntelligenceReportBuilder();
 const voiceAnalyzer = new VoicePerformanceAnalyzer();
 const performanceGenerator = new PerformanceGenerator();
 const voiceReportBuilder = new VoicePerformanceReportBuilder();
+const keyPoseGenerator = new KeyPoseGenerator();
+const motionSynthesizer = new MotionSynthesizer();
 
 export const aiStudioTools = [
   {
@@ -314,6 +334,48 @@ export const aiStudioTools = [
           viewsInferred: true,
           hierarchyRequiresVerification: true,
           noHarmonyProvesNativeTvg: false
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.generate_key_poses',
+    description: 'Key Pose Generator baseline (Iteration 4). Планирует позы (key, breakdown, extreme, anticipation, overshoot, settle, hold) для Digital Actor на основе сценария и плана игры.',
+    inputSchema: generateKeyPosesSchema,
+    handler: async (args: any) => {
+      const registry = new DigitalActorRegistry(args.outputDir ? verifyPathAccess(args.outputDir) : undefined);
+      const actor = registry.getActor(args.actorId);
+      const poseSet = keyPoseGenerator.generate(args.sceneUnderstanding, args.performancePlan, actor);
+      return {
+        status: 'success',
+        sceneId: args.sceneUnderstanding.sceneId,
+        poseCount: poseSet.poses.length,
+        poseSet,
+        honestLimitations: {
+          skeletonsAre2D: true,
+          drawingsAreFitted: true,
+          noHarmonyProvesNativeTvg: false
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.synthesize_motion',
+    description: 'Motion Synthesizer baseline (Iteration 4). Интерполирует движения частей тела между позами, строит траектории и тайминги, производит keyframe reduction с заданной погрешностью.',
+    inputSchema: synthesizeMotionSchema,
+    handler: async (args: any) => {
+      const registry = new DigitalActorRegistry(args.outputDir ? verifyPathAccess(args.outputDir) : undefined);
+      const actor = registry.getActor(args.actorId);
+      const motionPlan = motionSynthesizer.synthesize(args.sceneUnderstanding, args.keyPoseSet, actor, args.tolerance);
+      return {
+        status: 'success',
+        sceneId: args.sceneUnderstanding.sceneId,
+        trackCount: motionPlan.tracks.length,
+        motionPlan,
+        honestLimitations: {
+          motionIsFactorized: true,
+          keyReductionIsApproximate: true,
+          harmonyApplied: false
         }
       };
     }

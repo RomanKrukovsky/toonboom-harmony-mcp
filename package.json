@@ -16,6 +16,7 @@
     "demo:ai_studio_iter1": "node scripts/demo_ai_studio_iter1.js",
     "demo:ai_studio_iter2": "node scripts/demo_ai_studio_iter2.js",
     "demo:ai_studio_iter3": "node scripts/demo_ai_studio_iter3.js",
+    "demo:ai_studio_iter4": "node scripts/demo_ai_studio_iter4.js",
     "demo:factory:phase1": "node scripts/demo_factory_phase1.js",
     "demo:harmony:phase2:offline": "node scripts/demo_phase2_offline.js",
     "reconstruction:prepare-harmony-integration": "node scripts/prepare_harmony_integration.js",

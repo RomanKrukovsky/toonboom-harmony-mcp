@@ -1,8 +1,21 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 3)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 4)
 
 ## Phase 2 — COMPLETED (Offline validation & bundle verified, requires licensed Harmony for live execution)
 
 Код и тесты Phase 2 полностью реализованы, проверены локально через офлайн-валидацию и зафиксированы коммитом. Офлайн-валидация и сборка переносимого пакета `output/harmony-phase2-offline-bundle` с 44 командами, контрольными суммами и Python-раннером работают. Jest тесты и Python тесты проходят.
+
+## Iteration 4 — COMPLETED (Key Poses & Motion)
+
+В рамках Iteration 4 спроектированы и реализованы модули планирования и интерполяции движений:
+- **Zod-схемы**: в `src/schemas/keyPoseMotion.ts` определены структуры для описания storytelling key poses (`KeyPose`, `BreakdownPose`, `ExtremePose`, `AnticipationPose`, `OvershootPose`, `SettlePose`, `SmearPose`, `HoldPose`), а также transform tracks, keyframes, timing interpolations и сжатия.
+- **KeyPoseGenerator**: в `src/adapters/keyPoseGenerator/index.ts` автоматически расставляет позы подготовки (anticipation), акцентов (extreme), перехлестов (overshoot), успокоения (settle) и удержания (hold) на основе драматических пауз и голосовых пиков производительности.
+- **MotionSynthesizer**: в `src/adapters/motionSynthesizer/index.ts` производит интерполяцию по кривым (linear, ease-in, ease-out, overshoot, settle) для всех костей/частей тела, формирует exposure blocks и drawing substitutions, а также выполняет сжатие ключевых кадров (keyframe reduction) по алгоритму RDP с контролем погрешности.
+- **MCP Tools**: зарегистрированы инструменты `harmony.ai_studio.generate_key_poses` и `harmony.ai_studio.synthesize_motion`.
+- **Тесты**: новые тесты в `tests/keyPoseMotion.test.ts` полностью зеленые (проверяют планирование поз по кадрам и сжатие траекторий в пределах допуска погрешности).
+- **Demo**: `npm run demo:ai_studio_iter4` демонстрирует полный цикл планирования и интерполяции сжатия для персонажа Masha (torso rotation сжато в 36 раз с нулевой ошибкой).
+
+Команда демонстрации: `npm run demo:ai_studio_iter4`.
+Честный статус: все анимационные расчеты траекторий выполняются на стороне MCP; для планирования live Harmony не требуется.
 
 ## Iteration 3 — COMPLETED (Digital Actor Registry)
 
