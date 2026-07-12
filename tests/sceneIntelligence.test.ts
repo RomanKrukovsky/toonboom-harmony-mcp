@@ -286,7 +286,7 @@ describe('SceneIntelligenceReportBuilder', () => {
 describe('AI Studio tools — Iteration 1 registration', () => {
   test('Iteration 1 and 2 ai_studio tools are registered and Zod-valid', () => {
     const { aiStudioTools } = require('../src/tools/aiStudioTools.js');
-    expect(aiStudioTools.length).toBe(11);
+    expect(aiStudioTools.length).toBe(13);
     const names = aiStudioTools.map((t: any) => t.name);
     expect(names).toContain('harmony.ai_studio.analyze_scene');
     expect(names).toContain('harmony.ai_studio.generate_director_variants');

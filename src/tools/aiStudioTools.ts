@@ -26,6 +26,8 @@ import { partDecompositionSchema } from '../schemas/partDecomposition.js';
 import { routingPlanSchema } from '../schemas/representationRouter.js';
 import { CameraLayoutDirector } from '../adapters/cameraLayoutDirector/index.js';
 import { cameraLayoutPlanSchema } from '../schemas/cameraLayout.js';
+import { AnimationCritic } from '../adapters/animationCritic/index.js';
+import { VariantTournament } from '../adapters/variantTournament/index.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -462,6 +464,98 @@ export const aiStudioTools = [
           ruleBasedBaseline: true,
           noMlDirector: true,
           harmonyApplied: false
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.critique_variant',
+    description: 'Animation Critic (Iteration 7). Запускает technical и artistic checks на variant, возвращает critic report с scores и recommendations.',
+    inputSchema: z.object({
+      variantId: z.string().min(1),
+      sceneId: z.string().min(1),
+      sceneUnderstanding: sceneUnderstandingSchema.optional(),
+      cameraLayout: cameraLayoutPlanSchema.optional(),
+      keyPoses: keyPoseSetSchema.optional(),
+      motionTracks: z.any().optional(),
+      partDecomposition: partDecompositionSchema.optional(),
+      routingPlan: routingPlanSchema.optional(),
+      voiceAnalysis: voiceAnalysisSchema.optional(),
+      performancePlan: performancePlanSchema.optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const critic = new AnimationCritic();
+      const report = critic.critique(args);
+      return {
+        status: 'success',
+        variantId: args.variantId,
+        passed: report.passed,
+        overallScore: report.overallScore,
+        technicalScore: report.technicalScore,
+        artisticScore: report.artisticScore,
+        criticalIssues: report.criticalIssues,
+        highIssues: report.highIssues,
+        humanReviewRequired: report.humanReviewRequired,
+        criticReport: report,
+        honestLimitations: {
+          ruleBasedBaseline: true,
+          noMlCritic: true,
+          artisticScoresAreProxy: true
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.run_variant_tournament',
+    description: 'Variant Tournament (Iteration 7). Запускает multi-round tournament для выбора лучшего variant из нескольких. Включает technical gate, artistic ranking, refinement и final selection.',
+    inputSchema: z.object({
+      sceneId: z.string().min(1),
+      variants: z.array(z.object({
+        variantId: z.string().min(1),
+        variantName: z.string().min(1),
+        variantType: z.enum(['director', 'performance', 'combined']),
+        criticInput: z.object({
+          variantId: z.string(),
+          sceneId: z.string(),
+          sceneUnderstanding: sceneUnderstandingSchema.optional(),
+          cameraLayout: cameraLayoutPlanSchema.optional(),
+          keyPoses: keyPoseSetSchema.optional(),
+          motionTracks: z.any().optional(),
+          partDecomposition: partDecompositionSchema.optional(),
+          routingPlan: routingPlanSchema.optional(),
+          voiceAnalysis: voiceAnalysisSchema.optional(),
+          performancePlan: performancePlanSchema.optional()
+        }).strict(),
+        metadata: z.record(z.any()).optional()
+      }).strict()).min(2),
+      budget: z.object({
+        maxVariants: z.number().int().positive(),
+        maxComputeTimeMs: z.number().int().positive(),
+        maxGpuMemoryMb: z.number().int().positive().optional(),
+        maxRefinementRounds: z.number().int().nonnegative(),
+        maxPreviewResolution: z.string().optional()
+      }).strict()
+    }).strict(),
+    handler: async (args: any) => {
+      const tournament = new VariantTournament();
+      const result = tournament.run(args);
+      return {
+        status: 'success',
+        tournamentId: result.tournamentId,
+        sceneId: result.sceneId,
+        roundCount: result.rounds.length,
+        winner: result.winner ? {
+          variantId: result.winner.variantId,
+          variantName: result.winner.variantName,
+          finalScore: result.winner.finalScore
+        } : null,
+        finalistCount: result.finalists.length,
+        totalComputeTimeMs: result.totalComputeTimeMs,
+        tournament: result,
+        honestLimitations: {
+          ruleBasedBaseline: true,
+          noMlTournament: true,
+          refinementIsSimulated: true
         }
       };
     }

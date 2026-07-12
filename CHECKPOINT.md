@@ -1,4 +1,56 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 6)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 7)
+
+## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
+
+В рамках Iteration 7 реализована система критики и турнирного отбора вариантов:
+
+### AnimationCritic (rule-based baseline)
+- **Technical checks (13)**: missing_drawings, broken_exposures, holes, layer_order, palette_inconsistency, collisions, detached_parts, broken_pivots, invalid_deformers, excessive_keys, unstable_contours, frozen_motion, lost_motion_events, timing_mismatch
+- **Artistic proxy checks (16)**: pose_readability, silhouette_clarity, staging, emotional_clarity, gesture_motivation, timing, anticipation, follow_through, overacting, underacting, dead_motion, mechanical_motion, repetitive_gestures, gaze_direction, reaction_timing, camera_motivation
+- **Scoring system**: overall score (60% technical + 40% artistic), individual check scores, severity levels
+- **Recommendations**: генерирует actionable recommendations для failed checks
+- **Human review flag**: автоматически определяет когда требуется human review
+
+### VariantTournament (multi-round ranking)
+- **Round 1 - Technical Gate**: элиминирует variants с critical/high technical issues
+- **Round 2 - Artistic Ranking**: ранжирует по overall score, оставляет top 50%
+- **Round 3 - Refinement**: симулирует refinement (5% improvement), re-ranks
+- **Round 4 - Final Selection**: выбирает winner с highest score
+- **Budget management**: maxVariants, maxComputeTimeMs, maxRefinementRounds
+- **Lineage tracking**: отслеживает roundReached, eliminationReason, rank для каждого variant
+
+### Zod схемы
+- `src/schemas/animationCritic.ts` — CriticReport, CriticCheckResult, CriticCheckType
+- `src/schemas/variantTournament.ts` — VariantTournament, TournamentVariant, TournamentRound, TournamentBudget
+
+### MCP инструменты
+- `harmony.ai_studio.critique_variant` — запуск critic на variant
+- `harmony.ai_studio.run_variant_tournament` — multi-round tournament selection
+
+### Тесты
+- 20 новых unit-теста в `tests/criticTournament.test.ts` полностью зеленые
+- Проверяют все technical и artistic checks, tournament rounds, elimination logic, budget constraints
+- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 13 инструментов (было 11)
+
+### Demo
+- `node scripts/demo_ai_studio_iter7.js` демонстрирует полный pipeline
+- Создает 4 variants с разным качеством, запускает critic, проводит tournament
+- Генерирует HTML summary с rankings, rounds, critic reports
+- Результат: Restrained Drama (88%) победил, Dramatic Closeup элиминирован за critical issues
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 259 passed, 6 skipped (Harmony integration)
+- Demo — PASS, генерирует tournament_result.json + 4 critic reports + HTML summary
+
+### Честные ограничения
+- Rule-based baseline — нет ML critic
+- Artistic scores являются proxy, не достоверным измерением качества
+- Refinement симулируется (5% boost), не реальная итерация
+- Tournament не учитывает compute cost при выборе winner
+- Harmony не применялась — все вычисления offline
+
+---
 
 ## Iteration 6 — COMPLETED (Camera & Layout)
 
