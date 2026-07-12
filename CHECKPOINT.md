@@ -1,6 +1,62 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 4)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 5)
 
-## Phase 2 — COMPLETED (Offline validation & bundle verified, requires licensed Harmony for live execution)
+## Iteration 5 — COMPLETED (Part Decomposition & Hybrid Routing)
+
+В рамках Iteration 5 реализована система декомпозиции персонажа на части и интеллектуального выбора представлений:
+
+### CharacterPartDecomposer (CPU heuristic baseline)
+- **Декомпозиция**: разбивает персонажа на 22 стандартные части (humanoid template: head, torso, arms, legs, hands, feet, hair, clothing, accessories, props)
+- **Motion clusters**: автоматически определяет тип движения для каждой части (rigid/articulated/deformable/static)
+- **Occlusion graph**: строит граф окклюзий на основе depth ordering
+- **Problem ranges**: обнаруживает проблемные диапазоны (окклюзия, низкая уверенность)
+- **Articulation hints**: вычисляет подсказки артикуляции из паттернов движения
+- **Identity continuity**: оценивает непрерывность идентичности частей
+
+### RepresentationRouterV3
+- **Интеллектуальный выбор**: для каждой части выбирает оптимальное представление (Peg Transform, Curve Deformer, Envelope Deformer, Bone Deformer, Drawing Substitution, Frame-by-frame Vector)
+- **Факторы**: учитывает motion type, silhouette change, occlusion, topology change, line stability, editability
+- **Studio profiles**: поддерживает профили студии (preferred representation, editability priority, frameByFrame allowed)
+- **Artist locks**: уважает блокировки художника (confidence=1.0 для locked parts)
+- **Alternatives**: предоставляет альтернативные варианты с confidence scores
+- **Explanations**: генерирует объяснения для каждого решения
+
+### Zod схемы
+- `src/schemas/partDecomposition.ts` — PartDecomposition, PartTrack, PartFrameState, OcclusionEdge, MaskRegion
+- `src/schemas/representationRouter.ts` — RoutingPlan, RoutingDecision, RepresentationType
+
+### MCP инструменты
+- `harmony.ai_studio.decompose_character_parts` — декомпозиция персонажа на части
+- `harmony.ai_studio.route_representations` — выбор представлений для частей
+
+### Тесты
+- 22 новых unit-теста в `tests/partDecomposition.test.ts` полностью зеленые
+- Проверяют декомпозицию, motion clusters, occlusion detection, routing logic, artist locks, studio profiles
+- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 10 инструментов (было 8)
+
+### Demo
+- `npm run demo:ai_studio_iter5` демонстрирует полный pipeline
+- Генерирует HTML report с визуализацией частей, motion clusters, routing decisions
+- Сохраняет JSON artifacts (decomposition.json, routing_plan.json)
+- Результат: 22 части, 3 типа представлений (peg_transform: 11, frame_by_frame_vector: 2, reference_only: 9)
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 226 passed, 6 skipped (Harmony integration)
+- Demo — PASS, генерирует 11,820 bytes HTML report
+
+### Честные ограничения
+- CPU heuristic baseline — нет ML segmenter
+- Позиции частей оценены из humanoid template, не наблюдаются из видео
+- Occlusion graph вычислен из depth ordering, не из реального pixel overlap
+- Representation routing rule-based, не обучен на studio preferences
+- Harmony не применялась — все вычисления offline
+
+Команда демонстрации: `npm run demo:ai_studio_iter5`
+Честный статус: CPU heuristic baseline, no ML segmenter, no Harmony applied.
+
+---
+
+## Iteration 4 — COMPLETED (Key Poses & Motion)
 
 Код и тесты Phase 2 полностью реализованы, проверены локально через офлайн-валидацию и зафиксированы коммитом. Офлайн-валидация и сборка переносимого пакета `output/harmony-phase2-offline-bundle` с 44 командами, контрольными суммами и Python-раннером работают. Jest тесты и Python тесты проходят.
 
