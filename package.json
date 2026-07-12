@@ -23,7 +23,8 @@
     "ml:core": ".venv-ml-core/bin/uvicorn ml_core.api:app --host 127.0.0.1 --port 8766",
     "test:ml": ".venv-ml-core/bin/pytest services/ml-core/tests",
     "demo:ml": ".venv-ml-core/bin/python scripts/demo_ml_stack.py",
-    "demo:ml:mcp": "node scripts/demo_ml_mcp.js"
+    "demo:ml:mcp": "node scripts/demo_ml_mcp.js",
+    "demo:ai_studio_iter5": "node scripts/demo_ai_studio_iter5.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",

@@ -20,6 +20,10 @@ import { DigitalActorRegistry } from '../adapters/digitalActorRegistry/index.js'
 import { KeyPoseGenerator } from '../adapters/keyPoseGenerator/index.js';
 import { MotionSynthesizer } from '../adapters/motionSynthesizer/index.js';
 import { keyPoseSetSchema } from '../schemas/keyPoseMotion.js';
+import { CharacterPartDecomposer } from '../adapters/characterPartDecomposer/index.js';
+import { RepresentationRouterV3 } from '../adapters/representationRouterV3/index.js';
+import { partDecompositionSchema } from '../schemas/partDecomposition.js';
+import { routingPlanSchema } from '../schemas/representationRouter.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -375,6 +379,62 @@ export const aiStudioTools = [
         honestLimitations: {
           motionIsFactorized: true,
           keyReductionIsApproximate: true,
+          harmonyApplied: false
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.decompose_character_parts',
+    description: 'Character Part Decomposition (Iteration 5). Разбивает персонажа на устойчивые части (head, torso, arms, legs и т.д.), строит occlusion graph, определяет motion clusters и проблемные диапазоны.',
+    inputSchema: z.object({
+      characterId: z.string().min(1),
+      frameCount: z.number().int().positive(),
+      fps: z.number().positive().optional(),
+      bodyType: z.enum(['humanoid', 'quadruped', 'creature', 'object', 'unknown']).optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const decomposer = new CharacterPartDecomposer();
+      const result = decomposer.decompose(args);
+      return {
+        status: 'success',
+        characterId: args.characterId,
+        partCount: result.parts.length,
+        decomposition: result,
+        honestLimitations: {
+          cpuHeuristicBaseline: true,
+          noMlSegmenterConnected: true,
+          partsAreEstimated: !args.frameRegions
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.route_representations',
+    description: 'Representation Router V3 (Iteration 5). Для каждой части персонажа выбирает оптимальное представление (Peg, Curve Deformer, Envelope, Bone, Drawing Substitution, frame-by-frame) на основе motion analysis, silhouette change, occlusion и studio profile.',
+    inputSchema: z.object({
+      characterId: z.string().min(1),
+      sceneId: z.string().min(1),
+      decomposition: partDecompositionSchema,
+      studioProfile: z.object({
+        preferredRepresentation: z.enum(['peg_transform', 'curve_deformer', 'envelope_deformer', 'bone_deformer', 'drawing_substitution', 'frame_by_frame_vector', 'raster_texture_layer', 'reference_only']).optional(),
+        maxDeformersPerPart: z.number().int().positive().optional(),
+        editabilityPriority: z.number().min(0).max(1).optional(),
+        frameByFrameAllowed: z.boolean().optional()
+      }).optional(),
+      artistLocks: z.record(z.enum(['peg_transform', 'curve_deformer', 'envelope_deformer', 'bone_deformer', 'drawing_substitution', 'frame_by_frame_vector', 'raster_texture_layer', 'reference_only'])).optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const router = new RepresentationRouterV3();
+      const plan = router.route(args);
+      return {
+        status: 'success',
+        characterId: args.characterId,
+        decisionCount: plan.decisions.length,
+        routingPlan: plan,
+        honestLimitations: {
+          routingIsHeuristic: true,
+          noStudioProfileTrained: true,
           harmonyApplied: false
         }
       };
