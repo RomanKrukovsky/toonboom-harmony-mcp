@@ -1,0 +1,117 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  typescript:
+    name: TypeScript Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Run Jest tests
+        run: npm test -- --runInBand
+
+  python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r services/reconstruction-core/requirements.lock
+      
+      - name: Run Python tests
+        run: |
+          pytest services/reconstruction-core/tests -q
+
+  lint:
+    name: Lint & Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Static type check
+        run: npm run typecheck
+      
+      - name: Check for MOCK_* strings in production code
+        run: |
+          if grep -R -E "MOCK_|fake success|hardcoded success" src/tools/factoryFoundationTools.ts src/adapters/factoryFoundation services/reconstruction-core/reconstruction_core/perception.py; then
+            echo "ERROR: Found fake-success marker in Phase 1 production surface!"
+            exit 1
+          fi
+      
+      - name: Check for hardcoded absolute paths
+        run: |
+          if grep -r "/Users/" src/ --include="*.ts" | grep -v "\.test\.ts" | grep -v "\.spec\.ts"; then
+            echo "ERROR: Found hardcoded user paths in source!"
+            exit 1
+          fi
+      
+      - name: Secret scan
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          path: .
+          base: main
+          head: HEAD
+          extra_args: --only-verified --fail
+
+  integration-check:
+    name: Integration Verification
+    runs-on: ubuntu-latest
+    if: false  # Enable when Harmony is available in CI
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Harmony integration
+        run: echo "Harmony integration tests require licensed Harmony installation"
+
+  summary:
+    name: CI Summary
+    needs: [typescript, python, lint]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check job status
+        run: |
+          if [[ "${{ needs.typescript.result }}" != "success" ]] || \
+             [[ "${{ needs.python.result }}" != "success" ]] || \
+             [[ "${{ needs.lint.result }}" != "success" ]]; then
+            echo "Some CI jobs failed"
+            exit 1
+          fi
+          echo "All CI jobs passed!"

@@ -2,6 +2,7 @@ import { HarmonyError } from '../security.js';
 
 export interface WebccResponse {
   status: 'success' | 'error' | 'unsupported';
+  code?: string;
   message?: string;
   data?: any;
 }
@@ -28,19 +29,31 @@ export class WebccAdapter {
       };
     }
 
-    // Пример выполнения запроса к WebCC, если настроен
+    const base = process.env.HARMONY_WEBCC_URL!;
+    const routes: Record<string, { method: string; pathname: (p: any) => string; body?: (p: any) => any }> = {
+      list_projects: { method: 'GET', pathname: () => '/api/projects' },
+      list_scenes: { method: 'GET', pathname: p => `/api/projects/${encodeURIComponent(p.projectId)}/scenes` },
+      render_scene: { method: 'POST', pathname: p => `/api/scenes/${encodeURIComponent(p.sceneId)}/render`, body: p => ({ format: p.format }) },
+      get_job_status: { method: 'GET', pathname: p => `/api/jobs/${encodeURIComponent(p.jobId)}` }
+    };
+    const route = routes[actionName];
+    if (!route) return { status: 'error', code: 'WEBCC_UNAVAILABLE', message: `Неизвестное действие WebCC: ${actionName}` };
     try {
-      // fetch(process.env.HARMONY_WEBCC_URL + '/api/' + actionName, ...)
+      const body = route.body?.(params);
+      const response = await fetch(new URL(route.pathname(params), base), {
+        method: route.method,
+        headers: body ? { 'content-type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return { status: 'error', code: 'WEBCC_UNAVAILABLE', message: `WebCC HTTP ${response.status}`, data };
       return {
         status: 'success',
-        message: `Действие "${actionName}" успешно симулировано через WebCC.`,
-        data: params
+        message: `Действие "${actionName}" выполнено через WebCC.`,
+        data
       };
     } catch (err: any) {
-      throw new HarmonyError(
-        'WEBCC_UNAVAILABLE',
-        `Сбой соединения с сервером WebCC: ${err.message}`
-      );
+      return { status: 'error', code: 'WEBCC_UNAVAILABLE', message: `Сбой соединения с WebCC: ${err.message}` };
     }
   }
 }

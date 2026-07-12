@@ -1,4 +1,93 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 1: SCENE INTELLIGENCE)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION FACTORY — PHASE 1)
+
+## Phase 1 — Foundation acceptance
+
+Phase 1 завершена в пределах dev/on-prem baseline. Реализованы и проверены:
+
+- единый MCP control plane с namespace `harmony.factory.*`;
+- durable SQLite jobs, DAG steps, checkpoints, cancel и повторное открытие состояния;
+- model/dataset registry;
+- content-addressed artifact store с SHA-256;
+- token RBAC (`viewer` → `system_admin`), authenticated demo;
+- job metrics и worker endpoints `/health/live`, `/health/ready`, `/metrics`;
+- реальный вертикальный срез MP4 + WAV → OpenCV observation → retargeting → 24 SVG preview;
+- 26 проверенных артефактов и полный provenance.
+
+Команда: `npm run demo:factory:phase1`.
+
+Артефакт: `output/factory/phase1_real_demo/factory_job_result.json`.
+
+Проверки: TypeScript typecheck PASS, build PASS, Jest 21/21 suites и 187/193 tests PASS (6 Harmony tests skipped), Python 33/34 PASS (1 Harmony skipped).
+
+Честный статус: OpenCV baseline — реальный, но грубый silhouette inference, не анатомическая pose-модель. SQLite/local storage только dev backend. Native TVG и Harmony round-trip не проверены. Система не промышленная. Phase 2 нельзя считать завершённой без licensed Harmony runner.
+
+---
+
+# История: AI Animation Studio — Iteration 2
+
+## Итог Iteration 2
+
+Реализован первый рабочий слой AI Actor:
+
+```text
+WAV + transcript + SceneUnderstanding
+→ CPU-анализ голоса
+→ слова, приблизительные фонемы, паузы, энергия, pitch, темп и акценты
+→ 3+ разных performance-варианта
+→ позы, взгляд, мимика, жесты, моргание, дыхание, перенос веса, реакции и holds
+→ автономный HTML-отчёт
+```
+
+### Что реально работает
+
+- `VoicePerformanceAnalyzer` читает PCM/float WAV без внешнего сервиса.
+- Считает RMS-энергию, простую автокорреляционную оценку pitch, паузы и активные интервалы.
+- Привязывает слова к участкам с речевой энергией. Без WAV использует честный proportional fallback.
+- Строит приблизительные фонемные группы, ударения, breath points, reaction windows и proxy-пики.
+- `PerformanceGenerator` поддерживает `restrained`, `energetic`, `sarcastic`, `anxious`, `aggressive`, `comedic`, `custom`.
+- Варианты отличаются правилами, а не случайным шумом.
+- Можно смешать общую игру из A, тайминг жестов из B и позы из C.
+- Добавлены MCP-инструменты `harmony.ai_studio.analyze_voice`, `generate_performances`, `mix_performance`.
+- Демо: `npm run demo:ai_studio_iter2`.
+
+### Проверяемый результат демо
+
+- `output/ai_studio/iteration2_demo_voice.wav` — настоящий 16-bit PCM WAV.
+- `output/ai_studio/iteration2_demo_report.html` — слова, голосовые признаки и три performance-плана.
+- На тестовом WAV: 9 слов, 2 паузы, 120 energy samples, 48 pitch samples.
+
+### Проверки
+
+- `npm run build` — PASS.
+- `npm test -- --runInBand tests/voicePerformance.test.ts` — 9/9 PASS.
+- Python reconstruction core — 32 PASS, 1 SKIPPED.
+- Полный Jest-прогон: 18 suites PASS; 2 сторонних новых suite не компилируются из-за незавершённых изменений контрактов `config/security/webcc`. Iteration 2 эти файлы не меняла.
+
+### Честные ограничения
+
+- Alignment приблизительный: это energy-guided CPU baseline, а не Montreal Forced Aligner.
+- Фонемы являются группами букв, а не акустически распознанными фонемами.
+- Эмоциональные пики — гипотеза. Они не выдаются за достоверную эмоцию.
+- Performance — редактируемый план. Он пока не создаёт ключевые позы, motion tracks или TVG.
+- Harmony не применялась; `harmonyApplied=false`.
+- Turn-taking для одного входного трека поддерживает один speaker segment; полноценный overlap/interruption требует раздельных дорожек или diarization.
+
+### Новые файлы
+
+- `src/schemas/voicePerformance.ts`
+- `src/adapters/voicePerformanceAnalyzer/index.ts`
+- `src/adapters/performanceGenerator/index.ts`
+- `src/adapters/voicePerformanceReport/index.ts`
+- `tests/voicePerformance.test.ts`
+- `scripts/demo_ai_studio_iter2.js`
+
+### Следующий этап
+
+Iteration 3 — `DigitalActorRegistry`: импорт, постоянные части, иерархия, pivots, substitutions, pose families и проверка полноты ассета.
+
+---
+
+# История: Iteration 1 — Scene Intelligence
 
 ## Что было сделано в этой итерации
 

@@ -12,6 +12,10 @@ import { ScriptDirector, ALL_STRATEGIES } from '../adapters/scriptDirector/index
 import { SceneIntelligenceReportBuilder } from '../adapters/sceneIntelligenceReport/index.js';
 import { verifyPathAccess, HarmonyError } from '../security.js';
 import { config } from '../config.js';
+import { voiceAnalysisSchema, performancePlanSchema, performanceStyleSchema, VOICE_PERFORMANCE_SCHEMA_VERSION } from '../schemas/voicePerformance.js';
+import { VoicePerformanceAnalyzer } from '../adapters/voicePerformanceAnalyzer/index.js';
+import { PerformanceGenerator, ALL_PERFORMANCE_STYLES } from '../adapters/performanceGenerator/index.js';
+import { VoicePerformanceReportBuilder } from '../adapters/voicePerformanceReport/index.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -93,9 +97,36 @@ const generateVariantsSchema = z.object({
   reportDir: z.string().optional()
 }).strict();
 
+const analyzeVoiceSchema = z.object({
+  audioPath: z.string().optional().describe('Путь к WAV PCM/float под HARMONY_ALLOWED_ROOTS.'),
+  transcript: z.string().min(1),
+  durationSeconds: z.number().positive().max(600).optional().describe('Нужно для режима без аудио.'),
+  language: z.string().default('ru'),
+  speaker: z.string().default('speaker_1'),
+  emotionHints: z.array(z.string()).optional()
+}).strict();
+
+const generatePerformancesSchema = z.object({
+  sceneUnderstanding: sceneUnderstandingSchema,
+  voiceAnalysis: voiceAnalysisSchema,
+  characterId: z.string().min(1),
+  count: z.number().int().min(1).max(7).default(3),
+  styles: z.array(performanceStyleSchema).optional(),
+  reportDir: z.string().optional()
+}).strict();
+
+const mixPerformanceSchema = z.object({
+  acting: performancePlanSchema,
+  gestureTiming: performancePlanSchema,
+  finalPose: performancePlanSchema
+}).strict();
+
 const engine = new SceneUnderstandingEngine();
 const director = new ScriptDirector();
 const reportBuilder = new SceneIntelligenceReportBuilder();
+const voiceAnalyzer = new VoicePerformanceAnalyzer();
+const performanceGenerator = new PerformanceGenerator();
+const voiceReportBuilder = new VoicePerformanceReportBuilder();
 
 export const aiStudioTools = [
   {
@@ -212,5 +243,32 @@ export const aiStudioTools = [
         }
       };
     }
+  },
+  {
+    name: 'harmony.ai_studio.analyze_voice',
+    description: 'Voice-to-Performance CPU baseline (Iteration 2). Разбирает WAV и текст: слова, приблизительные фонемы, паузы, энергию, pitch, темп, дыхание и акценты. Эмоциональные пики всегда помечены как предположение.',
+    inputSchema: analyzeVoiceSchema,
+    handler: async (args: any) => {
+      const audioPath = args.audioPath ? verifyPathAccess(args.audioPath) : undefined;
+      const analysis = voiceAnalyzer.analyze({ ...args, audioPath });
+      return { status:'success', schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION, analysis, honestLimitations:{ alignmentIsApproximate:true, emotionIsProxy:true, phonemesAreGraphemeGroups:true } };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.generate_performances',
+    description: 'AI Actor baseline (Iteration 2). Создаёт разные варианты поз, взгляда, жестов, моргания, дыхания, переноса веса, реакций и holds из SceneUnderstanding и анализа голоса.',
+    inputSchema: generatePerformancesSchema,
+    handler: async (args: any) => {
+      const scene=sceneUnderstandingSchema.parse(args.sceneUnderstanding), voice=voiceAnalysisSchema.parse(args.voiceAnalysis);
+      const set=performanceGenerator.generateVariants(scene,voice,args.characterId,args.count,args.styles);
+      let reportPath:string|undefined; if(args.reportDir){const dir=verifyPathAccess(args.reportDir);reportPath=voiceReportBuilder.buildToFile(set,path.join(dir,`${scene.sceneId}_${args.characterId}_performance.html`));}
+      return {status:'success',schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION,availableStyles:ALL_PERFORMANCE_STYLES,variantCount:set.variants.length,variantSet:set,reportPath,honestLimitations:{plansAreNotFinalAnimation:true,emotionIsProxy:true,harmonyApplied:false}};
+    }
+  },
+  {
+    name: 'harmony.ai_studio.mix_performance',
+    description: 'Смешивает общую игру из одного варианта, тайминг жестов из второго и позы из третьего.',
+    inputSchema: mixPerformanceSchema,
+    handler: async (args:any) => ({status:'success',schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION,performance:performanceGenerator.mix(args.acting,args.gestureTiming,args.finalPose)})
   }
 ];

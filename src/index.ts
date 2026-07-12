@@ -43,6 +43,7 @@ import { reviewLoopTools } from './tools/reviewLoopTools.js';
 import { reconstructionTools } from './tools/reconstructionTools.js';
 import { aiStudioTools } from './tools/aiStudioTools.js';
 import { retargetingTools } from './tools/retargetingTools.js';
+import { factoryFoundationTools } from './tools/factoryFoundationTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -83,6 +84,7 @@ const allTools = [
   ...reconstructionTools,
   ...aiStudioTools,
   ...retargetingTools
+  ,...factoryFoundationTools
 ];
 
 function zodFieldToJsonSchema(schema: any): any {
@@ -97,6 +99,9 @@ function zodFieldToJsonSchema(schema: any): any {
       default: schema._def.defaultValue(),
       ...(description ? { description } : {})
     };
+  }
+  if (typeName === 'ZodEffects') {
+    return { ...zodFieldToJsonSchema(schema._def.schema), ...(description ? { description } : {}) };
   }
   if (typeName === 'ZodString') return { type: 'string', ...(description ? { description } : {}) };
   if (typeName === 'ZodNumber') return { type: 'number', ...(description ? { description } : {}) };

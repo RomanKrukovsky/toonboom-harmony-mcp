@@ -32,6 +32,47 @@ export type HarmonyErrorCode =
   | 'HELPER_UNAVAILABLE'
   | 'CAPABILITY_NOT_DETECTED';
 
+/**
+ * Unified result verification status for all tools.
+ * Use this instead of generic success/error to be honest about what was actually executed.
+ */
+export type ResultStatus = 
+  | 'verified_real'           // Actually tested on real Harmony, produces real artifacts
+  | 'implemented_unverified'  // Code exists but never verified on real Harmony
+  | 'mock_only'               // Intentional mock/stub, never calls real API
+  | 'not_implemented'         // Throws UNSUPPORTED_BY_VERSION or similar
+  | 'requires_real_harmony'   // Needs licensed Harmony to execute
+  | 'failed';                 // Actual error occurred
+
+export interface ResultWithStatus<T = any> {
+  verification: ResultStatus;
+  data?: T;
+  message?: string;
+  note?: string;
+  implemented?: 'full' | 'partial' | 'stub';
+  artifactCreated?: boolean;
+}
+
+export function createResult<T>(
+  verification: ResultStatus,
+  data?: T,
+  message?: string,
+  options?: {
+    note?: string;
+    implemented?: 'full' | 'partial' | 'stub';
+    artifactCreated?: boolean;
+  }
+): ResultWithStatus<T> {
+  return {
+    verification,
+    data,
+    message,
+    note: options?.note,
+    implemented: options?.implemented,
+    artifactCreated: options?.artifactCreated
+  };
+}
+
 export class HarmonyError extends Error {
   code: HarmonyErrorCode;
   details?: any;
@@ -158,13 +199,22 @@ export function enforceDestructiveSafety(operationName: string, confirmation?: C
 }
 
 // Обертка для поддержки dry-run (симуляции выполнения)
+export interface DryRunResult {
+  dryRun: true;
+  message: string;
+  params: any;
+}
+
+export function executeWithDryRun<T>(operationName: string, params: any, dryRun: true, executeFn: () => T | Promise<T>, dryRunFn?: undefined): DryRunResult;
+export function executeWithDryRun<T>(operationName: string, params: any, dryRun: false, executeFn: () => T | Promise<T>, dryRunFn?: () => T | Promise<T>): Promise<T> | T;
+export function executeWithDryRun<T>(operationName: string, params: any, dryRun: boolean | undefined, executeFn: () => T | Promise<T>, dryRunFn?: () => T | Promise<T>): Promise<T> | T | DryRunResult;
 export function executeWithDryRun<T>(
   operationName: string,
   params: any,
   dryRun: boolean | undefined,
   executeFn: () => T | Promise<T>,
   dryRunFn?: () => T | Promise<T>
-): Promise<T> | T {
+): Promise<T> | T | DryRunResult {
   const isDryRun = dryRun ?? config.dryRunDefault;
 
   if (isDryRun) {
@@ -177,7 +227,7 @@ export function executeWithDryRun<T>(
       dryRun: true,
       message: `Симуляция (dry-run): операция "${operationName}" была бы запущена в обычном режиме.`,
       params
-    } as unknown as T;
+    };
   }
 
   try {
@@ -208,4 +258,37 @@ export function limitOutput(output: string): string {
     return output.substring(0, MAX_OUTPUT_SIZE) + '\n[Вывод урезан из-за превышения лимита размера]';
   }
   return output;
+}
+
+// Unified verification status for honest reporting
+export type VerificationStatus = 
+  | 'verified_real'           // Actually tested on real Harmony, produces real artifacts
+  | 'implemented_unverified'  // Code exists but never tested on real Harmony
+  | 'mock_only'               // Returns placeholder/fake data, never calls real API
+  | 'not_implemented'         // Throws UNSUPPORTED_BY_VERSION or similar
+  | 'requires_real_harmony'   // Needs licensed Harmony to execute
+  | 'failed';                 // Actual error occurred
+
+export interface VerifiedResult<T = any> {
+  verification: VerificationStatus;
+  data?: T;
+  message?: string;
+  note?: string;
+  executed?: boolean;
+  artifactCreated?: boolean;
+}
+
+export function createVerifiedResult<T>(
+  verification: VerificationStatus,
+  data?: T,
+  options?: { message?: string; note?: string; executed?: boolean; artifactCreated?: boolean }
+): VerifiedResult<T> {
+  return {
+    verification,
+    data,
+    message: options?.message,
+    note: options?.note,
+    executed: options?.executed ?? false,
+    artifactCreated: options?.artifactCreated ?? false
+  };
 }

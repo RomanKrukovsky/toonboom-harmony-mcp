@@ -186,4 +186,8 @@ export class ReconstructionClient {
       method: 'POST', body: JSON.stringify(input)
     });
   }
+
+  async perceiveVideo(input: { videoPath: string; audioPath: string; outputDir: string }): Promise<any> {
+    return this.request<any>('/v1/perceive-video', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) });
+  }
 }

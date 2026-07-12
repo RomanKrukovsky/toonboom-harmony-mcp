@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 import cv2
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from dotenv import load_dotenv
 
 from . import __version__
@@ -72,6 +72,27 @@ def health():
     }
 
 
+@app.get("/health/live")
+def health_live():
+    return {"status": "live", "service": "reconstruction-core", "version": __version__}
+
+
+@app.get("/health/ready")
+def health_ready(response: Response):
+    report = health()
+    if report["status"] != "ready":
+        response.status_code = 503
+    return report
+
+
+@app.get("/metrics")
+def metrics():
+    ready = 1 if health()["status"] == "ready" else 0
+    body = "# HELP harmony_worker_ready Worker dependency readiness.\n# TYPE harmony_worker_ready gauge\n"
+    body += f"harmony_worker_ready {ready}\n"
+    return Response(content=body, media_type="text/plain; version=0.0.4")
+
+
 def _run(operation, request: ReconstructionRequest):
     try:
         return operation(request)
@@ -87,6 +108,15 @@ def analyze(request: ReconstructionRequest):
 @app.post("/v1/reconstruct")
 def reconstruct(request: ReconstructionRequest):
     return _run(pipeline.reconstruct, request)
+
+
+@app.post("/v1/perceive-video")
+def perceive_video_endpoint(payload: dict):
+    try:
+        from .perception import perceive_video
+        return perceive_video(payload["videoPath"], payload["audioPath"], payload["outputDir"])
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "PERCEPTION_FAILED", "message": str(exc)}) from exc
 
 
 @app.post("/v1/compare-render")
@@ -786,5 +816,3 @@ def retarget_apply(payload: dict):
         return command_plan
     except Exception as exc:
         raise HTTPException(status_code=422, detail={"code": "RETARGET_APPLY_FAILED", "message": str(exc)})
-
-

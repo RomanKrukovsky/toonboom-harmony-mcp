@@ -284,12 +284,15 @@ describe('SceneIntelligenceReportBuilder', () => {
 });
 
 describe('AI Studio tools — Iteration 1 registration', () => {
-  test('both ai_studio tools are registered and Zod-valid', () => {
+  test('Iteration 1 and 2 ai_studio tools are registered and Zod-valid', () => {
     const { aiStudioTools } = require('../src/tools/aiStudioTools.js');
-    expect(aiStudioTools.length).toBe(2);
+    expect(aiStudioTools.length).toBe(5);
     const names = aiStudioTools.map((t: any) => t.name);
     expect(names).toContain('harmony.ai_studio.analyze_scene');
     expect(names).toContain('harmony.ai_studio.generate_director_variants');
+    expect(names).toContain('harmony.ai_studio.analyze_voice');
+    expect(names).toContain('harmony.ai_studio.generate_performances');
+    expect(names).toContain('harmony.ai_studio.mix_performance');
     for (const t of aiStudioTools) {
       expect(typeof t.name).toBe('string');
       expect(typeof t.description).toBe('string');

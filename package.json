@@ -6,6 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "jest",
@@ -13,6 +14,8 @@
     "test:python": ".venv-reconstruction/bin/pytest services/reconstruction-core/tests",
     "demo:reconstruction": ".venv-reconstruction/bin/python scripts/reconstruction_demo.py",
     "demo:ai_studio_iter1": "node scripts/demo_ai_studio_iter1.js",
+    "demo:ai_studio_iter2": "node scripts/demo_ai_studio_iter2.js",
+    "demo:factory:phase1": "node scripts/demo_factory_phase1.js",
     "reconstruction:prepare-harmony-integration": "node scripts/prepare_harmony_integration.js"
   },
   "dependencies": {

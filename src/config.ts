@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 // Загрузка переменных окружения из .env
 dotenv.config();
@@ -69,6 +70,12 @@ function parseEngineMode(raw?: string): HarmonyEngineMode {
 }
 
 const DEFAULT_TIMEOUT_MS = 10000;
+
+export function getProjectRoot(): string {
+  // Use process.cwd() which works in both Jest and runtime
+  // This works regardless of where the process is started from
+  return path.resolve(process.cwd());
+}
 
 function detectPaths(): { install: string; ccBin: string; bin: string; pythonPackages: string } {
   const platform = process.platform;
@@ -201,7 +208,7 @@ export const config: HarmonyConfig = {
   allowRawScripts: process.env.HARMONY_ALLOW_RAW_SCRIPTS === 'true',
   allowedRoots: process.env.HARMONY_ALLOWED_ROOTS 
     ? process.env.HARMONY_ALLOWED_ROOTS.split(',').map(p => path.resolve(p.trim()))
-    : [path.resolve(process.cwd())],
+    : [getProjectRoot()],
   logDir: process.env.HARMONY_LOG_DIR || './logs',
   engineMode: parseEngineMode(process.env.HARMONY_ENGINE_MODE),
   onePromptIteration: {
