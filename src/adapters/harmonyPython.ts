@@ -32,6 +32,33 @@ export class HarmonyPython {
     return process.platform === 'win32' ? 'python' : 'python3';
   }
 
+  private static getSpawnEnv() {
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      HARMONY_INSTALL: config.harmonyInstall
+    };
+
+    if (process.platform === 'darwin') {
+      const harmonyLib = config.harmonyBin
+        ? path.resolve(path.dirname(config.harmonyBin), '../lib')
+        : '/Applications/Harmony 25 Premium.app/Contents/tba/macosx/lib';
+
+      const frameworkPaths = [
+        harmonyLib,
+        '/opt/homebrew/opt/python@3.9/Frameworks',
+        '/opt/homebrew/Frameworks',
+        '/Library/Frameworks'
+      ];
+      const existingFw = env.DYLD_FRAMEWORK_PATH ? env.DYLD_FRAMEWORK_PATH + ':' : '';
+      env.DYLD_FRAMEWORK_PATH = existingFw + frameworkPaths.filter(p => fs.existsSync(p)).join(':');
+
+      const existingLib = env.DYLD_LIBRARY_PATH ? env.DYLD_LIBRARY_PATH + ':' : '';
+      env.DYLD_LIBRARY_PATH = existingLib + harmonyLib;
+    }
+
+    return env;
+  }
+
   private static initDaemon(pythonBin: string, bridgeScript: string) {
     if (this.daemonProcess && !this.daemonProcess.killed) {
       return;
@@ -39,8 +66,7 @@ export class HarmonyPython {
 
     this.daemonProcess = spawn(pythonBin, [bridgeScript], {
       env: {
-        ...process.env,
-        HARMONY_INSTALL: config.harmonyInstall,
+        ...this.getSpawnEnv(),
         HARMONY_PERSISTENT_MODE: 'true'
       }
     });
@@ -100,7 +126,7 @@ export class HarmonyPython {
     });
   }
 
-  static async runCommand(command: string, args: any = {}): Promise<PythonBridgeResponse> {
+  static async runCommand(command: string, args: any = {}, timeoutMs = config.scriptTimeoutMs): Promise<PythonBridgeResponse> {
     const pythonBin = this.getPythonExecutable();
     let scriptUrl: string | null = null;
     try {
@@ -123,7 +149,7 @@ export class HarmonyPython {
 
     const persistent = process.env.HARMONY_PERSISTENT_MODE !== 'false';
     if (!persistent) {
-      return this.runSingleCommand(pythonBin, bridgeScript, command, args);
+      return this.runSingleCommand(pythonBin, bridgeScript, command, args, timeoutMs);
     }
 
     this.initDaemon(pythonBin, bridgeScript);
@@ -142,10 +168,10 @@ export class HarmonyPython {
         reject(
           new HarmonyError(
             'SCRIPT_TIMEOUT',
-            `Запрос к демону Python превысил таймаут в ${config.scriptTimeoutMs}мс`
+            `Запрос к демону Python превысил таймаут в ${timeoutMs}мс`
           )
         );
-      }, config.scriptTimeoutMs);
+      }, timeoutMs);
 
       this.pendingPromises.set(requestId, {
         resolve: (val) => {
@@ -162,7 +188,7 @@ export class HarmonyPython {
     });
   }
 
-  private static async runSingleCommand(pythonBin: string, bridgeScript: string, command: string, args: any = {}): Promise<PythonBridgeResponse> {
+  private static async runSingleCommand(pythonBin: string, bridgeScript: string, command: string, args: any = {}, timeoutMs = config.scriptTimeoutMs): Promise<PythonBridgeResponse> {
     const payload = {
       command,
       args,
@@ -171,10 +197,7 @@ export class HarmonyPython {
 
     return new Promise((resolve, reject) => {
       const child = spawn(pythonBin, [bridgeScript], {
-        env: {
-          ...process.env,
-          HARMONY_INSTALL: config.harmonyInstall
-        }
+        env: this.getSpawnEnv()
       });
 
       let stdout = '';
@@ -196,10 +219,10 @@ export class HarmonyPython {
         reject(
           new HarmonyError(
             'SCRIPT_TIMEOUT',
-            `Выполнение моста Python превысило таймаут в ${config.scriptTimeoutMs}мс`
+            `Выполнение моста Python превысило таймаут в ${timeoutMs}мс`
           )
         );
-      }, config.scriptTimeoutMs);
+      }, timeoutMs);
 
       child.on('close', (code) => {
         clearTimeout(timeout);

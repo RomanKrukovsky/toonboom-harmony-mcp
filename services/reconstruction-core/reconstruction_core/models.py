@@ -1,0 +1,199 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Dict, List, Literal, Optional, Tuple
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+class ReconstructionRequest(StrictModel):
+    video_path: str = Field(alias="videoPath")
+    start_frame: Optional[int] = Field(default=None, alias="startFrame", ge=1)
+    end_frame: Optional[int] = Field(default=None, alias="endFrame", ge=1)
+    mode: Literal["frame_by_frame_vector"] = "frame_by_frame_vector"
+    target_fps: Optional[float] = Field(default=None, alias="targetFps", gt=0, le=120)
+    max_colors: int = Field(default=12, alias="maxColors", ge=2, le=64)
+    max_points_per_shape: int = Field(default=120, alias="maxPointsPerShape", ge=4, le=1000)
+    dedup_threshold: float = Field(default=0.035, alias="dedupThreshold", ge=0, le=1)
+    cleanup_profile: Literal["preserve_generated_look", "production_cleanup"] = Field(
+        default="production_cleanup", alias="cleanupProfile"
+    )
+    background_mode: Literal["keep", "transparent"] = Field(default="keep", alias="backgroundMode")
+    dry_run: bool = Field(default=True, alias="dryRun")
+    target_project_path: Optional[str] = Field(default=None, alias="targetProjectPath")
+    output_project_path: Optional[str] = Field(default=None, alias="outputProjectPath")
+    confirm: Optional[bool] = None
+    confirmation_text: Optional[str] = Field(default=None, alias="confirmationText")
+
+    @model_validator(mode="after")
+    def valid_range(self) -> "ReconstructionRequest":
+        if self.start_frame and self.end_frame and self.end_frame < self.start_frame:
+            raise ValueError("endFrame must be greater than or equal to startFrame")
+        return self
+
+
+class VideoMetadata(StrictModel):
+    video_path: str = Field(alias="videoPath")
+    sha256: str
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    fps: float = Field(gt=0)
+    time_base: str = Field(alias="timeBase")
+    duration_seconds: float = Field(alias="durationSeconds", gt=0)
+    frame_count: int = Field(alias="frameCount", gt=0)
+    variable_frame_rate: bool = Field(alias="variableFrameRate")
+    rotation: float = 0
+    color_space: str = Field(default="unknown", alias="colorSpace")
+    has_alpha: bool = Field(default=False, alias="hasAlpha")
+
+
+class Point(StrictModel):
+    x: float
+    y: float
+
+
+class ShapeSource(StrictModel):
+    frame: int
+    method: Literal["contour_trace", "harmony_vectorize"] = "contour_trace"
+
+
+class VectorShape(StrictModel):
+    id: str
+    color_id: str = Field(alias="colorId")
+    closed: Literal[True] = True
+    points: List[Point] = Field(min_length=3)
+    area: float = Field(ge=0)
+    source: ShapeSource
+
+
+class PaletteColor(StrictModel):
+    id: str
+    name: str
+    rgba: Tuple[int, int, int, int]
+    original_rgba: Tuple[float, float, float, float] = Field(alias="originalRgba")
+    replacement_error: float = Field(alias="replacementError")
+
+
+class Palette(StrictModel):
+    id: str
+    name: str
+    colors: List[PaletteColor]
+
+
+class Drawing(StrictModel):
+    id: str
+    name: str
+    source_frame: int = Field(alias="sourceFrame")
+    normalized_image_path: str = Field(alias="normalizedImagePath")
+    shapes: List[VectorShape]
+    point_count: int = Field(alias="pointCount")
+    locked: bool = False
+    provenance: Literal["automatic_video_reconstruction"] = "automatic_video_reconstruction"
+
+
+class Exposure(StrictModel):
+    frame: int = Field(gt=0)
+    duration: int = Field(gt=0)
+    drawing_id: str = Field(alias="drawingId")
+
+
+class Element(StrictModel):
+    id: str
+    name: str
+    node_name: str = Field(alias="nodeName")
+    drawing_ids: List[str] = Field(alias="drawingIds")
+    locked: bool = False
+
+
+class Node(StrictModel):
+    id: str
+    name: str
+    type: Literal["READ", "COMPOSITE", "DISPLAY"]
+    auto_created: bool = Field(alias="autoCreated")
+    locked: bool = False
+
+
+class Connection(StrictModel):
+    from_id: str = Field(alias="from")
+    to: str
+    from_port: int = Field(alias="fromPort")
+    to_port: int = Field(alias="toPort")
+
+
+class Capability(StrictModel):
+    vector_backend: Literal["python_dom_shapes", "harmony_vectorize"] = Field(alias="vectorBackend")
+    line_art: bool = Field(alias="lineArt")
+    colour_art: bool = Field(alias="colourArt")
+    native_tvg_required: Literal[True] = Field(default=True, alias="nativeTvgRequired")
+
+
+class Diagnostics(StrictModel):
+    unique_drawing_count: int = Field(alias="uniqueDrawingCount")
+    duplicate_frame_count: int = Field(alias="duplicateFrameCount")
+    palette_color_count: int = Field(alias="paletteColorCount")
+    total_point_count: int = Field(alias="totalPointCount")
+    warnings: List[str]
+    stage_durations_ms: Dict[str, float] = Field(alias="stageDurationsMs")
+    capability: Capability
+
+
+class SceneSpec(StrictModel):
+    name: str
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    fps: float = Field(gt=0)
+    start_frame: Literal[1] = Field(alias="startFrame")
+    end_frame: int = Field(alias="endFrame", gt=0)
+
+
+class RenderComparisonPair(StrictModel):
+    frame: int = Field(gt=0)
+    source_path: str = Field(alias="sourcePath")
+    render_path: str = Field(alias="renderPath")
+
+
+class RenderComparisonRequest(StrictModel):
+    pairs: List[RenderComparisonPair] = Field(min_length=1, max_length=48)
+
+
+class HarmonyReconstructionManifest(StrictModel):
+    schema_version: Literal["1.0"] = Field(alias="schemaVersion")
+    manifest_id: str = Field(alias="manifestId")
+    created_at: datetime = Field(alias="createdAt")
+    mode: Literal["frame_by_frame_vector"]
+    source: VideoMetadata
+    scene: SceneSpec
+    palettes: List[Palette] = Field(min_length=1)
+    elements: List[Element] = Field(min_length=1, max_length=1)
+    drawings: List[Drawing] = Field(min_length=1)
+    exposures: List[Exposure] = Field(min_length=1)
+    nodes: List[Node] = Field(min_length=3)
+    connections: List[Connection] = Field(min_length=2)
+    diagnostics: Diagnostics
+
+    @model_validator(mode="after")
+    def check_references(self) -> "HarmonyReconstructionManifest":
+        drawings = {drawing.id for drawing in self.drawings}
+        colours = {colour.id for palette in self.palettes for colour in palette.colors}
+        if any(exposure.drawing_id not in drawings for exposure in self.exposures):
+            raise ValueError("Exposure references an unknown drawing")
+        if any(shape.color_id not in colours for drawing in self.drawings for shape in drawing.shapes):
+            raise ValueError("Shape references an unknown palette colour")
+        if any(drawing_id not in drawings for element in self.elements for drawing_id in element.drawing_ids):
+            raise ValueError("Element references an unknown drawing")
+        if sum(exposure.duration for exposure in self.exposures) != self.source.frame_count:
+            raise ValueError("Exposure duration does not cover every source frame")
+        cursor = 1
+        for exposure in self.exposures:
+            if exposure.frame != cursor:
+                raise ValueError("Exposures must be ordered and contiguous")
+            cursor += exposure.duration
+        return self
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")

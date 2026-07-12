@@ -43,6 +43,19 @@ export interface HarmonyConfig {
   engineMode: HarmonyEngineMode;
   onePromptIteration: OnePromptIterationConfig;
   backends: BackendConfig;
+  reconstruction: {
+    coreUrl: string;
+    cacheRoot: string;
+    modelRoot: string;
+    device: string;
+    maxConcurrentJobs: number;
+    requestTimeoutMs: number;
+    maxDurationSeconds: number;
+    maxWidth: number;
+    maxHeight: number;
+    ffmpegPath: string;
+    ffprobePath: string;
+  };
 }
 
 function parseEngineMode(raw?: string): HarmonyEngineMode {
@@ -207,6 +220,19 @@ export const config: HarmonyConfig = {
       elevenlabs: process.env.ELEVENLABS_API_KEY,
       anthropic: process.env.ANTHROPIC_API_KEY
     }
+  },
+  reconstruction: {
+    coreUrl: process.env.RECONSTRUCTION_CORE_URL || 'http://127.0.0.1:8765',
+    cacheRoot: path.resolve(process.env.RECONSTRUCTION_CACHE_ROOT || path.join(process.cwd(), 'output', 'reconstruction-cache')),
+    modelRoot: path.resolve(process.env.RECONSTRUCTION_MODEL_ROOT || path.join(process.cwd(), 'models', 'reconstruction')),
+    device: process.env.RECONSTRUCTION_DEVICE || 'cpu',
+    maxConcurrentJobs: parseInt(process.env.RECONSTRUCTION_MAX_CONCURRENT_JOBS || '1', 10),
+    requestTimeoutMs: parseInt(process.env.RECONSTRUCTION_REQUEST_TIMEOUT_MS || '600000', 10),
+    maxDurationSeconds: parseInt(process.env.RECONSTRUCTION_MAX_DURATION_SECONDS || '300', 10),
+    maxWidth: parseInt(process.env.RECONSTRUCTION_MAX_WIDTH || '4096', 10),
+    maxHeight: parseInt(process.env.RECONSTRUCTION_MAX_HEIGHT || '4096', 10),
+    ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
+    ffprobePath: process.env.FFPROBE_PATH || 'ffprobe'
   }
 };
 
@@ -218,9 +244,25 @@ export const REQUIRED_VIEWS_360 = [
 // Валидация разрешенных путей для безопасности
 export function validatePath(filePath: string): boolean {
   try {
-    const resolvedPath = path.resolve(filePath);
-    return config.allowedRoots.some(root => resolvedPath.startsWith(root));
+    const resolvedPath = canonicalPath(filePath);
+    return config.allowedRoots.some(root => {
+      const resolvedRoot = canonicalPath(root);
+      const relative = path.relative(resolvedRoot, resolvedPath);
+      return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+    });
   } catch {
     return false;
   }
+}
+
+function canonicalPath(candidate: string): string {
+  const resolved = path.resolve(candidate);
+  let existing = resolved;
+  while (!fs.existsSync(existing)) {
+    const parent = path.dirname(existing);
+    if (parent === existing) break;
+    existing = parent;
+  }
+  const realExisting = fs.existsSync(existing) ? fs.realpathSync(existing) : existing;
+  return path.resolve(realExisting, path.relative(existing, resolved));
 }

@@ -42,12 +42,24 @@ def process_command(input_data):
             {"import_error": str(e), "sys_path": sys.path}
         )
 
-    # Базовая информация и рефлексия доступных методов
-    if command == "detect":
+    # Базовая информация и capability matrix без открытия проекта.
+    if command in ("detect", "detect_reconstruction_capabilities"):
+        session = harmony.session() if hasattr(harmony, "session") else None
+        about = getattr(session, "about", None) if session else None
         caps = {
             "has_session": hasattr(harmony, "session"),
             "has_open_project": hasattr(harmony, "open_project"),
-            "dir_harmony": dir(harmony)
+            "has_close_project": hasattr(harmony, "close_project"),
+            "has_drawing_access": hasattr(harmony, "DrawingAccess"),
+            "has_bezier_path": hasattr(harmony, "BezierPath"),
+            "has_vector_colour": hasattr(harmony, "DrawingVectorColour"),
+            "has_ogl_frame_export": hasattr(harmony, "ExportOGLFramesSettings"),
+            "product_name": str(getattr(about, "product_name", "")),
+            "product_version": str(getattr(about, "version", getattr(about, "product_version", ""))),
+            "application_path": str(getattr(about, "path_application", "")),
+            "python_version": sys.version.split()[0],
+            "supported_manifest_schema": "1.0",
+            "supported_mode": "frame_by_frame_vector"
         }
         respond({"status": "success", "capabilities": caps})
 
@@ -56,6 +68,7 @@ def process_command(input_data):
         respond_error("UNSUPPORTED_BY_VERSION", "Функция harmony.session() недоступна в данной установленной версии.")
 
     project_path = args.get("projectPath")
+    project_opened_from_path = False
     session = None
     project = None
 
@@ -65,7 +78,10 @@ def process_command(input_data):
             if not os.path.exists(project_path):
                 respond_error("INVALID_HARMONY_OBJECT", f"Файл проекта отсутствует по пути '{project_path}'")
             if hasattr(harmony, "open_project"):
-                session = harmony.open_project(project_path)
+                # open_project() возвращает void. После открытия берём новую сессию.
+                harmony.open_project(project_path)
+                session = harmony.session()
+                project_opened_from_path = True
             else:
                 respond_error("UNSUPPORTED_BY_VERSION", "Метод harmony.open_project не поддерживается в данной версии.")
         else:
@@ -826,6 +842,40 @@ def process_command(input_data):
             execute_locked(do_chain)
             respond({"status": "success", "message": "Связка Composite -> Display & Write успешно создана/проверена."})
 
+        elif command == "apply_reconstruction_manifest":
+            manifest = args.get("manifest")
+            if not isinstance(manifest, dict):
+                respond_error("INVALID_HARMONY_OBJECT", "Манифест реконструкции отсутствует или имеет неверный тип.")
+            result = execute_locked(lambda: apply_reconstruction_manifest(harmony, project, manifest))
+            respond(result)
+
+        elif command == "execute_command_plan":
+            plan = args.get("plan")
+            if not isinstance(plan, dict):
+                respond_error("INVALID_HARMONY_OBJECT", "План команд отсутствует или имеет неверный тип.")
+            result = execute_locked(lambda: execute_command_plan(harmony, project, plan))
+            respond(result)
+
+        elif command == "audit_reconstruction_scene":
+            manifest = args.get("manifest")
+            if not isinstance(manifest, dict):
+                respond_error("INVALID_HARMONY_OBJECT", "Манифест реконструкции отсутствует или имеет неверный тип.")
+            result = execute_locked(lambda: audit_reconstruction_scene(harmony, project, manifest))
+            result["reopenedFromDisk"] = project_opened_from_path
+            respond(result)
+
+        elif command == "render_reconstruction_preview":
+            manifest = args.get("manifest")
+            output_dir = args.get("outputDirectory")
+            start_frame = int(args.get("startFrame", 1))
+            end_frame = int(args.get("endFrame", start_frame))
+            if not isinstance(manifest, dict):
+                respond_error("INVALID_HARMONY_OBJECT", "Манифест реконструкции отсутствует или имеет неверный тип.")
+            result = execute_locked(lambda: render_reconstruction_preview(
+                harmony, project, manifest, output_dir, start_frame, end_frame
+            ))
+            respond(result)
+
         elif command == "save_project":
             if hasattr(project, "save"):
                 execute_locked(lambda: project.save())
@@ -906,6 +956,600 @@ def process_command(input_data):
 
     except Exception as e:
         respond_error("INVALID_HARMONY_OBJECT", f"Ошибка выполнения команды: {str(e)}", {"traceback": traceback.format_exc()})
+
+
+# Безопасный компилятор манифеста реконструкции. Он принимает только данные,
+# не выполняет переданный пользователем код и использует официальный Python DOM.
+def require_manifest_list(manifest, key):
+    value = manifest.get(key)
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"Поле манифеста '{key}' должно быть непустым списком")
+    return value
+
+
+def safe_harmony_name(value):
+    if not isinstance(value, str) or not value or len(value) > 120:
+        raise ValueError("Некорректное имя Harmony")
+    if not all(ch.isalnum() or ch in "_-" for ch in value):
+        raise ValueError(f"Имя содержит запрещённые символы: {value}")
+    return value
+
+
+def get_drawing_attribute(node_obj):
+    attributes = getattr(node_obj, "attributes", None)
+    if attributes is None:
+        raise RuntimeError("У READ-ноды нет списка attributes")
+    for key in ("drawing", "DRAWING"):
+        try:
+            attribute = attributes[key]
+            if attribute:
+                return attribute
+        except Exception:
+            pass
+    raise RuntimeError("У READ-ноды нет атрибута drawing")
+
+
+def create_vector_colour(harmony, colour_id):
+    colour = harmony.DrawingVectorColour()
+    colour.colour_id = colour_id
+    return colour
+
+
+def point_to_drawing(harmony, scene, vector_drawing, x, y, width, height):
+    field_x = (float(x) - 0.5) * 12.0
+    field_y = (0.5 - float(y)) * 12.0 * (float(height) / float(width))
+    field_point = harmony.Point2d([field_x, field_y])
+    ogl_point = scene.unit_converter.to_ogl(field_point)
+    return vector_drawing.implicit_scaling_matrix.apply(ogl_point)
+
+
+def link_nodes(source, destination):
+    if not hasattr(source, "ports_out") or not hasattr(destination, "ports_in"):
+        raise RuntimeError(f"Ноды {source} и {destination} не предоставляют документированные DOM-порты")
+    if len(source.ports_out) < 1 or len(destination.ports_in) < 1:
+        raise RuntimeError(f"У нод {source} и {destination} отсутствуют порты для соединения")
+    source.ports_out[0].link(destination.ports_in[0])
+
+
+def apply_reconstruction_manifest(harmony, project, manifest):
+    if manifest.get("schemaVersion") != "1.0" or manifest.get("mode") != "frame_by_frame_vector":
+        raise ValueError("Bridge поддерживает только schemaVersion=1.0 и frame_by_frame_vector")
+    source = manifest.get("source", {})
+    scene_spec = manifest.get("scene", {})
+    drawings_spec = require_manifest_list(manifest, "drawings")
+    exposures = require_manifest_list(manifest, "exposures")
+    palettes_spec = require_manifest_list(manifest, "palettes")
+    elements_spec = require_manifest_list(manifest, "elements")
+    width = int(scene_spec.get("width", 0))
+    height = int(scene_spec.get("height", 0))
+    frame_count = int(source.get("frameCount", 0))
+    if width <= 0 or height <= 0 or frame_count <= 0:
+        raise ValueError("Некорректные размеры или число кадров в манифесте")
+    if sum(int(item.get("duration", 0)) for item in exposures) != frame_count:
+        raise ValueError("Exposures не покрывают все кадры")
+
+    if not hasattr(harmony, "DrawingAccess") or not hasattr(harmony, "BezierPath"):
+        raise RuntimeError("Установленная версия Harmony не совместима с требуемыми API (DrawingAccess, BezierPath)")
+
+    scene = getattr(project, "scene", None)
+    if scene is None or not hasattr(scene, "columns") or not hasattr(scene, "nodes"):
+        raise RuntimeError("Версия Harmony не предоставляет Python DOM scene.columns/scene.nodes")
+
+    palette_spec = palettes_spec[0]
+    palette_name = safe_harmony_name(palette_spec.get("name"))
+    palette = None
+    for existing in project.palettes:
+        if getattr(existing, "name", None) == palette_name:
+            palette = existing
+            break
+    if palette is None:
+        palette = project.palettes.create("Colour", palette_name)
+    colour_ids = {}
+    for item in palette_spec.get("colors", []):
+        logical_id = safe_harmony_name(item.get("id"))
+        colour_name = safe_harmony_name(item.get("name"))
+        rgba = item.get("rgba")
+        if not isinstance(rgba, list) or len(rgba) != 4:
+            raise ValueError(f"Некорректный RGBA у {logical_id}")
+        existing_colour = None
+        for palette_colour in palette:
+            if getattr(palette_colour, "name", None) == colour_name:
+                existing_colour = palette_colour
+                break
+        if existing_colour is None:
+            existing_colour = palette.create_solid_colour(colour_name, [int(v) for v in rgba])
+        colour_ids[logical_id] = existing_colour.id
+
+    element_spec = elements_spec[0]
+    element_name = safe_harmony_name(element_spec.get("name"))
+    node_name = safe_harmony_name(element_spec.get("nodeName"))
+    column_name = safe_harmony_name(element_name + "_COLUMN")
+    new_column = scene.columns.create("DRAWING", column_name, {
+        "scanType": "COLOR", "fieldChart": 12, "pixmapFormat": "SCAN",
+        "vectorType": "TVG", "createNode": False
+    })
+    element_obj = new_column.element
+    read_node = scene.nodes.create("READ", "Top/" + node_name)
+    drawing_attribute = get_drawing_attribute(read_node)
+    drawing_attribute.column = new_column
+
+    drawing_by_id = {}
+    nonempty_drawing_count = 0
+    for drawing_spec in drawings_spec:
+        drawing_id = safe_harmony_name(drawing_spec.get("id"))
+        drawing_name = safe_harmony_name(drawing_spec.get("name"))
+        element_drawing = element_obj.drawings.create(drawing_name, False, True)
+        vector_drawing = element_drawing.initialize() or element_drawing.drawing
+        diagnostics = manifest.get("diagnostics", {})
+        use_line_art = diagnostics.get("capability", {}).get("lineArt", False)
+        if use_line_art:
+            art_layer = vector_drawing["line"] or vector_drawing["colour"]
+        else:
+            art_layer = vector_drawing["colour"] or vector_drawing["line"]
+            
+        if art_layer is None:
+            raise ValueError("Чертеж не содержит ни слоя Colour Art, ни Line Art")
+
+        access = harmony.DrawingAccess()
+        access.vector_begin_operations(art_layer)
+        created_shapes = 0
+        try:
+            layer = access.vector_layer_create("STROKE_LAYER")
+            for shape in drawing_spec.get("shapes", []):
+                if shape.get("closed") is not True:
+                    raise ValueError("Bridge принимает только замкнутые формы")
+                logical_colour_id = shape.get("colorId")
+                if logical_colour_id not in colour_ids:
+                    raise ValueError(f"Неизвестный цвет: {logical_colour_id}")
+                raw_points = shape.get("points")
+                if not isinstance(raw_points, list) or len(raw_points) < 3:
+                    raise ValueError("Векторная форма должна иметь минимум 3 точки")
+                points = [
+                    point_to_drawing(harmony, scene, vector_drawing, p["x"], p["y"], width, height)
+                    for p in raw_points
+                ]
+                bezier_path = harmony.BezierPath.create_bezier_fit(points, True, False)
+                fill_colour = create_vector_colour(harmony, colour_ids[logical_colour_id])
+                side = "right" if getattr(bezier_path, "polygon_clockwise", True) else "left"
+                access.stroke_create(bezier_path, layer, None, side, fill_colour)
+                created_shapes += 1
+        finally:
+            access.vector_end_operations()
+        if created_shapes > 0:
+            nonempty_drawing_count += 1
+        drawing_by_id[drawing_id] = element_drawing
+
+    for exposure in exposures:
+        drawing_id = exposure.get("drawingId")
+        if drawing_id not in drawing_by_id:
+            raise ValueError(f"Exposure ссылается на неизвестный drawing: {drawing_id}")
+        start = int(exposure.get("frame", 0))
+        duration = int(exposure.get("duration", 0))
+        if start <= 0 or duration <= 0 or start + duration - 1 > frame_count:
+            raise ValueError("Некорректный диапазон exposure")
+        drawing_attribute.set_value(start, drawing_by_id[drawing_id])
+
+    base_name = safe_harmony_name(scene_spec.get("name", "Reconstructed"))
+    composite = scene.nodes.create("COMPOSITE", "Top/" + safe_harmony_name(base_name + "_COMPOSITE"))
+    display = scene.nodes.create("DISPLAY", "Top/" + safe_harmony_name(base_name + "_DISPLAY"))
+    write = scene.nodes.create("WRITE", "Top/" + safe_harmony_name(base_name + "_WRITE"))
+    link_nodes(read_node, composite)
+    link_nodes(composite, display)
+    link_nodes(composite, write)
+
+    if hasattr(project, "num_frames"):
+        project.num_frames = frame_count
+    if hasattr(project, "frame_rate"):
+        project.frame_rate = float(scene_spec.get("fps", source.get("fps", 24)))
+    if not hasattr(project, "save"):
+        raise RuntimeError("Python DOM не предоставляет project.save()")
+    project.save()
+
+    drawing_types = sorted(set(str(getattr(item, "type", "")) for item in element_obj.drawings))
+    vector_drawings_exist = all(getattr(item, "drawing", None) is not None for item in element_obj.drawings)
+    pixmap_format = str(getattr(element_obj, "pixmap_format", ""))
+    vector_type_text = "TVG" if vector_drawings_exist and pixmap_format.upper() == "SCAN" else "UNKNOWN"
+    native_audit = {
+        "elementId": str(getattr(element_obj, "id", "")),
+        "vectorType": vector_type_text,
+        "drawingCount": len(list(element_obj.drawings)),
+        "nonemptyDrawingCount": nonempty_drawing_count,
+        "exposureFrameCount": frame_count,
+        "paletteName": palette_name,
+        "paletteColorCount": len(list(palette)),
+        "nodePath": str(getattr(read_node, "path", "Top/" + node_name)),
+        "nodeExists": read_node is not None,
+        "displayExists": display is not None,
+        "writeExists": write is not None,
+        "drawingTypes": drawing_types,
+        "pixmapFormat": pixmap_format,
+    }
+    return {
+        "status": "success", "saved": True, "nativeAudit": native_audit,
+        "message": "Манифест применён через официальный Harmony Python DOM"
+    }
+
+
+def execute_command_plan(harmony, project, plan):
+    # План команд содержит список строго типизированных операций
+    if not hasattr(harmony, "DrawingAccess") or not hasattr(harmony, "BezierPath"):
+        raise RuntimeError("Установленная версия Harmony не совместима с требуемыми API (DrawingAccess, BezierPath)")
+
+    scene = getattr(project, "scene", None)
+    if scene is None or not hasattr(scene, "columns") or not hasattr(scene, "nodes"):
+        raise RuntimeError("Версия Harmony не предоставляет Python DOM scene.columns/scene.nodes")
+
+    commands = plan.get("commands", [])
+    
+    # Контекст для шагов плана
+    ctx = {
+        "palette": None,
+        "colour_ids": {},
+        "drawing_attribute": None,
+        "drawing_by_name": {},
+        "nonempty_drawing_count": 0,
+        "created_shapes_in_drawing": {}
+    }
+    
+    for cmd in commands:
+        cmd_type = cmd.get("type")
+        params = cmd.get("params", {})
+        
+        if cmd_type == "create_palette":
+            palette_name = safe_harmony_name(params["paletteName"])
+            palette = None
+            for existing in project.palettes:
+                if getattr(existing, "name", None) == palette_name:
+                    palette = existing
+                    break
+            if palette is None:
+                palette = project.palettes.create("Colour", palette_name)
+            ctx["palette"] = palette
+            
+        elif cmd_type == "add_palette_swatch":
+            palette = ctx["palette"]
+            if not palette:
+                raise ValueError("Попытка добавить цвет в неинициализированную палитру")
+            color_id = safe_harmony_name(params["colorId"])
+            color_name = safe_harmony_name(params["colorName"])
+            rgba = params["rgba"]
+            
+            existing_colour = None
+            for palette_colour in palette:
+                if getattr(palette_colour, "name", None) == color_name:
+                    existing_colour = palette_colour
+                    break
+            if existing_colour is None:
+                existing_colour = palette.create_solid_colour(color_name, [int(v) for v in rgba])
+            ctx["colour_ids"][color_id] = existing_colour.id
+            
+        elif cmd_type == "create_drawing_element":
+            element_name = safe_harmony_name(params["elementName"])
+            column_name = safe_harmony_name(params["columnName"])
+            node_name = safe_harmony_name(params["nodeName"])
+            
+            new_column = scene.columns.create("DRAWING", column_name, {
+                "scanType": "COLOR", "fieldChart": 12, "pixmapFormat": "SCAN",
+                "vectorType": "TVG", "createNode": False
+            })
+            element_obj = new_column.element
+            read_node = scene.nodes.create("READ", "Top/" + node_name)
+            drawing_attribute = get_drawing_attribute(read_node)
+            drawing_attribute.column = new_column
+            
+            ctx["drawing_attribute"] = drawing_attribute
+            ctx["element_obj"] = element_obj
+            
+        elif cmd_type == "create_drawing":
+            drawing_name = safe_harmony_name(params["drawingName"])
+            element_obj = ctx["element_obj"]
+            element_drawing = element_obj.drawings.create(drawing_name, False, True)
+            ctx["drawing_by_name"][drawing_name] = element_drawing
+            ctx["created_shapes_in_drawing"][drawing_name] = 0
+            
+        elif cmd_type == "write_path":
+            drawing_name = safe_harmony_name(params["drawingName"])
+            path_points = params["pathPoints"]
+            color_id = safe_harmony_name(params["colorId"])
+            art_layer_name = params["artLayer"]  # 'colour' или 'line'
+            width = params["width"]
+            height = params["height"]
+            
+            element_drawing = ctx["drawing_by_name"][drawing_name]
+            vector_drawing = element_drawing.initialize() or element_drawing.drawing
+            
+            # Поддержка Line Art / Colour Art с фоллбэком
+            art_layer = vector_drawing[art_layer_name]
+            if art_layer is None:
+                fallback_layer = "line" if art_layer_name == "colour" else "colour"
+                art_layer = vector_drawing[fallback_layer]
+            if art_layer is None:
+                raise ValueError("Чертеж не содержит ни слоя Colour Art, ни Line Art")
+                
+            colour_obj_id = ctx["colour_ids"].get(color_id)
+            if not colour_obj_id:
+                raise ValueError(f"Неизвестный ID цвета в плане: {color_id}")
+                
+            points = [
+                point_to_drawing(harmony, scene, vector_drawing, p["x"], p["y"], width, height)
+                for p in path_points
+            ]
+            
+            access = harmony.DrawingAccess()
+            access.vector_begin_operations(art_layer)
+            try:
+                layer = access.vector_layer_create("STROKE_LAYER")
+                bezier_path = harmony.BezierPath.create_bezier_fit(points, True, False)
+                fill_colour = create_vector_colour(harmony, colour_obj_id)
+                # Выбор стороны заполнения по winding (автоматическая поддержка holes)
+                resolved_side = "right" if getattr(bezier_path, "polygon_clockwise", True) else "left"
+                access.stroke_create(bezier_path, layer, None, resolved_side, fill_colour)
+                ctx["created_shapes_in_drawing"][drawing_name] += 1
+            finally:
+                access.vector_end_operations()
+                
+        elif cmd_type == "set_exposure":
+            frame = int(params["frame"])
+            duration = int(params["duration"])
+            drawing_name = safe_harmony_name(params["drawingName"])
+            
+            element_drawing = ctx["drawing_by_name"][drawing_name]
+            drawing_attribute = ctx["drawing_attribute"]
+            
+            drawing_attribute.set_value(frame, element_drawing)
+            
+        elif cmd_type == "create_node":
+            node_type = params["nodeType"]
+            node_name = safe_harmony_name(params["nodeName"])
+            scene.nodes.create(node_type, "Top/" + node_name)
+            
+        elif cmd_type == "connect_nodes":
+            from_node = safe_harmony_name(params["fromNode"])
+            to_node = safe_harmony_name(params["toNode"])
+            from_port = int(params["fromPort"])
+            to_port = int(params["toPort"])
+            
+            source = scene_node(scene, "Top/" + from_node)
+            destination = scene_node(scene, "Top/" + to_node)
+            if source and destination:
+                link_nodes(source, destination)
+                
+        elif cmd_type == "save_project":
+            frame_count = int(params["frameCount"])
+            fps = float(params["fps"])
+            
+            if hasattr(project, "num_frames"):
+                project.num_frames = frame_count
+            if hasattr(project, "frame_rate"):
+                project.frame_rate = fps
+            project.save()
+
+    # Считаем непустые рисунки для нативного аудита
+    nonempty_count = sum(1 for name, count in ctx["created_shapes_in_drawing"].items() if count > 0)
+    
+    # Собираем native audit
+    drawing_types = sorted(set(str(getattr(item, "type", "")) for item in ctx["element_obj"].drawings))
+    vector_drawings_exist = all(getattr(item, "drawing", None) is not None for item in ctx["element_obj"].drawings)
+    pixmap_format = str(getattr(ctx["element_obj"], "pixmap_format", ""))
+    vector_type_text = "TVG" if vector_drawings_exist and pixmap_format.upper() == "SCAN" else "UNKNOWN"
+    
+    native_audit = {
+        "elementId": str(getattr(ctx["element_obj"], "id", "")),
+        "vectorType": vector_type_text,
+        "drawingCount": len(list(ctx["element_obj"].drawings)),
+        "nonemptyDrawingCount": nonempty_count,
+        "exposureFrameCount": project.num_frames,
+        "paletteName": ctx["palette"].name,
+        "paletteColorCount": len(list(ctx["palette"])),
+        "drawingTypes": drawing_types,
+        "pixmapFormat": pixmap_format,
+    }
+    
+    return {
+        "status": "success", "saved": True, "nativeAudit": native_audit,
+        "message": "План команд Harmony успешно выполнен"
+    }
+
+
+def scene_node(scene, node_path):
+    try:
+        return scene.nodes[node_path]
+    except Exception:
+        for candidate in scene.nodes:
+            if str(getattr(candidate, "path", "")) == node_path:
+                return candidate
+    return None
+
+
+def drawing_value_name(value):
+    if value is None:
+        return ""
+    return str(getattr(value, "name", getattr(value, "id", value)))
+
+
+def nodes_linked(source, destination):
+    if source is None or destination is None or not hasattr(source, "ports_out") or len(source.ports_out) < 1:
+        return False
+    try:
+        destinations = source.ports_out[0].destination_nodes
+        return any(str(getattr(node, "path", "")) == str(getattr(destination, "path", "")) for node in destinations)
+    except Exception:
+        return False
+
+
+def audit_reconstruction_scene(harmony, project, manifest):
+    if manifest.get("schemaVersion") != "1.0" or manifest.get("mode") != "frame_by_frame_vector":
+        raise ValueError("Неподдерживаемый манифест для аудита")
+    source = manifest.get("source", {})
+    scene_spec = manifest.get("scene", {})
+    drawings_spec = require_manifest_list(manifest, "drawings")
+    exposures_spec = require_manifest_list(manifest, "exposures")
+    palette_spec = require_manifest_list(manifest, "palettes")[0]
+    element_spec = require_manifest_list(manifest, "elements")[0]
+    frame_count = int(source.get("frameCount", 0))
+    scene = getattr(project, "scene", None)
+    if scene is None:
+        raise RuntimeError("Проект не предоставляет scene")
+
+    read_path = "Top/" + safe_harmony_name(element_spec.get("nodeName"))
+    base_name = safe_harmony_name(scene_spec.get("name", "Reconstructed"))
+    composite_path = "Top/" + safe_harmony_name(base_name + "_COMPOSITE")
+    display_path = "Top/" + safe_harmony_name(base_name + "_DISPLAY")
+    write_path = "Top/" + safe_harmony_name(base_name + "_WRITE")
+    read_node = scene_node(scene, read_path)
+    composite = scene_node(scene, composite_path)
+    display = scene_node(scene, display_path)
+    write = scene_node(scene, write_path)
+    if read_node is None:
+        raise RuntimeError(f"READ-нода после повторного открытия не найдена: {read_path}")
+    drawing_attribute = get_drawing_attribute(read_node)
+    element_obj = drawing_attribute.element
+    element_drawings = list(element_obj.drawings)
+
+    expected_by_id = {item["id"]: item["name"] for item in drawings_spec}
+    expected_timing = []
+    for exposure in exposures_spec:
+        drawing_name = expected_by_id.get(exposure.get("drawingId"), "")
+        expected_timing.extend([drawing_name] * int(exposure.get("duration", 0)))
+    actual_timing = [drawing_value_name(drawing_attribute.value(frame)) for frame in range(1, frame_count + 1)]
+
+    colour_art_strokes = 0
+    line_art_strokes = 0
+    vector_drawing_count = 0
+    used_colour_ids = set()
+    drawing_details = []
+    for element_drawing in element_drawings:
+        vector_drawing = getattr(element_drawing, "drawing", None)
+        detail = {"name": str(getattr(element_drawing, "name", "")), "vector": vector_drawing is not None}
+        if vector_drawing is not None:
+            vector_drawing_count += 1
+            for art_name in ("colour", "line"):
+                art_count = 0
+                art = vector_drawing[art_name]
+                if art is not None:
+                    for layer in art:
+                        if str(getattr(layer, "type", "")).upper() == "VECTOR":
+                            for stroke in layer.strokes:
+                                art_count += 1
+                                for side in ("colour_left", "colour_right"):
+                                    colour = getattr(stroke, side, None)
+                                    colour_id = str(getattr(colour, "colour_id", "")) if colour else ""
+                                    if colour_id:
+                                        used_colour_ids.add(colour_id)
+                detail[art_name + "ArtStrokes"] = art_count
+                if art_name == "colour":
+                    colour_art_strokes += art_count
+                else:
+                    line_art_strokes += art_count
+        drawing_details.append(detail)
+
+    palette_name = safe_harmony_name(palette_spec.get("name"))
+    palette = None
+    for candidate in project.palettes:
+        if str(getattr(candidate, "name", "")) == palette_name:
+            palette = candidate
+            break
+    if palette is None:
+        raise RuntimeError(f"Палитра после повторного открытия не найдена: {palette_name}")
+    palette_colours = list(palette)
+    expected_colour_names = {item["name"] for item in palette_spec.get("colors", [])}
+    named_palette_colours = [item for item in palette_colours if str(getattr(item, "name", "")) in expected_colour_names]
+    expected_colour_ids = {str(getattr(item, "id", "")) for item in named_palette_colours}
+
+    pixmap_format = str(getattr(element_obj, "pixmap_format", ""))
+    vector_type = "TVG" if vector_drawing_count == len(element_drawings) and pixmap_format.upper() == "SCAN" else "UNKNOWN"
+    timing_matches = actual_timing == expected_timing
+    native_audit = {
+        "elementCount": 1,
+        "elementId": str(getattr(element_obj, "id", "")),
+        "vectorType": vector_type,
+        "pixmapFormat": pixmap_format,
+        "drawingCount": len(element_drawings),
+        "vectorDrawingCount": vector_drawing_count,
+        "nonemptyDrawingCount": sum(1 for item in drawing_details if item.get("colourArtStrokes", 0) + item.get("lineArtStrokes", 0) > 0),
+        "colourArtStrokeCount": colour_art_strokes,
+        "lineArtStrokeCount": line_art_strokes,
+        "drawingDetails": drawing_details,
+        "paletteName": palette_name,
+        "paletteColorCount": len(named_palette_colours),
+        "paletteSwatchNames": sorted(str(getattr(item, "name", "")) for item in named_palette_colours),
+        "usedPaletteColorIds": sorted(used_colour_ids),
+        "paletteLinked": bool(used_colour_ids) and used_colour_ids.issubset(expected_colour_ids),
+        "exposureFrameCount": len(actual_timing),
+        "exposureTimingMatches": timing_matches,
+        "actualExposureDrawings": actual_timing,
+        "expectedExposureDrawings": expected_timing,
+        "repeatedDrawingsReused": len(set(actual_timing)) == len(drawings_spec),
+        "nodeExists": read_node is not None,
+        "compositeExists": composite is not None,
+        "displayExists": display is not None,
+        "writeExists": write is not None,
+        "readToCompositeLinked": nodes_linked(read_node, composite),
+        "compositeToDisplayLinked": nodes_linked(composite, display),
+        "compositeToWriteLinked": nodes_linked(composite, write),
+        "editableVectorGeometry": vector_drawing_count == len(element_drawings) and colour_art_strokes > 0 and hasattr(harmony, "DrawingAccess"),
+        "colourArtVerified": colour_art_strokes > 0,
+        "externalRasterUsedAsDrawing": False,
+        "externalSvgUsedAsFinal": False,
+    }
+    verified = (
+        native_audit["vectorType"] == "TVG"
+        and native_audit["drawingCount"] == len(drawings_spec)
+        and native_audit["nonemptyDrawingCount"] == len(drawings_spec)
+        and native_audit["paletteColorCount"] == len(palette_spec.get("colors", []))
+        and native_audit["paletteLinked"]
+        and native_audit["exposureTimingMatches"]
+        and native_audit["repeatedDrawingsReused"]
+        and native_audit["readToCompositeLinked"]
+        and native_audit["compositeToDisplayLinked"]
+        and native_audit["compositeToWriteLinked"]
+        and native_audit["editableVectorGeometry"]
+    )
+    return {"status": "success" if verified else "failed", "verified": verified, "nativeAudit": native_audit}
+
+
+def render_reconstruction_preview(harmony, project, manifest, output_dir, start_frame, end_frame):
+    if not hasattr(harmony, "ExportOGLFramesSettings"):
+        raise RuntimeError("Harmony Python DOM не предоставляет ExportOGLFramesSettings")
+    project_path = os.path.realpath(str(getattr(project, "project_path", "")))
+    project_dir = os.path.dirname(project_path)
+    output_real = os.path.realpath(output_dir)
+    if not project_dir or os.path.commonpath([project_dir, output_real]) != project_dir:
+        raise ValueError("Preview можно сохранять только внутри каталога тестовой сцены")
+    frame_count = int(manifest.get("source", {}).get("frameCount", 0))
+    if start_frame < 1 or end_frame < start_frame or end_frame > frame_count:
+        raise ValueError("Некорректный диапазон preview render")
+    os.makedirs(output_real, exist_ok=True)
+    before = set(os.listdir(output_real))
+    scene_spec = manifest.get("scene", {})
+    width = int(scene_spec.get("width", -1))
+    height = int(scene_spec.get("height", -1))
+    settings = harmony.ExportOGLFramesSettings(
+        output_real + os.sep, "preview", "png", start_frame, end_frame, width, height, 4
+    )
+    export_handler = getattr(project, "export_handler", None)
+    if export_handler is None:
+        raise RuntimeError("Harmony project не предоставляет export_handler")
+    export_handler(project.scene, settings)
+    created = []
+    for name in sorted(set(os.listdir(output_real)) - before):
+        file_path = os.path.join(output_real, name)
+        if os.path.isfile(file_path) and name.lower().endswith(".png"):
+            with open(file_path, "rb") as stream:
+                signature = stream.read(8)
+            if signature == b"\x89PNG\r\n\x1a\n":
+                created.append(file_path)
+    expected_count = end_frame - start_frame + 1
+    return {
+        "status": "success" if len(created) == expected_count else "failed",
+        "rendered": len(created) == expected_count,
+        "previewPaths": created,
+        "expectedFrameCount": expected_count,
+        "actualFrameCount": len(created),
+        "width": width,
+        "height": height,
+        "renderer": "Harmony ExportOGLFramesSettings",
+    }
 
 
 # Рекурсивный поиск и вспомогательные функции

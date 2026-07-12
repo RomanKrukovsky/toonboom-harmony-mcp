@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
-import { config } from '../config.js';
+import { config, validatePath } from '../config.js';
 import { HarmonyError, limitOutput } from '../security.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { ReconstructionClient } from '../adapters/reconstructionClient.js';
 
 export const systemTools = [
   {
@@ -14,6 +15,7 @@ export const systemTools = [
       const issues: string[] = [];
       let pythonAvailable = false;
       let ccAvailable = false;
+      let reconstructionCore: any = null;
 
       // Проверка папок установки
       if (!config.harmonyInstall) {
@@ -38,13 +40,22 @@ export const systemTools = [
         issues.push(`Ошибка работы моста Python API: ${err.message}`);
       }
 
+      try {
+        reconstructionCore = await new ReconstructionClient().health();
+        if (reconstructionCore.status !== 'ready') issues.push('Reconstruction core запущен, но не готов.');
+      } catch (err: any) {
+        issues.push(`Reconstruction core недоступен: ${err.message}`);
+      }
+
       return {
         status: issues.length === 0 ? 'healthy' : 'degraded',
         issues,
         checks: {
           installationDetected: !!config.harmonyInstall,
           controlCenterAvailable: ccAvailable,
-          pythonApiAvailable: pythonAvailable
+          pythonApiAvailable: pythonAvailable,
+          harmonyExecutableAvailable: !!config.harmonyBin && fs.existsSync(config.harmonyBin),
+          reconstructionCore
         }
       };
     }
@@ -110,7 +121,14 @@ export const systemTools = [
         allowDestructive: config.allowDestructive,
         allowRawScripts: config.allowRawScripts,
         allowedRoots: config.allowedRoots,
-        logDir: config.logDir
+        logDir: config.logDir,
+        reconstruction: {
+          coreUrl: config.reconstruction.coreUrl,
+          cacheRoot: config.reconstruction.cacheRoot,
+          device: config.reconstruction.device,
+          ffmpegPath: config.reconstruction.ffmpegPath,
+          ffprobePath: config.reconstruction.ffprobePath
+        }
       };
     }
   },
@@ -123,7 +141,7 @@ export const systemTools = [
     }),
     handler: async (args: { path: string; checkHarmonyPreferences?: boolean }) => {
       const resolved = path.resolve(args.path);
-      const isAllowed = config.allowedRoots.some(root => resolved.startsWith(root));
+      const isAllowed = validatePath(resolved);
       if (!isAllowed) {
         return {
           path: args.path,

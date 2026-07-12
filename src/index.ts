@@ -40,6 +40,7 @@ import { episodeAssemblyTools } from './tools/episodeAssemblyTools.js';
 import { qualityDirectorTools } from './tools/qualityDirectorTools.js';
 import { promptToSceneTools } from './tools/promptToSceneTools.js';
 import { reviewLoopTools } from './tools/reviewLoopTools.js';
+import { reconstructionTools } from './tools/reconstructionTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -76,8 +77,41 @@ const allTools = [
   ...episodeAssemblyTools,
   ...qualityDirectorTools,
   ...promptToSceneTools,
-  ...reviewLoopTools
+  ...reviewLoopTools,
+  ...reconstructionTools
 ];
+
+function zodFieldToJsonSchema(schema: any): any {
+  const description = schema.description;
+  const typeName = schema?._def?.typeName;
+  if (typeName === 'ZodOptional' || typeName === 'ZodNullable') {
+    return { ...zodFieldToJsonSchema(schema._def.innerType), ...(description ? { description } : {}) };
+  }
+  if (typeName === 'ZodDefault') {
+    return {
+      ...zodFieldToJsonSchema(schema._def.innerType),
+      default: schema._def.defaultValue(),
+      ...(description ? { description } : {})
+    };
+  }
+  if (typeName === 'ZodString') return { type: 'string', ...(description ? { description } : {}) };
+  if (typeName === 'ZodNumber') return { type: 'number', ...(description ? { description } : {}) };
+  if (typeName === 'ZodBoolean') return { type: 'boolean', ...(description ? { description } : {}) };
+  if (typeName === 'ZodEnum') return { type: 'string', enum: schema._def.values, ...(description ? { description } : {}) };
+  if (typeName === 'ZodLiteral') return { const: schema._def.value, ...(description ? { description } : {}) };
+  if (typeName === 'ZodArray') return { type: 'array', items: zodFieldToJsonSchema(schema._def.type), ...(description ? { description } : {}) };
+  if (typeName === 'ZodObject') {
+    const shape = schema.shape as Record<string, any>;
+    return {
+      type: 'object',
+      properties: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, zodFieldToJsonSchema(value)])),
+      required: Object.keys(shape).filter(key => !shape[key].isOptional()),
+      additionalProperties: false,
+      ...(description ? { description } : {})
+    };
+  }
+  return { type: 'string', ...(description ? { description } : {}) };
+}
 
 class HarmonyMcpServer {
   private server: Server;
@@ -107,31 +141,7 @@ class HarmonyMcpServer {
         tools: allTools.map(t => ({
           name: t.name,
           description: t.description,
-          inputSchema: {
-            type: 'object',
-            properties: Object.keys(t.inputSchema.shape).reduce((acc: any, key) => {
-              const shape = t.inputSchema.shape as Record<string, any>;
-              const field = shape[key];
-              acc[key] = {
-                type: 'string', // Значение по умолчанию для сериализации JSON-схемы
-                description: field.description || ''
-              };
-              if (field._def.typeName === 'ZodBoolean') acc[key].type = 'boolean';
-              if (field._def.typeName === 'ZodNumber') acc[key].type = 'number';
-              if (field._def.typeName === 'ZodArray') {
-                acc[key].type = 'array';
-                acc[key].items = { type: 'string' };
-              }
-              if (field._def.typeName === 'ZodEnum') {
-                acc[key].type = 'string';
-                acc[key].enum = field._def.values;
-              }
-              return acc;
-            }, {}),
-            required: Object.keys(t.inputSchema.shape).filter(
-              key => !(t.inputSchema.shape as Record<string, any>)[key].isOptional()
-            )
-          }
+          inputSchema: zodFieldToJsonSchema(t.inputSchema)
         }))
       };
     });

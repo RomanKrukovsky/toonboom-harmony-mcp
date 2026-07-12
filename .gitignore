@@ -18,4 +18,7 @@ examples/commercial-demo/temp_*/
 # Виртуальные окружения
 .venv39/
 .venv/
-
+.venv-reconstruction/
+__pycache__/
+*.py[cod]
+*.egg-info/

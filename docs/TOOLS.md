@@ -2,6 +2,17 @@
 
 MCP-сервер Toon Boom Harmony регистрирует набор инструментов автоматизации, разделенный по пространствам имен.
 
+## Реконструкция видео (`harmony.reconstruct.*`)
+
+- `harmony.reconstruct.health`: состояние Python core, FFmpeg, OpenCV, CPU/GPU и список реально поддержанных режимов.
+- `harmony.reconstruct.analyze_video`: декодирование и анализ видео без изменения Harmony.
+- `harmony.reconstruct.video_to_editable_scene`: основной путь MP4 → drawings → палитра → exposures → Harmony. По умолчанию `dryRun: true`.
+- `harmony.reconstruct.get_job`: сохранённое состояние и пути артефактов задания.
+- `harmony.reconstruct.cancel_job`: отмена задания, если оно ещё не завершилось.
+- `harmony.reconstruct.apply_manifest`: отдельное применение валидного манифеста к копии `.xstage`.
+
+Сейчас рабочим считается только `frame_by_frame_vector`. Манифест без подтверждённого применения в Harmony не называется редактируемой сценой. Полная инструкция: [VIDEO_RECONSTRUCTION.md](VIDEO_RECONSTRUCTION.md).
+
 ## 1. Системное администрирование (`harmony.*`)
 
 - `harmony.health_check`: Проверка путей и доступности зависимостей.

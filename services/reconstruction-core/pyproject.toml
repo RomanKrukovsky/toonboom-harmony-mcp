@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "harmony-reconstruction-core"
+version = "0.1.0"
+description = "CPU reconstruction core for toonboom-harmony-mcp"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi==0.116.1",
+  "numpy==1.26.4",
+  "opencv-python-headless==4.11.0.86",
+  "pydantic==2.11.7",
+  "python-dotenv==1.1.1",
+  "uvicorn==0.35.0"
+]
+
+[project.optional-dependencies]
+test = ["pytest==8.4.1"]
+
+[project.scripts]
+harmony-reconstruction-core = "reconstruction_core.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reconstruction_core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["integration: requires a licensed Toon Boom Harmony installation"]

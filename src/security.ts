@@ -24,6 +24,10 @@ export type HarmonyErrorCode =
   | 'ENVIRONMENT_NOT_FOUND'
   | 'RENDER_FAILED'
   | 'VECTORIZE_FAILED'
+  | 'RECONSTRUCTION_CORE_UNAVAILABLE'
+  | 'RECONSTRUCTION_FAILED'
+  | 'INVALID_RECONSTRUCTION_MANIFEST'
+  | 'HARMONY_SCENE_VERIFICATION_FAILED'
   | 'WEBCC_UNAVAILABLE'
   | 'HELPER_UNAVAILABLE'
   | 'CAPABILITY_NOT_DETECTED';
@@ -106,7 +110,27 @@ export function verifyPathAccess(filePath: string): string {
       `Доступ к пути "${filePath}" ограничен настройками безопасности.`
     );
   }
+  const existingAncestor = findExistingAncestor(normalized);
+  const realAncestor = fs.realpathSync(existingAncestor);
+  const suffix = path.relative(existingAncestor, normalized);
+  const realCandidate = path.resolve(realAncestor, suffix);
+  if (!validatePath(realCandidate)) {
+    throw new HarmonyError(
+      'PATH_TRAVERSAL_BLOCKED',
+      `Путь "${filePath}" выходит из разрешённого корня через символическую ссылку.`
+    );
+  }
   return normalized;
+}
+
+function findExistingAncestor(candidate: string): string {
+  let current = candidate;
+  while (!fs.existsSync(current)) {
+    const parent = path.dirname(current);
+    if (parent === current) return current;
+    current = parent;
+  }
+  return current;
 }
 
 // Валидация опасных/деструктивных операций

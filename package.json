@@ -8,7 +8,11 @@
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "jest"
+    "test": "jest",
+    "reconstruction:core": ".venv-reconstruction/bin/harmony-reconstruction-core serve",
+    "test:python": ".venv-reconstruction/bin/pytest services/reconstruction-core/tests",
+    "demo:reconstruction": ".venv-reconstruction/bin/python scripts/reconstruction_demo.py",
+    "reconstruction:prepare-harmony-integration": "node scripts/prepare_harmony_integration.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",

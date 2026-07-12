@@ -39,15 +39,17 @@ async function runDiagnosticsInternal(tempDir?: string) {
   if (exists && executable) {
     cliAvailable = true;
     try {
-      const runCli = () => new Promise<string>((resolve, reject) => {
-        execFile(binPath, ['-help'], { timeout: 3000 }, (error, stdout, stderr) => {
-          if (stdout || stderr) resolve(stdout + stderr);
-          else if (error) reject(error);
-          else resolve('');
+      const runCli = () => new Promise<string>((resolve) => {
+        execFile(binPath, ['-batch', '-script', 'var x = 1;'], { timeout: 4000 }, (error, stdout, stderr) => {
+          resolve((stdout || '') + (stderr || ''));
         });
       });
       renderOutput = await runCli();
-      canRender = true;
+      if (renderOutput.includes('Licensing Error') || renderOutput.includes('Cannot find license file') || renderOutput.includes('No certificate created')) {
+        canRender = false;
+      } else {
+        canRender = true;
+      }
     } catch (e: any) {
       renderOutput = `CLI Execution failed: ${e.message}`;
     }
@@ -62,6 +64,9 @@ async function runDiagnosticsInternal(tempDir?: string) {
 
   if (!packagesPathExists) warnings.push('Toon Boom Harmony Python packages path (HARMONY_PYTHON_PACKAGES) is not configured or does not exist.');
   if (!canImportToonBoomHarmony) blockingIssues.push('Failed to import ToonBoom.harmony Python package.');
+  if (exists && executable && !canRender) {
+    blockingIssues.push('Harmony licensing error: FlexNet license file is missing or invalid (Cannot find license file).');
+  }
 
   const overall = blockingIssues.length === 0 ? 'ready' : (executable ? 'partially_ready' : 'not_ready');
 
@@ -449,9 +454,9 @@ export const sceneTools = [
       // Run diagnostics first
       const diagnostics = await runDiagnosticsInternal(outDir);
 
-      const isHarmonyAvailable = diagnostics.overall === 'ready' || diagnostics.overall === 'partially_ready';
+      const isHarmonyReady = diagnostics.overall === 'ready';
 
-      if (!isHarmonyAvailable) {
+      if (!isHarmonyReady) {
         const failedReport = {
           testName: 'real_harmony_smoke_test',
           mode: 'real',
@@ -459,8 +464,8 @@ export const sceneTools = [
           harmonyAvailable: false,
           status: 'failed',
           error: {
-            code: 'HARMONY_NOT_AVAILABLE',
-            message: 'Real Harmony execution requires configured Toon Boom Harmony installation'
+            code: 'HARMONY_NOT_READY',
+            message: 'Real Harmony execution requires diagnostics overall status to be "ready"'
           },
           environmentDiagnostics: diagnostics,
           realProjectCreated: false,

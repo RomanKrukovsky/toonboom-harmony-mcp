@@ -454,6 +454,7 @@ export const onePromptTools: ToolDef[] = [
             targetScore: result.targetScore
       };
       const lockPath = path.join(outRoot, 'final_package', 'LOCK.json');
+      fs.mkdirSync(path.dirname(lockPath), { recursive: true });
       fs.writeFileSync(lockPath, JSON.stringify(lockData, null, 2));
 
       result.status = result.status === 'success' ? 'final_package_ready' : 'partial_final_package';
