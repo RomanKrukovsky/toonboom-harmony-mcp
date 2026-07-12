@@ -31,6 +31,8 @@ import { VariantTournament } from '../adapters/variantTournament/index.js';
 import { HarmonyManifestV3Compiler } from '../adapters/harmonyManifestV3/index.js';
 import { HarmonyCommandPlanV3Generator } from '../adapters/harmonyCommandPlanV3Generator/index.js';
 import { PortableIntegrationPackageGenerator } from '../adapters/portableIntegrationPackage/index.js';
+import { ArtistCorrectionEngine } from '../adapters/artistCorrectionEngine/index.js';
+import { artistCorrectionSchema, trainingSampleSchema, pairwisePreferenceSchema, datasetExportSchema } from '../schemas/artistCorrection.js';
 import { harmonyManifestV3Schema } from '../schemas/harmonyManifestV3.js';
 import { commandPlanV3Schema } from '../schemas/harmonyCommandPlanV3.js';
 
@@ -732,6 +734,145 @@ export const aiStudioTools = [
       } catch (error: any) {
         throw new HarmonyError('HARMONY_EXECUTION_FAILED', `Failed to apply manifest to Harmony: ${error.message}`);
       }
+    }
+  },
+  {
+    name: 'harmony.ai_studio.record_artist_correction',
+    description: 'Record an artist correction with delta, scope, and optional critic reports. Creates a training sample for learning from corrections (Master Prompt §15, §16).',
+    inputSchema: z.object({
+      sceneId: z.string().min(1),
+      versionBefore: z.string(),
+      versionAfter: z.string(),
+      delta: z.record(z.any()),
+      comment: z.string().optional(),
+      scope: z.enum(['pose', 'timing', 'camera', 'representation', 'palette', 'exposure', 'full_scene']).default('pose'),
+      accepted: z.boolean().default(true),
+      affectedParts: z.array(z.string()).default([]),
+      affectedFrames: z.array(z.number().int()).default([]),
+      chosenRepresentation: z.string().optional(),
+      timeSpentMinutes: z.number().min(0).optional(),
+      criticReportBefore: z.any().optional(),
+      criticReportAfter: z.any().optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      const correction = engine.recordCorrection(args);
+      return {
+        status: 'success',
+        correctionId: correction.correctionId,
+        correction,
+        message: 'Artist correction recorded and training sample created'
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.record_pairwise_preference',
+    description: 'Record a pairwise preference between two variants for taste model training (Master Prompt §14).',
+    inputSchema: z.object({
+      sceneId: z.string().min(1),
+      variantA: z.string().min(1),
+      variantB: z.string().min(1),
+      preferredVariant: z.string().min(1),
+      score: z.number().min(0).max(1),
+      reasons: z.array(z.string()).default([]),
+      conflictWithTechnicalMetrics: z.boolean().default(false),
+      confidence: z.number().min(0).max(1).default(1),
+      userId: z.string().optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      const preference = engine.recordPreference(args);
+      return {
+        status: 'success',
+        preferenceId: preference.preferenceId,
+        preference
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.detect_changes',
+    description: 'Detect changes between two scene versions and return a structured delta (Master Prompt §15).',
+    inputSchema: z.object({
+      versionBefore: z.any(),
+      versionAfter: z.any()
+    }).strict(),
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      const delta = engine.detectChanges(args.versionBefore, args.versionAfter);
+      return {
+        status: 'success',
+        delta,
+        changeCount: Object.keys(delta).length
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.preview_propagation',
+    description: 'Preview how a correction would propagate to a target manifest (Master Prompt §15).',
+    inputSchema: z.object({
+      correction: artistCorrectionSchema,
+      targetManifest: z.any()
+    }).strict(),
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      const propagated = engine.previewPropagation(args.correction, args.targetManifest);
+      return {
+        status: 'success',
+        propagatedManifest: propagated
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.lock_correction',
+    description: 'Lock (accept) or unlock (reject) an artist correction (Master Prompt §15).',
+    inputSchema: z.object({
+      correctionId: z.string().min(1),
+      action: z.enum(['lock', 'unlock', 'revert'])
+    }).strict(),
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      let result: any = null;
+      if (args.action === 'lock') {
+        result = engine.lockCorrection(args.correctionId);
+      } else if (args.action === 'unlock') {
+        result = engine.unlockCorrection(args.correctionId);
+      } else if (args.action === 'revert') {
+        result = engine.revertCorrection(args.correctionId);
+      }
+      return {
+        status: result ? 'success' : 'not_found',
+        correctionId: args.correctionId,
+        action: args.action,
+        result
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.export_training_dataset',
+    description: 'Export training dataset (corrections + preferences) for model training (Master Prompt §16).',
+    inputSchema: datasetExportSchema,
+    handler: async (args: any) => {
+      const engine = new ArtistCorrectionEngine();
+      const result = engine.exportDataset(args);
+      return {
+        status: 'success',
+        exportId: result.exportId,
+        path: result.path,
+        count: result.count
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.get_correction_stats',
+    description: 'Get statistics about recorded corrections and training data (Master Prompt §15).',
+    inputSchema: z.object({}).strict(),
+    handler: async () => {
+      const engine = new ArtistCorrectionEngine();
+      const stats = engine.getStats();
+      return {
+        status: 'success',
+        stats
+      };
     }
   }
 ];

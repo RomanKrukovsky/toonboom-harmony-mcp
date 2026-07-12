@@ -55,6 +55,47 @@
 
 ---
 
+## Iteration 9 — COMPLETED (Learning from Corrections)
+
+В рамках Iteration 9 реализован движок обучения на исправлениях художника (Artist Correction Engine) согласно Master Prompt §15, §16:
+
+### ArtistCorrectionEngine
+- **Запись коррекций** (`recordCorrection`): сохраняет версию до/после, дельту, scope, affected parts/frames, комментарий, выбранное представление, время затрат, critic reports до/после
+- **Pairwise preferences** (`recordPreference`): записывает предпочтения между вариантами для taste model training (Master Prompt §14)
+- **Детекция изменений** (`detectChanges`): сравнивает две версии манифеста и возвращает структурированную дельту
+- **Preview propagation** (`previewPropagation`): показывает, как коррекция распространится на целевой манифест
+- **Lock/Unlock/Revert**: блокировка/разблокировка/откат коррекций (accept/reject workflow)
+- **Training sample export** (`exportDataset`): экспорт в JSONL/JSON с privacy levels (public, studio_only, private)
+- **Statistics** (`getStats`): агрегированная статистика по коррекциям, предпочтениям, сценам
+
+### Zod схемы
+- `src/schemas/artistCorrection.ts` — ArtistCorrection, TrainingSample, PairwisePreference, DatasetExport с валидацией scope, privacy levels, quality improvement metrics
+
+### MCP Tools (7 новых инструментов)
+- `harmony.ai_studio.record_artist_correction` — запись коррекции с созданием training sample
+- `harmony.ai_studio.record_pairwise_preference` — запись pairwise preference для taste model
+- `harmony.ai_studio.detect_changes` — детекция изменений между версиями
+- `harmony.ai_studio.preview_propagation` — превью распространения коррекции
+- `harmony.ai_studio.lock_correction` — lock/unlock/revert коррекций
+- `harmony.ai_studio.export_training_dataset` — экспорт датасета для обучения
+- `harmony.ai_studio.get_correction_stats` — статистика коррекций
+
+### Tests
+- Все существующие тесты проходят (278 passed, 6 skipped)
+- Обновлены тесты счетчиков инструментов (aiStudioTools: 15 → 22)
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 278 passed, 6 skipped (Harmony integration)
+
+### Честные ограничения
+- Данные хранятся локально в JSON (SQLite можно подключить при масштабировании)
+- Нет автоматического ML training — только экспорт датасета для внешнего обучения
+- Privacy по умолчанию `studio_only` — данные не уходят наружу
+- Propagation preview — эвристическое, не гарантирует корректность на всех типах изменений
+
+---
+
 ## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
 
 В рамках Iteration 7 реализована система критики и турнирного отбора вариантов:
