@@ -1,0 +1,7 @@
+-r base.txt
+torch>=2.2.0
+torchvision>=0.17.0
+onnxruntime>=1.17.0
+# sam2 dependency
+pillow>=10.0.0
+tqdm>=4.65.0

@@ -46,6 +46,7 @@ export interface HarmonyConfig {
   backends: BackendConfig;
   reconstruction: {
     coreUrl: string;
+    mlCoreUrl: string;
     cacheRoot: string;
     modelRoot: string;
     device: string;
@@ -230,6 +231,7 @@ export const config: HarmonyConfig = {
   },
   reconstruction: {
     coreUrl: process.env.RECONSTRUCTION_CORE_URL || 'http://127.0.0.1:8765',
+    mlCoreUrl: process.env.ML_CORE_URL || 'http://127.0.0.1:8766',
     cacheRoot: path.resolve(process.env.RECONSTRUCTION_CACHE_ROOT || path.join(process.cwd(), 'output', 'reconstruction-cache')),
     modelRoot: path.resolve(process.env.RECONSTRUCTION_MODEL_ROOT || path.join(process.cwd(), 'models', 'reconstruction')),
     device: process.env.RECONSTRUCTION_DEVICE || 'cpu',
