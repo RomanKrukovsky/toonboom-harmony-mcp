@@ -338,5 +338,37 @@ export const reconstructionTools = [
     handler: async ({ jobId }: { jobId: string }) => {
       return client.rollbackVariantSelection(jobId);
     }
+  },
+  {
+    name: 'harmony.reconstruct.analyze_motion_factorization',
+    description: 'Анализирует возможность факторизации движения рисунков в Peg Transform Track.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.analyzeMotionFactorization(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.preview_transform_reconstruction',
+    description: 'Генерирует растровые превью кадров с примененной Peg Transform факторизацией.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.previewTransform(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.apply_transform_representation',
+    description: 'Применяет Peg Transform факторизацию к манифесту и создает новую версию.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.applyTransform(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.reject_transform_representation',
+    description: 'Отклоняет факторизацию движения, сохраняя покадровый векторный вид.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.rejectTransform(jobId);
+    }
   }
 ];

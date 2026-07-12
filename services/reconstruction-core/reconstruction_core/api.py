@@ -496,3 +496,191 @@ def rollback_selection_endpoint(job_id: str):
         raise HTTPException(status_code=422, detail={"code": "ROLLBACK_SELECTION_FAILED", "message": str(exc)})
 
 
+@app.post("/v1/jobs/{job_id}/motion-factorization")
+def analyze_motion_factorization(job_id: str, payload: dict = None):
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Манифест не найден")
+        
+    try:
+        from .models import HarmonyReconstructionManifest
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        cleaned_dir = job_dir / "cleaned"
+        frame_paths = sorted(list(cleaned_dir.glob("*.png")))
+        if not frame_paths:
+            frame_paths = sorted(list((job_dir / "frames").glob("*.png")))
+            
+        from .factorization import run_motion_factorization_for_job
+        # Делаем копию манифеста для сухого анализа
+        base_manifest = manifest.model_copy(deep=True)
+        factorized = run_motion_factorization_for_job(base_manifest, job_dir, frame_paths)
+        
+        # Если transform_tracks не пуст, значит факторизация успешна
+        success = len(factorized.transform_tracks) > 0
+        
+        # Вычисляем разницу
+        before_drawings = len(manifest.drawings)
+        after_drawings = len(factorized.drawings)
+        
+        # Собираем отчет
+        report = {
+            "factorized": success,
+            "beforeDrawingCount": before_drawings,
+            "afterDrawingCount": after_drawings,
+            "drawingReductionRatio": float(1.0 - after_drawings / before_drawings) if before_drawings > 0 else 0.0,
+            "transformTracksCount": len(factorized.transform_tracks)
+        }
+        if success:
+            track = factorized.transform_tracks[0]
+            report.update({
+                "keyframeCount": len(track.segments[0].keyframes),
+                "residualError": track.segments[0].residual_error,
+                "pivot": track.pivot
+            })
+        return report
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "FACTORIZATION_ANALYSIS_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/preview-transform")
+def preview_transform_reconstruction(job_id: str, payload: dict = None):
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Манифест не найден")
+        
+    try:
+        from .models import HarmonyReconstructionManifest
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        cleaned_dir = job_dir / "cleaned"
+        frame_paths = sorted(list(cleaned_dir.glob("*.png")))
+        if not frame_paths:
+            frame_paths = sorted(list((job_dir / "frames").glob("*.png")))
+            
+        from .factorization import run_motion_factorization_for_job
+        base_manifest = manifest.model_copy(deep=True)
+        factorized = run_motion_factorization_for_job(base_manifest, job_dir, frame_paths)
+        
+        if not factorized.transform_tracks:
+            raise ValueError("Не удалось выполнить факторизацию движения для превью.")
+            
+        preview_dir = job_dir / "previews_peg_factorized"
+        preview_dir.mkdir(parents=True, exist_ok=True)
+        
+        colors = {c.id: c.rgba for p in factorized.palettes for c in p.colors}
+        w, h = factorized.scene.width, factorized.scene.height
+        
+        from .problems import render_drawing_to_numpy
+        from .factorization import apply_transform_to_image
+        
+        master_drawing = factorized.drawings[0]
+        master_canvas = render_drawing_to_numpy(master_drawing, colors, w, h)
+        
+        track = factorized.transform_tracks[0]
+        segment = track.segments[0]
+        
+        for frame_idx in range(len(frame_paths)):
+            frame_num = frame_idx + 1
+            kf = next((k for k in segment.keyframes if k.frame == frame_num), None)
+            if not kf:
+                kfs = sorted(segment.keyframes, key=lambda k: k.frame)
+                left = max([k for k in kfs if k.frame < frame_num], key=lambda k: k.frame, default=None)
+                right = min([k for k in kfs if k.frame > frame_num], key=lambda k: k.frame, default=None)
+                if left and right:
+                    t = (frame_num - left.frame) / (right.frame - left.frame)
+                    tx = left.position_x + t * (right.position_x - left.position_x)
+                    ty = left.position_y + t * (right.position_y - left.position_y)
+                    rot = left.rotation + t * (right.rotation - left.rotation)
+                    sx = left.scale_x + t * (right.scale_x - left.scale_x)
+                    sy = left.scale_y + t * (right.scale_y - left.scale_y)
+                    skew = left.skew + t * (right.skew - left.skew)
+                elif left:
+                    tx, ty, rot, sx, sy, skew = left.position_x, left.position_y, left.rotation, left.scale_x, left.scale_y, left.skew
+                elif right:
+                    tx, ty, rot, sx, sy, skew = right.position_x, right.position_y, right.rotation, right.scale_x, right.scale_y, right.skew
+                else:
+                    tx, ty, rot, sx, sy, skew = 0.0, 0.0, 0.0, 1.0, 1.0, 0.0
+            else:
+                tx, ty, rot, sx, sy, skew = kf.position_x, kf.position_y, kf.rotation, kf.scale_x, kf.scale_y, kf.skew
+                
+            warped = apply_transform_to_image(master_canvas, tx, ty, rot, sx, sy, skew, track.pivot)
+            cv2.imwrite(str(preview_dir / f"frame_{frame_num:06d}.png"), warped)
+            
+        return {
+            "status": "completed",
+            "previewDirectory": str(preview_dir),
+            "keyframeCount": len(segment.keyframes)
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "PREVIEW_TRANSFORM_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/apply-transform")
+def apply_transform_representation(job_id: str, payload: dict = None):
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Манифест не найден")
+        
+    try:
+        from .models import HarmonyReconstructionManifest
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        cleaned_dir = job_dir / "cleaned"
+        frame_paths = sorted(list(cleaned_dir.glob("*.png")))
+        if not frame_paths:
+            frame_paths = sorted(list((job_dir / "frames").glob("*.png")))
+            
+        from .factorization import run_motion_factorization_for_job
+        updated_manifest = run_motion_factorization_for_job(manifest, job_dir, frame_paths)
+        
+        if not updated_manifest.transform_tracks:
+            raise ValueError("Не удалось применить Peg Transform: не пройдены hard constraints.")
+            
+        # Записываем обновленный манифест
+        manifest_path.write_text(updated_manifest.model_dump_json(by_alias=True), encoding="utf-8")
+        
+        # Добавляем в историю версий
+        from .versions import add_version
+        version_info = add_version(
+            job_dir,
+            manifest_path,
+            None,
+            "Применение Peg Transform факторизации движения"
+        )
+        
+        job["report"] = updated_manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "versionInfo": version_info,
+            "report": job["report"]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "APPLY_TRANSFORM_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/reject-transform")
+def reject_transform_representation(job_id: str, payload: dict = None):
+    return {"status": "completed", "message": "Факторизация движения отклонена пользователем. Сохранен покадровый вариант."}
+
+

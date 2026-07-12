@@ -137,6 +137,30 @@ export class ReconstructionClient {
     });
   }
 
+  analyzeMotionFactorization(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/motion-factorization`, {
+      method: 'POST'
+    });
+  }
+
+  previewTransform(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/preview-transform`, {
+      method: 'POST'
+    });
+  }
+
+  applyTransform(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/apply-transform`, {
+      method: 'POST'
+    });
+  }
+
+  rejectTransform(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/reject-transform`, {
+      method: 'POST'
+    });
+  }
+
   loadManifest(manifestPath: string): HarmonyReconstructionManifest {
     const parsed = reconstructionManifestSchema.safeParse(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
     if (!parsed.success) {

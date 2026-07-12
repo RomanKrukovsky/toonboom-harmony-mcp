@@ -230,6 +230,14 @@ class VisualMetrics(StrictModel):
     temporal_silhouette_difference: float = Field(default=0.0, alias="temporalSilhouetteDifference")
     frozen_motion_ratio: float = Field(default=0.0, alias="frozenMotionRatio")
     number_of_lost_motion_events: int = Field(default=0, alias="numberOfLostMotionEvents")
+    
+    transform_residual_error: float = Field(default=0.0, alias="transformResidualError")
+    master_drawing_count: int = Field(default=0, alias="masterDrawingCount")
+    transform_key_count: int = Field(default=0, alias="transformKeyCount")
+    key_reduction_ratio: float = Field(default=0.0, alias="keyReductionRatio")
+    frames_represented_by_transforms: int = Field(default=0, alias="framesRepresentedByTransforms")
+    frames_falling_back_to_drawings: int = Field(default=0, alias="framesFallingBackToDrawings")
+    geometry_reuse_ratio: float = Field(default=0.0, alias="geometryReuseRatio")
 
 
 class ComplexityMetrics(StrictModel):
@@ -257,6 +265,37 @@ class ReconstructionHypothesis(StrictModel):
     preview_directory: str = Field(alias="previewDirectory")
     creation_timestamp: str = Field(alias="creationTimestamp")
     provenance: ProvenanceInfo
+
+
+class TransformKeyframe(StrictModel):
+    frame: int
+    position_x: float = Field(alias="positionX")
+    position_y: float = Field(alias="positionY")
+    rotation: float
+    scale_x: float = Field(alias="scaleX")
+    scale_y: float = Field(alias="scaleY")
+    skew: float
+    pivot_x: Optional[float] = Field(default=None, alias="pivotX")
+    pivot_y: Optional[float] = Field(default=None, alias="pivotY")
+
+
+class TransformSegment(StrictModel):
+    start_frame: int = Field(alias="startFrame")
+    end_frame: int = Field(alias="endFrame")
+    keyframes: List[TransformKeyframe]
+    interpolation: str = "linear"  # hold, step, linear, bezier
+    confidence: float = 1.0
+    residual_error: float = Field(default=0.0, alias="residualError")
+    fallback_reason: Optional[str] = Field(default=None, alias="fallbackReason")
+
+
+class TransformTrack(StrictModel):
+    track_id: str = Field(alias="trackId")
+    target_element_id: str = Field(alias="targetElementId")
+    target_drawing_id: str = Field(alias="targetDrawingId")
+    pivot: Tuple[float, float] = (0.0, 0.0)
+    segments: List[TransformSegment]
+    provenance: str = "automatic_motion_factorization"
 
 
 class SelectionHistoryItem(StrictModel):
@@ -292,6 +331,7 @@ class HarmonyReconstructionManifest(StrictModel):
     diagnostics: Diagnostics
     provenance: Optional[ProvenanceInfo] = None
     selected_hypothesis: Optional[HypothesisSelection] = Field(default=None, alias="selectedHypothesis")
+    transform_tracks: List[TransformTrack] = Field(default_factory=list, alias="transformTracks")
 
     @model_validator(mode="after")
     def check_references(self) -> "HarmonyReconstructionManifest":

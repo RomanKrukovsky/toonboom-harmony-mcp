@@ -268,6 +268,64 @@ export class HarmonySceneCompiler {
       }
     });
 
+    // 7b. Transform tracks (Pegs & Keyframes)
+    if (manifest.transformTracks) {
+      for (const track of manifest.transformTracks) {
+        const pegNodeName = `${track.trackId}_PEG`;
+        commands.push({
+          type: 'create_peg',
+          params: {
+            pegName: pegNodeName,
+            targetNodeName: track.targetElementId === 'element_main' ? element.nodeName : track.targetElementId
+          }
+        });
+        commands.push({
+          type: 'attach_drawing_to_peg',
+          params: {
+            pegName: pegNodeName,
+            drawingNodeName: track.targetElementId === 'element_main' ? element.nodeName : track.targetElementId
+          }
+        });
+        commands.push({
+          type: 'set_peg_pivot',
+          params: {
+            pegName: pegNodeName,
+            pivotX: track.pivot[0],
+            pivotY: track.pivot[1]
+          }
+        });
+
+        for (const segment of track.segments) {
+          for (const kf of segment.keyframes) {
+            commands.push({
+              type: 'set_transform_keyframe',
+              params: {
+                pegName: pegNodeName,
+                frame: kf.frame,
+                positionX: kf.positionX,
+                positionY: kf.positionY,
+                rotation: kf.rotation,
+                scaleX: kf.scaleX,
+                scaleY: kf.scaleY,
+                skew: kf.skew,
+                pivotX: kf.pivotX,
+                pivotY: kf.pivotY
+              }
+            });
+          }
+          commands.push({
+            type: 'set_transform_interpolation',
+            params: {
+              pegName: pegNodeName,
+              startFrame: segment.startFrame,
+              endFrame: segment.endFrame,
+              interpolation: segment.interpolation
+            }
+          });
+        }
+      }
+    }
+
     // 8. Сохранение
     commands.push({
       type: 'save_project',

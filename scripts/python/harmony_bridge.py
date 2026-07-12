@@ -1314,6 +1314,68 @@ def execute_command_plan(harmony, project, plan):
             if source and destination:
                 link_nodes(source, destination)
                 
+        elif cmd_type == "create_peg":
+            peg_name = safe_harmony_name(params["pegName"])
+            print(f"[PEG TRANSFORM COMMAND] create_peg: {peg_name} (implemented_unverified)")
+            try:
+                scene.nodes.create("PEG", "Top/" + peg_name)
+            except Exception as e:
+                print(f"[Warning] Failed to create peg {peg_name} in Harmony: {e}")
+                
+        elif cmd_type == "attach_drawing_to_peg":
+            peg_name = safe_harmony_name(params["pegName"])
+            drawing_node_name = safe_harmony_name(params["drawingNodeName"])
+            print(f"[PEG TRANSFORM COMMAND] attach_drawing_to_peg: {peg_name} -> {drawing_node_name} (implemented_unverified)")
+            try:
+                peg_node = scene_node(scene, "Top/" + peg_name)
+                drawing_node = scene_node(scene, "Top/" + drawing_node_name)
+                if peg_node and drawing_node:
+                    link_nodes(peg_node, drawing_node)
+            except Exception as e:
+                print(f"[Warning] Failed to attach drawing to peg: {e}")
+                
+        elif cmd_type == "set_peg_pivot":
+            peg_name = safe_harmony_name(params["pegName"])
+            pivot_x = float(params["pivotX"])
+            pivot_y = float(params["pivotY"])
+            print(f"[PEG TRANSFORM COMMAND] set_peg_pivot: {peg_name} ({pivot_x}, {pivot_y}) (implemented_unverified)")
+            try:
+                peg_node = scene_node(scene, "Top/" + peg_name)
+                if peg_node:
+                    peg_node.attributes["pivot.x"].set_value(0, pivot_x)
+                    peg_node.attributes["pivot.y"].set_value(0, pivot_y)
+            except Exception as e:
+                print(f"[Warning] Failed to set peg pivot: {e}")
+                
+        elif cmd_type == "set_transform_keyframe":
+            peg_name = safe_harmony_name(params["pegName"])
+            frame = int(params["frame"])
+            tx = float(params["positionX"])
+            ty = float(params["positionY"])
+            rot = float(params["rotation"])
+            sx = float(params["scaleX"])
+            sy = float(params["scaleY"])
+            skew = float(params["skew"])
+            print(f"[PEG TRANSFORM COMMAND] set_transform_keyframe: {peg_name} frame {frame} (tx={tx}, ty={ty}, rot={rot}, sx={sx}, sy={sy}) (implemented_unverified)")
+            try:
+                peg_node = scene_node(scene, "Top/" + peg_name)
+                if peg_node:
+                    peg_node.attributes["position.x"].set_value(frame, tx)
+                    peg_node.attributes["position.y"].set_value(frame, ty)
+                    peg_node.attributes["rotation.anglez"].set_value(frame, rot)
+                    peg_node.attributes["scale.x"].set_value(frame, sx)
+                    peg_node.attributes["scale.y"].set_value(frame, sy)
+                    peg_node.attributes["skew"].set_value(frame, skew)
+            except Exception as e:
+                print(f"[Warning] Failed to set peg keyframe: {e}")
+                
+        elif cmd_type == "set_transform_interpolation":
+            peg_name = safe_harmony_name(params["pegName"])
+            start_frame = int(params["startFrame"])
+            end_frame = int(params["endFrame"])
+            interpolation = params["interpolation"]
+            print(f"[PEG TRANSFORM COMMAND] set_transform_interpolation: {peg_name} range {start_frame}-{end_frame} ({interpolation}) (implemented_unverified)")
+            
         elif cmd_type == "save_project":
             frame_count = int(params["frameCount"])
             fps = float(params["fps"])

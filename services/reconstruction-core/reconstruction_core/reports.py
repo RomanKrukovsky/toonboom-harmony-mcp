@@ -44,6 +44,10 @@ def generate_html_comparison_report(
         if reasons:
             reasons_list = "<div class='rejection-reasons'>" + " | ".join(reasons) + "</div>"
             
+        # Проверяем наличие полей для Peg-трансформации
+        transform_keys = getattr(vm, "transform_key_count", 0)
+        transform_res = getattr(vm, "transform_residual_error", 0.0)
+        
         table_rows += f"""
         <tr class="{row_class}">
             <td>
@@ -63,6 +67,8 @@ def generate_html_comparison_report(
                 </span>
             </td>
             <td>{cm.unique_drawing_count}</td>
+            <td>{transform_keys}</td>
+            <td>{transform_res:.3f}</td>
             <td>{cm.vector_point_count}</td>
             <td>{cm.estimated_scene_size / 1024:.1f} KB</td>
         </tr>
@@ -290,6 +296,8 @@ def generate_html_comparison_report(
                     <th>Centroid Trajectory Error</th>
                     <th>Lost Motion Events</th>
                     <th>Уникальные рисунки</th>
+                    <th>Transform Keys</th>
+                    <th>Peg Residual Error</th>
                     <th>Точки векторов</th>
                     <th>Объем сцены (эст.)</th>
                 </tr>

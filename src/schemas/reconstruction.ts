@@ -81,6 +81,37 @@ export const representationSegmentSchema = z.object({
   explanation: z.string()
 }).strict();
 
+export const transformKeyframeSchema = z.object({
+  frame: z.number().int().positive(),
+  positionX: z.number().finite(),
+  positionY: z.number().finite(),
+  rotation: z.number().finite(),
+  scaleX: z.number().finite(),
+  scaleY: z.number().finite(),
+  skew: z.number().finite(),
+  pivotX: z.number().finite().optional().nullable(),
+  pivotY: z.number().finite().optional().nullable()
+}).strict();
+
+export const transformSegmentSchema = z.object({
+  startFrame: z.number().int().positive(),
+  endFrame: z.number().int().positive(),
+  keyframes: z.array(transformKeyframeSchema),
+  interpolation: z.string().default('linear'),
+  confidence: z.number().min(0.0).max(1.0).default(1.0),
+  residualError: z.number().default(0.0),
+  fallbackReason: z.string().optional().nullable()
+}).strict();
+
+export const transformTrackSchema = z.object({
+  trackId: z.string().min(1),
+  targetElementId: z.string().min(1),
+  targetDrawingId: z.string().min(1),
+  pivot: z.tuple([z.number(), z.number()]).default([0, 0]),
+  segments: z.array(transformSegmentSchema),
+  provenance: z.string().default('automatic_motion_factorization')
+}).strict();
+
 export const provenanceInfoSchema = z.object({
   tool: z.string().default('harmony-reconstruction-core'),
   version: z.string().default('2.0.0'),
@@ -184,7 +215,8 @@ export const reconstructionManifestSchema = z.object({
     selectionReason: z.string().optional().nullable(),
     selectedBy: z.string().optional().nullable(),
     selectedAt: z.string().optional().nullable()
-  }).strict().optional().nullable()
+  }).strict().optional().nullable(),
+  transformTracks: z.array(transformTrackSchema).default([])
 }).strict().superRefine((manifest, ctx) => {
   const drawingIds = new Set(manifest.drawings.map(d => d.id));
   const colorIds = new Set(manifest.palettes.flatMap(p => p.colors.map(c => c.id)));
@@ -249,7 +281,12 @@ export const commandTypeSchema = z.enum([
   'set_exposure',
   'create_node',
   'connect_nodes',
-  'save_project'
+  'save_project',
+  'create_peg',
+  'attach_drawing_to_peg',
+  'set_peg_pivot',
+  'set_transform_keyframe',
+  'set_transform_interpolation'
 ]);
 
 export const commandSchema = z.object({

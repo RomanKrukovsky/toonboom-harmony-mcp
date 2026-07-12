@@ -105,6 +105,12 @@ def main() -> None:
         print(f"  - Foreground Mean Error: {item['foregroundMeanError']:.2f} (порог <= 25.0)")
         print(f"  - Centroid Trajectory Error: {item['centroidTrajectoryError']:.2f} px (порог <= 4.0 px)")
         print(f"  - Потерянные движения (Lost Motion Events): {item['numberOfLostMotionEvents']}")
+        
+        t_keys = item.get("transformKeyCount", 0)
+        if t_keys > 0:
+            print(f"  - Peg Transform Keys: {t_keys} (сжатие ключей: {item['keyReductionRatio'] * 100:.1f}%)")
+            print(f"  - Peg Residual Error: {item['transformResidualError']:.3f}")
+            
         if item["rejectionReasons"]:
             print("  - ПРИЧИНЫ ОТКЛОНЕНИЯ:")
             for r in item["rejectionReasons"]:

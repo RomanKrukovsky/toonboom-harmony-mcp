@@ -138,7 +138,7 @@ def generate_hypotheses(
         "max_points_per_shape": min(60, request.max_points_per_shape)
     })
     # Строим компактный манифест
-    compact_manifest = _derive_compact_manifest(base_manifest, compact_request, frame_paths)
+    compact_manifest = _derive_compact_manifest(base_manifest, compact_request, frame_paths, job_dir)
     problem_frames_comp, segments_comp = analyze_problems_and_segments(compact_manifest, job_dir, frame_paths)
     compact_manifest.diagnostics.problem_frames = problem_frames_comp
     compact_manifest.diagnostics.representation_segments = segments_comp
@@ -197,7 +197,9 @@ def _build_hypothesis_from_manifest(
             
     drawing_by_id = {d.id: d for d in manifest.drawings}
     
-    # Рендерим каждый кадр
+    # Рендерим каждый кадр с поддержкой Peg-трансформаций и их интерполяции
+    from .factorization import apply_transform_to_image
+    
     for frame_idx, orig_path in enumerate(frame_paths):
         frame_num = frame_idx + 1
         dr_id = frame_to_drawing.get(frame_num)
@@ -205,6 +207,40 @@ def _build_hypothesis_from_manifest(
             canvas = render_drawing_to_numpy(drawing_by_id[dr_id], colors, w, h)
         else:
             canvas = np.zeros((h, w, 4), dtype=np.uint8)
+            
+        # Применяем трансформации, если они есть в манифесте
+        if manifest.transform_tracks:
+            track = manifest.transform_tracks[0]
+            pivot = track.pivot
+            segment = next((seg for seg in track.segments if seg.start_frame <= frame_num <= seg.end_frame), None)
+            if segment and segment.keyframes:
+                kfs = sorted(segment.keyframes, key=lambda k: k.frame)
+                exact = next((k for k in kfs if k.frame == frame_num), None)
+                if exact:
+                    tx, ty, rot, sx, sy, skew = exact.position_x, exact.position_y, exact.rotation, exact.scale_x, exact.scale_y, exact.skew
+                else:
+                    left = max([k for k in kfs if k.frame < frame_num], key=lambda k: k.frame, default=None)
+                    right = min([k for k in kfs if k.frame > frame_num], key=lambda k: k.frame, default=None)
+                    if left and right:
+                        if segment.interpolation in ("hold", "step"):
+                            tx, ty, rot, sx, sy, skew = left.position_x, left.position_y, left.rotation, left.scale_x, left.scale_y, left.skew
+                        else:
+                            t = (frame_num - left.frame) / (right.frame - left.frame)
+                            tx = left.position_x + t * (right.position_x - left.position_x)
+                            ty = left.position_y + t * (right.position_y - left.position_y)
+                            rot = left.rotation + t * (right.rotation - left.rotation)
+                            sx = left.scale_x + t * (right.scale_x - left.scale_x)
+                            sy = left.scale_y + t * (right.scale_y - left.scale_y)
+                            skew = left.skew + t * (right.skew - left.skew)
+                    elif left:
+                        tx, ty, rot, sx, sy, skew = left.position_x, left.position_y, left.rotation, left.scale_x, left.scale_y, left.skew
+                    elif right:
+                        tx, ty, rot, sx, sy, skew = right.position_x, right.position_y, right.rotation, right.scale_x, right.scale_y, right.skew
+                    else:
+                        tx, ty, rot, sx, sy, skew = 0.0, 0.0, 0.0, 1.0, 1.0, 0.0
+                
+                canvas = apply_transform_to_image(canvas, tx, ty, rot, sx, sy, skew, pivot)
+                
         rendered_canvases.append(canvas)
         
     # Сохраняем превью в отдельную папку
@@ -294,11 +330,27 @@ def _derive_clean_manifest(base: HarmonyReconstructionManifest, clean_request) -
 def _derive_compact_manifest(
     base: HarmonyReconstructionManifest,
     compact_request,
-    frame_paths: List[Path]
+    frame_paths: List[Path],
+    job_dir: Path
 ) -> HarmonyReconstructionManifest:
     """
-    Создает компактный манифест с более агрессивной дедупликацией кадров.
+    Создает компактный манифест с более агрессивной дедупликацией кадров и/или Peg Transform факторизацией.
     """
+    # Сначала пытаемся факторизовать движение через Peg Transform Track
+    from .factorization import run_motion_factorization_for_job
+    try:
+        factorized = run_motion_factorization_for_job(base, job_dir, frame_paths)
+        if factorized.transform_tracks:
+            # Ограничиваем количество точек в оставшихся рисунках
+            for drawing in factorized.drawings:
+                for shape in drawing.shapes:
+                    if len(shape.points) > compact_request.max_points_per_shape:
+                        shape.points = shape.points[:compact_request.max_points_per_shape]
+                drawing.point_count = sum(len(s.points) for s in drawing.shapes)
+            return factorized
+    except Exception as e:
+        print(f"Исключение при факторизации движения: {e}. Откат к покадровому сжатию.")
+
     manifest = base.model_copy(deep=True)
     
     # Мапа: индекс исходного кадра -> ID рисунка в базовом манифесте
@@ -440,7 +492,11 @@ def compare_hypotheses(hypotheses: List[ReconstructionHypothesis]) -> Dict[str, 
             "silhouetteIoU": float(silhouette_iou),
             "foregroundMeanError": float(fg_error),
             "centroidTrajectoryError": float(traj_error),
-            "numberOfLostMotionEvents": int(vm.number_of_lost_motion_events)
+            "numberOfLostMotionEvents": int(vm.number_of_lost_motion_events),
+            "transformKeyCount": getattr(vm, "transform_key_count", 0),
+            "transformResidualError": getattr(vm, "transform_residual_error", 0.0),
+            "masterDrawingCount": getattr(vm, "master_drawing_count", 0),
+            "keyReductionRatio": getattr(vm, "key_reduction_ratio", 0.0)
         })
         
         if score > best_score:
