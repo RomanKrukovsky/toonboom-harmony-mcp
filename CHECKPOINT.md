@@ -96,6 +96,56 @@
 
 ---
 
+## Iteration 10 — COMPLETED (Studio Intelligence)
+
+В рамках Iteration 10 реализована система профилей студии, acting profiles, taste model и episode compiler согласно Master Prompt §22-§23:
+
+### StudioProfiler
+- **3 default профиля**: `studio_standard` (balanced), `studio_highend` (quality-first), `studio_tv_series` (speed/quantity)
+- **Editability settings**: priority, max deformers/part, preferred representation, frame-by-frame allowance
+- **Naming conventions**: prefixes for drawings, pegs, groups, composites, cameras, deformers
+- **Quality thresholds**: min silhouette quality, max keyframe reduction error, TVG requirement, editable geometry requirement
+- **Pipeline defaults**: fps, resolution, duration
+- **Profile validation** против манифестов
+
+### ArtistCorrectionEngine (продолжение Iteration 9)
+- Интеграция с studio profiles для validation
+- Training sample export с quality improvement metrics
+
+### TasteModelConfig (foundation)
+- **Pairwise ranker / absolute scorer / critic-aligned** конфигурации
+- **Feature flags**: technical/artistic scores, critic reports, correction history, representation choices
+- **Weights**: technical (0.6), artistic (0.4), critic alignment (0.3), correction alignment (0.3), representation quality (0.2)
+- **Status tracking**: untrained, training, ready, deprecated
+- **Prediction schema**: variantId, predictedScore, confidence, reasoning, conflict flag
+
+### EpisodeCompilerConfig (foundation)
+- **Series bible reference**
+- **Episode template**: scene types (opening, dialogue, action, climax, resolution, closing) с duration, shot count, required characters
+- **Reuse policy**: background/prop/pose reuse, max reuse distance
+- **Quality gates**: min critic score, taste model approval flag, max human review time
+- **Compiled episode schema**: scenes with status, manifest/critic/taste refs
+
+### MCP Tools
+- Использует существующие 7 tools из Iteration 9 + studio profiler integration
+
+### Tests
+- Все тесты проходят (278 passed, 6 skipped)
+- Studio profiler validation tested in demo
+
+### Demo
+- `node scripts/demo_ai_studio_iter10.js` — загружает 3 профиля, валидирует манифест, записывает коррекцию/preference, экспортирует датасет
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 278 passed, 6 skipped (Harmony integration)
+
+### Честные ограничения
+- Taste model — только конфигурация, нет trained weights (Phase 7 training roadmap)
+- Episode compiler — только конфигурация, не полный pipeline (требует integration с Harmony)
+- Studio profiles — static defaults, не learnt from production data
+- Taste model predictions — placeholder schema, требует training data для real inference
+
 ## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
 
 В рамках Iteration 7 реализована система критики и турнирного отбора вариантов:
