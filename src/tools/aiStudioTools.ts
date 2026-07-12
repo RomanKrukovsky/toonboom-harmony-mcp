@@ -24,6 +24,8 @@ import { CharacterPartDecomposer } from '../adapters/characterPartDecomposer/ind
 import { RepresentationRouterV3 } from '../adapters/representationRouterV3/index.js';
 import { partDecompositionSchema } from '../schemas/partDecomposition.js';
 import { routingPlanSchema } from '../schemas/representationRouter.js';
+import { CameraLayoutDirector } from '../adapters/cameraLayoutDirector/index.js';
+import { cameraLayoutPlanSchema } from '../schemas/cameraLayout.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -435,6 +437,30 @@ export const aiStudioTools = [
         honestLimitations: {
           routingIsHeuristic: true,
           noStudioProfileTrained: true,
+          harmonyApplied: false
+        }
+      };
+    }
+  },
+  {
+    name: 'harmony.ai_studio.generate_camera_plan',
+    description: 'Camera & Layout Director (Iteration 6). Генерирует shot plan, blocking, camera keys и continuity checks на основе SceneUnderstanding.',
+    inputSchema: z.object({
+      sceneUnderstanding: sceneUnderstandingSchema,
+      fps: z.number().positive().optional(),
+      style: z.enum(['restrained', 'dynamic', 'dramatic', 'comedic']).optional()
+    }).strict(),
+    handler: async (args: any) => {
+      const director = new CameraLayoutDirector();
+      const plan = director.generate(args);
+      return {
+        status: 'success',
+        sceneId: args.sceneUnderstanding.sceneId,
+        shotCount: plan.shots.length,
+        cameraPlan: plan,
+        honestLimitations: {
+          ruleBasedBaseline: true,
+          noMlDirector: true,
           harmonyApplied: false
         }
       };

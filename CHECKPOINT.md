@@ -1,4 +1,50 @@
-# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 5)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 6)
+
+## Iteration 6 — COMPLETED (Camera & Layout)
+
+В рамках Iteration 6 реализована система планирования камеры и layout сцены:
+
+### CameraLayoutDirector (rule-based baseline)
+- **Shot planning**: генерирует shot plan на основе SceneUnderstanding beats
+- **Shot size selection**: автоматически выбирает размер кадра (close_up, medium_shot, full_shot и т.д.) на основе важности beat
+- **Camera movement**: определяет движение камеры (static, dolly_in, pan_right и т.д.) в зависимости от стиля и контекста
+- **Camera track**: создаёт треки с keyframes для плавного движения камеры
+- **Blocking plans**: планирует позиции персонажей в кадре (left, center, right, close_up)
+- **Framing rules**: применяет правила композиции (rule_of_thirds, headroom, leading_space, look_room)
+- **Eyelines**: генерирует направления взглядов между персонажами
+- **Safe margins**: устанавливает безопасные границы кадра
+- **Continuity**: обеспечивает непрерывность между shots
+
+### Zod схемы
+- `src/schemas/cameraLayout.ts` — CameraLayoutPlan, ShotPlan, CameraTrack, BlockingPlan, CameraKeyframe
+
+### MCP инструменты
+- `harmony.ai_studio.generate_camera_plan` — генерация camera & layout plan
+
+### Тесты
+- 13 новых unit-теста в `tests/cameraLayout.test.ts` полностью зеленые
+- Проверяют shot planning, camera movements, blocking, framing rules, eyelines, safe margins
+- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 11 инструментов (было 10)
+
+### Demo
+- `node scripts/demo_ai_studio_iter6.js` демонстрирует полный pipeline
+- Генерирует HTML report с визуализацией shots, camera track, blocking plans
+- Сохраняет JSON artifacts (camera_layout_plan.json)
+- Результат: shots с camera movements, keyframes, blocking positions
+
+### Проверки
+- `npm run build` — PASS
+- `npm test` — 239 passed, 6 skipped (Harmony integration)
+- Demo — PASS, генерирует HTML report и JSON artifacts
+
+### Честные ограничения
+- Rule-based baseline — нет ML director
+- Camera movements определяются эвристиками, не обучены на реальных данных
+- Shot sizes выбираются по простым правилам, не учитывают сложную драматургию
+- Blocking positions фиксированные (left/center/right), не оптимизированы
+- Harmony не применялась — все вычисления offline
+
+---
 
 ## Iteration 5 — COMPLETED (Part Decomposition & Hybrid Routing)
 
