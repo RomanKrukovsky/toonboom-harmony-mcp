@@ -21,25 +21,50 @@ def generate_html_comparison_report(
     for h in hypotheses:
         vm = h.visual_metrics
         cm = h.complexity_metrics
-        # Вычисляем счет рекомендации
-        score = next((t["recommendationScore"] for t in comparison_data["comparisonTable"] if t["hypothesisId"] == h.hypothesis_id), 80.0)
+        
+        # Находим данные сравнения
+        c_item = next((t for t in comparison_data["comparisonTable"] if t["hypothesisId"] == h.hypothesis_id), None)
+        score = c_item["recommendationScore"] if c_item else 80.0
+        eligible = c_item["eligibleForRecommendation"] if c_item else True
+        reasons = c_item["rejectionReasons"] if c_item else []
         
         is_rec = "★ РЕКОМЕНДУЕТСЯ" if h.hypothesis_id == comparison_data["recommendedVariant"] else ""
         
+        # Статус
+        if eligible:
+            status_badge = '<span class="badge" style="background-color: #2da44e;">Passed</span>'
+            row_class = "recommended-row" if is_rec else ""
+            score_color = "#2da44e"
+        else:
+            status_badge = '<span class="badge" style="background-color: #cf222e;">FAILED</span>'
+            row_class = "failed-row"
+            score_color = "#cf222e"
+            
+        reasons_list = ""
+        if reasons:
+            reasons_list = "<div class='rejection-reasons'>" + " | ".join(reasons) + "</div>"
+            
         table_rows += f"""
-        <tr class="{'recommended-row' if is_rec else ''}">
-            <td><strong>{h.hypothesis_id}</strong> <span class="badge">{is_rec}</span></td>
-            <td class="score-cell">{score:.1f}</td>
-            <td>{vm.mean_pixel_difference:.2f}</td>
-            <td>{vm.maximum_pixel_difference:.1f}</td>
-            <td>{vm.silhouette_difference:.3f}</td>
-            <td>{vm.contour_difference:.3f}</td>
+        <tr class="{row_class}">
+            <td>
+                <strong>{h.hypothesis_id}</strong>
+                {f'<span class="badge" style="background-color: #0969da; margin-left: 8px;">{is_rec}</span>' if is_rec else ''}
+                {reasons_list}
+            </td>
+            <td>{status_badge}</td>
+            <td class="score-cell" style="color: {score_color};">{score:.1f}</td>
+            <td>{vm.full_frame_mean_error:.2f}</td>
+            <td>{vm.foreground_mean_error:.2f}</td>
+            <td>{vm.silhouette_iou:.3f}</td>
+            <td>{vm.centroid_trajectory_error:.2f} px</td>
+            <td>
+                <span class="{'badge-severity-critical' if vm.number_of_lost_motion_events > 0 else 'badge'}" style="background-color: {'#cf222e' if vm.number_of_lost_motion_events > 0 else '#2da44e'};">
+                    {vm.number_of_lost_motion_events}
+                </span>
+            </td>
             <td>{cm.unique_drawing_count}</td>
             <td>{cm.vector_point_count}</td>
-            <td>{cm.palette_color_count}</td>
-            <td>{cm.exposure_block_count}</td>
             <td>{cm.estimated_scene_size / 1024:.1f} KB</td>
-            <td>{cm.problem_frame_count}</td>
         </tr>
         """
 
@@ -151,6 +176,18 @@ def generate_html_comparison_report(
         .recommended-row:hover {{
             background-color: #243824;
         }}
+        .failed-row {{
+            background-color: #2b1a1c;
+        }}
+        .failed-row:hover {{
+            background-color: #382224;
+        }}
+        .rejection-reasons {{
+            font-size: 11px;
+            color: #ff8080;
+            margin-top: 4px;
+            font-weight: 500;
+        }}
         .badge {{
             background-color: #2da44e;
             color: #ffffff;
@@ -245,17 +282,16 @@ def generate_html_comparison_report(
             <thead>
                 <tr>
                     <th>Вариант (ID)</th>
+                    <th>Ограничения (Status)</th>
                     <th>Оценка (Score)</th>
-                    <th>Средняя разность (px)</th>
-                    <th>Макс. разность (px)</th>
-                    <th>Ошибка силуэта</th>
-                    <th>Ошибка контуров</th>
+                    <th>Full-Frame Error</th>
+                    <th>Foreground Error</th>
+                    <th>Silhouette IoU</th>
+                    <th>Centroid Trajectory Error</th>
+                    <th>Lost Motion Events</th>
                     <th>Уникальные рисунки</th>
                     <th>Точки векторов</th>
-                    <th>Цвета палитры</th>
-                    <th>Блоки экспозиций</th>
                     <th>Объем сцены (эст.)</th>
-                    <th>Проблемные кадры</th>
                 </tr>
             </thead>
             <tbody>

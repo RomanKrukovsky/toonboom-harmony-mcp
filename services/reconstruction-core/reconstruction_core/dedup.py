@@ -13,6 +13,9 @@ class FrameSignature:
     gray: np.ndarray
     edges: np.ndarray
     mean_colour: np.ndarray
+    fg_mask: np.ndarray
+    centroid: Tuple[float, float]
+    area: float
 
 
 def signature(path: Path) -> FrameSignature:
@@ -23,10 +26,41 @@ def signature(path: Path) -> FrameSignature:
         bgr = image[:, :, :3]
     else:
         bgr = image
+        
+    h, w = bgr.shape[:2]
+    # Находим цвет фона
+    border = []
+    border.extend(bgr[0:2, :, :].reshape(-1, 3))
+    border.extend(bgr[h-2:h, :, :].reshape(-1, 3))
+    border.extend(bgr[:, 0:2, :].reshape(-1, 3))
+    border.extend(bgr[:, w-2:w, :].reshape(-1, 3))
+    bg_color = np.median(np.array(border), axis=0)
+    
+    # Строим маску переднего плана
+    diff = np.linalg.norm(bgr.astype(np.float32) - bg_color, axis=2)
+    fg_mask = (diff > 15.0).astype(np.uint8) * 255
+    
+    # Находим центроид и площадь
+    moments = cv2.moments(fg_mask)
+    if moments["m00"] > 0:
+        centroid = (moments["m10"] / moments["m00"], moments["m01"] / moments["m00"])
+        area = float(moments["m00"] / 255.0)
+    else:
+        centroid = (0.0, 0.0)
+        area = 0.0
+        
     small = cv2.resize(bgr, (64, 64), interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
     edges = cv2.Canny((gray * 255).astype(np.uint8), 60, 120).astype(np.float32) / 255.0
-    return FrameSignature(gray=gray, edges=edges, mean_colour=small.reshape(-1, 3).mean(axis=0) / 255.0)
+    
+    return FrameSignature(
+        gray=gray,
+        edges=edges,
+        mean_colour=small.reshape(-1, 3).mean(axis=0) / 255.0,
+        fg_mask=fg_mask,
+        centroid=centroid,
+        area=area
+    )
 
 
 def compare(a: FrameSignature, b: FrameSignature) -> Dict[str, float]:
@@ -44,18 +78,44 @@ def compare(a: FrameSignature, b: FrameSignature) -> Dict[str, float]:
     return {"score": score, "luminance": luminance, "edge": edge, "colour": colour, "ssim": ssim, "motion": motion}
 
 
-def deduplicate(frame_paths: Sequence[Path], threshold: float, candidate_window: int = 48) -> Tuple[List[int], List[int], List[Dict[str, float]]]:
+def deduplicate(
+    frame_paths: Sequence[Path],
+    threshold: float,
+    candidate_window: int = 48,
+    key_pose_protection: bool = True
+) -> Tuple[List[int], List[int], List[Dict[str, float]]]:
     signatures = [signature(path) for path in frame_paths]
     representatives: List[int] = []
     mapping: List[int] = []
     metrics: List[Dict[str, float]] = []
+    
     for frame_index, current in enumerate(signatures):
         best_rep = None
         best = None
+        
         for drawing_index in range(max(0, len(representatives) - candidate_window), len(representatives)):
-            candidate = compare(current, signatures[representatives[drawing_index]])
+            rep_idx = representatives[drawing_index]
+            rep_sig = signatures[rep_idx]
+            
+            # Считаем разницу центроидов, площадей и IoU силуэтов
+            c_dist = np.linalg.norm(np.array(current.centroid) - np.array(rep_sig.centroid))
+            area_diff = abs(current.area - rep_sig.area) / max(current.area, rep_sig.area, 1.0)
+            
+            intersection = np.logical_and(current.fg_mask, rep_sig.fg_mask).sum()
+            union = np.logical_or(current.fg_mask, rep_sig.fg_mask).sum()
+            iou = intersection / union if union > 0 else 1.0
+            
+            # Защита ключевых поз (Key-Pose Protection)
+            # Если объект сместился больше чем на 1.5 пикселя, площадь изменилась > 15%, или IoU силуэтов < 0.85
+            # то мы ЗАПРЕЩАЕМ дедупликацию с этим кандидатом!
+            if key_pose_protection and (current.area > 50.0 or rep_sig.area > 50.0):
+                if c_dist > 1.5 or area_diff > 0.15 or iou < 0.85:
+                    continue
+                    
+            candidate = compare(current, rep_sig)
             if best is None or candidate["score"] < best["score"]:
                 best, best_rep = candidate, drawing_index
+                
         if best is not None and best["score"] <= threshold:
             mapping.append(int(best_rep))
             metrics.append(best)
@@ -63,6 +123,7 @@ def deduplicate(frame_paths: Sequence[Path], threshold: float, candidate_window:
             representatives.append(frame_index)
             mapping.append(len(representatives) - 1)
             metrics.append(best or {"score": 1.0, "luminance": 1.0, "edge": 1.0, "colour": 1.0, "ssim": 0.0, "motion": 1.0})
+            
     return representatives, mapping, metrics
 
 

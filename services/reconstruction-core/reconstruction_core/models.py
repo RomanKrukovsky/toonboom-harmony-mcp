@@ -212,6 +212,24 @@ class VisualMetrics(StrictModel):
     contour_difference: float = Field(alias="contourDifference")
     color_difference: float = Field(alias="colorDifference")
     number_of_frames_above_threshold: float = Field(alias="numberOfFramesAboveThreshold")
+    
+    full_frame_mean_error: float = Field(default=0.0, alias="fullFrameMeanError")
+    foreground_mean_error: float = Field(default=0.0, alias="foregroundMeanError")
+    moving_region_mean_error: float = Field(default=0.0, alias="movingRegionMeanError")
+    silhouette_iou: float = Field(default=1.0, alias="silhouetteIoU")
+    contour_distance: float = Field(default=0.0, alias="contourDistance")
+    centroid_error: float = Field(default=0.0, alias="centroidError")
+    bounding_box_error: float = Field(default=0.0, alias="boundingBoxError")
+    area_error: float = Field(default=0.0, alias="areaError")
+    
+    frame_difference_preservation: float = Field(default=1.0, alias="frameDifferencePreservation")
+    centroid_trajectory_error: float = Field(default=0.0, alias="centroidTrajectoryError")
+    velocity_error: float = Field(default=0.0, alias="velocityError")
+    acceleration_error: float = Field(default=0.0, alias="accelerationError")
+    optical_flow_consistency: float = Field(default=1.0, alias="opticalFlowConsistency")
+    temporal_silhouette_difference: float = Field(default=0.0, alias="temporalSilhouetteDifference")
+    frozen_motion_ratio: float = Field(default=0.0, alias="frozenMotionRatio")
+    number_of_lost_motion_events: int = Field(default=0, alias="numberOfLostMotionEvents")
 
 
 class ComplexityMetrics(StrictModel):

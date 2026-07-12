@@ -301,41 +301,37 @@ def _derive_compact_manifest(
     """
     manifest = base.model_copy(deep=True)
     
-    # Пересчитываем дедупликацию с более высоким порогом (например, SSIM diff < 0.08)
-    # Для этого считываем кадры и перестраиваем exposure mapping
-    from .dedup import build_exposure_blocks
-    
-    # Загружаем изображения для вычисления SSIM
-    images = []
-    for path in frame_paths:
-        img = cv2.imread(str(path))
-        if img is not None:
-            images.append(img)
-            
-    if len(images) < 2:
-        return manifest
+    # Мапа: индекс исходного кадра -> ID рисунка в базовом манифесте
+    frame_to_drawing_id = {}
+    for d in base.drawings:
+        frame_to_drawing_id[d.source_frame - 1] = d.id
         
-    # Строим матрицу попарных расстояний по SSIM
-    mapping = list(range(len(images)))
-    threshold = compact_request.dedup_threshold
+    # Вызываем дедупликацию с поддержкой защиты ключевых поз
+    from .dedup import deduplicate
+    representatives, mapping, _metrics = deduplicate(
+        frame_paths,
+        threshold=compact_request.dedup_threshold,
+        key_pose_protection=True
+    )
     
-    for i in range(1, len(images)):
-        # Сравниваем с предыдущим уникальным
-        prev_unique_idx = mapping[i - 1]
-        gray_a = cv2.cvtColor(images[prev_unique_idx], cv2.COLOR_BGR2GRAY)
-        gray_b = cv2.cvtColor(images[i], cv2.COLOR_BGR2GRAY)
-        # Вычисляем разницу
-        score = cv2.matchTemplate(gray_a, gray_b, cv2.TM_SQDIFF_NORMED)[0][0]
-        if score < threshold:
-            mapping[i] = prev_unique_idx
-        else:
-            mapping[i] = i
-            
-    # Перестраиваем exposures
-    new_exposures = [
-        Exposure(frame=start, duration=duration, drawingId=base.drawings[drawing_index].id)
-        for start, duration, drawing_index in build_exposure_blocks(mapping)
-    ]
+    # Строим новый список экспозиций
+    new_exposures = []
+    compact_frame_drawings = []
+    for i in range(len(frame_paths)):
+        rep_frame = representatives[mapping[i]]
+        compact_frame_drawings.append(frame_to_drawing_id[rep_frame])
+        
+    # Сжимаем в непрерывные блоки экспозиций
+    start = 1
+    curr_dr_id = compact_frame_drawings[0]
+    for idx in range(1, len(compact_frame_drawings)):
+        dr_id = compact_frame_drawings[idx]
+        if dr_id != curr_dr_id:
+            new_exposures.append(Exposure(frame=start, duration=idx + 1 - start, drawingId=curr_dr_id))
+            start = idx + 1
+            curr_dr_id = dr_id
+    new_exposures.append(Exposure(frame=start, duration=len(compact_frame_drawings) + 1 - start, drawingId=curr_dr_id))
+    
     manifest.exposures = new_exposures
     
     # Очищаем рисунки, которые больше не используются
@@ -355,28 +351,98 @@ def _derive_compact_manifest(
 
 def compare_hypotheses(hypotheses: List[ReconstructionHypothesis]) -> Dict[str, Any]:
     """
-    Сравнивает гипотезы и возвращает отчет.
+    Сравнивает гипотезы, проверяет жесткие ограничения (Hard Constraints) и возвращает отчет.
     """
     table = []
     best_id = "frame_by_frame_vector"
-    best_score = -999.0
+    best_score = -99999.0
     
     for h in hypotheses:
-        # Вычисляем recommendation score
-        # Баланс между сложностью и визуальной ошибкой
         vm = h.visual_metrics
         cm = h.complexity_metrics
-        score = 100.0 - (vm.mean_pixel_difference * 2.5) - (cm.estimated_scene_size / 20000.0) - (cm.problem_frame_count * 4.0)
         
+        # Вычисляем жесткие ограничения
+        rejection_reasons = []
+        hard_constraint_results = {}
+        
+        # 1. Силуэтное IoU >= 0.80
+        silhouette_iou = vm.silhouette_iou
+        iou_ok = silhouette_iou >= 0.80
+        hard_constraint_results["silhouetteIoU"] = {
+            "value": float(silhouette_iou),
+            "threshold": 0.80,
+            "passed": bool(iou_ok)
+        }
+        if not iou_ok:
+            rejection_reasons.append(f"Silhouette IoU ({silhouette_iou:.2f}) ниже допустимого порога 0.80")
+            
+        # 2. Средняя ошибка переднего плана <= 25.0
+        fg_error = vm.foreground_mean_error
+        fg_ok = fg_error <= 25.0
+        hard_constraint_results["foregroundMeanError"] = {
+            "value": float(fg_error),
+            "threshold": 25.0,
+            "passed": bool(fg_ok)
+        }
+        if not fg_ok:
+            rejection_reasons.append(f"Foreground mean error ({fg_error:.1f}) выше порога 25.0")
+            
+        # 3. Траектория центроида <= 4.0 пикселей
+        traj_error = vm.centroid_trajectory_error
+        traj_ok = traj_error <= 4.0
+        hard_constraint_results["centroidTrajectoryError"] = {
+            "value": float(traj_error),
+            "threshold": 4.0,
+            "passed": bool(traj_ok)
+        }
+        if not traj_ok:
+            rejection_reasons.append(f"Centroid trajectory error ({traj_error:.2f} px) выше порога 4.0 px")
+            
+        # 4. Сохранение изменений кадров (temporal preservation) >= 0.85
+        temp_ok = vm.frame_difference_preservation >= 0.85
+        hard_constraint_results["frameDifferencePreservation"] = {
+            "value": float(vm.frame_difference_preservation),
+            "threshold": 0.85,
+            "passed": bool(temp_ok)
+        }
+        if not temp_ok:
+            rejection_reasons.append(f"Frame difference preservation ({vm.frame_difference_preservation:.2f}) ниже порога 0.85")
+            
+        # 5. Потерянные движения == 0
+        lost_ok = vm.number_of_lost_motion_events == 0
+        hard_constraint_results["numberOfLostMotionEvents"] = {
+            "value": int(vm.number_of_lost_motion_events),
+            "threshold": 0,
+            "passed": bool(lost_ok)
+        }
+        if not lost_ok:
+            rejection_reasons.append(f"Потеряно движений ({vm.number_of_lost_motion_events}) - объект застыл на месте")
+            
+        eligible = len(rejection_reasons) == 0
+        
+        # Если вариант не прошел hard constraints, пенализируем оценку
+        if eligible:
+            score = 100.0 - (vm.mean_pixel_difference * 2.5) - (cm.estimated_scene_size / 20000.0) - (cm.problem_frame_count * 4.0)
+        else:
+            score = -1000.0 - (len(rejection_reasons) * 100.0)
+            
         table.append({
             "hypothesisId": h.hypothesis_id,
             "recommendationScore": score,
+            "eligibleForRecommendation": eligible,
+            "rejectionReasons": rejection_reasons,
+            "hardConstraintResults": hard_constraint_results,
             "meanPixelDifference": vm.mean_pixel_difference,
             "estimatedSceneSize": cm.estimated_scene_size,
             "uniqueDrawingCount": cm.unique_drawing_count,
             "vectorPointCount": cm.vector_point_count,
-            "problemFrameCount": cm.problem_frame_count
+            "problemFrameCount": cm.problem_frame_count,
+            "silhouetteIoU": float(silhouette_iou),
+            "foregroundMeanError": float(fg_error),
+            "centroidTrajectoryError": float(traj_error),
+            "numberOfLostMotionEvents": int(vm.number_of_lost_motion_events)
         })
+        
         if score > best_score:
             best_score = score
             best_id = h.hypothesis_id
@@ -388,10 +454,11 @@ def compare_hypotheses(hypotheses: List[ReconstructionHypothesis]) -> Dict[str, 
     elif best_id == "clean_frame_by_frame":
         explanation += "Он оптимально убирает мелкий шум и сглаживает дрожание линий."
     else:
-        explanation += "Он выбран из-за жестких требований к попиксельной точности контуров."
+        # Если все варианты пенализированы, рекомендуем оригинал
+        explanation = "Рекомендуется исходный вариант frame_by_frame_vector, так как остальные варианты не прошли проверку сохранения анимационного движения."
 
     # Находим кадры наибольшего расхождения между лучшим и худшим вариантом
-    max_diff_frames = [2] # Заглушка, если кадров мало
+    max_diff_frames = [2]
     
     return {
         "comparisonTable": table,

@@ -55,7 +55,20 @@ def main() -> None:
         videoPath=str(video), maxColors=4, maxPointsPerShape=40,
         dedupThreshold=0.02, cleanupProfile="production_cleanup"
     ))
-    manifest = json.loads(Path(result["manifestPath"]).read_text(encoding="utf-8"))
+    manifest_path = Path(result["manifestPath"])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    
+    # Загружаем гипотезы и проводим сравнение по новым правилам Temporal Fidelity
+    from reconstruction_core.models import ReconstructionHypothesis
+    from reconstruction_core.hypotheses import compare_hypotheses
+    
+    hyps_path = manifest_path.parent / "hypotheses.json"
+    comp_report = {}
+    if hyps_path.exists():
+        hyps_data = json.loads(hyps_path.read_text(encoding="utf-8"))
+        hypotheses = [ReconstructionHypothesis.model_validate(h) for h in hyps_data]
+        comp_report = compare_hypotheses(hypotheses)
+        
     report = {
         "videoPath": str(video),
         "manifestPath": result["manifestPath"],
@@ -66,12 +79,38 @@ def main() -> None:
         "exposureBlocks": len(manifest["exposures"]),
         "exposureFrames": sum(item["duration"] for item in manifest["exposures"]),
         "stageDurationsMs": manifest["diagnostics"]["stageDurationsMs"],
+        "temporalFidelityReport": comp_report,
         "harmonyApplied": False,
         "note": "Harmony не найдена в этой среде; нативное применение проверяется отдельным integration harness.",
     }
+    
     report_path = output / "demo_report.json"
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    
+    # Красивый текстовый вывод для пользователя/аудита
+    print("\n========================================================")
+    print("=== ОТЧЕТ ВРЕМЕННОЙ И ГЕОМЕТРИЧЕСКОЙ ТОЧНОСТИ (V2) ===")
+    print("========================================================")
+    print(f"Обработано видео: {video.name} ({report['sourceFrames']} кадров)")
+    print(f"Рекомендованный вариант: {comp_report.get('recommendedVariant')}")
+    print(f"Пояснение: {comp_report.get('explanation')}\n")
+    
+    for item in comp_report.get("comparisonTable", []):
+        hid = item["hypothesisId"]
+        status = "PASSED" if item["eligibleForRecommendation"] else "FAILED"
+        print(f"Вариант: {hid} | Статус: {status} | Оценка: {item['recommendationScore']:.1f}")
+        print(f"  - Уникальные рисунки: {item['uniqueDrawingCount']} (было {report['uniqueDrawings']})")
+        print(f"  - Точки векторов: {item['vectorPointCount']}")
+        print(f"  - Silhouette IoU: {item['silhouetteIoU']:.3f} (порог >= 0.80)")
+        print(f"  - Foreground Mean Error: {item['foregroundMeanError']:.2f} (порог <= 25.0)")
+        print(f"  - Centroid Trajectory Error: {item['centroidTrajectoryError']:.2f} px (порог <= 4.0 px)")
+        print(f"  - Потерянные движения (Lost Motion Events): {item['numberOfLostMotionEvents']}")
+        if item["rejectionReasons"]:
+            print("  - ПРИЧИНЫ ОТКЛОНЕНИЯ:")
+            for r in item["rejectionReasons"]:
+                print(f"    * {r}")
+        print("-" * 50)
+    print("========================================================\n")
 
 
 if __name__ == "__main__":

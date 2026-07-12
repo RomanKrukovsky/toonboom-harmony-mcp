@@ -313,3 +313,154 @@ def test_select_hypothesis_and_range_rollback(tmp_path: Path):
     # 5. dr_5 (f5, duration=1)
     assert len(selected_locked.exposures) == 5
     assert selected_locked.exposures[1].drawing_id == "dr_2" # Сохранен!
+
+
+def test_synthetic_temporal_fidelity_cases(tmp_path: Path):
+    from reconstruction_core.dedup import deduplicate
+    from reconstruction_core.metrics import calculate_visual_metrics
+    from reconstruction_core.models import VisualMetrics, ComplexityMetrics, ReconstructionHypothesis
+    from reconstruction_core.hypotheses import compare_hypotheses
+    
+    # Создаем временную директорию для кадров
+    frame_dir = tmp_path / "frames"
+    frame_dir.mkdir()
+    
+    # Вспомогательная функция для генерации фреймов
+    def save_synthetic_frame(frame_idx: int, obj_pos: tuple[int, int], obj_size: tuple[int, int], color: tuple[int, int, int], bg_color: tuple[int, int, int] = (245, 245, 245)) -> Path:
+        img = np.full((100, 100, 3), bg_color, dtype=np.uint8)
+        x, y = obj_pos
+        w, h = obj_size
+        cv2.rectangle(img, (x, y), (x + w, y + h), color, -1)
+        path = frame_dir / f"frame_{frame_idx:06d}.png"
+        cv2.imwrite(str(path), img)
+        return path
+
+    # -------------------------------------------------------------
+    # 1. ТЕСТ: Объект движется на 2 пикселя за кадр (Движение!)
+    # -------------------------------------------------------------
+    motion_paths = []
+    for i in range(5):
+        # Двигаем квадратик 10x10 по оси X: 20 -> 22 -> 24 -> 26 -> 28
+        p = save_synthetic_frame(i + 1, (20 + i * 2, 40), (10, 10), (0, 0, 255))
+        motion_paths.append(p)
+        
+    # С выключенной защитой и высоким порогом (например, 0.15) кадры могли бы слиться из-за 99% общего фона
+    # Но с key_pose_protection=True они НЕ должны сливаться, так как центроид сдвигается больше чем на 1.5 пикселя!
+    reps, mapping, _ = deduplicate(motion_paths, threshold=0.15, key_pose_protection=True)
+    assert len(reps) == 5, f"Движение было стерто! reps: {reps}, mapping: {mapping}"
+    
+    # -------------------------------------------------------------
+    # 2. ТЕСТ: Объект мерцает на месте (Flicker)
+    # -------------------------------------------------------------
+    flicker_paths = []
+    for i in range(5):
+        # Объект стоит на месте, но цвет слегка дрожит: (0,0,255) -> (0,0,250)
+        col = (0, 0, 255 - (i % 2) * 5)
+        p = save_synthetic_frame(10 + i + 1, (40, 40), (20, 20), col)
+        flicker_paths.append(p)
+        
+    # Дрожание цвета без движения должно успешно схлопываться в 1 drawing
+    reps_f, mapping_f, _ = deduplicate(flicker_paths, threshold=0.08, key_pose_protection=True)
+    assert len(reps_f) == 1, f"Дрожание цвета не схлопнулось! reps: {reps_f}"
+
+    # -------------------------------------------------------------
+    # 3. ТЕСТ: Настоящий hold
+    # -------------------------------------------------------------
+    hold_paths = []
+    for i in range(5):
+        p = save_synthetic_frame(20 + i + 1, (40, 40), (20, 20), (0, 0, 255))
+        hold_paths.append(p)
+    reps_h, mapping_h, _ = deduplicate(hold_paths, threshold=0.05, key_pose_protection=True)
+    assert len(reps_h) == 1, "Настоящий hold должен сжиматься в 1 рисунок"
+
+    # -------------------------------------------------------------
+    # 4. ТЕСТ: Объект меняет форму без перемещения центроида
+    # -------------------------------------------------------------
+    shape_paths = []
+    # Кадр 1: узкий высокий прямоугольник 10x30 (центр 45, 45)
+    shape_paths.append(save_synthetic_frame(31, (40, 30), (10, 30), (0, 0, 255)))
+    # Кадр 2: широкий низкий прямоугольник 30x10 (центр 45, 45)
+    shape_paths.append(save_synthetic_frame(32, (30, 40), (30, 10), (0, 0, 255)))
+    
+    # Центроид один и тот же, но силуэты разные (IoU силуэтов будет около 100 / 500 = 0.20 < 0.85)
+    reps_s, mapping_s, _ = deduplicate(shape_paths, threshold=0.10, key_pose_protection=True)
+    assert len(reps_s) == 2, "Изменение формы должно сохраняться как отдельные drawings"
+
+    # -------------------------------------------------------------
+    # 5. ТЕСТ: Проверка жестких ограничений системы рекомендаций
+    # -------------------------------------------------------------
+    # Симулируем 2 гипотезы:
+    # 1. frame_by_frame (идеально сохраняет траекторию)
+    # 2. compact_cheated (сжала все в 1 drawing, потеряв движение)
+    
+    # Нарисуем оригиналы и рендеры для расчета метрик
+    orig_canvases = [cv2.imread(str(p), cv2.IMREAD_UNCHANGED) for p in motion_paths]
+    
+    # Рендер для frame_by_frame_vector (идеально повторяет движение)
+    fbf_canvases = orig_canvases.copy()
+    
+    # Рендер для compact_cheated (заморожен на первом кадре)
+    compact_canvases = [orig_canvases[0]] * 5
+    
+    # Считаем реальные метрики
+    metrics_fbf = calculate_visual_metrics(motion_paths, fbf_canvases)
+    metrics_comp = calculate_visual_metrics(motion_paths, compact_canvases)
+    
+    # Проверяем, что метрики правильно обнаружили потерю движения
+    assert metrics_fbf["numberOfLostMotionEvents"] == 0
+    assert metrics_comp["numberOfLostMotionEvents"] > 0
+    assert metrics_comp["frozenMotionRatio"] > 0.0
+    
+    # Строим гипотезы
+    from reconstruction_core.models import ProvenanceInfo
+    prov = ProvenanceInfo(tool="test", version="1.0", timestamp="2026")
+    
+    hyp_fbf = ReconstructionHypothesis(
+        hypothesisId="frame_by_frame_vector",
+        parentVersion=1,
+        mode="frame_by_frame_vector",
+        parameters={},
+        assumptions=[],
+        visualMetrics=VisualMetrics(**metrics_fbf),
+        complexityMetrics=ComplexityMetrics(
+            uniqueDrawingCount=5, vectorPathCount=5, vectorPointCount=100,
+            paletteColorCount=2, exposureBlockCount=5, estimatedSceneSize=10000, problemFrameCount=0
+        ),
+        problemFrames=[],
+        confidence=1.0,
+        fallbackLevel="none",
+        manifestPath="manifest_fbf.json",
+        previewDirectory="previews_fbf",
+        creationTimestamp="2026",
+        provenance=prov
+    )
+    
+    hyp_comp = ReconstructionHypothesis(
+        hypothesisId="compact_frame_by_frame",
+        parentVersion=1,
+        mode="frame_by_frame_vector",
+        parameters={},
+        assumptions=[],
+        visualMetrics=VisualMetrics(**metrics_comp),
+        complexityMetrics=ComplexityMetrics(
+            uniqueDrawingCount=1, vectorPathCount=1, vectorPointCount=20,
+            paletteColorCount=2, exposureBlockCount=1, estimatedSceneSize=2000, problemFrameCount=0
+        ),
+        problemFrames=[],
+        confidence=0.5,
+        fallbackLevel="none",
+        manifestPath="manifest_comp.json",
+        previewDirectory="previews_comp",
+        creationTimestamp="2026",
+        provenance=prov
+    )
+    
+    report = compare_hypotheses([hyp_fbf, hyp_comp])
+    
+    # Вариант compact_frame_by_frame должен быть помечен как FAILED (not eligible)
+    comp_row = next(t for t in report["comparisonTable"] if t["hypothesisId"] == "compact_frame_by_frame")
+    assert comp_row["eligibleForRecommendation"] is False
+    assert any("Потеряно движений" in r for r in comp_row["rejectionReasons"])
+    
+    # И компактный вариант не должен рекомендоваться! Рекомендация падает на оригинал.
+    assert report["recommendedVariant"] == "frame_by_frame_vector"

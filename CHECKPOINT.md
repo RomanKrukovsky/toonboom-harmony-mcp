@@ -1,12 +1,17 @@
-# CHECKPOINT — 2026-07-12 (V2 ADDENDUM UPDATE)
+# CHECKPOINT — 2026-07-12 (V2 ADDENDUM UPDATE — TEMPORAL FIDELITY)
 
 ## Текущий результат
 
-Завершён первый вертикальный этап и первая итерация требований V2 Addendum:
+Завершён аудит точности движения и реализована вторая итерация требований V2 Addendum (Temporal Fidelity & ReconstructionHypothesisManager):
 
-`MP4 → FFmpeg lossless frames → temporal cleanup → общая палитра → дедупликация → замкнутые векторные формы → анализ Problem Frames & Local Render Comparison → HarmonyReconstructionManifest V2.0 → безопасный Harmony Python DOM compiler`
+`MP4 → key-pose protection deduplication → foreground-aware & temporal metrics → hard constraints validation → HTML comparison report`
 
-На текущей машине путь реально проверен до валидированного манифеста и через MCP-инструмент в режиме dry-run. Реальное создание TVG в Harmony здесь не проверено: настроенный путь `/Applications/Harmony 25 Premium.app` отсутствует, `HARMONY_BIN` и `HARMONY_PYTHON_PACKAGES` не существуют. Поэтому нигде не выставлялось `realSceneCreated: true` для фактического запуска.
+В ходе аудита было установлено, что прошлая реализация дедупликатора для гипотезы `compact_frame_by_frame` "срезала углы" (cheating): она сокращала число уникальных рисунков с 3 до 1, полностью останавливая движение объекта на экране. Обычная средняя ошибка по кадру (`meanPixelDifference`) не детектировала эту потерю движения, так как площадь объекта составляет всего **11.3%** от площади кадра, и ошибка маскировалась статичным фоном. 
+
+Для исправления этого:
+1. Реализована система **Key-Pose Protection**, запрещающая слияние кадров при изменении положения центроида (>1.5 px), площади переднего плана (>15%) или низком IoU силуэтов (<0.85).
+2. Внедрены 8 пространственных метрик переднего плана (foreground-aware) и 8 временных метрик (temporal fidelity), включая автовычисление траектории, скорости, ускорения и количества потерянных движений (`numberOfLostMotionEvents`).
+3. Менеджер рекомендаций (`compare_hypotheses`) переведён на жесткие ограничения (Hard Constraints). Варианты, теряющие движение, автоматически отбраковываются (`eligible = False`, статус `FAILED`) и штрафуются.
 
 ---
 
@@ -17,63 +22,39 @@
 | **Декодирование MP4 через FFmpeg** | Да | Реальный тест (`test_pipeline.py`) | Нет |
 | **Извлечение кадров с таймингом** | Да | Реальный тест (`test_pipeline.py`) | Нет |
 | **Сохранение альфа-канала** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Исключение прозрачных пикселей** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
 | **Временная дедупликация (ones/twos)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Восстановление exposures/holds** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Глобальная кластеризация палитры** | Да | Реальный тест (`test_palette_vectorize.py`) | Нет |
-| **Векторизация цветовых областей** | Да | Реальный тест (`test_palette_vectorize.py`) | Нет |
-| **Поддержка внутренних контуров (holes)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Обход контуров (winding directions)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Локальный Render Comparison** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **Детекция Problem Frames** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **RepresentationSegments** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **artistModified & artistLocked** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **Локальный refine_range** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **Версионирование и откат (Rollback)** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
-| **Генерация кубических кривых Безье** | Да | skipped / mock | Да (нативный `create_bezier_fit`) |
-| **Line Art vs Colour Art** | Да | skipped / mock | Да (применение через DOM) |
-| **HarmonyReconstructionManifest (Zod)** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
-| **ReconstructionClient** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
-| **MCP-инструменты** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
-| **HarmonySceneCompiler (Command Plan)** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
-| **Команды в `harmony_bridge.py`** | Да | skipped / mock | Да (выполнение планов в Harmony) |
-| **Проверка DrawingAccess и BezierPath** | Да | skipped / mock | Да |
-| **Dry-run режим** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
-| **Защита путей (Path safety)** | Да | Реальный тест (`security.test.ts`) | Нет |
-| **Портативный интеграционный пакет** | Да | Реальный тест (сборка пакета) | Нет |
+| **Векторизация и палитры** | Да | Реальный тест (`test_palette_vectorize.py`) | Нет |
+| **Менеджер гипотез (HypothesisManager)** | Да | Тест (`test_hypotheses.py`) | Нет |
+| **Метрики переднего плана (Foreground)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
+| **Временные метрики (Temporal Fidelity)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
+| **Защита ключевых поз (Key-Pose Protection)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
+| **Проверка жестких ограничений (Hard Constraints)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
+| **Интерактивный HTML-отчёт сравнения** | Да | Генерация `comparison_report.html` в демо | Нет |
+| **RepresentationSegments & Версионирование** | Да | Тест (`test_problems_and_versions.py`) | Нет |
+| **Портативный интеграционный пакет** | Да | Сборка всех вариантов в zip/папку | Нет |
 
 ---
 
-## Что было сделано в этой итерации (V2 Addendum)
+## Что было сделано в этой итерации (V2 Addendum — Temporal Fidelity)
 
-1. **Schema Versioning & Provenance**:
-   - Манифест переведен на версию `2.0`.
-   - Внедрен блок `provenance` с фиксацией параметров запуска конвейера и временной меткой.
+1. **Разработка метрик переднего плана (Foreground-Aware)**:
+   - Внедрен автодетектор цвета фона по периметру кадра.
+   - Вычисляются: `fullFrameMeanError`, `foregroundMeanError`, `silhouetteIoU`, `contourDistance`, `centroidError`, `boundingBoxError`, `areaError`.
 
-2. **Confidence & Uncertainty**:
-   - Добавлены поля `confidence` и `uncertaintyCategories` для рисунков, фигур и экспозиций.
+2. **Разработка временных метрик (Temporal Fidelity)**:
+   - Вычисляются траектории, скорость и ускорение центроидов.
+   - Внедрены: `frameDifferencePreservation`, `opticalFlowConsistency` (CPU fallback), `frozenMotionRatio` и `numberOfLostMotionEvents` (детекция застывания анимации).
 
-3. **Problem Frames & Local Render Comparison**:
-   - Внедрена локальная растеризация векторных кривых с помощью `cv2.fillPoly` и вычисление абсолютного расхождения.
-   - Реализована детекция проблемных кадров (скачки числа контуров, потеря цветов, неустойчивый winding, высокая ошибка разницы, экстремальное движение).
-   - Для каждого проблемного кадра сохраняются source, vector и difference PNG-превью в каталоге джобы.
+3. **Key-Pose Protection**:
+   - В `deduplicate` добавлен анализ сдвига центроидов, площадей и пересечения силуэтов. При значительных изменениях дедупликация жестко блокируется, сохраняя уникальный `drawing`.
 
-4. **artistLocked & refine_range**:
-   - Элементы, рисунки и палитры могут быть помечены как `artistLocked`.
-   - Добавлен метод `local_refine_range`, перевекторизующий выбранный диапазон кадров с защитой заблокированных элементов.
+4. **Система жестких ограничений (Hard Constraints)**:
+   - В `compare_hypotheses` добавлены проверки: `silhouetteIoU >= 0.80`, `foregroundMeanError <= 25.0`, `centroidTrajectoryError <= 4.0 px`, `numberOfLostMotionEvents == 0`.
+   - Не соответствующие требованиям гипотезы получают статус `FAILED` и не рекомендуются.
 
-5. **Версионирование и откат**:
-   - История версий сохраняется в `versions.json`.
-   - Доступен откат к любой сохраненной версии манифеста и планов команд через `rollback_to_version`.
-
-6. **MCP-инструменты**:
-   - `harmony.reconstruct.get_problem_frames`
-   - `harmony.reconstruct.get_problem_frame`
-   - `harmony.reconstruct.refine_range`
-   - `harmony.reconstruct.lock_elements`
-   - `harmony.reconstruct.unlock_elements`
-   - `harmony.reconstruct.list_versions`
-   - `harmony.reconstruct.rollback_version`
+5. **Обновление HTML-отчёта и Демо**:
+   - Отчёт `comparison_report.html` теперь отображает детальные метрики точности, статусы ограничений и причины отклонения (подсвечиваются красным).
+   - Демо-отчёт выводит траектории и lost-motion аудит. Для `moving_shape.mp4` гипотеза `compact` теперь корректно сохраняет все 3 фазы движения и проходит тесты.
 
 ---
 
@@ -83,12 +64,9 @@
 npm ci                              PASS (440 packages)
 npm run build                       PASS
 npm test -- --runInBand             PASS: 14 suites, 109 tests
-npm run test:python                 PASS: 15 tests, 1 skipped
+.venv-reconstruction pytest          PASS: 18 tests, 1 skipped
 npm run demo:reconstruction         PASS
-npm run reconstruction:prepare...   PASS (Пакет успешно собран)
-HTTP /health                        PASS, FFmpeg/FFprobe/OpenCV ready, CUDA 0
-HTTP ReconstructionClient           PASS
-MCP tool handler dry-run            PASS
+npm run reconstruction:prepare...   PASS (Пакет успешно собран со всеми гипотезами)
 ```
 
 ## Главные ограничения
@@ -107,5 +85,6 @@ python3.9 -m venv .venv-reconstruction
 .venv-reconstruction/bin/pip install -e services/reconstruction-core --no-deps
 npm test -- --runInBand
 .venv-reconstruction/bin/pytest services/reconstruction-core/tests -v
+npm run demo:reconstruction
 npm run reconstruction:prepare-harmony-integration
 ```
