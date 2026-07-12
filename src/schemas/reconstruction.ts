@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-export const reconstructionModeSchema = z.enum([
-  'frame_by_frame_vector',
-  'clean_frame_by_frame',
-  'hybrid',
-  'clean_rig'
-]);
+export const reconstructionModeSchema = z.enum(['frame_by_frame_vector']);
 
 export const pointSchema = z.object({
   x: z.number().finite(),
@@ -21,7 +16,9 @@ export const vectorShapeSchema = z.object({
   source: z.object({
     frame: z.number().int().positive(),
     method: z.enum(['contour_trace', 'harmony_vectorize'])
-  }).strict()
+  }).strict(),
+  confidence: z.number().min(0.0).max(1.0).default(1.0),
+  uncertaintyCategories: z.array(z.string()).default([])
 }).strict();
 
 export const paletteColorSchema = z.object({
@@ -34,7 +31,10 @@ export const paletteColorSchema = z.object({
     z.number().int().min(0).max(255)
   ]),
   originalRgba: z.tuple([z.number(), z.number(), z.number(), z.number()]),
-  replacementError: z.number().nonnegative()
+  replacementError: z.number().nonnegative(),
+  confidence: z.number().min(0.0).max(1.0).default(1.0),
+  artistModified: z.boolean().default(false),
+  artistLocked: z.boolean().default(false)
 }).strict();
 
 export const reconstructionDrawingSchema = z.object({
@@ -45,17 +45,51 @@ export const reconstructionDrawingSchema = z.object({
   shapes: z.array(vectorShapeSchema),
   pointCount: z.number().int().nonnegative(),
   locked: z.boolean().default(false),
-  provenance: z.literal('automatic_video_reconstruction')
+  artistModified: z.boolean().default(false),
+  artistLocked: z.boolean().default(false),
+  confidence: z.number().min(0.0).max(1.0).default(1.0),
+  uncertaintyCategories: z.array(z.string()).default([]),
+  provenance: z.string().default('automatic_video_reconstruction')
 }).strict();
 
 export const exposureSchema = z.object({
   frame: z.number().int().positive(),
   duration: z.number().int().positive(),
-  drawingId: z.string().min(1)
+  drawingId: z.string().min(1),
+  confidence: z.number().min(0.0).max(1.0).default(1.0)
+}).strict();
+
+export const problemFrameSchema = z.object({
+  frame: z.number().int().positive(),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  category: z.string(),
+  sourcePreviewPath: z.string(),
+  vectorPreviewPath: z.string(),
+  differencePreviewPath: z.string(),
+  affectedDrawingId: z.string().optional().nullable(),
+  metrics: z.record(z.number()).default({}),
+  recommendedAction: z.string()
+}).strict();
+
+export const representationSegmentSchema = z.object({
+  startFrame: z.number().int().positive(),
+  endFrame: z.number().int().positive(),
+  routingChoice: z.enum(['frame_by_frame_vector', 'peg_transform', 'deformer', 'substitution']),
+  averageConfidence: z.number().min(0.0).max(1.0),
+  drawingIds: z.array(z.string()),
+  problemFrames: z.array(z.number()),
+  explanation: z.string()
+}).strict();
+
+export const provenanceInfoSchema = z.object({
+  tool: z.string().default('harmony-reconstruction-core'),
+  version: z.string().default('2.0.0'),
+  arguments: z.record(z.any()).default({}),
+  timestamp: z.string()
 }).strict();
 
 export const reconstructionManifestSchema = z.object({
-  schemaVersion: z.literal('1.0'),
+  schemaVersion: z.string().default('2.0'),
   manifestId: z.string().min(8),
   createdAt: z.string().datetime(),
   mode: reconstructionModeSchema,
@@ -91,7 +125,9 @@ export const reconstructionManifestSchema = z.object({
     name: z.string().regex(/^[A-Za-z0-9_-]+$/),
     nodeName: z.string().regex(/^[A-Za-z0-9_-]+$/),
     drawingIds: z.array(z.string().min(1)).min(1),
-    locked: z.boolean()
+    locked: z.boolean(),
+    artistModified: z.boolean().default(false),
+    artistLocked: z.boolean().default(false)
   }).strict()).length(1),
   drawings: z.array(reconstructionDrawingSchema).min(1),
   exposures: z.array(exposureSchema).min(1),
@@ -100,7 +136,9 @@ export const reconstructionManifestSchema = z.object({
     name: z.string().min(1),
     type: z.enum(['READ', 'COMPOSITE', 'DISPLAY']),
     autoCreated: z.boolean(),
-    locked: z.boolean()
+    locked: z.boolean(),
+    artistModified: z.boolean().default(false),
+    artistLocked: z.boolean().default(false)
   }).strict()).min(3),
   connections: z.array(z.object({
     from: z.string().min(1),
@@ -120,8 +158,11 @@ export const reconstructionManifestSchema = z.object({
       lineArt: z.boolean(),
       colourArt: z.boolean(),
       nativeTvgRequired: z.literal(true)
-    }).strict()
-  }).strict()
+    }).strict(),
+    problemFrames: z.array(problemFrameSchema).default([]),
+    representationSegments: z.array(representationSegmentSchema).default([])
+  }).strict(),
+  provenance: provenanceInfoSchema.optional().nullable()
 }).strict().superRefine((manifest, ctx) => {
   const drawingIds = new Set(manifest.drawings.map(d => d.id));
   const colorIds = new Set(manifest.palettes.flatMap(p => p.colors.map(c => c.id)));
@@ -201,4 +242,3 @@ export const harmonyCommandPlanSchema = z.object({
 }).strict();
 
 export type HarmonyCommandPlan = z.infer<typeof harmonyCommandPlanSchema>;
-

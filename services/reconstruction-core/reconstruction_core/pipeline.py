@@ -121,9 +121,25 @@ class ReconstructionPipeline:
             warnings.append("Источник имеет переменную частоту кадров; сохранён порядок декодированных кадров без скрытого FPS-преобразования.")
         scene_name = _scene_name(request.video_path)
         total_points = sum(drawing.point_count for drawing in drawings)
-        manifest_seed = f"{job_id}:{metadata.sha256}:1.0"
+        manifest_seed = f"{job_id}:{metadata.sha256}:2.0"
+        
+        # Строим провенанс
+        from .models import ProvenanceInfo
+        provenance_info = ProvenanceInfo(
+            tool="harmony-reconstruction-core",
+            version="2.0.0",
+            arguments={
+                "maxColors": request.max_colors,
+                "maxPointsPerShape": request.max_points_per_shape,
+                "dedupThreshold": request.dedup_threshold,
+                "cleanupProfile": request.cleanup_profile,
+                "backgroundMode": request.background_mode
+            },
+            timestamp=utc_now()
+        )
+
         manifest = HarmonyReconstructionManifest(
-            schemaVersion="1.0", manifestId=hashlib.sha256(manifest_seed.encode()).hexdigest()[:32],
+            schemaVersion="2.0", manifestId=hashlib.sha256(manifest_seed.encode()).hexdigest()[:32],
             createdAt=utc_now(), mode="frame_by_frame_vector", source=metadata,
             scene={"name": scene_name, "width": metadata.width, "height": metadata.height, "fps": selected_fps, "startFrame": 1, "endFrame": len(normalized)},
             palettes=[Palette(id="palette_main", name=f"{scene_name}_Palette", colors=palette)],
@@ -142,14 +158,30 @@ class ReconstructionPipeline:
                 uniqueDrawingCount=len(drawings), duplicateFrameCount=len(normalized) - len(drawings),
                 paletteColorCount=len(palette), totalPointCount=total_points, warnings=warnings,
                 stageDurationsMs=durations,
-                capability=Capability(vectorBackend="python_dom_shapes", lineArt=False, colourArt=True)
-            )
+                capability=Capability(vectorBackend="python_dom_shapes", lineArt=False, colourArt=True),
+                problemFrames=[],
+                representationSegments=[]
+            ),
+            provenance=provenance_info
         )
+
+        # Выполняем анализ проблемных кадров и сегментов
+        from .problems import analyze_problems_and_segments
+        problem_frames, representation_segments = analyze_problems_and_segments(
+            manifest, job_dir, normalized
+        )
+        manifest.diagnostics.problem_frames = problem_frames
+        manifest.diagnostics.representation_segments = representation_segments
+
         manifest_path = self.storage.write_json(job_id, "manifest.json", manifest.model_dump(by_alias=True, mode="json"))
         
         # Генерируем SVG-превью для каждого рисунка
         from .preview import generate_svg_previews
         generate_svg_previews(manifest, job_dir / "svg_preview")
+
+        # Инициализируем историю версий
+        from .versions import add_version
+        add_version(job_dir, manifest_path, None, "Исходная автоматическая реконструкция")
 
         report = manifest.diagnostics.model_dump(by_alias=True, mode="json")
         return self._completed_job(job_id, manifest_path=str(manifest_path), report=report)

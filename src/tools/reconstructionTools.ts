@@ -83,9 +83,7 @@ export const reconstructionTools = [
         });
         return { ...job, ...compileResult, manifestPath };
       } catch (err: any) {
-        // Устранение ложных статусов успеха: если Harmony отсутствует или нелицензирована
         if (err instanceof HarmonyError && (err.code === 'PYTHON_API_UNAVAILABLE' || err.code === 'HARMONY_SCENE_VERIFICATION_FAILED')) {
-          // Гарантируем генерацию и запись плана команд для портативного пакета
           const plan = compiler.generateCommandPlan(manifest);
           const outDir = path.dirname(verifyPathAccess(args.outputProjectPath));
           fs.mkdirSync(outDir, { recursive: true });
@@ -169,6 +167,102 @@ export const reconstructionTools = [
         }
         throw err;
       }
+    }
+  },
+  
+  // V2 ADDENDUM MCP TOOLS (Task 4, 8, 9)
+  {
+    name: 'harmony.reconstruct.get_problem_frames',
+    description: 'Возвращает список проблемных кадров с низкой уверенностью векторизации, скачками контуров и т.д.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      const job = await client.getJob(jobId);
+      if (!job.manifestPath) {
+        throw new HarmonyError('INVALID_RECONSTRUCTION_MANIFEST', 'Манифест еще не готов.');
+      }
+      const manifest = client.loadManifest(verifyPathAccess(job.manifestPath));
+      return {
+        jobId,
+        problemFrames: manifest.diagnostics.problemFrames || []
+      };
+    }
+  },
+  {
+    name: 'harmony.reconstruct.get_problem_frame',
+    description: 'Возвращает подробную информацию по конкретному проблемному кадру, включая метрики и пути превью.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      frame: z.number().int().positive()
+    }).strict(),
+    handler: async ({ jobId, frame }: { jobId: string; frame: number }) => {
+      const job = await client.getJob(jobId);
+      if (!job.manifestPath) {
+        throw new HarmonyError('INVALID_RECONSTRUCTION_MANIFEST', 'Манифест еще не готов.');
+      }
+      const manifest = client.loadManifest(verifyPathAccess(job.manifestPath));
+      const pf = (manifest.diagnostics.problemFrames || []).find(p => p.frame === frame);
+      if (!pf) {
+        throw new HarmonyError('INVALID_HARMONY_OBJECT', `Кадр ${frame} не зарегистрирован как проблемный.`);
+      }
+      return { jobId, problemFrame: pf };
+    }
+  },
+  {
+    name: 'harmony.reconstruct.refine_range',
+    description: 'Локальный пересчет векторизации для выбранного интервала кадров с защитой locked элементов.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      startFrame: z.number().int().positive(),
+      endFrame: z.number().int().positive(),
+      maxPointsPerShape: z.number().int().min(4).max(1000).optional()
+    }).strict(),
+    handler: async (args: any) => {
+      return client.refineRange(args.jobId, {
+        startFrame: args.startFrame,
+        endFrame: args.endFrame,
+        maxPointsPerShape: args.maxPointsPerShape
+      });
+    }
+  },
+  {
+    name: 'harmony.reconstruct.lock_elements',
+    description: 'Блокирует элемент и его рисунки (locks), защищая их от перезаписи при автоматическом refine.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      elementId: z.string().min(1)
+    }).strict(),
+    handler: async ({ jobId, elementId }: { jobId: string; elementId: string }) => {
+      return client.lockElements(jobId, elementId, true);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.unlock_elements',
+    description: 'Разблокирует элемент, разрешая его автоматический пересчет.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      elementId: z.string().min(1)
+    }).strict(),
+    handler: async ({ jobId, elementId }: { jobId: string; elementId: string }) => {
+      return client.lockElements(jobId, elementId, false);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.list_versions',
+    description: 'Возвращает историю версий манифеста и планов команд для данной джобы.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.listVersions(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.rollback_version',
+    description: 'Откатывает манифест и план команд к выбранной версии из истории.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      version: z.number().int().positive()
+    }).strict(),
+    handler: async ({ jobId, version }: { jobId: string; version: number }) => {
+      return client.rollbackVersion(jobId, version);
     }
   }
 ];

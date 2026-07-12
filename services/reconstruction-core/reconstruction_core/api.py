@@ -124,3 +124,154 @@ def cancel_job(job_id: str):
     job.update({"status": "cancelled", "stage": "cancelled", "progress": job.get("progress", 0)})
     storage.write_job(job_id, job)
     return job
+
+
+@app.post("/v1/jobs/{job_id}/refine-range")
+def refine_range(job_id: str, payload: dict):
+    start_frame = payload.get("startFrame")
+    end_frame = payload.get("endFrame")
+    if start_frame is None or end_frame is None or start_frame > end_frame:
+        raise HTTPException(status_code=422, detail="Неверные параметры startFrame и endFrame")
+        
+    try:
+        job = storage.read_job(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Файл манифеста не найден")
+        
+    try:
+        from .models import HarmonyReconstructionManifest, Exposure, Drawing
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        job_dir = storage.get_job_dir(job_id)
+        cleaned_dir = job_dir / "cleaned"
+        frame_paths = sorted(list(cleaned_dir.glob("*.png")))
+        if not frame_paths:
+            frame_paths = sorted(list((job_dir / "frames").glob("*.png")))
+            
+        from .vectorize import vectorize_frame
+        max_pts = payload.get("maxPointsPerShape", manifest.provenance.arguments.get("maxPointsPerShape", 120) if manifest.provenance else 120)
+        
+        def reconstruction_func(src_path: Path, palette_list: list, frame_num: int):
+            return vectorize_frame(src_path, palette_list, source_frame=frame_num, max_points=max_pts)
+            
+        from .versions import local_refine_range, add_version
+        updated_manifest = local_refine_range(manifest, start_frame, end_frame, frame_paths, job_dir, reconstruction_func)
+        
+        from .problems import analyze_problems_and_segments
+        problem_frames, representation_segments = analyze_problems_and_segments(updated_manifest, job_dir, frame_paths)
+        updated_manifest.diagnostics.problem_frames = problem_frames
+        updated_manifest.diagnostics.representation_segments = representation_segments
+        
+        manifest_path.write_text(updated_manifest.model_dump_json(by_alias=True), encoding="utf-8")
+        
+        version_info = add_version(
+            job_dir,
+            manifest_path,
+            None,
+            f"Локальный refine_range диапазона {start_frame}-{end_frame}"
+        )
+        
+        job["report"] = updated_manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "versionInfo": version_info,
+            "report": job["report"]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "REFINE_RANGE_FAILED", "message": str(exc)})
+
+
+@app.get("/v1/jobs/{job_id}/versions")
+def get_versions(job_id: str):
+    try:
+        job_dir = storage.get_job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+    from .versions import read_versions
+    return read_versions(job_dir)
+
+
+@app.post("/v1/jobs/{job_id}/rollback")
+def rollback_job(job_id: str, payload: dict):
+    target_version = payload.get("version")
+    if target_version is None:
+        raise HTTPException(status_code=422, detail="Не указан параметр version")
+        
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.get_job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    plan_path = manifest_path.parent / "command_plan.json"
+    
+    from .versions import rollback_to_version
+    try:
+        from .models import HarmonyReconstructionManifest
+        new_v = rollback_to_version(job_dir, target_version, manifest_path, plan_path)
+        
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        job["report"] = manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "versionInfo": new_v,
+            "report": job["report"]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "ROLLBACK_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/lock-elements")
+def lock_elements(job_id: str, payload: dict):
+    element_id = payload.get("elementId")
+    locked = payload.get("locked", True)
+    if not element_id:
+        raise HTTPException(status_code=422, detail="Не указан elementId")
+        
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.get_job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Манифест отсутствует")
+        
+    try:
+        from .models import HarmonyReconstructionManifest
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        from .versions import set_element_lock, add_version
+        updated_manifest = set_element_lock(manifest, element_id, locked)
+        
+        manifest_path.write_text(updated_manifest.model_dump_json(by_alias=True), encoding="utf-8")
+        
+        action = "Блокировка" if locked else "Разблокировка"
+        version_info = add_version(
+            job_dir,
+            manifest_path,
+            None,
+            f"{action} элемента {element_id}"
+        )
+        
+        job["report"] = updated_manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "locked": locked,
+            "versionInfo": version_info
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "LOCK_FAILED", "message": str(exc)})
+

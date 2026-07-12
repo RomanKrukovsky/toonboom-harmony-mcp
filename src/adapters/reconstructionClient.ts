@@ -79,6 +79,28 @@ export class ReconstructionClient {
     });
   }
 
+  refineRange(jobId: string, input: { startFrame: number; endFrame: number; maxPointsPerShape?: number }) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/refine-range`, {
+      method: 'POST', body: JSON.stringify(input)
+    });
+  }
+
+  listVersions(jobId: string) {
+    return this.request<Array<any>>(`/v1/jobs/${encodeURIComponent(jobId)}/versions`);
+  }
+
+  rollbackVersion(jobId: string, version: number) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/rollback`, {
+      method: 'POST', body: JSON.stringify({ version })
+    });
+  }
+
+  lockElements(jobId: string, elementId: string, locked: boolean) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/lock-elements`, {
+      method: 'POST', body: JSON.stringify({ elementId, locked })
+    });
+  }
+
   loadManifest(manifestPath: string): HarmonyReconstructionManifest {
     const parsed = reconstructionManifestSchema.safeParse(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
     if (!parsed.success) {

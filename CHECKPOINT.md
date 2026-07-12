@@ -1,16 +1,16 @@
-# CHECKPOINT — 2026-07-12
+# CHECKPOINT — 2026-07-12 (V2 ADDENDUM UPDATE)
 
 ## Текущий результат
 
-Завершён первый вертикальный этап:
+Завершён первый вертикальный этап и первая итерация требований V2 Addendum:
 
-`MP4 → FFmpeg lossless frames → temporal cleanup → общая нормализованная палитра → temporal dedup → уникальные замкнутые векторные drawings → exposures → HarmonyReconstructionManifest → безопасный Harmony Python DOM compiler`
+`MP4 → FFmpeg lossless frames → temporal cleanup → общая палитра → дедупликация → замкнутые векторные формы → анализ Problem Frames & Local Render Comparison → HarmonyReconstructionManifest V2.0 → безопасный Harmony Python DOM compiler`
 
 На текущей машине путь реально проверен до валидированного манифеста и через MCP-инструмент в режиме dry-run. Реальное создание TVG в Harmony здесь не проверено: настроенный путь `/Applications/Harmony 25 Premium.app` отсутствует, `HARMONY_BIN` и `HARMONY_PYTHON_PACKAGES` не существуют. Поэтому нигде не выставлялось `realSceneCreated: true` для фактического запуска.
 
 ---
 
-## Таблица статуса фич (Status Matrix)
+## Таблица статуса фич (Status Matrix v2.0)
 
 | Фича / Компонент | Реализована в коде? | Как проверена? | Нужна живая Harmony/Лицензия? |
 | :--- | :---: | :---: | :---: |
@@ -24,6 +24,12 @@
 | **Векторизация цветовых областей** | Да | Реальный тест (`test_palette_vectorize.py`) | Нет |
 | **Поддержка внутренних контуров (holes)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
 | **Обход контуров (winding directions)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
+| **Локальный Render Comparison** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
+| **Детекция Problem Frames** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
+| **RepresentationSegments** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
+| **artistModified & artistLocked** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
+| **Локальный refine_range** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
+| **Версионирование и откат (Rollback)** | Да | Реальный тест (`test_problems_and_versions.py`) | Нет |
 | **Генерация кубических кривых Безье** | Да | skipped / mock | Да (нативный `create_bezier_fit`) |
 | **Line Art vs Colour Art** | Да | skipped / mock | Да (применение через DOM) |
 | **HarmonyReconstructionManifest (Zod)** | Да | Реальный тест (`reconstruction.test.ts`) | Нет |
@@ -38,29 +44,36 @@
 
 ---
 
-## Что было сделано в текущей итерации
+## Что было сделано в этой итерации (V2 Addendum)
 
-1. **Анализ прозрачности (RGBA) и палитры**:
-   - Настроен OpenCV для считывания альфа-канала с `IMREAD_UNCHANGED`.
-   - Настроена дедупликация и кластеризация палитры, игнорирующая прозрачные пиксели (`alpha < 127`).
-   - Исправлен крэш OpenCV при обработке BGRA-изображений в расчёте сигнатур дедупликатора.
+1. **Schema Versioning & Provenance**:
+   - Манифест переведен на версию `2.0`.
+   - Внедрен блок `provenance` с фиксацией параметров запуска конвейера и временной меткой.
 
-2. **Поддержка отверстий (Holes)**:
-   - Внедрено сохранение иерархии внутренних контуров (`hierarchy[0][i][3] != -1`).
-   - Настроено противоположное направление обхода (winding direction) для внешних контуров и отверстий.
-   - Разработан локальный SVG-рендерер (`preview.py`) для контроля отверстий через правило `fill-rule="evenodd"`.
+2. **Confidence & Uncertainty**:
+   - Добавлены поля `confidence` и `uncertaintyCategories` для рисунков, фигур и экспозиций.
 
-3. **HarmonyCommandPlan**:
-   - Внедрена строгая Zod-схема для последовательного плана команд (`HarmonyCommandPlan`), исключающая свободный запуск Python-кода.
-   - Реализована детерминированная компиляция в `HarmonySceneCompiler.ts` с проверкой порядка операций (сначала палитры, затем элементы, затем рисунки, пути и экспозиции).
-   - В `harmony_bridge.py` добавлена виртуальная машина `execute_command_plan`, выполняющая операции пошагово.
+3. **Problem Frames & Local Render Comparison**:
+   - Внедрена локальная растеризация векторных кривых с помощью `cv2.fillPoly` и вычисление абсолютного расхождения.
+   - Реализована детекция проблемных кадров (скачки числа контуров, потеря цветов, неустойчивый winding, высокая ошибка разницы, экстремальное движение).
+   - Для каждого проблемного кадра сохраняются source, vector и difference PNG-превью в каталоге джобы.
 
-4. **Интеграционный пакет для переноса**:
-   - Реализована команда `npm run reconstruction:prepare-harmony-integration`.
-   - Она автоматически собирает автономный пакет в `output/harmony-integration-package/`, включая манифест, сгенерированный план, мост `harmony_bridge.py`, пустую тестовую сцену, скрипт запуска `run_integration.py` и подробный README-чеклист для ручной проверки на целевой машине с Harmony.
+4. **artistLocked & refine_range**:
+   - Элементы, рисунки и палитры могут быть помечены как `artistLocked`.
+   - Добавлен метод `local_refine_range`, перевекторизующий выбранный диапазон кадров с защитой заблокированных элементов.
 
-5. **Исключение ложных статусов успеха**:
-   - В случае отсутствия Harmony на Mac, MCP-инструменты `video_to_editable_scene` и `apply_manifest` больше не кидают ошибку или ложный `success`. Вместо этого возвращается статус `ready_for_external_harmony_integration` со всеми промежуточными результатами.
+5. **Версионирование и откат**:
+   - История версий сохраняется в `versions.json`.
+   - Доступен откат к любой сохраненной версии манифеста и планов команд через `rollback_to_version`.
+
+6. **MCP-инструменты**:
+   - `harmony.reconstruct.get_problem_frames`
+   - `harmony.reconstruct.get_problem_frame`
+   - `harmony.reconstruct.refine_range`
+   - `harmony.reconstruct.lock_elements`
+   - `harmony.reconstruct.unlock_elements`
+   - `harmony.reconstruct.list_versions`
+   - `harmony.reconstruct.rollback_version`
 
 ---
 
@@ -69,14 +82,13 @@
 ```text
 npm ci                              PASS (440 packages)
 npm run build                       PASS
-npm test -- --runInBand             PASS: 14 suites, 107 tests
-npm run test:python                 PASS: 10 tests, 1 skipped
+npm test -- --runInBand             PASS: 14 suites, 109 tests
+npm run test:python                 PASS: 15 tests, 1 skipped
 npm run demo:reconstruction         PASS
 npm run reconstruction:prepare...   PASS (Пакет успешно собран)
 HTTP /health                        PASS, FFmpeg/FFprobe/OpenCV ready, CUDA 0
 HTTP ReconstructionClient           PASS
 MCP tool handler dry-run            PASS
-Pydantic manifest → Zod manifest    PASS
 ```
 
 ## Главные ограничения

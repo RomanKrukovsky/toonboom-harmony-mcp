@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple, Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -68,6 +68,8 @@ class VectorShape(StrictModel):
     points: List[Point] = Field(min_length=3)
     area: float = Field(ge=0)
     source: ShapeSource
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    uncertainty_categories: List[str] = Field(default_factory=list, alias="uncertaintyCategories")
 
 
 class PaletteColor(StrictModel):
@@ -76,6 +78,9 @@ class PaletteColor(StrictModel):
     rgba: Tuple[int, int, int, int]
     original_rgba: Tuple[float, float, float, float] = Field(alias="originalRgba")
     replacement_error: float = Field(alias="replacementError")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    artist_modified: bool = Field(default=False, alias="artistModified")
+    artist_locked: bool = Field(default=False, alias="artistLocked")
 
 
 class Palette(StrictModel):
@@ -91,14 +96,19 @@ class Drawing(StrictModel):
     normalized_image_path: str = Field(alias="normalizedImagePath")
     shapes: List[VectorShape]
     point_count: int = Field(alias="pointCount")
-    locked: bool = False
-    provenance: Literal["automatic_video_reconstruction"] = "automatic_video_reconstruction"
+    locked: bool = False  # Legacy field
+    artist_modified: bool = Field(default=False, alias="artistModified")
+    artist_locked: bool = Field(default=False, alias="artistLocked")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    uncertainty_categories: List[str] = Field(default_factory=list, alias="uncertaintyCategories")
+    provenance: str = "automatic_video_reconstruction"
 
 
 class Exposure(StrictModel):
     frame: int = Field(gt=0)
     duration: int = Field(gt=0)
     drawing_id: str = Field(alias="drawingId")
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
 class Element(StrictModel):
@@ -106,7 +116,9 @@ class Element(StrictModel):
     name: str
     node_name: str = Field(alias="nodeName")
     drawing_ids: List[str] = Field(alias="drawingIds")
-    locked: bool = False
+    locked: bool = False  # Legacy field
+    artist_modified: bool = Field(default=False, alias="artistModified")
+    artist_locked: bool = Field(default=False, alias="artistLocked")
 
 
 class Node(StrictModel):
@@ -114,7 +126,9 @@ class Node(StrictModel):
     name: str
     type: Literal["READ", "COMPOSITE", "DISPLAY"]
     auto_created: bool = Field(alias="autoCreated")
-    locked: bool = False
+    locked: bool = False  # Legacy field
+    artist_modified: bool = Field(default=False, alias="artistModified")
+    artist_locked: bool = Field(default=False, alias="artistLocked")
 
 
 class Connection(StrictModel):
@@ -131,6 +145,28 @@ class Capability(StrictModel):
     native_tvg_required: Literal[True] = Field(default=True, alias="nativeTvgRequired")
 
 
+class ProblemFrame(StrictModel):
+    frame: int = Field(gt=0)
+    severity: Literal["low", "medium", "high", "critical"]
+    category: str
+    source_preview_path: str = Field(alias="sourcePreviewPath")
+    vector_preview_path: str = Field(alias="vectorPreviewPath")
+    difference_preview_path: str = Field(alias="differencePreviewPath")
+    affected_drawing_id: Optional[str] = Field(default=None, alias="affectedDrawingId")
+    metrics: Dict[str, float] = Field(default_factory=dict)
+    recommended_action: str = Field(alias="recommendedAction")
+
+
+class RepresentationSegment(StrictModel):
+    start_frame: int = Field(alias="startFrame", gt=0)
+    end_frame: int = Field(alias="endFrame", gt=0)
+    routing_choice: Literal["frame_by_frame_vector", "peg_transform", "deformer", "substitution"] = Field(alias="routingChoice")
+    average_confidence: float = Field(alias="averageConfidence", ge=0.0, le=1.0)
+    drawing_ids: List[str] = Field(alias="drawingIds")
+    problem_frames: List[int] = Field(alias="problemFrames")
+    explanation: str
+
+
 class Diagnostics(StrictModel):
     unique_drawing_count: int = Field(alias="uniqueDrawingCount")
     duplicate_frame_count: int = Field(alias="duplicateFrameCount")
@@ -139,6 +175,8 @@ class Diagnostics(StrictModel):
     warnings: List[str]
     stage_durations_ms: Dict[str, float] = Field(alias="stageDurationsMs")
     capability: Capability
+    problem_frames: List[ProblemFrame] = Field(default_factory=list, alias="problemFrames")
+    representation_segments: List[RepresentationSegment] = Field(default_factory=list, alias="representationSegments")
 
 
 class SceneSpec(StrictModel):
@@ -160,8 +198,15 @@ class RenderComparisonRequest(StrictModel):
     pairs: List[RenderComparisonPair] = Field(min_length=1, max_length=48)
 
 
+class ProvenanceInfo(StrictModel):
+    tool: str = "harmony-reconstruction-core"
+    version: str = "2.0.0"
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: str
+
+
 class HarmonyReconstructionManifest(StrictModel):
-    schema_version: Literal["1.0"] = Field(alias="schemaVersion")
+    schema_version: str = Field(default="2.0", alias="schemaVersion")
     manifest_id: str = Field(alias="manifestId")
     created_at: datetime = Field(alias="createdAt")
     mode: Literal["frame_by_frame_vector"]
@@ -174,6 +219,7 @@ class HarmonyReconstructionManifest(StrictModel):
     nodes: List[Node] = Field(min_length=3)
     connections: List[Connection] = Field(min_length=2)
     diagnostics: Diagnostics
+    provenance: Optional[ProvenanceInfo] = None
 
     @model_validator(mode="after")
     def check_references(self) -> "HarmonyReconstructionManifest":

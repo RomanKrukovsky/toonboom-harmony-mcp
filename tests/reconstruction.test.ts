@@ -14,7 +14,7 @@ import {
 
 function manifestFixture(): HarmonyReconstructionManifest {
   return {
-    schemaVersion: '1.0', manifestId: '1234567890abcdef', createdAt: '2026-07-12T10:00:00Z', mode: 'frame_by_frame_vector',
+    schemaVersion: '2.0', manifestId: '1234567890abcdef', createdAt: '2026-07-12T10:00:00Z', mode: 'frame_by_frame_vector',
     source: {
       videoPath: '/tmp/input.mp4', sha256: 'a'.repeat(64), width: 96, height: 64, fps: 12,
       timeBase: '1/12', durationSeconds: 0.1667, frameCount: 2, variableFrameRate: false,
@@ -23,22 +23,24 @@ function manifestFixture(): HarmonyReconstructionManifest {
     scene: { name: 'Test', width: 96, height: 64, fps: 12, startFrame: 1, endFrame: 2 },
     palettes: [{ id: 'palette_main', name: 'Test_Palette', colors: [{
       id: 'COLOR_001', name: 'COLOR_001', rgba: [255, 0, 0, 255],
-      originalRgba: [255, 0, 0, 255], replacementError: 0
+      originalRgba: [255, 0, 0, 255], replacementError: 0,
+      confidence: 1.0, artistModified: false, artistLocked: false
     }] }],
-    elements: [{ id: 'element_main', name: 'Test_Drawings', nodeName: 'Test_READ', drawingIds: ['drawing_000001'], locked: false }],
+    elements: [{ id: 'element_main', name: 'Test_Drawings', nodeName: 'Test_READ', drawingIds: ['drawing_000001'], locked: false, artistModified: false, artistLocked: false }],
     drawings: [{
       id: 'drawing_000001', name: 'F_000001', sourceFrame: 1, normalizedImagePath: '/tmp/frame.png',
       shapes: [{
         id: 'shape_1', colorId: 'COLOR_001', closed: true,
         points: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }], area: 10,
-        source: { frame: 1, method: 'contour_trace' }
-      }], pointCount: 3, locked: false, provenance: 'automatic_video_reconstruction'
+        source: { frame: 1, method: 'contour_trace' },
+        confidence: 1.0, uncertaintyCategories: []
+      }], pointCount: 3, locked: false, artistModified: false, artistLocked: false, confidence: 1.0, uncertaintyCategories: [], provenance: 'automatic_video_reconstruction'
     }],
-    exposures: [{ frame: 1, duration: 2, drawingId: 'drawing_000001' }],
+    exposures: [{ frame: 1, duration: 2, drawingId: 'drawing_000001', confidence: 1.0 }],
     nodes: [
-      { id: 'node_read', name: 'Test_READ', type: 'READ', autoCreated: true, locked: false },
-      { id: 'node_composite', name: 'Test_COMPOSITE', type: 'COMPOSITE', autoCreated: true, locked: false },
-      { id: 'node_display', name: 'Test_DISPLAY', type: 'DISPLAY', autoCreated: true, locked: false }
+      { id: 'node_read', name: 'Test_READ', type: 'READ', autoCreated: true, locked: false, artistModified: false, artistLocked: false },
+      { id: 'node_composite', name: 'Test_COMPOSITE', type: 'COMPOSITE', autoCreated: true, locked: false, artistModified: false, artistLocked: false },
+      { id: 'node_display', name: 'Test_DISPLAY', type: 'DISPLAY', autoCreated: true, locked: false, artistModified: false, artistLocked: false }
     ],
     connections: [
       { from: 'node_read', to: 'node_composite', fromPort: 0, toPort: 0 },
@@ -47,8 +49,10 @@ function manifestFixture(): HarmonyReconstructionManifest {
     diagnostics: {
       uniqueDrawingCount: 1, duplicateFrameCount: 1, paletteColorCount: 1, totalPointCount: 3,
       warnings: [], stageDurationsMs: {},
-      capability: { vectorBackend: 'python_dom_shapes', lineArt: false, colourArt: true, nativeTvgRequired: true }
-    }
+      capability: { vectorBackend: 'python_dom_shapes', lineArt: false, colourArt: true, nativeTvgRequired: true },
+      problemFrames: [], representationSegments: []
+    },
+    provenance: null
   };
 }
 
@@ -190,5 +194,59 @@ describe('video reconstruction vertical slice', () => {
       config.allowedRoots = oldRoots;
       fs.rmSync(directory, { recursive: true, force: true });
     }
+  });
+
+  test('Zod parses V2 schema manifest with Problem Frames and Provenance', () => {
+    const manifest = manifestFixture();
+    manifest.schemaVersion = '2.0';
+    manifest.provenance = {
+      tool: 'harmony-reconstruction-core',
+      version: '2.0.0',
+      arguments: { maxColors: 12 },
+      timestamp: new Date().toISOString()
+    };
+    manifest.diagnostics.problemFrames = [
+      {
+        frame: 2,
+        severity: 'high',
+        category: 'contour_count_jump',
+        sourcePreviewPath: 'frames/frame_000002.png',
+        vectorPreviewPath: 'problem_previews/render_drawing_dr_2.png',
+        differencePreviewPath: 'problem_previews/diff_drawing_dr_2.png',
+        affectedDrawingId: 'drawing_000001',
+        metrics: { vectorization_error: 15.2 },
+        recommendedAction: 'Verify contours'
+      }
+    ];
+    manifest.diagnostics.representationSegments = [
+      {
+        startFrame: 1,
+        endFrame: 2,
+        routingChoice: 'frame_by_frame_vector',
+        averageConfidence: 0.95,
+        drawingIds: ['drawing_000001'],
+        problemFrames: [2],
+        explanation: 'Contiguous segment'
+      }
+    ];
+
+    const parsed = reconstructionManifestSchema.parse(manifest);
+    expect(parsed.schemaVersion).toBe('2.0');
+    expect(parsed.provenance?.tool).toBe('harmony-reconstruction-core');
+    expect(parsed.diagnostics.problemFrames).toHaveLength(1);
+    expect(parsed.diagnostics.problemFrames[0].category).toBe('contour_count_jump');
+    expect(parsed.diagnostics.representationSegments).toHaveLength(1);
+  });
+
+  test('Reconstruction tools list contains all V2 tools', () => {
+    const { reconstructionTools } = require('../src/tools/reconstructionTools.js');
+    const toolNames = reconstructionTools.map((t: any) => t.name);
+    expect(toolNames).toContain('harmony.reconstruct.get_problem_frames');
+    expect(toolNames).toContain('harmony.reconstruct.get_problem_frame');
+    expect(toolNames).toContain('harmony.reconstruct.refine_range');
+    expect(toolNames).toContain('harmony.reconstruct.lock_elements');
+    expect(toolNames).toContain('harmony.reconstruct.unlock_elements');
+    expect(toolNames).toContain('harmony.reconstruct.list_versions');
+    expect(toolNames).toContain('harmony.reconstruct.rollback_version');
   });
 });
