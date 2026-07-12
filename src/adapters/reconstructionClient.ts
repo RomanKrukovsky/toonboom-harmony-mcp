@@ -168,4 +168,22 @@ export class ReconstructionClient {
     }
     return parsed.data;
   }
+
+  async retargetAnalyze(input: Record<string, unknown>): Promise<any> {
+    return this.request<any>('/v1/retarget/analyze', {
+      method: 'POST', body: JSON.stringify(input)
+    });
+  }
+
+  async retargetPreview(input: Record<string, unknown>): Promise<any> {
+    return this.request<any>('/v1/retarget/preview', {
+      method: 'POST', body: JSON.stringify(input)
+    });
+  }
+
+  async retargetApply(input: Record<string, unknown>): Promise<any> {
+    return this.request<any>('/v1/retarget/apply', {
+      method: 'POST', body: JSON.stringify(input)
+    });
+  }
 }

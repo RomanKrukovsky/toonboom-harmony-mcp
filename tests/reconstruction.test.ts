@@ -52,7 +52,8 @@ function manifestFixture(): HarmonyReconstructionManifest {
       capability: { vectorBackend: 'python_dom_shapes', lineArt: false, colourArt: true, nativeTvgRequired: true },
       problemFrames: [], representationSegments: []
     },
-    provenance: null
+    provenance: null,
+    transformTracks: []
   };
 }
 

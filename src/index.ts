@@ -41,6 +41,8 @@ import { qualityDirectorTools } from './tools/qualityDirectorTools.js';
 import { promptToSceneTools } from './tools/promptToSceneTools.js';
 import { reviewLoopTools } from './tools/reviewLoopTools.js';
 import { reconstructionTools } from './tools/reconstructionTools.js';
+import { aiStudioTools } from './tools/aiStudioTools.js';
+import { retargetingTools } from './tools/retargetingTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -78,7 +80,9 @@ const allTools = [
   ...qualityDirectorTools,
   ...promptToSceneTools,
   ...reviewLoopTools,
-  ...reconstructionTools
+  ...reconstructionTools,
+  ...aiStudioTools,
+  ...retargetingTools
 ];
 
 function zodFieldToJsonSchema(schema: any): any {

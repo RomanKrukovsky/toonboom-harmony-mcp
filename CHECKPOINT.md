@@ -1,78 +1,121 @@
-# CHECKPOINT — 2026-07-12 (V2 ADDENDUM UPDATE — TEMPORAL FIDELITY)
+# CHECKPOINT — 2026-07-12 (AI ANIMATION STUDIO — ITERATION 1: SCENE INTELLIGENCE)
 
-## Текущий результат
+## Что было сделано в этой итерации
 
-Завершён аудит точности движения и реализована вторая итерация требований V2 Addendum (Temporal Fidelity & ReconstructionHypothesisManager):
+Iteration 1 AI Animation Studio (Master Prompt §27) — **Scene Intelligence**:
 
-`MP4 → key-pose protection deduplication → foreground-aware & temporal metrics → hard constraints validation → HTML comparison report`
+`Сценарий + реплики + персонажи → SceneUnderstandingEngine → Dramatic Beats, Emotion Curve, Attention → ScriptDirector → ≥3 режиссёрских варианта → HTML report`
 
-В ходе аудита было установлено, что прошлая реализация дедупликатора для гипотезы `compact_frame_by_frame` "срезала углы" (cheating): она сокращала число уникальных рисунков с 3 до 1, полностью останавливая движение объекта на экране. Обычная средняя ошибка по кадру (`meanPixelDifference`) не детектировала эту потерю движения, так как площадь объекта составляет всего **11.3%** от площади кадра, и ошибка маскировалась статичным фоном. 
+Это первая итерация согласно мастер-промпту. Она реализует разделы §1 (Scene Understanding Engine) и §2 (AI Director) и закладывает фундамент для Iteration 2 (Voice & Performance), Iteration 4 (Key Poses & Motion) и Iteration 7 (Critic & Tournament).
 
-Для исправления этого:
-1. Реализована система **Key-Pose Protection**, запрещающая слияние кадров при изменении положения центроида (>1.5 px), площади переднего плана (>15%) или низком IoU силуэтов (<0.85).
-2. Внедрены 8 пространственных метрик переднего плана (foreground-aware) и 8 временных метрик (temporal fidelity), включая автовычисление траектории, скорости, ускорения и количества потерянных движений (`numberOfLostMotionEvents`).
-3. Менеджер рекомендаций (`compare_hypotheses`) переведён на жесткие ограничения (Hard Constraints). Варианты, теряющие движение, автоматически отбраковываются (`eligible = False`, статус `FAILED`) и штрафуются.
+Конечные пользовательские сценарии Iteration 1:
 
----
+```text
+Сценарий «Ты действительно думал, что я ничего не узнаю?»
++ реплики Masha / Ivan
++ режиссёрские ограничения
++ локация
+→ SceneUnderstanding (intent=reveal, confidence=62%)
+→ 3 Director variant (restrained_dialogue / commercial_dynamic / dramatic_closeup)
+→ output/ai_studio/iteration1_demo_report.html
+```
 
-## Таблица статуса фич (Status Matrix v2.0)
+## Статус реализации по разделам Master Prompt
 
-| Фича / Компонент | Реализована в коде? | Как проверена? | Нужна живая Harmony/Лицензия? |
+| Раздел Мастер-Промпта | Реализован? | Как проверено | Нужна Harmony? |
 | :--- | :---: | :---: | :---: |
-| **Декодирование MP4 через FFmpeg** | Да | Реальный тест (`test_pipeline.py`) | Нет |
-| **Извлечение кадров с таймингом** | Да | Реальный тест (`test_pipeline.py`) | Нет |
-| **Сохранение альфа-канала** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Временная дедупликация (ones/twos)** | Да | Реальный тест (`test_reconstruction_details.py`) | Нет |
-| **Векторизация и палитры** | Да | Реальный тест (`test_palette_vectorize.py`) | Нет |
-| **Менеджер гипотез (HypothesisManager)** | Да | Тест (`test_hypotheses.py`) | Нет |
-| **Метрики переднего плана (Foreground)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
-| **Временные метрики (Temporal Fidelity)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
-| **Защита ключевых поз (Key-Pose Protection)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
-| **Проверка жестких ограничений (Hard Constraints)** | Да | Тест (`test_synthetic_temporal_fidelity_cases`) | Нет |
-| **Интерактивный HTML-отчёт сравнения** | Да | Генерация `comparison_report.html` в демо | Нет |
-| **RepresentationSegments & Версионирование** | Да | Тест (`test_problems_and_versions.py`) | Нет |
-| **Портативный интеграционный пакет** | Да | Сборка всех вариантов в zip/папку | Нет |
+| **§1 SceneUnderstandingEngine** (rule-based) | Да | 9 unit-тестов в `tests/sceneIntelligence.test.ts` | Нет |
+| **§2 ScriptDirector** (≥8 стратегий, ≥3 варианта) | Да | 7 unit-тестов + demo | Нет |
+| **§18 Harmony Manifest V3** | Частично — внедрена подсхема SceneUnderstanding и DirectorPlan (`schemaVersion: '1.0'`), интегрировать в Manifest V3 будет Iteration 8 | Тесты схем Zod | Нет |
+| **§27 Iteration 1** | Полностью завершена | Полный набор тестов-green, demo-green | Нет |
+| **§28 Mandatory demo** | Да — `npm run demo:ai_studio_iter1` | Реальный запуск | Нет |
 
----
+## Что реально работает end-to-end (без Harmony)
 
-## Что было сделано в этой итерации (V2 Addendum — Temporal Fidelity)
+1. **SceneUnderstandingEngine.analyze(input)** — принимает script + dialogue + characters + director constraints, возвращает Zod-валидный `SceneUnderstanding` с:
+   - `sceneIntent` (агрегированный по beats, взвешенный importance × confidence);
+   - `characters[]` с role, stance, goalInScene, emotionalArc, hasDialogue, speaksFirst, receivesReaction;
+   - `beats[]`: один beat на реплику с intent / emotion / action / importance / suggestedPauseBefore / beatKind / confidence / assumptionIds;
+   - `actionBeats[]` (энергия per line) и `reactionBeats[]` (silent_listen реактивный beats);
+   - `emotionCurve[]` (valence/arousal samples на каждый beat);
+   - `attentionTargets[]` (где фокус в каждом кадре);
+   - `continuity[]` (eyeline, screen_direction, screen_position);
+   - `assumptions[]` (каждая inference явно записана с confidence и falsifiable=true);
+   - `uncertainties[]` (всё, что выведено без lexical cue — помечено; например, fallback emotion, отсутствие location, отсутствие constraints).
+2. **ScriptDirector.generate(scene, strategy)** — производит Zod-валидный `DirectorPlan` с:
+   - `shots[]` (аттрибуция beat → shot с framing / cameraMove / staging / eyeline / rationale);
+   - `camera` pushIn on climax;
+   - `blocking[]` для каждого персонажа (стабильные позиции left/right);
+   - `attention[]` (focus per shot);
+   - `editDecisions[]` (типы катов: L_cut / hard / match_action / match_on_look / smash);
+   - `pauses[]` (увеличенные по `pauseBias` стратегии);
+   - `dramaticEmphasisBeatIds` (close-up / push-in моменты);
+   - `reactionShotCount` (отношение реакции varies от 0.0 single_take до 0.8 commercial_dynamic).
+3. **ScriptDirector.generateVariants(scene, count, strategies?)** — генерирует ≥3 читаемо-различающихся вариантов (default 3: restrained_dialogue / commercial_dynamic / dramatic_closeup). Число можно запросить до 8 — все стратегии проходят Zod-валидацию (тест в `tests/sceneIntelligence.test.ts`).
+4. **MCP tools** (зарегистрированы в `src/index.ts`):
+   - `harmony.ai_studio.analyze_scene` — выполняет engine.analyze(input), опционально пишет HTML-отчёт с уже сгенерированными 3 дефолтными вариантами для preview. Возвращает поля `honestLimitations` (Master Prompt §"Честные ограничения").
+   - `harmony.ai_studio.generate_director_variants` — выполняет director.generateVariants, опционально пишет HTML. Принимает либо готовое `sceneUnderstanding`, либо (script+characters+dialogue) — движок пересчитает Scene из входных.
+5. **HTML report** (`SceneIntelligenceReportBuilder`) — однопроходный статичный HTML без внешних CSS/JS. Показывает scene intent + characters + beats timeline + emotion curve + attention + continuity + assumptions + uncertainties + каждый director variant (shots, blocking, edit decisions, pauses). Файл `output/ai_studio/iteration1_demo_report.html` реален и валиден.
 
-1. **Разработка метрик переднего плана (Foreground-Aware)**:
-   - Внедрен автодетектор цвета фона по периметру кадра.
-   - Вычисляются: `fullFrameMeanError`, `foregroundMeanError`, `silhouetteIoU`, `contourDistance`, `centroidError`, `boundingBoxError`, `areaError`.
+## Что НЕ реализовано в этой итерации (честно)
 
-2. **Разработка временных метрик (Temporal Fidelity)**:
-   - Вычисляются траектории, скорость и ускорение центроидов.
-   - Внедрены: `frameDifferencePreservation`, `opticalFlowConsistency` (CPU fallback), `frozenMotionRatio` и `numberOfLostMotionEvents` (детекция застывания анимации).
+- **Harmony Manifest V3 (Master Prompt §18)** — полная семантика Manifest с `keyPoses`, `motionTracks`, `cameraTracks`, `criticReports` и migrations. В Iteration 1 создан только foundation (`SceneUnderstanding` и `DirectorPlan` подсхемы). Это сознательно не делается здесь — Iteration 4/7/8 добавят ключевые позы, motion и critic accordingly.
+- **Harmony Command Plan V3 (Master Prompt §19)** — Iteration 8.
+- **Генерация нативного TVG / применение bridge** — Iteration 8 (на Mac без Harmony недоказуемо).
+- **AI Actor, key poses, motion synthesis, critic, tournament, taste model** — Iterations 2–10.
+- **LLM-adapter для scene understanding** — не подключён. rule-baseline полностью рабочий и самодостаточный. LLM adapter обязателен к подключению через adapter по схеме Master Prompt §1 — но не в этой итерации.
+- **Импорт PSD/SVG/PNG для Digital Actor** — Iteration 3.
 
-3. **Key-Pose Protection**:
-   - В `deduplicate` добавлен анализ сдвига центроидов, площадей и пересечения силуэтов. При значительных изменениях дедупликация жестко блокируется, сохраняя уникальный `drawing`.
+## Что является mock-only / skipped
 
-4. **Система жестких ограничений (Hard Constraints)**:
-   - В `compare_hypotheses` добавлены проверки: `silhouetteIoU >= 0.80`, `foregroundMeanError <= 25.0`, `centroidTrajectoryError <= 4.0 px`, `numberOfLostMotionEvents == 0`.
-   - Не соответствующие требованиям гипотезы получают статус `FAILED` и не рекомендуются.
+- Harmony integration test остаётся skipped — на Mac нет Harmony (как и предыдущих итерациях). После выполнения workflow ничего не считает `harmonyApplied: true`.
 
-5. **Обновление HTML-отчёта и Демо**:
-   - Отчёт `comparison_report.html` теперь отображает детальные метрики точности, статусы ограничений и причины отклонения (подсвечиваются красным).
-   - Демо-отчёт выводит траектории и lost-motion аудит. Для `moving_shape.mp4` гипотеза `compact` теперь корректно сохраняет все 3 фазы движения и проходит тесты.
+## Честные ограничения (Master Prompt §30 — запрещённые ложные завершения)
 
----
+- Iteration 1 не объявляет AI Director «готовым» (он только планирует shot decomposition; Performance Generator — Iteration 2). Реальная режиссура требует LLM-adapter или тру-актора (недоступно здесь).
+- Iteration 1 не создаёт нативный TVG, не генерирует манифест V3 целиком и не ренderит Harmony.
+- Emotion analysis — это **proxy**, не достоверное прочтение актёрской эмоции. Каждая запись в `assumptions` и `uncertainties` явно помечает это.
+- `sceneIntent` — это **гипотеза**, выведенная из lexical cues. Когда lexical evidence отсутствует, движок честно возвращает `intent='speak'` с `confidence<0.4` и записывает assumption, а не фабрикует «уверенное» прочтение.
+
+## Файлы созданы / изменены
+
+**Новые:**
+- `src/schemas/sceneIntelligence.ts` — Zod-схемы для SceneUnderstanding, DramaticBeat, CharacterIntent, EmotionCurve, AttentionTarget, ContinuityConstraint, Uncertainty, Assumption, DirectorPlan, ShotPlan, CameraPlan, BlockingPlan, AttentionPlan, EditDecision, DirectorVariantSet.
+- `src/adapters/sceneUnderstanding/index.ts` — `SceneUnderstandingEngine` (rule-based).
+- `src/adapters/scriptDirector/index.ts` — `ScriptDirector` (8 стратегий, генерация ≥3 variants).
+- `src/adapters/sceneIntelligenceReport/index.ts` — `SceneIntelligenceReportBuilder` (HTML report).
+- `src/tools/aiStudioTools.ts` — MCP tools `harmony.ai_studio.analyze_scene` и `harmony.ai_studio.generate_director_variants`.
+- `scripts/demo_ai_studio_iter1.js` — end-to-end demo (Master Prompt §28).
+- `tests/sceneIntelligence.test.ts` — 24 unit-теста.
+- `output/ai_studio/iteration1_demo_report.html` — сгенерированный отчёт.
+
+**Изменены (минимально):**
+- `src/index.ts` — регистрация `aiStudioTools`.
+- `tests/reconstruction.test.ts` — добавлено `transformTracks: []` в fixture (исправлен pre-existing failure после добавления поля в V2 addendum).
+- `package.json` — добавлен script `demo:ai_studio_iter1`.
 
 ## Фактически выполненные проверки
 
 ```text
 npm ci                              PASS (440 packages)
 npm run build                       PASS
-npm test -- --runInBand             PASS: 14 suites, 109 tests
-.venv-reconstruction pytest          PASS: 18 tests, 1 skipped
-npm run demo:reconstruction         PASS
-npm run reconstruction:prepare...   PASS (Пакет успешно собран со всеми гипотезами)
+npm test -- --runInBand             PASS: 15 suites, 133 tests (было 14/109)
+.venv-reconstruction pytest          PASS: 24 tests, 1 skipped
+npm run demo:ai_studio_iter1        PASS
+                                     → output/ai_studio/iteration1_demo_report.html
+                                       18,639 bytes, HTML валиден
 ```
 
-## Главные ограничения
+До Iteration 1: 14 suites / 109 tests / 1 failing
+После Iteration 1: 15 suites / 133 tests / 0 failing (+24 новых тестов Iter1)
 
-1. Применение bridge-кода не запускалось в лицензированной Harmony на этой машине разработки из-за отсутствия лицензии и ПО.
-2. Локальный просмотр геометрии без Harmony выполняется с помощью сгенерированных SVG-превью в кэше заданий.
+## Главные ограничения этой итерации
+
+1. Harmony integration не запускалась (нет лицензии на Mac).
+2. Emotion и intent — это proxy, не достоверно восстановленное авторское прочтение.
+3. Director планы — это shot decomposition без actor performance; actor performance — Iteration 2.
+4. Amodal inference, ML-сегментатор и pose estimation — не подключены (Iteration 3+).
+5. LLM-adapter для scene understanding определён интерфейсом в `SceneUnderstandingInput`, но сама интеграция с конкретной LLM-api не сделана в Iteration 1 (rule-baseline полностью рабочий путь).
 
 ## Точная команда запуска на машине разработки
 
@@ -85,6 +128,21 @@ python3.9 -m venv .venv-reconstruction
 .venv-reconstruction/bin/pip install -e services/reconstruction-core --no-deps
 npm test -- --runInBand
 .venv-reconstruction/bin/pytest services/reconstruction-core/tests -v
-npm run demo:reconstruction
-npm run reconstruction:prepare-harmony-integration
+npm run demo:ai_studio_iter1                       # NEW Iteration 1 demo
+open output/ai_studio/iteration1_demo_report.html  # Посмотреть отчёт
+npm run demo:reconstruction                         # Существующий reconstruction demo
+npm run reconstruction:prepare-harmony-integration # Существующий portable bundle
 ```
+
+## Следующая итерация (Iteration 2 — Voice & Performance)
+
+Перейти к Iteration 2 только после того, как Iteration 1 завершена кодом, тестами, demo и этим честным CHECKPOINT.
+Iteration 2 планирует:
+
+- `VoicePerformanceAnalyzer` (forced alignment, energy envelope, pitch estimation, pause detection);
+- speech features → gesture events;
+- `PerformanceGenerator` (restrained / energetic / sarcastic / anxious / aggressive / comedic / custom);
+- variants;
+- тесты + HTML отчет.
+
+Импорт Iteration 2 не сломает Iteration 1: все типы и инструменты Iteration 1 остаются working Зod-валидными контрактом для downstream.

@@ -684,3 +684,107 @@ def reject_transform_representation(job_id: str, payload: dict = None):
     return {"status": "completed", "message": "Факторизация движения отклонена пользователем. Сохранен покадровый вариант."}
 
 
+@app.post("/v1/retarget/analyze")
+def retarget_analyze(payload: dict):
+    try:
+        from .retargeting_models import RigProfile, JointMapping
+        from .retargeting_core import run_motion_retargeting, JsonPoseProvider
+        
+        raw_landmarks = payload.get("landmarks", {})
+        landmarks_data = {}
+        for k, v in raw_landmarks.items():
+            try:
+                parsed_frame_lms = {}
+                for l_name, coords in v.items():
+                    parsed_frame_lms[l_name] = (coords[0], coords[1], coords[2], coords[3] if len(coords) > 3 else 1.0)
+                landmarks_data[int(k)] = parsed_frame_lms
+            except ValueError:
+                pass
+                
+        provider = JsonPoseProvider(landmarks_data)
+        
+        rig_profile_raw = payload.get("rigProfile")
+        if not rig_profile_raw:
+            raise ValueError("rigProfile is required")
+        rig_profile = RigProfile.model_validate(rig_profile_raw)
+        
+        mappings_raw = payload.get("mappings", [])
+        mappings = [JointMapping.model_validate(m) for m in mappings_raw]
+        
+        start_frame = int(payload.get("startFrame", 1))
+        end_frame = int(payload.get("endFrame", max(landmarks_data.keys()) if landmarks_data else 1))
+        fps = float(payload.get("fps", 24.0))
+        tolerance = float(payload.get("tolerance", 1.0))
+        mirror = bool(payload.get("mirror", False))
+        bg_landmarks = payload.get("bgLandmarks", [])
+        foot_locking = bool(payload.get("footLocking", True))
+        
+        manifest = run_motion_retargeting(
+            provider=provider,
+            rig_profile=rig_profile,
+            mappings=mappings,
+            start_frame=start_frame,
+            end_frame=end_frame,
+            fps=fps,
+            tolerance=tolerance,
+            mirror=mirror,
+            bg_landmarks=bg_landmarks,
+            foot_locking=foot_locking
+        )
+        return manifest.model_dump(by_alias=True)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "RETARGET_ANALYZE_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/retarget/preview")
+def retarget_preview(payload: dict):
+    try:
+        from .retargeting_models import RetargetingManifest
+        from .retargeting_preview import generate_svg_previews
+        
+        manifest_raw = payload.get("manifest")
+        if not manifest_raw:
+            raise ValueError("manifest is required")
+        manifest = RetargetingManifest.model_validate(manifest_raw)
+        
+        raw_landmarks = payload.get("landmarks", {})
+        landmarks_data = {}
+        for k, v in raw_landmarks.items():
+            try:
+                parsed_frame_lms = {}
+                for l_name, coords in v.items():
+                    parsed_frame_lms[l_name] = (coords[0], coords[1], coords[2], coords[3] if len(coords) > 3 else 1.0)
+                landmarks_data[int(k)] = parsed_frame_lms
+            except ValueError:
+                pass
+                
+        output_dir_str = payload.get("outputDir")
+        if not output_dir_str:
+            raise ValueError("outputDir is required")
+            
+        output_dir = Path(output_dir_str).expanduser().resolve()
+        generate_svg_previews(manifest, landmarks_data, output_dir)
+        
+        svg_files = sorted([str(p) for p in output_dir.glob("*.svg")])
+        return {"status": "success", "previewFiles": svg_files}
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "RETARGET_PREVIEW_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/retarget/apply")
+def retarget_apply(payload: dict):
+    try:
+        from .retargeting_models import RetargetingManifest
+        from .retargeting_plan import compile_harmony_command_plan
+        
+        manifest_raw = payload.get("manifest")
+        if not manifest_raw:
+            raise ValueError("manifest is required")
+        manifest = RetargetingManifest.model_validate(manifest_raw)
+        
+        command_plan = compile_harmony_command_plan(manifest)
+        return command_plan
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "RETARGET_APPLY_FAILED", "message": str(exc)})
+
+
