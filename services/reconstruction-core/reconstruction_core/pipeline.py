@@ -181,7 +181,15 @@ class ReconstructionPipeline:
 
         # Инициализируем историю версий
         from .versions import add_version
-        add_version(job_dir, manifest_path, None, "Исходная автоматическая реконструкция")
+        v_info = add_version(job_dir, manifest_path, None, "Исходная автоматическая реконструкция")
+
+        # Генерируем варианты реконструкции (гипотезы) и отчет
+        from .hypotheses import generate_hypotheses, compare_hypotheses
+        from .reports import generate_html_comparison_report
+        
+        hypotheses = generate_hypotheses(self, request, job_id, parent_version=v_info["version"])
+        comp_data = compare_hypotheses(hypotheses)
+        generate_html_comparison_report(job_dir, hypotheses, comp_data)
 
         report = manifest.diagnostics.model_dump(by_alias=True, mode="json")
         return self._completed_job(job_id, manifest_path=str(manifest_path), report=report)

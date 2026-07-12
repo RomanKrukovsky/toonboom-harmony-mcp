@@ -205,6 +205,59 @@ class ProvenanceInfo(StrictModel):
     timestamp: str
 
 
+class VisualMetrics(StrictModel):
+    mean_pixel_difference: float = Field(alias="meanPixelDifference")
+    maximum_pixel_difference: float = Field(alias="maximumPixelDifference")
+    silhouette_difference: float = Field(alias="silhouetteDifference")
+    contour_difference: float = Field(alias="contourDifference")
+    color_difference: float = Field(alias="colorDifference")
+    number_of_frames_above_threshold: float = Field(alias="numberOfFramesAboveThreshold")
+
+
+class ComplexityMetrics(StrictModel):
+    unique_drawing_count: int = Field(alias="uniqueDrawingCount")
+    vector_path_count: int = Field(alias="vectorPathCount")
+    vector_point_count: int = Field(alias="vectorPointCount")
+    palette_color_count: int = Field(alias="paletteColorCount")
+    exposure_block_count: int = Field(alias="exposureBlockCount")
+    estimated_scene_size: int = Field(alias="estimatedSceneSize")
+    problem_frame_count: int = Field(alias="problemFrameCount")
+
+
+class ReconstructionHypothesis(StrictModel):
+    hypothesis_id: str = Field(alias="hypothesisId")
+    parent_version: int = Field(alias="parentVersion")
+    mode: str
+    parameters: Dict[str, Any]
+    assumptions: List[str]
+    visual_metrics: VisualMetrics = Field(alias="visualMetrics")
+    complexity_metrics: ComplexityMetrics = Field(alias="complexityMetrics")
+    problem_frames: List[ProblemFrame] = Field(alias="problemFrames")
+    confidence: float
+    fallback_level: str = Field(alias="fallbackLevel")
+    manifest_path: str = Field(alias="manifestPath")
+    preview_directory: str = Field(alias="previewDirectory")
+    creation_timestamp: str = Field(alias="creationTimestamp")
+    provenance: ProvenanceInfo
+
+
+class SelectionHistoryItem(StrictModel):
+    selected_hypothesis_id: str = Field(alias="selectedHypothesisId")
+    selected_ranges: List[Dict[str, Any]] = Field(alias="selectedRanges")
+    selection_reason: str = Field(alias="selectionReason")
+    selected_by: str = Field(alias="selectedBy")
+    selected_at: str = Field(alias="selectedAt")
+
+
+class HypothesisSelection(StrictModel):
+    selected_hypothesis_id: Optional[str] = Field(default=None, alias="selectedHypothesisId")
+    selected_ranges: List[Dict[str, Any]] = Field(default_factory=list, alias="selectedRanges")
+    selection_history: List[SelectionHistoryItem] = Field(default_factory=list, alias="selectionHistory")
+    selection_reason: Optional[str] = Field(default=None, alias="selectionReason")
+    selected_by: Optional[str] = Field(default=None, alias="selectedBy")
+    selected_at: Optional[str] = Field(default=None, alias="selectedAt")
+
+
 class HarmonyReconstructionManifest(StrictModel):
     schema_version: str = Field(default="2.0", alias="schemaVersion")
     manifest_id: str = Field(alias="manifestId")
@@ -220,6 +273,7 @@ class HarmonyReconstructionManifest(StrictModel):
     connections: List[Connection] = Field(min_length=2)
     diagnostics: Diagnostics
     provenance: Optional[ProvenanceInfo] = None
+    selected_hypothesis: Optional[HypothesisSelection] = Field(default=None, alias="selectedHypothesis")
 
     @model_validator(mode="after")
     def check_references(self) -> "HarmonyReconstructionManifest":

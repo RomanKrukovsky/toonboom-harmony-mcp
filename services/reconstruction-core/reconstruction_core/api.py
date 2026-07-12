@@ -146,7 +146,7 @@ def refine_range(job_id: str, payload: dict):
         from .models import HarmonyReconstructionManifest, Exposure, Drawing
         manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
         
-        job_dir = storage.get_job_dir(job_id)
+        job_dir = storage.job_dir(job_id)
         cleaned_dir = job_dir / "cleaned"
         frame_paths = sorted(list(cleaned_dir.glob("*.png")))
         if not frame_paths:
@@ -190,7 +190,7 @@ def refine_range(job_id: str, payload: dict):
 @app.get("/v1/jobs/{job_id}/versions")
 def get_versions(job_id: str):
     try:
-        job_dir = storage.get_job_dir(job_id)
+        job_dir = storage.job_dir(job_id)
     except Exception:
         raise HTTPException(status_code=404, detail="Job не найден")
     from .versions import read_versions
@@ -205,7 +205,7 @@ def rollback_job(job_id: str, payload: dict):
         
     try:
         job = storage.read_job(job_id)
-        job_dir = storage.get_job_dir(job_id)
+        job_dir = storage.job_dir(job_id)
     except Exception:
         raise HTTPException(status_code=404, detail="Job не найден")
         
@@ -239,7 +239,7 @@ def lock_elements(job_id: str, payload: dict):
         
     try:
         job = storage.read_job(job_id)
-        job_dir = storage.get_job_dir(job_id)
+        job_dir = storage.job_dir(job_id)
     except Exception:
         raise HTTPException(status_code=404, detail="Job не найден")
         
@@ -274,4 +274,225 @@ def lock_elements(job_id: str, payload: dict):
         }
     except Exception as exc:
         raise HTTPException(status_code=422, detail={"code": "LOCK_FAILED", "message": str(exc)})
+
+
+@app.get("/v1/jobs/{job_id}/variants")
+def list_variants(job_id: str):
+    try:
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    from .hypotheses import read_hypotheses
+    return read_hypotheses(job_dir)
+
+
+@app.post("/v1/jobs/{job_id}/variants/propose")
+def propose_variants(job_id: str):
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    try:
+        from .hypotheses import generate_hypotheses
+        # Считываем аргументы из джобы (или дефолтные)
+        from .models import ReconstructionRequest
+        # Создаем фиктивный request на основе сохраненных параметров
+        manifest_path = Path(job["manifestPath"])
+        from .models import HarmonyReconstructionManifest
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        args = manifest.provenance.arguments if manifest.provenance else {}
+        req = ReconstructionRequest(
+            videoPath=manifest.source.video_path,
+            maxColors=args.get("maxColors", 12),
+            maxPointsPerShape=args.get("maxPointsPerShape", 120),
+            dedupThreshold=args.get("dedupThreshold", 0.035),
+            cleanupProfile=args.get("cleanupProfile", "production_cleanup"),
+            backgroundMode=args.get("backgroundMode", "keep")
+        )
+        
+        # Получаем версию из истории версий
+        from .versions import read_versions
+        versions = read_versions(job_dir)
+        parent_v = len(versions)
+        
+        hypotheses = generate_hypotheses(pipeline, req, job_id, parent_version=parent_v)
+        return [h.model_dump(by_alias=True, mode="json") for h in hypotheses]
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "PROPOSE_VARIANTS_FAILED", "message": str(exc)})
+
+
+@app.get("/v1/jobs/{job_id}/variants/{variant_id}")
+def get_variant(job_id: str, variant_id: str):
+    try:
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    from .hypotheses import read_hypotheses
+    hyps = read_hypotheses(job_dir)
+    found = next((h for h in hyps if h["hypothesisId"] == variant_id), None)
+    if not found:
+        raise HTTPException(status_code=404, detail=f"Гипотеза {variant_id} не найдена")
+    return found
+
+
+@app.get("/v1/jobs/{job_id}/variants-compare")
+def compare_variants_endpoint(job_id: str):
+    try:
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    from .hypotheses import read_hypotheses, compare_hypotheses, ReconstructionHypothesis
+    hyps = [ReconstructionHypothesis(**h) for h in read_hypotheses(job_dir)]
+    if not hyps:
+        raise HTTPException(status_code=404, detail="Гипотезы отсутствуют. Сначала запустите propose.")
+    return compare_hypotheses(hyps)
+
+
+@app.post("/v1/jobs/{job_id}/variants/select")
+def select_variant_endpoint(job_id: str, payload: dict):
+    variant_id = payload.get("variantId")
+    if not variant_id:
+        raise HTTPException(status_code=422, detail="Не указан variantId")
+        
+    start_frame = payload.get("startFrame")
+    end_frame = payload.get("endFrame")
+    reason = payload.get("reason", "Выбор пользователя")
+    user = payload.get("user", "Artist")
+    
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Манифест отсутствует")
+        
+    try:
+        from .models import HarmonyReconstructionManifest, ReconstructionHypothesis
+        from .hypotheses import read_hypotheses, select_hypothesis_for_manifest
+        from .versions import add_version
+        
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        
+        # Находим выбранную гипотезу
+        hyps = read_hypotheses(job_dir)
+        matching_hyp = next((h for h in hyps if h["hypothesisId"] == variant_id), None)
+        if not matching_hyp:
+            raise HTTPException(status_code=404, detail=f"Вариант {variant_id} не найден")
+            
+        selected_hyp_obj = ReconstructionHypothesis(**matching_hyp)
+        
+        frame_range = None
+        if start_frame is not None and end_frame is not None:
+            frame_range = (start_frame, end_frame)
+            
+        updated_manifest = select_hypothesis_for_manifest(
+            manifest=manifest,
+            selected_hyp=selected_hyp_obj,
+            job_dir=job_dir,
+            frame_range=frame_range,
+            reason=reason,
+            user=user
+        )
+        
+        # Сохраняем обновленный манифест
+        manifest_path.write_text(updated_manifest.model_dump_json(by_alias=True), encoding="utf-8")
+        
+        range_str = f"диапазона {start_frame}-{end_frame}" if frame_range else "для всего шота"
+        version_info = add_version(
+            job_dir,
+            manifest_path,
+            None,
+            f"Выбор варианта {variant_id} {range_str}"
+        )
+        
+        job["report"] = updated_manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "selectedHypothesisId": variant_id,
+            "versionInfo": version_info,
+            "report": job["report"]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "SELECT_VARIANT_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/variants/discard")
+def discard_variant_endpoint(job_id: str, payload: dict):
+    variant_id = payload.get("variantId")
+    if not variant_id:
+        raise HTTPException(status_code=422, detail="Не указан variantId")
+        
+    try:
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    try:
+        # Удаляем файлы гипотезы
+        manifest_file = job_dir / f"manifest_{variant_id}.json"
+        if manifest_file.exists():
+            manifest_file.unlink()
+            
+        preview_dir = job_dir / f"previews_{variant_id}"
+        if preview_dir.exists():
+            shutil.rmtree(str(preview_dir))
+            
+        # Удаляем из hypotheses.json
+        from .hypotheses import read_hypotheses, write_hypotheses
+        hyps = read_hypotheses(job_dir)
+        filtered = [h for h in hyps if h["hypothesisId"] != variant_id]
+        write_hypotheses(job_dir, filtered)
+        
+        return {"status": "success", "discardedVariantId": variant_id}
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "DISCARD_VARIANT_FAILED", "message": str(exc)})
+
+
+@app.post("/v1/jobs/{job_id}/variants/rollback-selection")
+def rollback_selection_endpoint(job_id: str):
+    try:
+        job = storage.read_job(job_id)
+        job_dir = storage.job_dir(job_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job не найден")
+        
+    manifest_path = Path(job["manifestPath"])
+    plan_path = manifest_path.parent / "command_plan.json"
+    
+    # Считываем лог версий, чтобы найти предыдущую версию
+    from .versions import read_versions, rollback_to_version
+    versions = read_versions(job_dir)
+    if len(versions) < 2:
+        raise HTTPException(status_code=422, detail="Отсутствуют предыдущие версии для отката.")
+        
+    # Ищем версию до последней
+    target_v = len(versions) - 1
+    
+    try:
+        from .models import HarmonyReconstructionManifest
+        new_v = rollback_to_version(job_dir, target_v, manifest_path, plan_path)
+        
+        manifest = HarmonyReconstructionManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+        job["report"] = manifest.diagnostics.model_dump(by_alias=True, mode="json")
+        storage.write_job(job_id, job)
+        
+        return {
+            "status": "completed",
+            "versionInfo": new_v,
+            "report": job["report"]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail={"code": "ROLLBACK_SELECTION_FAILED", "message": str(exc)})
+
 

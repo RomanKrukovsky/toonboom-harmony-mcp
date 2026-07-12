@@ -158,6 +158,7 @@ def analyze_problems_and_segments(
             severity = "medium"
 
         # Причина 2: Резкое изменение числа контуров (>50%)
+        diff_ratio = 0.0
         if prev_shapes_count >= 0 and shapes_count != prev_shapes_count:
             diff_ratio = abs(shapes_count - prev_shapes_count) / max(prev_shapes_count, 1)
             if diff_ratio > 0.5:

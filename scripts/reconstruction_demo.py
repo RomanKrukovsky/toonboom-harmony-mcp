@@ -42,8 +42,14 @@ def main() -> None:
     video = output / "moving_shape.mp4"
     ffmpeg = os.environ.get("FFMPEG_PATH", "ffmpeg")
     generate_video(video, ffmpeg)
+    # Очищаем кэш перед запуском демонстрации, чтобы принудительно запустить полный цикл V2 с гипотезами
+    cache_dir = output / "cache"
+    if cache_dir.exists():
+        import shutil
+        shutil.rmtree(str(cache_dir))
+    
     pipeline = ReconstructionPipeline(
-        JobStorage(output / "cache"), ffmpeg, os.environ.get("FFPROBE_PATH", "ffprobe"), (60, 1920, 1080)
+        JobStorage(cache_dir), ffmpeg, os.environ.get("FFPROBE_PATH", "ffprobe"), (60, 1920, 1080)
     )
     result = pipeline.reconstruct(ReconstructionRequest(
         videoPath=str(video), maxColors=4, maxPointsPerShape=40,

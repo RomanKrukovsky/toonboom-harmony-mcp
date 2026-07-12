@@ -264,5 +264,79 @@ export const reconstructionTools = [
     handler: async ({ jobId, version }: { jobId: string; version: number }) => {
       return client.rollbackVersion(jobId, version);
     }
+  },
+  {
+    name: 'harmony.reconstruct.propose_variants',
+    description: 'Генерирует три варианта (гипотезы) реконструкции для указанной джобы.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.proposeVariants(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.list_variants',
+    description: 'Список сгенерированных вариантов реконструкции.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.listVariants(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.get_variant',
+    description: 'Возвращает детальное описание конкретной гипотезы по ее ID.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      variantId: z.string().min(1)
+    }).strict(),
+    handler: async ({ jobId, variantId }: { jobId: string; variantId: string }) => {
+      return client.getVariant(jobId, variantId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.compare_variants',
+    description: 'Сравнивает сгенерированные гипотезы по визуальным и сложностным метрикам.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.compareVariants(jobId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.select_variant',
+    description: 'Выбирает вариант гипотезы целиком или для диапазона кадров с интеграцией в манифест.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      variantId: z.string().min(1),
+      startFrame: z.number().int().positive().optional(),
+      endFrame: z.number().int().positive().optional(),
+      reason: z.string().optional(),
+      user: z.string().optional()
+    }).strict(),
+    handler: async (args: any) => {
+      return client.selectVariant(args.jobId, args.variantId, {
+        startFrame: args.startFrame,
+        endFrame: args.endFrame,
+        reason: args.reason,
+        user: args.user
+      });
+    }
+  },
+  {
+    name: 'harmony.reconstruct.discard_variant',
+    description: 'Удаляет неиспользуемую гипотезу, очищая связанные файлы.',
+    inputSchema: z.object({
+      jobId: z.string().min(8),
+      variantId: z.string().min(1)
+    }).strict(),
+    handler: async ({ jobId, variantId }: { jobId: string; variantId: string }) => {
+      return client.discardVariant(jobId, variantId);
+    }
+  },
+  {
+    name: 'harmony.reconstruct.rollback_variant_selection',
+    description: 'Откатывает последний выбор гипотезы к предыдущей версии.',
+    inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
+    handler: async ({ jobId }: { jobId: string }) => {
+      return client.rollbackVariantSelection(jobId);
+    }
   }
 ];

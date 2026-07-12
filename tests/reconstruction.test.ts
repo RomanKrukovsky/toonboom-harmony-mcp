@@ -248,5 +248,12 @@ describe('video reconstruction vertical slice', () => {
     expect(toolNames).toContain('harmony.reconstruct.unlock_elements');
     expect(toolNames).toContain('harmony.reconstruct.list_versions');
     expect(toolNames).toContain('harmony.reconstruct.rollback_version');
+    expect(toolNames).toContain('harmony.reconstruct.propose_variants');
+    expect(toolNames).toContain('harmony.reconstruct.list_variants');
+    expect(toolNames).toContain('harmony.reconstruct.get_variant');
+    expect(toolNames).toContain('harmony.reconstruct.compare_variants');
+    expect(toolNames).toContain('harmony.reconstruct.select_variant');
+    expect(toolNames).toContain('harmony.reconstruct.discard_variant');
+    expect(toolNames).toContain('harmony.reconstruct.rollback_variant_selection');
   });
 });

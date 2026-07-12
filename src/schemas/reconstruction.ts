@@ -162,7 +162,29 @@ export const reconstructionManifestSchema = z.object({
     problemFrames: z.array(problemFrameSchema).default([]),
     representationSegments: z.array(representationSegmentSchema).default([])
   }).strict(),
-  provenance: provenanceInfoSchema.optional().nullable()
+  provenance: provenanceInfoSchema.optional().nullable(),
+  selectedHypothesis: z.object({
+    selectedHypothesisId: z.string().optional().nullable(),
+    selectedRanges: z.array(z.object({
+      startFrame: z.number().int().positive(),
+      endFrame: z.number().int().positive(),
+      hypothesisId: z.string()
+    }).strict()).default([]),
+    selectionHistory: z.array(z.object({
+      selectedHypothesisId: z.string(),
+      selectedRanges: z.array(z.object({
+        startFrame: z.number().int().positive(),
+        endFrame: z.number().int().positive(),
+        hypothesisId: z.string()
+      }).strict()),
+      selectionReason: z.string(),
+      selectedBy: z.string(),
+      selectedAt: z.string()
+    }).strict()).default([]),
+    selectionReason: z.string().optional().nullable(),
+    selectedBy: z.string().optional().nullable(),
+    selectedAt: z.string().optional().nullable()
+  }).strict().optional().nullable()
 }).strict().superRefine((manifest, ctx) => {
   const drawingIds = new Set(manifest.drawings.map(d => d.id));
   const colorIds = new Set(manifest.palettes.flatMap(p => p.colors.map(c => c.id)));

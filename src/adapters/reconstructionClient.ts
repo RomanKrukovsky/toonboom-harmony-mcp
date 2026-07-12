@@ -101,6 +101,42 @@ export class ReconstructionClient {
     });
   }
 
+  proposeVariants(jobId: string) {
+    return this.request<Array<any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants/propose`, {
+      method: 'POST'
+    });
+  }
+
+  listVariants(jobId: string) {
+    return this.request<Array<any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants`);
+  }
+
+  getVariant(jobId: string, variantId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants/${encodeURIComponent(variantId)}`);
+  }
+
+  compareVariants(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants-compare`);
+  }
+
+  selectVariant(jobId: string, variantId: string, options?: { startFrame?: number; endFrame?: number; reason?: string; user?: string }) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants/select`, {
+      method: 'POST', body: JSON.stringify({ variantId, ...options })
+    });
+  }
+
+  discardVariant(jobId: string, variantId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants/discard`, {
+      method: 'POST', body: JSON.stringify({ variantId })
+    });
+  }
+
+  rollbackVariantSelection(jobId: string) {
+    return this.request<Record<string, any>>(`/v1/jobs/${encodeURIComponent(jobId)}/variants/rollback-selection`, {
+      method: 'POST'
+    });
+  }
+
   loadManifest(manifestPath: string): HarmonyReconstructionManifest {
     const parsed = reconstructionManifestSchema.safeParse(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
     if (!parsed.success) {
