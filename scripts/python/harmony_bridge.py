@@ -1012,8 +1012,8 @@ def link_nodes(source, destination):
 
 
 def apply_reconstruction_manifest(harmony, project, manifest):
-    if manifest.get("schemaVersion") != "1.0" or manifest.get("mode") != "frame_by_frame_vector":
-        raise ValueError("Bridge поддерживает только schemaVersion=1.0 и frame_by_frame_vector")
+    if manifest.get("schemaVersion") not in ("1.0", "2.0") or manifest.get("mode") != "frame_by_frame_vector":
+        raise ValueError("Bridge поддерживает schemaVersion 1.0/2.0 и frame_by_frame_vector")
     source = manifest.get("source", {})
     scene_spec = manifest.get("scene", {})
     drawings_spec = require_manifest_list(manifest, "drawings")
@@ -1440,7 +1440,7 @@ def nodes_linked(source, destination):
 
 
 def audit_reconstruction_scene(harmony, project, manifest):
-    if manifest.get("schemaVersion") != "1.0" or manifest.get("mode") != "frame_by_frame_vector":
+    if manifest.get("schemaVersion") not in ("1.0", "2.0") or manifest.get("mode") != "frame_by_frame_vector":
         raise ValueError("Неподдерживаемый манифест для аудита")
     source = manifest.get("source", {})
     scene_spec = manifest.get("scene", {})

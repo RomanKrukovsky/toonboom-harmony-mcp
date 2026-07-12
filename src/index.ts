@@ -44,6 +44,8 @@ import { reconstructionTools } from './tools/reconstructionTools.js';
 import { aiStudioTools } from './tools/aiStudioTools.js';
 import { retargetingTools } from './tools/retargetingTools.js';
 import { factoryFoundationTools } from './tools/factoryFoundationTools.js';
+import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
+import { mlTools } from './tools/mlTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -83,8 +85,10 @@ const allTools = [
   ...reviewLoopTools,
   ...reconstructionTools,
   ...aiStudioTools,
-  ...retargetingTools
-  ,...factoryFoundationTools
+  ...retargetingTools,
+  ...factoryFoundationTools,
+  ...harmonyNativePhase2Tools,
+  ...mlTools
 ];
 
 function zodFieldToJsonSchema(schema: any): any {
