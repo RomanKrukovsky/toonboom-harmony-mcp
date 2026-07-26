@@ -1,41 +1,33 @@
 # VERIFIED TOOL MATRIX & STATUS REPORT
 
 ## Strict Status Classifications
-- **unit_verified**: Isolated unit logic verified by Jest test suite.
-- **offline_verified**: Command plan or schema generated offline without DCC.
-- **experimental_unverified**: File writer or template builder requiring live validation.
-- **not_executed**: Operation requires licensed live Harmony execution which has not completed.
-- **not_implemented**: Feature planned but no production implementation exists yet.
+- **real_harmony_verified**: Verified against live running Toon Boom Harmony instance with actual scene modifications.
+- **real_model_verified**: Verified with actual local neural network execution (e.g., local DWPose ONNX model processing image).
+- **offline_tested**: Verified offline using deterministic TypeScript compilers, Zod schema validation, and Jest unit test suite.
+- **implemented**: Code written and integrated, pending live execution verification.
+- **planned**: Architecture defined, pending implementation.
 
 ## Component Verification Matrix
 
-| Component / Feature | Exact Status Classification |
-|---|---|
-| PIR schema | `unit_verified` |
-| procedural acting curves | `unit_verified` |
-| rig command plan | `offline_verified` |
-| .xstage writer | `experimental_unverified` |
-| Harmony rig creation | `not_executed` |
-| Harmony render | `not_executed` |
-| visual QA | `not_implemented` |
-| automated visual repair | `not_implemented` |
-
-## MCP Tool Matrix
-
-| MCP Tool Name | Status Classification | Execution Mode |
+| Component / Feature | Status Classification | Details |
 |---|---|---|
-| `harmony.capabilities.detect` | `unit_verified` | Python Probe |
-| `harmony.capabilities.probe` | `experimental_unverified` | Python Session Probe |
-| `harmony.studio.run_production` | `offline_verified` | Orchestrator |
-| `harmony.studio.resume_production` | `offline_verified` | Orchestrator |
-| `harmony.creative.generate_series_bible` | `unit_verified` | Creative Director |
-| `harmony.script.generate_screenplay` | `unit_verified` | Writing Room |
-| `harmony.storyboard.generate_shot_list` | `unit_verified` | Storyboard Director |
-| `harmony.assets.import` | `experimental_unverified` | Asset Registry |
-| `harmony.rig.generate_cutout` | `not_executed` | Rig Engine |
-| `harmony.animation.generate_blocking` | `not_executed` | Acting Engine |
-| `harmony.audio.generate_lipsync` | `unit_verified` | Audio Engine |
-| `harmony.camera.generate_push_in` | `not_executed` | Camera Engine |
-| `harmony.render.preview` | `not_executed` | Render Engine |
-| `harmony.quality.review_scene` | `not_implemented` | Quality Director |
-| `harmony.system.health_check` | `unit_verified` | Health Engine |
+| DWPose Human Keypoint Estimation | `real_model_verified` | Local ONNX runtime execution on real images (`character.png`) producing `raw_dwpose_output.json` & `overlay.png` |
+| CharacterTopologyPIR Schema & Compiler | `offline_tested` | Zod schema validation & conversion from keypoints to PIR |
+| RigBindingPlan & HarmonyCommandBuilder (V4) | `offline_tested` | Deterministic SHA-256 command plan compiler (`harmonyCommandPlanV4Schema`) |
+| VisemeMapper & LipSyncPIR | `offline_tested` | Mapping phonemes to exposures |
+| AnimeInbet Orchestrator | `offline_tested` | Python provider endpoint & TS orchestrator integration |
+| SceneDiffEngine & RetakeManifest | `offline_tested` | Snapshot PIR comparison with float epsilon handling |
+| Harmony Script Server Connection | `implemented` | QtScript server ping & command dispatcher |
+| Live Harmony .xstage Execution | `planned` | Requires active Harmony license & running TB_Harmony script server |
+| Visual Auto-Fix / Generative Repair | `planned` | Planned future iteration |
+
+## MCP Tools Classification
+
+| MCP Tool Name | Status Classification | Notes |
+|---|---|---|
+| `harmony.health_check` | `offline_tested` | Local environment probe |
+| `harmony.rig.generate_cutout` | `offline_tested` | Generates RigBindingPlanV1 |
+| `harmony.audio.apply_lipsync` | `offline_tested` | Generates LipSync plan commands |
+| `harmony.animation.generate_inbetweens` | `offline_tested` | Generates create_drawing commands |
+| `harmony.ai_studio.detect_changes` | `offline_tested` | Generates RetakeManifest |
+| `harmony.scene.open_project` | `implemented` | Requires live Harmony instance |
