@@ -14,7 +14,7 @@ describe('Тестирование конфигурации', () => {
   test('должно пропускать файлы внутри разрешенных каталогов', () => {
     const root = path.resolve(process.cwd());
     expect(validatePath(path.join(root, 'src/index.ts'))).toBe(true);
-    expect(validatePath('/tmp/test-file.js')).toBe(true);
+    expect(validatePath(path.join(root, 'output/test-file.js'))).toBe(true);
   });
 
   test('должно блокировать файлы вне разрешенных каталогов', () => {

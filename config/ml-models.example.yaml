@@ -1,43 +1,54 @@
 models:
-  see_through:
-    enabled: false
-    runtime: local
-    repo_path: ""
-    weights_path: ""
-    device: mps
-  sam2:
-    enabled: false
-    runtime: local
-    weights_path: ""
-    device: mps
-  grounded_sam2:
-    enabled: false
-    runtime: local
-    weights_path: ""
-    device: mps
   dwpose:
     enabled: true
     runtime: "local"
-    weights_path: "" # path relative to weights/
-    device: "mps" # apple silicon
-  motiongpt:
+    repo: "IDEA-Research/DWPose"
+    weights_path: "dwpose/dw-ll_ucoco_384.onnx"
+    device: "cpu" # cpu, mps, cuda
+  sam2_1:
     enabled: false
-    runtime: local
-    weights_path: ""
-    device: cpu
-  emage:
+    runtime: "local"
+    repo: "facebookresearch/sam2"
+    weights_path: "sam2/sam2.1_hiera_large.pt"
+    device: "mps"
+  grounded_sam2:
     enabled: false
-    runtime: local
-    weights_path: ""
-    device: cuda
-  rhubarb:
-    enabled: false
-    binary_path: ""
-  mfa:
-    enabled: false
-    environment_path: ""
+    runtime: "local"
+    repo: "IDEA-Research/Grounded-SAM-2"
+    weights_path: "grounded_sam2/"
+    device: "cuda"
   animeinbet:
     enabled: false
-    runtime: local
-    weights_path: ""
-    device: cuda
+    runtime: "local"
+    repo: "lisiyao21/AnimeInbet"
+    weights_path: "animeinbet/animeinbet_v1.pth"
+    device: "cuda"
+  kbrodt_inbetweening:
+    enabled: false
+    runtime: "local"
+    repo: "kbrodt/inbetweening"
+    weights_path: "kbrodt/inbetweening_mesh_deform.pth"
+    device: "cpu"
+  jostc:
+    enabled: false
+    runtime: "local"
+    repo: "jostc-cartoon/JoSTC"
+    weights_path: "jostc/jostc_checkpoint.pth"
+    device: "cuda"
+  whisper:
+    enabled: false
+    runtime: "local"
+    repo: "openai/whisper"
+    model_size: "medium"
+    device: "cpu"
+  mfa:
+    enabled: false
+    runtime: "local"
+    repo: "MontrealCorpusTools/Montreal-Forced-Aligner"
+    dictionary: "english_mfa"
+  tooncomposer:
+    enabled: false
+    runtime: "local"
+    repo: "tooncomposer/ToonComposer"
+    weights_path: "tooncomposer/tooncomposer_v1.safetensors"
+    device: "cuda"
