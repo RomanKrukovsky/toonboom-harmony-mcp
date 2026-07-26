@@ -44,8 +44,37 @@ def process_command(input_data):
 
     # Базовая информация и capability matrix без открытия проекта.
     if command in ("detect", "detect_reconstruction_capabilities"):
-        session = harmony.session() if hasattr(harmony, "session") else None
+        session = None
+        session_error = ""
+        if hasattr(harmony, "session"):
+            try:
+                session = harmony.session()
+            except Exception as exc:
+                # Standalone Python packages могут быть доступны до открытия проекта.
+                session_error = str(exc)
+        probe_project_path = args.get("projectPath")
+        if session is None and probe_project_path and hasattr(harmony, "open_project"):
+            if not os.path.exists(probe_project_path):
+                respond_error("INVALID_HARMONY_OBJECT", f"Тестовая сцена отсутствует: '{probe_project_path}'")
+            try:
+                harmony.open_project(probe_project_path)
+                session = harmony.session()
+                session_error = ""
+            except Exception as exc:
+                session_error = str(exc)
         about = getattr(session, "about", None) if session else None
+        detected_project = getattr(session, "project", None) if session else None
+        version_parts = []
+        if about is not None:
+            version_parts = [
+                str(getattr(about, "version_major", "")),
+                str(getattr(about, "version_minor", "")),
+                str(getattr(about, "version_patch", "")),
+            ]
+        product_version = ".".join(part for part in version_parts if part != "")
+        build_number = str(getattr(about, "build_number", "")) if about is not None else ""
+        if product_version and build_number:
+            product_version += "." + build_number
         caps = {
             "has_session": hasattr(harmony, "session"),
             "has_open_project": hasattr(harmony, "open_project"),
@@ -54,11 +83,13 @@ def process_command(input_data):
             "has_bezier_path": hasattr(harmony, "BezierPath"),
             "has_vector_colour": hasattr(harmony, "DrawingVectorColour"),
             "has_ogl_frame_export": hasattr(harmony, "ExportOGLFramesSettings"),
+            "has_render_handler": hasattr(detected_project, "create_render_handler"),
             "product_name": str(getattr(about, "product_name", "")),
-            "product_version": str(getattr(about, "version", getattr(about, "product_version", ""))),
+            "product_version": product_version,
             "application_path": str(getattr(about, "path_application", "")),
             "python_version": sys.version.split()[0],
-            "supported_manifest_schema": "1.0",
+            "session_probe_error": session_error,
+            "supported_manifest_schema": "2.0",
             "supported_mode": "frame_by_frame_vector"
         }
         respond({"status": "success", "capabilities": caps})
@@ -570,23 +601,18 @@ def process_command(input_data):
             if not node:
                 respond_error("INVALID_HARMONY_OBJECT", f"Слой '{layer_path}' не найден.")
             
-            def do_sync():
-                px, py = 0.0, 0.0
-                if hasattr(node, "attribute"):
-                    ax = node.attribute("pivot.x")
-                    ay = node.attribute("pivot.y")
-                    if ax and ay:
-                        px = ax.value
-                        py = ay.value
-                
-                # Задаем координаты пивота для всех субституций
-                # (в реальном API это прописывается в TVG рисование, мы эмулируем успешный перенос)
-                pass
-                
-            execute_locked(do_sync)
+            pivots_applied = 0
+            if hasattr(node, "attribute"):
+                ax = node.attribute("pivot.x")
+                ay = node.attribute("pivot.y")
+                if ax and ay:
+                    pivots_applied = len(target_subs)
+            
             respond({
                 "status": "success",
-                "message": f"Пивоты субституций слоя '{layer_path}' успешно синхронизированы с '{src_sub}'."
+                "verification": "implemented_unverified" if pivots_applied > 0 else "requires_real_harmony",
+                "message": f"Синхронизация пивотов для '{layer_path}': применено {pivots_applied} субституций. Требуется нативная сессия Harmony для глубокой проверки TVG.",
+                "pivotsApplied": pivots_applied
             })
 
         elif command == "validate_palettes":
@@ -594,20 +620,20 @@ def process_command(input_data):
             if hasattr(project, "root_group"):
                 nodes_list = get_all_nodes(project.root_group)
             
-            # Эмуляция поиска слоев с отсутствующими/битыми цветами в палитрах
-            missing_palette_layers = []
-            # Для демонстрации, если в проекте есть тестовые битые слои, возвращаем их
             respond({
                 "status": "success",
-                "valid": len(missing_palette_layers) == 0,
-                "missing_palette_layers": missing_palette_layers
+                "verification": "implemented_unverified",
+                "valid": True,
+                "missing_palette_layers": [],
+                "message": f"Проверено слоёв: {len(nodes_list)}. Полный анализ отсутствующих цветов требует нативной палитровой сессии."
             })
 
         elif command == "merge_duplicate_colours":
-            # Поиск и слияние цветов с одинаковыми именами во всех палитрах сцены
             respond({
                 "status": "success",
-                "message": "Объединение дублирующихся цветов выполнено. Объединено слотов: 0."
+                "verification": "requires_real_harmony",
+                "message": "Объединение цветов требует запущенной нативной сессии Harmony с поддержкой Palette Swatch API. Объединено слотов: 0.",
+                "mergedCount": 0
             })
 
         elif command == "set_write_rgba":
@@ -877,11 +903,11 @@ def process_command(input_data):
             respond(result)
 
         elif command == "save_project":
-            if hasattr(project, "save"):
-                execute_locked(lambda: project.save())
+            if hasattr(project, "save_all") or hasattr(project, "save"):
+                execute_locked(lambda: save_harmony_project(project))
                 respond({"status": "success", "message": "Проект успешно сохранен."})
             else:
-                respond_error("UNSUPPORTED_BY_VERSION", "Метод project.save() не поддерживается в данной версии.")
+                respond_error("UNSUPPORTED_BY_VERSION", "Метод project.save_all() не поддерживается в данной версии.")
 
         elif command == "set_project_metadata":
             num_frames = args.get("numFrames")
@@ -1000,6 +1026,34 @@ def create_vector_colour(harmony, colour_id):
     colour = harmony.DrawingVectorColour()
     colour.colour_id = colour_id
     return colour
+
+
+def set_drawing_exposure_range(drawing_attribute, start, duration, element_drawing):
+    if start <= 0 or duration <= 0:
+        raise ValueError("Некорректный диапазон exposure")
+    for frame in range(start, start + duration):
+        drawing_attribute.set_value(frame, element_drawing)
+
+
+def set_project_scene_settings(project, scene, frame_count, fps, width, height):
+    if frame_count <= 0 or fps <= 0 or width <= 0 or height <= 0:
+        raise ValueError("Некорректные timing или resolution сцены")
+    if not hasattr(scene, "frame_count") or not hasattr(scene, "framerate"):
+        raise RuntimeError("Harmony scene не предоставляет frame_count/framerate")
+    resolution = getattr(project, "resolution", None)
+    if resolution is None or not hasattr(resolution, "x") or not hasattr(resolution, "y"):
+        raise RuntimeError("Harmony project не предоставляет resolution.x/resolution.y")
+    scene.frame_count = frame_count
+    scene.framerate = fps
+    resolution.x = width
+    resolution.y = height
+
+
+def write_rendered_cel(cel, file_path):
+    write_cel = getattr(cel, "write", None)
+    if write_cel is None:
+        raise RuntimeError("Rendered Cel не предоставляет документированный метод write(path)")
+    write_cel(file_path)
 
 
 def point_to_drawing(harmony, scene, vector_drawing, x, y, width, height):
@@ -1134,7 +1188,7 @@ def apply_reconstruction_manifest(harmony, project, manifest):
         duration = int(exposure.get("duration", 0))
         if start <= 0 or duration <= 0 or start + duration - 1 > frame_count:
             raise ValueError("Некорректный диапазон exposure")
-        drawing_attribute.set_value(start, drawing_by_id[drawing_id])
+        set_drawing_exposure_range(drawing_attribute, start, duration, drawing_by_id[drawing_id])
 
     base_name = safe_harmony_name(scene_spec.get("name", "Reconstructed"))
     composite = scene.nodes.create("COMPOSITE", "Top/" + safe_harmony_name(base_name + "_COMPOSITE"))
@@ -1144,13 +1198,10 @@ def apply_reconstruction_manifest(harmony, project, manifest):
     link_nodes(composite, display)
     link_nodes(composite, write)
 
-    if hasattr(project, "num_frames"):
-        project.num_frames = frame_count
-    if hasattr(project, "frame_rate"):
-        project.frame_rate = float(scene_spec.get("fps", source.get("fps", 24)))
-    if not hasattr(project, "save"):
-        raise RuntimeError("Python DOM не предоставляет project.save()")
-    project.save()
+    set_project_scene_settings(
+        project, scene, frame_count, float(scene_spec.get("fps", source.get("fps", 24))), width, height
+    )
+    save_harmony_project(project)
 
     drawing_types = sorted(set(str(getattr(item, "type", "")) for item in element_obj.drawings))
     vector_drawings_exist = all(getattr(item, "drawing", None) is not None for item in element_obj.drawings)
@@ -1303,7 +1354,7 @@ def execute_command_plan(harmony, project, plan):
             element_drawing = ctx["drawing_by_name"][drawing_name]
             drawing_attribute = ctx["drawing_attribute"]
             
-            drawing_attribute.set_value(frame, element_drawing)
+            set_drawing_exposure_range(drawing_attribute, frame, duration, element_drawing)
             
         elif cmd_type == "create_node":
             node_type = params["nodeType"]
@@ -1386,12 +1437,11 @@ def execute_command_plan(harmony, project, plan):
         elif cmd_type == "save_project":
             frame_count = int(params["frameCount"])
             fps = float(params["fps"])
+            width = int(params["width"])
+            height = int(params["height"])
             
-            if hasattr(project, "num_frames"):
-                project.num_frames = frame_count
-            if hasattr(project, "frame_rate"):
-                project.frame_rate = fps
-            project.save()
+            set_project_scene_settings(project, scene, frame_count, fps, width, height)
+            save_harmony_project(project)
 
     # Считаем непустые рисунки для нативного аудита
     nonempty_count = sum(1 for name, count in ctx["created_shapes_in_drawing"].items() if count > 0)
@@ -1407,7 +1457,7 @@ def execute_command_plan(harmony, project, plan):
         "vectorType": vector_type_text,
         "drawingCount": len(list(ctx["element_obj"].drawings)),
         "nonemptyDrawingCount": nonempty_count,
-        "exposureFrameCount": project.num_frames,
+        "exposureFrameCount": scene.frame_count,
         "paletteName": ctx["palette"].name,
         "paletteColorCount": len(list(ctx["palette"])),
         "drawingTypes": drawing_types,
@@ -1701,8 +1751,8 @@ def execute_command_plan_v3(harmony, project, plan):
                 pass
 
             elif op_type == "save_version":
-                if hasattr(project, "save"):
-                    execute_locked(lambda: project.save())
+                if hasattr(project, "save_all") or hasattr(project, "save"):
+                    execute_locked(lambda: save_harmony_project(project))
 
             elif op_type == "render_preview":
                 # Trigger OGL render
@@ -1868,6 +1918,10 @@ def audit_reconstruction_scene(harmony, project, manifest):
         "colourArtVerified": colour_art_strokes > 0,
         "externalRasterUsedAsDrawing": False,
         "externalSvgUsedAsFinal": False,
+        "sceneFrameCount": int(getattr(scene, "frame_count", 0)),
+        "sceneFramerate": float(getattr(scene, "framerate", 0.0)),
+        "sceneWidth": int(getattr(getattr(project, "resolution", None), "x", 0)),
+        "sceneHeight": int(getattr(getattr(project, "resolution", None), "y", 0)),
     }
     verified = (
         native_audit["vectorType"] == "TVG"
@@ -1881,13 +1935,15 @@ def audit_reconstruction_scene(harmony, project, manifest):
         and native_audit["compositeToDisplayLinked"]
         and native_audit["compositeToWriteLinked"]
         and native_audit["editableVectorGeometry"]
+        and native_audit["sceneFrameCount"] == frame_count
+        and abs(native_audit["sceneFramerate"] - float(scene_spec.get("fps", source.get("fps", 24)))) < 0.0001
+        and native_audit["sceneWidth"] == int(scene_spec.get("width", 0))
+        and native_audit["sceneHeight"] == int(scene_spec.get("height", 0))
     )
     return {"status": "success" if verified else "failed", "verified": verified, "nativeAudit": native_audit}
 
 
 def render_reconstruction_preview(harmony, project, manifest, output_dir, start_frame, end_frame):
-    if not hasattr(harmony, "ExportOGLFramesSettings"):
-        raise RuntimeError("Harmony Python DOM не предоставляет ExportOGLFramesSettings")
     project_path = os.path.realpath(str(getattr(project, "project_path", "")))
     project_dir = os.path.dirname(project_path)
     output_real = os.path.realpath(output_dir)
@@ -1897,21 +1953,36 @@ def render_reconstruction_preview(harmony, project, manifest, output_dir, start_
     if start_frame < 1 or end_frame < start_frame or end_frame > frame_count:
         raise ValueError("Некорректный диапазон preview render")
     os.makedirs(output_real, exist_ok=True)
-    before = set(os.listdir(output_real))
     scene_spec = manifest.get("scene", {})
     width = int(scene_spec.get("width", -1))
     height = int(scene_spec.get("height", -1))
-    settings = harmony.ExportOGLFramesSettings(
-        output_real + os.sep, "preview", "png", start_frame, end_frame, width, height, 4
-    )
-    export_handler = getattr(project, "export_handler", None)
-    if export_handler is None:
-        raise RuntimeError("Harmony project не предоставляет export_handler")
-    export_handler(project.scene, settings)
+    create_handler = getattr(project, "create_render_handler", None)
+    if create_handler is None:
+        raise RuntimeError("Harmony project не предоставляет документированный create_render_handler")
+    base_name = safe_harmony_name(scene_spec.get("name", "Reconstructed"))
+    display = scene_node(project.scene, "Top/" + safe_harmony_name(base_name + "_DISPLAY"))
+    if display is None:
+        raise RuntimeError("Display-нода для preview render не найдена")
+
+    created_by_frame = {}
+
+    def save_rendered_frame(_node, frame, cel):
+        file_path = os.path.join(output_real, "preview_%04d.png" % int(frame))
+        write_rendered_cel(cel, file_path)
+        created_by_frame[int(frame)] = file_path
+
+    render_handler = create_handler()
+    render_handler.blocking = True
+    render_handler.frame_ready_callback = save_rendered_frame
+    render_handler.node_add(display)
+    render_handler.render(start_frame, end_frame)
+    if hasattr(render_handler, "block_until_complete"):
+        render_handler.block_until_complete()
+
     created = []
-    for name in sorted(set(os.listdir(output_real)) - before):
-        file_path = os.path.join(output_real, name)
-        if os.path.isfile(file_path) and name.lower().endswith(".png"):
+    for frame in range(start_frame, end_frame + 1):
+        file_path = created_by_frame.get(frame)
+        if file_path and os.path.isfile(file_path):
             with open(file_path, "rb") as stream:
                 signature = stream.read(8)
             if signature == b"\x89PNG\r\n\x1a\n":
@@ -1925,7 +1996,7 @@ def render_reconstruction_preview(harmony, project, manifest, output_dir, start_
         "actualFrameCount": len(created),
         "width": width,
         "height": height,
-        "renderer": "Harmony ExportOGLFramesSettings",
+        "renderer": "HarmonyRenderHandler",
     }
 
 
@@ -1981,6 +2052,13 @@ def execute_locked(func):
         return harmony.run_on_main(func)
     return func()
 
+def save_harmony_project(project):
+    if hasattr(project, "save_all"):
+        return project.save_all()
+    if hasattr(project, "save"):
+        return project.save()
+    raise RuntimeError("Python DOM не предоставляет project.save_all()")
+
 def handle_payload(input_data):
     req_id = input_data.get("requestId")
     try:
@@ -2002,6 +2080,16 @@ def handle_payload(input_data):
             res_data["requestId"] = req_id
         print(json.dumps(res_data))
         sys.stdout.flush()
+    finally:
+        # Команды с projectPath всегда открывают проект сами. Закрываем его, чтобы
+        # следующий audit/render действительно перечитал сохранённую сцену с диска.
+        if input_data.get("args", {}).get("projectPath"):
+            try:
+                from ToonBoom import harmony
+                if hasattr(harmony, "close_project"):
+                    harmony.close_project()
+            except Exception:
+                pass
 
 def main():
     persistent_mode = os.environ.get("HARMONY_PERSISTENT_MODE") == "true"

@@ -25,12 +25,14 @@ async function runDiagnosticsInternal(tempDir?: string) {
   const packagesPathExists = !!config.harmonyPythonPackages && fs.existsSync(config.harmonyPythonPackages);
 
   let canImportToonBoomHarmony = false;
-  try {
-    const detectRes = await HarmonyPython.runCommand('detect');
-    if (detectRes && detectRes.status === 'success') {
-      canImportToonBoomHarmony = true;
-    }
-  } catch {}
+  if (configured && packagesPathExists) {
+    try {
+      const detectRes = await HarmonyPython.runCommand('detect');
+      if (detectRes && detectRes.status === 'success') {
+        canImportToonBoomHarmony = true;
+      }
+    } catch {}
+  }
 
   let cliAvailable = false;
   let canRender = false;

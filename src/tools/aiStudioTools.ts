@@ -23,6 +23,9 @@ import { keyPoseSetSchema } from '../schemas/keyPoseMotion.js';
 import { CharacterPartDecomposer } from '../adapters/characterPartDecomposer/index.js';
 import { RepresentationRouterV3 } from '../adapters/representationRouterV3/index.js';
 import { partDecompositionSchema } from '../schemas/partDecomposition.js';
+import { createStandardExecutionResult } from '../schemas/executionResult.js';
+import { SceneDiffEngine } from '../services/sceneDiffEngine/index.js';
+import { sceneSnapshotPirSchema, SceneSnapshotPIR } from '../schemas/sceneSnapshotPir.js';
 import { routingPlanSchema } from '../schemas/representationRouter.js';
 import { CameraLayoutDirector } from '../adapters/cameraLayoutDirector/index.js';
 import { cameraLayoutPlanSchema } from '../schemas/cameraLayout.js';
@@ -791,18 +794,18 @@ export const aiStudioTools = [
   },
   {
     name: 'harmony.ai_studio.detect_changes',
-    description: 'Detect changes between two scene versions and return a structured delta (Master Prompt §15).',
+    description: 'Detect changes between two scene versions (SceneSnapshotPIR) and return a structured RetakeManifest (Phase 7).',
     inputSchema: z.object({
-      versionBefore: z.any(),
-      versionAfter: z.any()
+      versionBefore: sceneSnapshotPirSchema,
+      versionAfter: sceneSnapshotPirSchema
     }).strict(),
-    handler: async (args: any) => {
-      const engine = new ArtistCorrectionEngine();
-      const delta = engine.detectChanges(args.versionBefore, args.versionAfter);
+    handler: async (args: { versionBefore: SceneSnapshotPIR; versionAfter: SceneSnapshotPIR }) => {
+      const engine = new SceneDiffEngine();
+      const manifest = engine.compare(args.versionBefore, args.versionAfter);
       return {
         status: 'success',
-        delta,
-        changeCount: Object.keys(delta).length
+        delta: manifest,
+        changeCount: manifest.nodeDataChanges.length + manifest.nodes.added.length + manifest.nodes.removed.length
       };
     }
   },

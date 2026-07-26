@@ -29,13 +29,19 @@ export class HarmonyPython {
     const configured = process.env.PYTHON_BIN;
     if (configured) return configured;
 
+    if (process.platform === 'darwin') {
+      const brewPy39 = '/opt/homebrew/bin/python3.9';
+      if (fs.existsSync(brewPy39)) return brewPy39;
+    }
+
     return process.platform === 'win32' ? 'python' : 'python3';
   }
 
   private static getSpawnEnv() {
     const env: Record<string, string | undefined> = {
       ...process.env,
-      HARMONY_INSTALL: config.harmonyInstall
+      HARMONY_INSTALL: config.harmonyInstall,
+      HARMONY_PYTHON_PACKAGES: config.harmonyPythonPackages
     };
 
     if (process.platform === 'darwin') {
@@ -45,6 +51,7 @@ export class HarmonyPython {
 
       const frameworkPaths = [
         harmonyLib,
+        '/opt/homebrew/Cellar/python@3.9/3.9.25/Frameworks',
         '/opt/homebrew/opt/python@3.9/Frameworks',
         '/opt/homebrew/Frameworks',
         '/Library/Frameworks'
@@ -258,5 +265,17 @@ export class HarmonyPython {
         }
       });
     });
+  }
+
+  static stopDaemon(): void {
+    if (this.daemonProcess) {
+      try {
+        this.daemonProcess.kill();
+      } catch (_e) {}
+      this.daemonProcess = null;
+      this.stdoutBuffer = '';
+      this.daemonStderr = '';
+      this.pendingPromises.clear();
+    }
   }
 }

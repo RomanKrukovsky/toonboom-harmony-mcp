@@ -1,0 +1,83 @@
+{
+  "schema": "toon-boom-mcp/rig-template-v1",
+  "template_id": "biped_standard",
+  "version": "1.0.0",
+  "display_name": "Standard Biped",
+  "pir_compatibility": ["character-topology-pir-v1"],
+  "harmony_compatibility": {
+    "minimum_version": "22",
+    "maximum_tested_version": "24"
+  },
+  "coordinate_space": {
+    "system": "NORMALIZED_CHARACTER",
+    "origin": "PELVIS_CENTER",
+    "x_axis": "RIGHT",
+    "y_axis": "UP",
+    "unit": "CHARACTER_HEIGHT_RATIO"
+  },
+  "required_landmarks": [
+    "head_top",
+    "neck",
+    "shoulder_left",
+    "shoulder_right",
+    "hip_left",
+    "hip_right"
+  ],
+  "optional_landmarks": [
+    "elbow_left",
+    "elbow_right",
+    "wrist_left",
+    "wrist_right",
+    "knee_left",
+    "knee_right",
+    "ankle_left",
+    "ankle_right"
+  ],
+  "nodes": [
+    {
+      "id": "NODE_MASTER_PEG",
+      "type": "PEG",
+      "name": "Master-P"
+    },
+    {
+      "id": "NODE_BODY_PEG",
+      "type": "PEG",
+      "name": "Body-P"
+    },
+    {
+      "id": "NODE_HEAD_PEG",
+      "type": "PEG",
+      "name": "Head-P"
+    },
+    {
+      "id": "NODE_LEFT_ARM_PEG",
+      "type": "PEG",
+      "name": "Arm_L-P"
+    },
+    {
+      "id": "NODE_RIGHT_ARM_PEG",
+      "type": "PEG",
+      "name": "Arm_R-P"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "NODE_MASTER_PEG",
+      "to_node": "NODE_BODY_PEG"
+    },
+    {
+      "from_node": "NODE_BODY_PEG",
+      "to_node": "NODE_HEAD_PEG"
+    },
+    {
+      "from_node": "NODE_BODY_PEG",
+      "to_node": "NODE_LEFT_ARM_PEG"
+    },
+    {
+      "from_node": "NODE_BODY_PEG",
+      "to_node": "NODE_RIGHT_ARM_PEG"
+    }
+  ],
+  "bindings": [],
+  "constraints": []
+}

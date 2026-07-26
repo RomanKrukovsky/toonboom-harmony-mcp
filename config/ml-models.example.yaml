@@ -1,0 +1,43 @@
+models:
+  see_through:
+    enabled: false
+    runtime: local
+    repo_path: ""
+    weights_path: ""
+    device: mps
+  sam2:
+    enabled: false
+    runtime: local
+    weights_path: ""
+    device: mps
+  grounded_sam2:
+    enabled: false
+    runtime: local
+    weights_path: ""
+    device: mps
+  dwpose:
+    enabled: true
+    runtime: "local"
+    weights_path: "" # path relative to weights/
+    device: "mps" # apple silicon
+  motiongpt:
+    enabled: false
+    runtime: local
+    weights_path: ""
+    device: cpu
+  emage:
+    enabled: false
+    runtime: local
+    weights_path: ""
+    device: cuda
+  rhubarb:
+    enabled: false
+    binary_path: ""
+  mfa:
+    enabled: false
+    environment_path: ""
+  animeinbet:
+    enabled: false
+    runtime: local
+    weights_path: ""
+    device: cuda

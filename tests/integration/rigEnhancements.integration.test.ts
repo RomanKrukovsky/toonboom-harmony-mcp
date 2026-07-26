@@ -6,7 +6,10 @@ import { HarmonyPython } from '../../src/adapters/harmonyPython.js';
 // Check if Harmony is available
 async function isHarmonyAvailable(): Promise<boolean> {
   try {
-    await HarmonyPython.runCommand('detect', {});
+    await Promise.race([
+      HarmonyPython.runCommand('detect', {}),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+    ]);
     return true;
   } catch {
     return false;
@@ -21,6 +24,10 @@ describe('Rigging Enhancements based on YouTube Playlist Knowledge Base (Integra
     if (!harmonyAvailable) {
       console.log('[Integration Test] Harmony not available - skipping integration tests');
     }
+  }, 15000);
+
+  afterAll(() => {
+    HarmonyPython.stopDaemon();
   });
 
   const itIfHarmony = harmonyAvailable ? it : it.skip;

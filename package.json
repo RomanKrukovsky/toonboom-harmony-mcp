@@ -12,6 +12,7 @@
     "test": "jest",
     "reconstruction:core": ".venv-reconstruction/bin/harmony-reconstruction-core serve",
     "test:python": ".venv-reconstruction/bin/pytest services/reconstruction-core/tests",
+    "test:harmony-integration": "npm run build && node scripts/run_harmony_reconstruction_integration.mjs",
     "demo:reconstruction": ".venv-reconstruction/bin/python scripts/reconstruction_demo.py",
     "demo:ai_studio_iter1": "node scripts/demo_ai_studio_iter1.js",
     "demo:ai_studio_iter2": "node scripts/demo_ai_studio_iter2.js",
@@ -28,7 +29,9 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
+    "canonicalize": "^3.0.0",
     "dotenv": "^16.4.5",
+    "fast-json-stable-stringify": "^2.1.0",
     "sqlite3": "^5.1.7",
     "zod": "^3.23.8"
   },

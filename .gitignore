@@ -22,3 +22,11 @@ examples/commercial-demo/temp_*/
 __pycache__/
 *.py[cod]
 *.egg-info/
+
+# Model weights
+*.onnx
+*.pth
+*.bin
+*.pt
+weights/
+services/ml-runtime/weights/

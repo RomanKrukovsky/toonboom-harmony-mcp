@@ -1,0 +1,142 @@
+{
+  "runId": "prod_1784994954156_qu4sv",
+  "projectName": "autonomous_episode_demo",
+  "options": {
+    "prompt": "Создай 45-секундную оригинальную комедийную сцену. Два персонажа находятся в небольшой космической мастерской. Молодой механик пытается починить говорящего робота, но робот считает, что механик сам нуждается в ремонте. Используй ограниченную телевизионную 2D-анимацию, три плана камеры, липсинк, простую жестикуляцию, одну реакционную сцену, движение камеры и финальный звуковой эффект.",
+    "projectName": "autonomous_episode_demo",
+    "outputRoot": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples",
+    "engineMode": "simulation",
+    "durationSeconds": 45,
+    "episodeCount": 1,
+    "targetAudience": "general",
+    "genre": "comedy",
+    "visualStyle": "limited_tv_2d",
+    "animationStyle": "cutout",
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "fps": 24,
+    "aspectRatio": "16:9",
+    "language": "ru",
+    "qualityPreset": "broadcast",
+    "budgetPreset": "tv_series",
+    "deadlinePreset": "balanced",
+    "allowGeneratedAssets": true,
+    "allowPlaceholderAssets": true,
+    "allowUiAutomation": false,
+    "allowExperimentalOperations": false,
+    "maximumIterations": 3,
+    "humanApprovalPolicy": "approve_critical"
+  },
+  "mode": "simulation",
+  "status": "completed",
+  "packagePaths": {
+    "root": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo",
+    "manifestPath": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/project_manifest.json",
+    "productionRunPath": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/production_run.json",
+    "seriesBibleDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/series_bible",
+    "styleBibleDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/style_bible",
+    "scriptsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/scripts",
+    "storyboardsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/storyboards",
+    "animaticsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/animatics",
+    "charactersDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/characters",
+    "rigsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/rigs",
+    "backgroundsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/backgrounds",
+    "propsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/props",
+    "audioDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/audio",
+    "musicDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/music",
+    "scenePlansDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/scene_plans",
+    "animationPlansDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/animation_plans",
+    "cameraPlansDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/camera_plans",
+    "fxPlansDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/fx_plans",
+    "harmonyProjectsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/harmony_projects",
+    "templatesDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/templates",
+    "previewsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/previews",
+    "rendersDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/renders",
+    "reviewReportsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/review_reports",
+    "fixPlansDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/fix_plans",
+    "approvalRecordsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/approval_records",
+    "diagnosticsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/diagnostics",
+    "logsDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/logs",
+    "deliveryDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/delivery",
+    "provenanceDir": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/provenance"
+  },
+  "stages": {
+    "creative_director": {
+      "id": "creative_director",
+      "name": "Creative Director & Series Bible",
+      "status": "completed",
+      "fingerprint": "a7417cbfe6943771",
+      "outputArtifacts": [
+        "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/series_bible/series_bible.json"
+      ],
+      "startedAt": "2026-07-25T15:55:54.156Z",
+      "completedAt": "2026-07-25T15:55:54.156Z"
+    },
+    "writing_room": {
+      "id": "writing_room",
+      "name": "Script & Dialogue Engine",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": [
+        "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/scripts/screenplay.json"
+      ]
+    },
+    "storyboard_animatic": {
+      "id": "storyboard_animatic",
+      "name": "Storyboard & Animatic Engine",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": [
+        "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/storyboards/storyboard.json"
+      ]
+    },
+    "asset_production": {
+      "id": "asset_production",
+      "name": "Asset Production & Rigging",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": [
+        "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/characters/asset_manifest.json"
+      ]
+    },
+    "scene_assembly_execution": {
+      "id": "scene_assembly_execution",
+      "name": "Scene Assembly & Harmony Execution",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": [
+        "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/episode_package/previews/SC_001_preview.mp4"
+      ]
+    },
+    "acting_animation": {
+      "id": "acting_animation",
+      "name": "Acting, Camera & Audio Muxing",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": []
+    },
+    "quality_review_fix": {
+      "id": "quality_review_fix",
+      "name": "Quality Review & Auto-Fix Loop",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": []
+    },
+    "final_render_delivery": {
+      "id": "final_render_delivery",
+      "name": "Final Render & Delivery Packaging",
+      "status": "completed",
+      "fingerprint": "",
+      "outputArtifacts": []
+    }
+  },
+  "startedAt": "2026-07-25T15:55:54.154Z",
+  "updatedAt": "2026-07-25T15:55:54.154Z",
+  "totalScenes": 1,
+  "completedScenes": 1,
+  "warnings": [],
+  "errors": [],
+  "completedAt": "2026-07-25T15:55:54.158Z"
+}

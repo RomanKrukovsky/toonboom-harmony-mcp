@@ -1,0 +1,9 @@
+{
+  "characters": [
+    "HeroCharacter"
+  ],
+  "backgrounds": [
+    "MainBackground"
+  ],
+  "placeholdersUsed": true
+}

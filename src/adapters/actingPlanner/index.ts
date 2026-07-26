@@ -28,13 +28,28 @@ export class ActingPlanner {
   }
 
   generateEmotionalBeats(scene: any, character: string): any[] {
-    const total = scene.durationFrames;
-    const chunk = Math.floor(total / 4);
+    const total = scene?.durationFrames ?? 72;
+    const mood = (scene?.mood || 'neutral').toLowerCase();
+    const chunk = Math.max(1, Math.floor(total / 4));
+    
+    let baseEmotion = 'neutral';
+    let peakEmotion = 'curious';
+    let climaxEmotion = 'alarm';
+    let endEmotion = mood === 'climax' ? 'shock' : 'resolve';
+
+    if (mood.includes('action') || mood.includes('chase')) {
+      baseEmotion = 'alert'; peakEmotion = 'focused'; climaxEmotion = 'intense'; endEmotion = 'exhausted';
+    } else if (mood.includes('panic') || mood.includes('fear')) {
+      baseEmotion = 'uneasy'; peakEmotion = 'nervous'; climaxEmotion = 'terrified'; endEmotion = 'trembling';
+    } else if (mood.includes('comedy') || mood.includes('humor')) {
+      baseEmotion = 'cheerful'; peakEmotion = 'amused'; climaxEmotion = 'surprised'; endEmotion = 'laughing';
+    }
+
     return [
-      { frames: [0, chunk], emotion: 'neutral', pose: 'idle', microActions: ['small head tilt'], dialogue: '' },
-      { frames: [chunk, chunk * 2], emotion: 'curious', pose: 'lean_in', microActions: ['eyebrow raise', 'blink'] },
-      { frames: [chunk * 2, chunk * 3], emotion: 'alarm', pose: 'talking_fast', microActions: ['hand flutter', 'lean forward'], dialogue: '' },
-      { frames: [chunk * 3, total], emotion: scene.mood === 'climax' ? 'shock' : 'resolve', pose: scene.mood === 'climax' ? 'recoil' : 'confident', microActions: scene.mood === 'climax' ? ['eyes widen','mouth open','body pulls back'] : ['smirk','shoulder relax'] }
+      { frames: [0, chunk], emotion: baseEmotion, pose: `${baseEmotion}_stance`, microActions: this.generateMicroActions({ ...scene, mood: baseEmotion }), dialogue: '' },
+      { frames: [chunk, chunk * 2], emotion: peakEmotion, pose: `lean_${peakEmotion}`, microActions: this.generateMicroActions({ ...scene, mood: peakEmotion }) },
+      { frames: [chunk * 2, chunk * 3], emotion: climaxEmotion, pose: `express_${climaxEmotion}`, microActions: this.generateMicroActions({ ...scene, mood: climaxEmotion }), dialogue: '' },
+      { frames: [chunk * 3, total], emotion: endEmotion, pose: scene.mood === 'climax' ? 'recoil' : 'confident', microActions: this.generateMicroActions({ ...scene, mood: endEmotion }) }
     ];
   }
 
@@ -42,12 +57,25 @@ export class ActingPlanner {
     return this.generateEmotionalBeats(scene, '').map(b => ({
       frames: b.frames,
       pose: b.pose,
-      intensity: 'moderate'
+      intensity: b.emotion === 'neutral' ? 'subtle' : 'moderate'
     }));
   }
 
   generateMicroActions(scene: any): string[] {
-    return ['small head tilt','eyebrow raise','blink','hand flutter','lean forward','eyes widen','mouth open','body pulls back'];
+    const mood = (scene?.mood || 'neutral').toLowerCase();
+    if (mood.includes('panic') || mood.includes('fear') || mood.includes('uneasy') || mood.includes('terrified')) {
+      return ['rapid eye shift', 'lip quiver', 'quick breath', 'shoulder tense'];
+    }
+    if (mood.includes('action') || mood.includes('focused') || mood.includes('intense')) {
+      return ['clenched jaw', 'fist tightening', 'sharp head turn', 'brows furrowed'];
+    }
+    if (mood.includes('comedy') || mood.includes('cheerful') || mood.includes('amused')) {
+      return ['wide smirk', 'double blink', 'head tilt', 'snicker gesture'];
+    }
+    if (mood.includes('sad') || mood.includes('grief')) {
+      return ['gaze downward', 'slow blink', 'sigh', 'slumped posture'];
+    }
+    return ['subtle head tilt', 'eyebrow raise', 'single blink', 'soft exhale'];
   }
 
   generateGesturePlan(scene: any): any[] {

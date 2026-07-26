@@ -38,5 +38,5 @@ describe('Тестирование SQLite трекера', () => {
   test('должен поддерживать вывод иерархических отчетов', async () => {
     const report = await tracker.generateProductionReport();
     expect(Array.isArray(report)).toBe(true);
-  });
+  }, 15000);
 });

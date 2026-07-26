@@ -1,0 +1,18 @@
+<!-- NOT_CREATED_BY_HARMONY - Experimental Node.js Template File (379 bytes) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="3">
+  <elements/>
+  <options>
+    <camera name="Camera" fov="41.112090439166927"/>
+  </options>
+  <scenes>
+    <scene name="Top" fps="24" startFrame="1" endFrame="144">
+      <nodes>
+        <group name="Top">
+          <nodes/>
+          <linked-nodes/>
+        </group>
+      </nodes>
+    </scene>
+  </scenes>
+</project>

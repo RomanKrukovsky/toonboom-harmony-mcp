@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "mode": "simulation",
+  "isRealHarmonyExecution": false,
+  "sceneName": "SC_001",
+  "createdFiles": [
+    "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/episode_package/previews/SC_001_preview.mp4"
+  ],
+  "performedSteps": [
+    "open_project",
+    "create_composite_display_write_chain",
+    "import_background_image",
+    "import_character_placeholder",
+    "set_node_position",
+    "set_node_scale",
+    "create_camera_move",
+    "save_scene",
+    "render_preview"
+  ],
+  "skippedSteps": [],
+  "warnings": [
+    "Running in simulation fallback mode."
+  ],
+  "requiresHuman": false,
+  "assetsImported": [
+    "background_placeholder.png",
+    "character_placeholder.png (simulated)"
+  ],
+  "nodesCreated": [
+    "Composite",
+    "Display",
+    "Write",
+    "BG_Placeholder",
+    "Char_Placeholder",
+    "Char_Peg",
+    "Camera"
+  ],
+  "connectionsCreated": [
+    "BG_Placeholder -> Composite",
+    "Char_Peg -> Char_Placeholder",
+    "Char_Placeholder -> Composite",
+    "Composite -> Display",
+    "Composite -> Write"
+  ],
+  "keyframesCreated": [
+    {
+      "node": "Camera",
+      "frame": 1,
+      "attr": "position.z",
+      "value": 12
+    },
+    {
+      "node": "Camera",
+      "frame": 1080,
+      "attr": "position.z",
+      "value": 10
+    }
+  ],
+  "preview": {
+    "rendered": false,
+    "path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/examples/autonomous_episode_demo/episode_package/previews/SC_001_preview.mp4",
+    "fileExists": true,
+    "fileSizeBytes": 33,
+    "simulatedPreviewCreated": true,
+    "isValidVideoFile": false,
+    "truth": "This is not a real rendered video. It is a simulation placeholder."
+  }
+}

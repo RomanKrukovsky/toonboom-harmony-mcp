@@ -47,6 +47,26 @@ import { factoryFoundationTools } from './tools/factoryFoundationTools.js';
 import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
 import { mlTools } from './tools/mlTools.js';
 
+import { capabilityTools } from './tools/capabilityTools.js';
+import { autonomousStudioTools } from './tools/autonomousStudioTools.js';
+import { creativeTools } from './tools/creativeTools.js';
+import { scriptTools } from './tools/scriptTools.js';
+import { storyboardTools } from './tools/storyboardTools.js';
+import { assetRegistryTools } from './tools/assetRegistryTools.js';
+import { styleTools } from './tools/styleTools.js';
+import { riggingEngineTools } from './tools/riggingEngineTools.js';
+import { actingEngineTools } from './tools/actingEngineTools.js';
+import { audioEngineTools } from './tools/audioEngineTools.js';
+import { layoutCameraTools } from './tools/layoutCameraTools.js';
+import { fxCompositingTools } from './tools/fxCompositingTools.js';
+import { renderFarmTools } from './tools/renderFarmTools.js';
+import { qualityEngineTools } from './tools/qualityEngineTools.js';
+import { modelRouterTools } from './tools/modelRouterTools.js';
+import { productionMemoryTools } from './tools/productionMemoryTools.js';
+import { approvalTools } from './tools/approvalTools.js';
+import { legalTools } from './tools/legalTools.js';
+import { systemHealthTools } from './tools/systemHealthTools.js';
+
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
@@ -88,7 +108,26 @@ const allTools = [
   ...retargetingTools,
   ...factoryFoundationTools,
   ...harmonyNativePhase2Tools,
-  ...mlTools
+  ...mlTools,
+  ...capabilityTools,
+  ...autonomousStudioTools,
+  ...creativeTools,
+  ...scriptTools,
+  ...storyboardTools,
+  ...assetRegistryTools,
+  ...styleTools,
+  ...riggingEngineTools,
+  ...actingEngineTools,
+  ...audioEngineTools,
+  ...layoutCameraTools,
+  ...fxCompositingTools,
+  ...renderFarmTools,
+  ...qualityEngineTools,
+  ...modelRouterTools,
+  ...productionMemoryTools,
+  ...approvalTools,
+  ...legalTools,
+  ...systemHealthTools
 ];
 
 function zodFieldToJsonSchema(schema: any): any {

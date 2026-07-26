@@ -8,7 +8,7 @@
 
 Python core работает отдельным процессом. Он не загружает OpenCV и кадры в Node.js. Большие файлы остаются в `RECONSTRUCTION_CACHE_ROOT`; MCP возвращает только статус, метрики и пути.
 
-Готовый JSON-манифест не считается готовой сценой. Поле `realSceneCreated: true` появляется только после того, как Harmony Python DOM подтвердил TVG element, непустые drawings, палитру, exposures, READ-ноду, Composite, Display и сохранение проекта.
+Готовый JSON-манифест не считается готовой сценой. Поле `realSceneCreated: true` появляется только после того, как Harmony Python DOM сохранил сцену, повторно открыл её, подтвердил TVG element, непустые drawings, палитру, exposures, READ/Composite/Display/Write и создал настоящий preview render.
 
 ## Установка
 
@@ -81,10 +81,21 @@ curl http://127.0.0.1:8765/health
 export HARMONY_PYTHON_PACKAGES="/path/to/Harmony/python-packages"
 export HARMONY_INTEGRATION_SCENE="/allowed/test-copy/scene.xstage"
 export HARMONY_INTEGRATION_MANIFEST="/allowed/cache/job/manifest.json"
+export HARMONY_INTEGRATION_OUTPUT="/allowed/output/integration/scene.xstage"
+npm run reconstruction:core
+```
+
+В другом терминале с теми же переменными:
+
+```bash
+npm run test:harmony-integration
+# либо тот же harness через pytest:
 npm run test:python -- -m integration
 ```
 
-Интеграционный тест пропускается, если эти переменные не заданы. Это не фиктивный успех: без установленной и лицензированной Harmony нативный TVG не считается проверенным.
+Harness сначала получает capability matrix через `detect`, затем применяет манифест к безопасной копии, повторно открывает сцену, проверяет нативные drawings, палитру, exposures и связи нод. После этого документированный `HarmonyRenderHandler` создаёт 1–3 PNG через callback rendered Cel, а reconstruction core проверяет сигнатуру, размеры и простые метрики различия. Интеграционный pytest пропускается, если переменные не заданы. Это не фиктивный успех: без установленной и лицензированной Harmony нативный TVG не считается проверенным.
+
+Минимально требуемые возможности установленной версии: `session`, `open_project`, `close_project`, `DrawingAccess`, `BezierPath`, `DrawingVectorColour` и `project.create_render_handler`. Фактические версия продукта, путь приложения, версия Python и доступность каждого API печатаются в JSON результата. `ExportOGLFramesSettings` не используется внешним harness, потому что официальная документация ограничивает OGL export внутренним Python процессом Harmony.
 
 ## Безопасность
 
@@ -93,6 +104,7 @@ npm run test:python -- -m integration
 - Core запускает FFmpeg только массивом аргументов. Путь к бинарнику берётся из настроенного окружения сервиса, а не из MCP-запроса.
 - Манифест валидируется Pydantic и Zod. Harmony bridge принимает только фиксированную команду и типизированные данные; произвольный Python или QtScript запрещён.
 - Реальное применение требует глобального `HARMONY_ALLOW_DESTRUCTIVE=true` и точной фразы подтверждения.
+- На macOS перед загрузкой Harmony Python packages выполняется Gatekeeper assessment. Bundle с недействительной или сторонней подписью отклоняется без запуска executable.
 
 ## Ограничения
 
@@ -100,7 +112,7 @@ npm run test:python -- -m integration
 - Цветовые области создаются в Colour Art как замкнутые формы. Центровые Line Art strokes пока не восстанавливаются.
 - Отверстия внутри сложных форм и прозрачный фон обрабатываются ограниченно.
 - `clean_frame_by_frame`, `hybrid` и `clean_rig` намеренно возвращают `UNSUPPORTED_BY_VERSION`, пока базовый путь не проверен в настоящей Harmony.
-- Автоматический preview render и render comparison ещё не входят в доказательство этой итерации.
+- Preview render и простое сравнение реализованы, но считаются доказательством только после настоящего запуска в лицензированной Harmony.
 
 ## Решение проблем
 

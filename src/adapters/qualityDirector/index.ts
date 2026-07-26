@@ -99,8 +99,16 @@ export class QualityDirector {
     const composition = hasDynamicCamera ? 90 : (scene.cameraNotes ? 80 : 55);
     const acting = scene.mood && scene.mood !== 'generic' ? 85 : 50;
     const timing = scene.durationFrames >= 60 ? 90 : (scene.durationFrames > 24 ? 80 : 45);
-    const technical = 90;
-    const continuity = scene.characters.length > 1 ? 85 : (scene.characters.length > 0 ? 75 : 50);
+    
+    // Dynamic technical score based on structural scene properties
+    let technical = 100;
+    if (!scene.location) technical -= 20;
+    if (!scene.characters || scene.characters.length === 0) technical -= 25;
+    if (!scene.durationFrames || scene.durationFrames <= 0) technical -= 30;
+    if (scene.durationFrames < 12) technical -= 15;
+    technical = Math.max(10, technical);
+
+    const continuity = scene.characters && scene.characters.length > 1 ? 85 : (scene.characters && scene.characters.length > 0 ? 75 : 50);
     const total = Math.round((composition + acting + timing + technical + continuity) / 5);
     return { total, composition, acting, timing, technical, continuity };
   }

@@ -1,0 +1,12 @@
+{
+  "sceneId": "SC_001",
+  "durationFrames": 1080,
+  "fps": 24,
+  "shots": [
+    {
+      "shotId": "SHOT_01",
+      "camera": "slow_push_in",
+      "duration": 1080
+    }
+  ]
+}

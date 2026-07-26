@@ -82,7 +82,11 @@ export class HarmonySceneCompiler {
         && audit?.nodeExists === true
         && audit?.displayExists === true
         && audit?.writeExists === true
-        && audit?.editableVectorGeometry === true;
+        && audit?.editableVectorGeometry === true
+        && audit?.sceneFrameCount === manifest.source.frameCount
+        && Math.abs(Number(audit?.sceneFramerate) - manifest.scene.fps) < 0.0001
+        && audit?.sceneWidth === manifest.scene.width
+        && audit?.sceneHeight === manifest.scene.height;
       if (!verified) {
         throw new HarmonyError('HARMONY_SCENE_VERIFICATION_FAILED', 'Повторно открытая сцена не прошла аудит нативных drawings, палитры и exposures.', auditResult);
       }
@@ -331,7 +335,9 @@ export class HarmonySceneCompiler {
       type: 'save_project',
       params: {
         frameCount: manifest.source.frameCount,
-        fps: manifest.scene.fps
+        fps: manifest.scene.fps,
+        width: manifest.scene.width,
+        height: manifest.scene.height
       }
     });
 

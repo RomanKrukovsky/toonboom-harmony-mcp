@@ -142,7 +142,11 @@ describe('video reconstruction vertical slice', () => {
             nodeExists: true,
             displayExists: true,
             writeExists: true,
-            editableVectorGeometry: true
+            editableVectorGeometry: true,
+            sceneFrameCount: 2,
+            sceneFramerate: 12,
+            sceneWidth: 96,
+            sceneHeight: 64
           }
         };
       }

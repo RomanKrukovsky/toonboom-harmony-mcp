@@ -57,6 +57,42 @@ export class RealSceneExecutor {
     return { characterPath, backgroundPath };
   }
 
+  private ensureProjectStructure(projectPath: string, durationFrames: number = 144, fps: number = 24) {
+    const projDir = path.dirname(projectPath);
+    if (!fs.existsSync(projDir)) {
+      fs.mkdirSync(projDir, { recursive: true });
+    }
+    const elementsDir = path.join(projDir, 'elements');
+    if (!fs.existsSync(elementsDir)) {
+      fs.mkdirSync(elementsDir, { recursive: true });
+    }
+    const framesDir = path.join(projDir, 'frames');
+    if (!fs.existsSync(framesDir)) {
+      fs.mkdirSync(framesDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(projectPath)) {
+      const minimalXml = `<?xml version="1.0" encoding="UTF-8"?>
+<project version="3">
+  <elements/>
+  <options>
+    <camera name="Camera" fov="41.112090439166927"/>
+  </options>
+  <scenes>
+    <scene name="Top" fps="${fps}" startFrame="1" endFrame="${durationFrames}">
+      <nodes>
+        <group name="Top">
+          <nodes/>
+          <linked-nodes/>
+        </group>
+      </nodes>
+    </scene>
+  </scenes>
+</project>`;
+      fs.writeFileSync(projectPath, minimalXml, 'utf8');
+    }
+  }
+
   async executeScenePlan(
     scenePlan: any,
     options: { mode?: 'real' | 'hybrid' | 'simulation'; projectPath?: string; outputDir?: string } = {}
@@ -71,6 +107,10 @@ export class RealSceneExecutor {
     
     // Ensure placeholders exist
     const placeholders = this.ensurePlaceholderAssets(outputDir);
+
+    // Ensure .xstage project structure exists
+    const projectPath = options.projectPath || path.join(outputDir, 'harmony_project', `${sceneName}.xstage`);
+    this.ensureProjectStructure(projectPath, duration, fps);
 
     // 1. Check if asset file is missing
     let bgFile = scenePlan.background?.file || 'background_placeholder.png';
@@ -221,8 +261,6 @@ export class RealSceneExecutor {
     const nodesCreated: string[] = [];
     const connectionsCreated: string[] = [];
     const keyframesCreated: any[] = [];
-
-    const projectPath = options.projectPath || path.join(outputDir, 'harmony_project', `${sceneName}.xstage`);
     let projectCreated = false;
 
     try {
