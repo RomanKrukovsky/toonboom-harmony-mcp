@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createStandardExecutionResult } from '../schemas/executionResult.js';
 import { VisemeMapper } from '../services/visemeMapper/index.js';
 import { HarmonyCommandBuilder } from '../services/harmonyCommandBuilder/index.js';
+import { VoxCPMOrchestrator } from '../services/voxcpmOrchestrator/index.js';
 
 export const audioEngineTools = [
   {
@@ -18,12 +19,43 @@ export const audioEngineTools = [
 
   {
     name: 'harmony.audio.generate_dialogue',
-    description: 'Сгенерировать временную или финальную озвучку речи через TTS.',
-    inputSchema: z.object({ characterId: z.string(), text: z.string() }),
-    handler: async (args: { characterId: string; text: string }) => {
+    description: 'Сгенерировать озвучку речи через VoxCPM2 (Voice Design / Voice Cloning).',
+    inputSchema: z.object({
+      characterId: z.string(),
+      text: z.string(),
+      outputWavPath: z.string().optional(),
+      voiceDescription: z.string().optional(),
+      referenceWavPath: z.string().optional(),
+      instruct: z.string().optional()
+    }),
+    handler: async (args: {
+      characterId: string;
+      text: string;
+      outputWavPath?: string;
+      voiceDescription?: string;
+      referenceWavPath?: string;
+      instruct?: string;
+    }) => {
+      const targetPath = args.outputWavPath || `audio/${args.characterId}_dialogue.wav`;
+      const orchestrator = new VoxCPMOrchestrator();
+
+      const result = await orchestrator.generateAudio({
+        text: args.text,
+        outputWavPath: targetPath,
+        voiceDescription: args.voiceDescription,
+        referenceWavPath: args.referenceWavPath,
+        instruct: args.instruct
+      });
+
       return createStandardExecutionResult({
-        status: 'success',
-        details: { audioPath: `audio/${args.characterId}_dialogue.wav`, durationSeconds: 2.5 }
+        status: result.status === 'success' ? 'success' : 'failed',
+        details: {
+          characterId: args.characterId,
+          audioPath: result.outputWavPath || targetPath,
+          durationSeconds: result.durationSec,
+          provider: result.provider,
+          realInferenceExecuted: result.realInferenceExecuted
+        }
       });
     }
   },

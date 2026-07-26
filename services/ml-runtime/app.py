@@ -5,8 +5,9 @@ import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from config import CONFIG
-from schemas import MLJobRequest, MLJobResponse, InbetweenRequest, InbetweenResponse
+from schemas import MLJobRequest, MLJobResponse, InbetweenRequest, InbetweenResponse, VoxCPMRequest, VoxCPMResponse
 from providers.animeinbet_provider import AnimeInbetProvider
+from providers.voxcpm_provider import VoxCPMProvider
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("ml-runtime")
@@ -143,6 +144,7 @@ async def cancel_job(job_id: str):
     return {"status": "not_found", "jobId": job_id}
 
 animeinbet_provider = AnimeInbetProvider()
+voxcpm_provider = VoxCPMProvider()
 
 @app.post("/infer/animeinbet", response_model=InbetweenResponse)
 async def infer_animeinbet(req: InbetweenRequest):
@@ -151,6 +153,22 @@ async def infer_animeinbet(req: InbetweenRequest):
             frame_a_path=req.frame_a_path,
             frame_b_path=req.frame_b_path,
             count=req.count
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/infer/voxcpm", response_model=VoxCPMResponse)
+async def infer_voxcpm(req: VoxCPMRequest):
+    try:
+        result = voxcpm_provider.generate_tts(
+            text=req.text,
+            output_wav_path=req.outputWavPath,
+            voice_description=req.voiceDescription,
+            reference_wav_path=req.referenceWavPath,
+            instruct=req.instruct,
+            guidance_scale=req.guidanceScale,
+            num_steps=req.numSteps
         )
         return result
     except Exception as e:

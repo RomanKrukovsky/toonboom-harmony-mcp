@@ -40,3 +40,22 @@ class InbetweenResponse(BaseModel):
     version: str
     sourceKeyframes: List[Dict[str, Any]]
     inbetweens: List[Dict[str, Any]]
+
+class VoxCPMRequest(BaseModel):
+    text: str
+    outputWavPath: str
+    voiceDescription: Optional[str] = None
+    referenceWavPath: Optional[str] = None
+    instruct: Optional[str] = None
+    guidanceScale: float = 2.0
+    numSteps: int = 10
+
+class VoxCPMResponse(BaseModel):
+    status: str
+    realInferenceExecuted: bool
+    outputWavPath: Optional[str] = None
+    sampleRate: int = 48000
+    durationSec: float = 0.0
+    provider: str = "voxcpm_provider"
+    errors: List[str] = []
+
