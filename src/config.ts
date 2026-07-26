@@ -18,13 +18,15 @@ export interface OnePromptIterationConfig {
 export interface BackendConfig {
   image: 'none' | 'openai' | 'stability' | 'mock';
   audio: 'none' | 'openai' | 'elevenlabs' | 'mock';
-  llm: 'none' | 'openai' | 'anthropic' | 'mock';
+  llm: 'none' | 'openai' | 'anthropic' | 'openrouter' | 'mock';
   apiKeys: {
     openai?: string;
     stability?: string;
     elevenlabs?: string;
     anthropic?: string;
+    openrouter?: string;
   };
+  openrouterModel?: string;
 }
 
 export interface HarmonyConfig {
@@ -226,8 +228,10 @@ export const config: HarmonyConfig = {
       openai: process.env.OPENAI_API_KEY,
       stability: process.env.STABILITY_API_KEY,
       elevenlabs: process.env.ELEVENLABS_API_KEY,
-      anthropic: process.env.ANTHROPIC_API_KEY
-    }
+      anthropic: process.env.ANTHROPIC_API_KEY,
+      openrouter: process.env.OPENROUTER_API_KEY
+    },
+    openrouterModel: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-super:free'
   },
   reconstruction: {
     coreUrl: process.env.RECONSTRUCTION_CORE_URL || 'http://127.0.0.1:8765',
