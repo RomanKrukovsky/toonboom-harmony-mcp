@@ -1,0 +1,9 @@
+{
+  "_comment": "Hashes of the Sprint 0 pose evidence committed in this bundle.",
+  "hashes": {
+    "before_after_confidence.json": "7ace0d5f843581b7c64e014628474a94457355e947f2f6969d566b7f492f2fb8",
+    "execution_report.json": "bd00fb46f53d236d9876f1847ce595af290ed8dbba2d685ac537f2069769dfa5",
+    "keypoints_overlay.png": "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870",
+    "skeleton.json": "671f17229879734c5cad0224100780762c9ae66196de204b286840c784123800"
+  }
+}

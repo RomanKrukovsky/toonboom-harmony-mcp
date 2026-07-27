@@ -31,6 +31,14 @@ jobs:
       - name: Run Jest tests
         run: npm test -- --runInBand
 
+      # Promotion gates: a capability may not claim a verification level it has no
+      # evidence for, and committed evidence must hash-match and contain no fabricated media.
+      - name: Capability registry gate
+        run: npm run test:registry
+
+      - name: Evidence integrity gate
+        run: npm run test:evidence
+
   python:
     name: Python Tests
     runs-on: ubuntu-latest

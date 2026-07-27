@@ -38,7 +38,8 @@
       "evidencePaths": [
         "docs/evidence/sprint0-pose/execution_report.json",
         "docs/evidence/sprint0-pose/before_after_confidence.json",
-        "output/dwpose_sprint0/keypoints_overlay.png"
+        "docs/evidence/sprint0-pose/keypoints_overlay.png",
+        "docs/evidence/sprint0-pose/skeleton.json"
       ],
       "models": [
         {
@@ -231,7 +232,7 @@
       "knownFailures": [
         "Bezier control points come from a tangent heuristic, not a least-squares (Schneider) fit; curve fidelity is unmeasured."
       ],
-      "blockingReason": null,
+      "blockingReason": "Not audited in any session so far. Zhang-Suen thinning plus cubic Bezier fitting is present and reads correctly, but no run was executed and curve fidelity against a source centerline has never been measured, so no level above unaudited can be claimed.",
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced \u2014 Zhang-Suen thinning plus cubic Bezier fitting is present."
     },
@@ -262,6 +263,30 @@
       "blockingReason": "Recorded capability gap for Sprint 1. Deliberately deferred; LocoTrack not integrated.",
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Multi-person association with stable IDs measured on footage containing at least two people."
+    },
+    {
+      "capabilityId": "governance.capability_promotion_gate",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "src/services/capabilityRegistryValidator/index.ts",
+        "tests/capabilityRegistryGate.test.ts",
+        "tests/evidenceIntegrity.test.ts"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/DEPENDENCY_CLOSURE.md",
+        "docs/capability_registry.json"
+      ],
+      "knownFailures": [
+        "Fabrication detection is heuristic: it flags small printable-ASCII media containing known placeholder markers. A large or binary fake would not be caught.",
+        "The evidence gate only enforces bundles under docs/evidence; output/ is reported as a warning because it is gitignored scratch.",
+        "Gates check that evidence exists and hashes match; they cannot judge whether the evidence supports the claim."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Run the gates in CI against a real runner; CI has never executed on this repository (0 of 13 historical runs started a job)."
     }
   ],
   "fixtureNotes": [

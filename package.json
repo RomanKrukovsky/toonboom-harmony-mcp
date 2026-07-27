@@ -27,7 +27,10 @@
     "demo:ml:mcp": "node scripts/demo_ml_mcp.js",
     "demo:ai_studio_iter5": "node scripts/demo_ai_studio_iter5.js",
     "demo:capture": "node scripts/demo_harmony_action_recorder.mjs",
-    "test:harmony-capture-real": "jest tests/integration/harmonyActionRecorder.realHarmony.smoke.test.ts"
+    "test:harmony-capture-real": "jest tests/integration/harmonyActionRecorder.realHarmony.smoke.test.ts",
+    "test:registry": "jest tests/capabilityRegistryGate.test.ts",
+    "test:evidence": "jest tests/evidenceIntegrity.test.ts",
+    "test:gates": "jest tests/capabilityRegistryGate.test.ts tests/evidenceIntegrity.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
