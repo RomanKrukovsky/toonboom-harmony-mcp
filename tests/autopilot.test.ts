@@ -71,4 +71,15 @@ describe('Тестирование Harmony Autopilot', () => {
     expect(state.sceneOpen).toBe(true);
     expect(state.detectedPanels).toContain('Timeline');
   });
+
+  test('render_preview должен выбрасывать UNSUPPORTED_BY_VERSION вместо записи mock-данных', async () => {
+    const { autopilotTools } = await import('../src/tools/autopilotTools.js');
+    const tool = autopilotTools.find(t => t.name === 'harmony.autopilot.render_preview');
+    expect(tool).toBeDefined();
+    
+    await expect(tool!.handler({
+      projectPath: process.cwd() + '/test.xstage',
+      outputPath: process.cwd() + '/output/preview.mp4'
+    })).rejects.toThrow(/UNSUPPORTED_BY_VERSION/);
+  });
 });

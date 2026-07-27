@@ -183,13 +183,13 @@ export class Rig360Synthesizer {
     const canonicalView = character.requiredViews.includes('front')
       ? 'front'
       : character.requiredViews[0] || 'front';
-    for (const mouth of character.requiredMouthShapes) {
+    for (const mouth of character.requiredMouthShapes || []) {
       assets.push({ view: canonicalView, layer: `mouth_${mouth}`, status: 'missing' });
     }
-    for (const expr of character.requiredExpressions) {
+    for (const expr of character.requiredExpressions || []) {
       assets.push({ view: canonicalView, layer: `expr_${expr}`, status: 'missing' });
     }
-    for (const hand of character.requiredHandPoses) {
+    for (const hand of character.requiredHandPoses || []) {
       assets.push({ view: canonicalView, layer: `hand_${hand}`, status: 'missing' });
     }
     return assets;

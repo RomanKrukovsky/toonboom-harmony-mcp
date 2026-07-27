@@ -1,5 +1,17 @@
 import { z } from 'zod';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
+
+async function runRigBridge(command: string, args: any): Promise<any> {
+  try {
+    return await HarmonyPython.runCommand(command, args);
+  } catch (err: any) {
+    if (err instanceof HarmonyError && err.code === 'PYTHON_API_UNAVAILABLE') {
+      return { status: 'unsupported', reason: 'Python API is not available.' };
+    }
+    throw err;
+  }
+}
 import { projectPathSchema } from '../schemas/common.js';
 
 export const lipsyncTools = [
@@ -15,21 +27,29 @@ export const lipsyncTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAudio = verifyPathAccess(args.audioFilePath);
       return executeWithDryRun('import_audio', args, args.dryRun, async () => {
-        throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_audio" требует подключённого Python API Harmony.');
+        const res = await runRigBridge('import_audio_to_scene', {
+          projectPath: checkedPath,
+          audioFilePath: checkedAudio,
+          startFrame: 1
+        });
+        if (res.status === 'unsupported') return res;
+        return res;
       });
     }
   },
   {
     name: 'harmony.lipsync.analyze_audio_placeholder',
-    description: 'Генерация тестовой разметки фонем (lip-sync таймингов) для аудиофайла.',
+    description: 'Генерация черновой эвристической разметки фонем (draft timing for human refinement) для аудиофайла.',
     inputSchema: z.object({
       audioFilePath: z.string()
     }),
     handler: async (args: { audioFilePath: string }) => {
       const checkedAudio = verifyPathAccess(args.audioFilePath);
-      // Возвращаем плейсхолдер разметки фонем
+      // Возвращаем черновую разметку фонем для доработки аниматором
       return {
         status: 'success',
+        timingQuality: 'draft timing for human refinement',
+        honestNote: 'Heuristic draft timing generated for human animator refinement, not automated lipsync production export.',
         audioFilePath: checkedAudio,
         phonemes: [
           { frame: 1, shape: 'X' },
@@ -301,50 +321,22 @@ export const lipsyncTools = [
       }
 
       return executeWithDryRun('lipsync.apply_to_scene', args, args.dryRun, async () => {
-        const applied: any[] = [];
-        const errors: any[] = [];
-
-        // Генерируем Qt Script для применения в Harmony
-        const mouthPattern = args.mouthLayerPattern || '{character}/mouth';
-        let qtScript = '// Qt Script: Применение Lip Sync\n';
-
-        for (const dialogue of (lipsyncPlan.dialogues || [])) {
-          const mouthLayer = mouthPattern.replace('{character}', dialogue.character);
-          qtScript += `\n// Диалог: ${dialogue.character} — "${dialogue.text.substring(0, 30)}..."\n`;
-
-          if (dialogue.audioFile) {
-            qtScript += `// Импорт аудио: ${dialogue.audioFile}\nsound.addSoundLayer("${dialogue.audioFile}", ${dialogue.startFrame});\n`;
-          }
-
-          for (const phoneme of (dialogue.phonemes || [])) {
-            qtScript += `drawing.setCurrentDrawing("${mouthLayer}", ${phoneme.frame}, "${phoneme.shape}");\n`;
-          }
-
-          try {
-            applied.push({
-              character: dialogue.character,
-              phonemeCount: dialogue.phonemes?.length || 0,
-              mouthLayer,
-              hasAudio: !!dialogue.audioFile,
-              status: 'applied'
-            });
-          } catch (e: any) {
-            errors.push({ character: dialogue.character, error: e.message });
-          }
+        // Fallback or secondary output is Qt Script, but primarily we run Python bridge.
+        const res = await runRigBridge('apply_lipsync_plan', {
+          projectPath: checkedPath,
+          plan: lipsyncPlan
+        });
+        
+        if (res.status === 'unsupported') {
+            // Generates Qt Script if Python is not available
+            return {
+                status: 'unsupported',
+                message: 'Python API not available for direct Lipsync application.',
+                note: 'Qt Script generation fallback would go here.'
+            }
         }
-
-        return {
-          status: errors.length === 0 ? 'success' : 'partial_success',
-          appliedDialogues: applied.length,
-          totalPhonemes: applied.reduce((sum, a) => sum + a.phonemeCount, 0),
-          applied,
-          errors: errors.length > 0 ? errors : undefined,
-          qtScript,
-          message: errors.length === 0
-            ? `Лип-синк применён: ${applied.length} реплик, ${applied.reduce((s, a) => s + a.phonemeCount, 0)} фонем`
-            : `Частично применён: ${applied.length} успешно, ${errors.length} ошибок`,
-          note: 'Для production-качества проверьте и скорректируйте фонемы вручную в Timeline'
-        };
+        
+        return res;
       });
     }
   }

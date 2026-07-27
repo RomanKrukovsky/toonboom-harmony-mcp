@@ -7,6 +7,7 @@ import { VisualStateEngine } from '../adapters/visualState/index.js';
 import { RecoveryAdapter } from '../adapters/recovery/index.js';
 import { templateAssembly } from '../adapters/templateAssembly/index.js';
 import { HarmonyError, executeWithDryRun, verifyPathAccess } from '../security.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { config } from '../config.js';
 
 interface AutopilotState {
@@ -277,19 +278,18 @@ export const autopilotTools = [
       outputPath: z.string().describe('Куда сохранить preview-файл (например: mp4).')
     }),
     handler: async (args: { projectPath: string; outputPath: string }) => {
-      // Имитируем рендеринг
-      const pPath = path.resolve(args.outputPath);
-      const pDir = path.dirname(pPath);
-      if (!fs.existsSync(pDir)) {
-        fs.mkdirSync(pDir, { recursive: true });
-      }
-      fs.writeFileSync(pPath, 'MOCK_VIDEO_STREAM');
-      return {
-        status: 'success',
-        outputPath: pPath,
-        durationSeconds: 8,
-        resolution: '1920x1080'
-      };
+      verifyPathAccess(args.projectPath);
+      verifyPathAccess(args.outputPath);
+      throw new HarmonyError(
+        'UNSUPPORTED_BY_VERSION',
+        'Автоматический headless-рендеринг видео в видеофайлы требует установленной лицензированной Harmony или нативной сессии рендеринга. Запись плейсхолдер-строк на диск отключена.',
+        {
+          honestLimitations: {
+            verification: 'not_implemented',
+            reason: 'Local render farm execution requires licensed Harmony ExportOGLFrames/Render CLI.'
+          }
+        }
+      );
     }
   },
   {
@@ -299,15 +299,21 @@ export const autopilotTools = [
       projectPath: z.string().describe('Путь к файлу проекта сцены .xstage.')
     }),
     handler: async (args: { projectPath: string }) => {
-      return {
-        status: 'success',
-        audit: {
-          broken_connections: [],
-          empty_layers: [],
-          total_nodes: 12,
-          passed: true
-        }
-      };
+      const checkedPath = verifyPathAccess(args.projectPath);
+      try {
+        const auditResult = await HarmonyPython.runCommand('audit_scene', { projectPath: checkedPath });
+        return {
+          status: 'success',
+          verification: 'verified_real',
+          audit: auditResult
+        };
+      } catch (err: any) {
+        throw new HarmonyError(
+          'HARMONY_EXECUTION_FAILED',
+          `Не удалось выполнить аудит сцены: ${err.message}`,
+          { honestLimitations: { verification: 'requires_real_harmony' } }
+        );
+      }
     }
   },
   {

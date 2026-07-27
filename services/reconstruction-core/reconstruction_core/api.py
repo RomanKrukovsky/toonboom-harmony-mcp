@@ -6,7 +6,11 @@ import shutil
 from pathlib import Path
 
 import cv2
-from fastapi import FastAPI, HTTPException, Response
+from collections import defaultdict
+from time import time
+from fastapi import FastAPI, HTTPException, Response, Request, Security
+from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from dotenv import load_dotenv
 
 from . import __version__
@@ -32,6 +36,35 @@ pipeline = ReconstructionPipeline(
 )
 
 app = FastAPI(title="Harmony Reconstruction Core", version=__version__)
+
+request_counts = defaultdict(list)
+
+@app.middleware("http")
+async def security_and_rate_limit_middleware(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
+
+    expected_key = os.environ.get("RECONSTRUCTION_API_KEY", "").strip()
+    if expected_key:
+        key_provided = request.headers.get("X-API-Key")
+        if key_provided != expected_key:
+            return JSONResponse(
+                status_code=401,
+                content={"code": "UNAUTHORIZED", "message": "Invalid or missing X-API-Key header"}
+            )
+
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    now = time()
+    max_requests = int(os.environ.get("RECONSTRUCTION_RATE_LIMIT", "120"))
+    
+    request_counts[client_ip] = [t for t in request_counts[client_ip] if now - t < 60]
+    if len(request_counts[client_ip]) >= max_requests:
+        return JSONResponse(
+            status_code=429,
+            content={"code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests. Please try again later."}
+        )
+    request_counts[client_ip].append(now)
+    return await call_next(request)
 
 
 def _allowed_roots():
@@ -114,7 +147,15 @@ def reconstruct(request: ReconstructionRequest):
 def perceive_video_endpoint(payload: dict):
     try:
         from .perception import perceive_video
-        return perceive_video(payload["videoPath"], payload["audioPath"], payload["outputDir"])
+
+        # Defaults to False: without it the endpoint returns `blocked` rather than
+        # bounding-box-derived joints that look like a real pose.
+        return perceive_video(
+            payload["videoPath"],
+            payload["audioPath"],
+            payload["outputDir"],
+            allow_silhouette_proxy=bool(payload.get("allowSilhouetteProxy", False)),
+        )
     except Exception as exc:
         raise HTTPException(status_code=422, detail={"code": "PERCEPTION_FAILED", "message": str(exc)}) from exc
 

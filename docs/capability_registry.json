@@ -1,0 +1,220 @@
+{
+  "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-27",
+  "auditedBy": "sprint-0-truth-restoration",
+  "verificationLevels": [
+    "not_implemented",
+    "unaudited",
+    "contract_verified",
+    "offline_verified",
+    "simulator_verified",
+    "real_model_verified",
+    "real_harmony_smoke_verified",
+    "real_harmony_repeatably_verified",
+    "shot_verified",
+    "episode_verified"
+  ],
+  "levelDefinitions": {
+    "not_implemented": "No working code path. Entry points must return blocked/not_implemented.",
+    "unaudited": "Code exists but was not verified in this session. Do not cite as evidence.",
+    "contract_verified": "Schema/type contract validated only.",
+    "offline_verified": "Deterministic behaviour proven by the test suite; no model or Harmony.",
+    "real_model_verified": "Executed against real model weights producing real artifacts.",
+    "real_harmony_smoke_verified": "One successful operation against a licensed Harmony with evidence.",
+    "shot_verified": "A complete shot was produced, rendered, reviewed and approved."
+  },
+  "capabilities": [
+    {
+      "capabilityId": "perception.wholebody_pose",
+      "productionStage": "perception",
+      "implementationFiles": [
+        "services/ml-runtime/providers/dwpose_provider.py",
+        "services/ml-runtime/weights/dwpose/manifest.json"
+      ],
+      "publicTools": [],
+      "backendType": "onnxruntime_local",
+      "verificationLevel": "real_model_verified",
+      "evidencePaths": [
+        "docs/evidence/sprint0-pose/execution_report.json",
+        "docs/evidence/sprint0-pose/before_after_confidence.json",
+        "output/dwpose_sprint0/keypoints_overlay.png"
+      ],
+      "models": [
+        {
+          "name": "yolox_l",
+          "role": "person_detection",
+          "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+          "sizeBytes": 216746733,
+          "hashVerified": true
+        },
+        {
+          "name": "dw-ll_ucoco_384",
+          "role": "wholebody_pose_simcc",
+          "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "sizeBytes": 134399116,
+          "hashVerified": true
+        }
+      ],
+      "measured": {
+        "fixture": "fixtures/character.png",
+        "peopleFound": 1,
+        "personScore": 0.9539542198181152,
+        "keypointsTotal": 133,
+        "keypointsVisible": 107,
+        "minConfidence": 0.09410138428211212,
+        "maxConfidence": 1.038989782333374,
+        "meanConfidence": 0.7043629288673401
+      },
+      "knownFailures": [
+        "Single-person only: pose runs on the highest-scoring detection; multi-person tracking is not implemented.",
+        "No temporal smoothing; per-frame video use will jitter.",
+        "Validated on one photographic fixture only; stylised/animated line art is unvalidated."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Run across a real video sequence and measure temporal stability; validate on genuine animation line art rather than a photograph."
+    },
+    {
+      "capabilityId": "perception.video_to_retarget",
+      "productionStage": "perception",
+      "implementationFiles": [
+        "services/reconstruction-core/reconstruction_core/perception.py"
+      ],
+      "publicTools": ["harmony.ml.perceive_video"],
+      "backendType": "opencv_background_subtraction",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [],
+      "knownFailures": [
+        "The only built-in estimator places 13 joints at fixed ratios of a motion-detected bounding box; joint positions do not respond to limb movement.",
+        "Confidence was derived from contour fill ratio, not per-joint detection."
+      ],
+      "blockingReason": "No anatomical pose model is wired in. Default call now returns blocked; the box proxy requires allow_silhouette_proxy=True and is labelled silhouette_proxy_only.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Wire DWPoseProvider per-frame into perceive_video and prove keypoints track a moving limb."
+    },
+    {
+      "capabilityId": "inbetweening.generative",
+      "productionStage": "animation",
+      "implementationFiles": ["services/ml-runtime/providers/animeinbet_provider.py"],
+      "publicTools": ["harmony.animation.generate_inbetweens"],
+      "backendType": "none",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Previous version returned InbetweenPIR entries pointing at /tmp/animeinbet_output/*.png that were never written, with a hardcoded confidence of 0.95."
+      ],
+      "blockingReason": "No model implementation and no weights. All entry points now return not_implemented with realInferenceExecuted=false.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Integrate a real inbetweening model and produce actual image files on disk with hashes."
+    },
+    {
+      "capabilityId": "supplychain.model_weights_integrity",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "scripts/ml/download-dwpose.py",
+        "services/ml-runtime/weights/dwpose/manifest.json"
+      ],
+      "publicTools": [],
+      "backendType": "local_filesystem",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": ["docs/evidence/sprint0-pose/before_after_confidence.json"],
+      "knownFailures": [
+        "Before this session the downloader declared expected SHA-256 values that matched neither file and never compared them; the manifest recorded whatever bytes arrived.",
+        "The manifest stored machine-specific absolute paths, so the ML stack did not resolve on any other checkout."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Apply the same verified-hash + relative-path pattern to the remaining model families (VoxCPM, Whisper, SAM)."
+    },
+    {
+      "capabilityId": "recorder.harmony_action_capture",
+      "productionStage": "data_collection",
+      "implementationFiles": [
+        "src/services/harmonyActionRecorder/index.ts",
+        "src/services/sceneDiffEngine/semantic.ts",
+        "src/services/sceneStateCapture/index.ts"
+      ],
+      "publicTools": [
+        "harmony.capture.start",
+        "harmony.capture.record_instruction",
+        "harmony.capture.snapshot",
+        "harmony.capture.status",
+        "harmony.capture.stop",
+        "harmony.capture.approve",
+        "harmony.capture.reject",
+        "harmony.capture.export_dataset_entry",
+        "harmony.capture.compare_sessions"
+      ],
+      "backendType": "typescript_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/harmony-action-recorder-real-smoke/blocked.json"
+      ],
+      "knownFailures": [
+        "Headless Harmony bridge exposes no Node View coordinates, node connections, per-frame exposures or keyframe interpolation."
+      ],
+      "blockingReason": "Real Harmony read blocked: harmony.open_project raises RuntimeError: Invalid license (no FlexNet license file).",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Execute the QtScript notifier inside a licensed Harmony GUI session and capture one real manual edit."
+    },
+    {
+      "capabilityId": "harmony.scene_execution",
+      "productionStage": "execution",
+      "implementationFiles": [
+        "scripts/python/harmony_bridge.py",
+        "src/adapters/harmonyPython.ts"
+      ],
+      "publicTools": ["harmony.scene.open_project"],
+      "backendType": "toonboom_python_package",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [
+        "docs/evidence/harmony-action-recorder-real-smoke/blocked.json"
+      ],
+      "knownFailures": [
+        "ToonBoom.harmony imports successfully (python 3.9.25) but open_project raises RuntimeError: Invalid license."
+      ],
+      "blockingReason": "No FlexNet license on this machine: /usr/local/flexlm/licenses/license.dat absent, LM_LICENSE_FILE unset.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Any successful open_project + readback against a licensed Harmony."
+    },
+    {
+      "capabilityId": "vectorization.centerline_bezier",
+      "productionStage": "assets",
+      "implementationFiles": [
+        "services/reconstruction-core/reconstruction_core/stroke_extractor.py",
+        "services/reconstruction-core/reconstruction_core/native_vectorizer.py"
+      ],
+      "publicTools": ["harmony.vectorization.analyze_image"],
+      "backendType": "opencv_local",
+      "verificationLevel": "unaudited",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Bezier control points come from a tangent heuristic, not a least-squares (Schneider) fit; curve fidelity is unmeasured."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced — Zhang-Suen thinning plus cubic Bezier fitting is present."
+    },
+    {
+      "capabilityId": "production.shot_factory",
+      "productionStage": "orchestration",
+      "implementationFiles": [],
+      "publicTools": [],
+      "backendType": "none",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [],
+      "knownFailures": [],
+      "blockingReason": "Not started. Deliberately deferred: building a shot factory on top of a perception layer that fabricated keypoints would have industrialised a false result.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "ShotManifest schema, deterministic compiler and an offline golden-path bundle."
+    }
+  ],
+  "fixtureNotes": [
+    {
+      "path": "fixtures/character.png",
+      "finding": "This is a 512x512 photograph of an astronaut (STS-93 mission patch visible), i.e. the standard scikit-image 'astronaut' sample, not an animation character. ML claims described as verified on a 'character' were verified on a stock photograph.",
+      "impact": "Any capability claiming validation for stylised animation line art via this fixture is unproven."
+    }
+  ]
+}

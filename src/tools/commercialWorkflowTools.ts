@@ -101,16 +101,31 @@ export const commercialWorkflowTools = [
     }),
     handler: async (args: any) => {
       return executeWithDryRun('production.run_batch_scene_assembly', args, args.dryRun, async () => {
-        // Симулируем пакетную сборку нескольких сцен
+        const plansDir = path.resolve(args.plansDirectory);
+        if (!fs.existsSync(plansDir)) {
+          throw new Error(`Директория с планами не найдена: ${plansDir}`);
+        }
+        const planFiles = fs.readdirSync(plansDir).filter(f => f.endsWith('.json'));
+        if (planFiles.length === 0) {
+          return {
+            status: 'success',
+            verification: 'verified_real',
+            processedCount: 0,
+            results: [],
+            message: 'В указанной директории не найдено ни одного файла формата scene_plan.json.'
+          };
+        }
+        const results = planFiles.map(file => ({
+          scene: file.replace('.json', ''),
+          status: 'plan_validated',
+          verification: 'implemented_unverified'
+        }));
         return {
           status: 'success',
-          processedCount: 3,
-          results: [
-            { scene: 'SC_001', status: 'completed', durationMs: 4500 },
-            { scene: 'SC_002', status: 'completed', durationMs: 3800 },
-            { scene: 'SC_003', status: 'completed', durationMs: 5100 }
-          ],
-          message: 'Пакетная сборка завершена успешно.'
+          verification: 'implemented_unverified',
+          processedCount: results.length,
+          results,
+          message: `Провалидировано ${results.length} планов сцен из ${plansDir}. Реальная сборка требует нативного окружения Harmony.`
         };
       });
     }
@@ -124,19 +139,7 @@ export const commercialWorkflowTools = [
     }),
     handler: async (args: any) => {
       return executeWithDryRun('production.render_all_previews', args, args.dryRun, async () => {
-        const outDir = path.resolve(args.outputDirectory);
-        if (!fs.existsSync(outDir)) {
-          fs.mkdirSync(outDir, { recursive: true });
-        }
-        const rendered = ['SC_001.mp4', 'SC_002.mp4', 'SC_003.mp4'];
-        for (const file of rendered) {
-          fs.writeFileSync(path.join(outDir, file), 'MOCK_RENDER');
-        }
-        return {
-          status: 'success',
-          renderedFiles: rendered,
-          directory: outDir
-        };
+        throw new Error('[UNSUPPORTED_BY_VERSION] Массовый рендеринг превью требует лицензированной Toon Boom Harmony CLI/Render.');
       });
     }
   },
@@ -149,11 +152,12 @@ export const commercialWorkflowTools = [
     handler: async (args: { scenesList: string[] }) => {
       const results = args.scenesList.map(scene => ({
         scene,
-        passed: true,
-        issuesFound: 0,
+        passed: fs.existsSync(scene),
+        verification: 'requires_real_harmony',
+        issuesFound: fs.existsSync(scene) ? 0 : 1,
         emptyLayers: []
       }));
-      return { status: 'success', audits: results };
+      return { status: 'success', verification: 'implemented_unverified', audits: results };
     }
   },
   {
@@ -165,19 +169,7 @@ export const commercialWorkflowTools = [
     }),
     handler: async (args: any) => {
       return executeWithDryRun('production.export_client_review_package', args, args.dryRun, async () => {
-        // Создаем пустой файл для верификации
-        const zipResolved = path.resolve(args.targetZipPath);
-        const zipDir = path.dirname(zipResolved);
-        if (!fs.existsSync(zipDir)) {
-          fs.mkdirSync(zipDir, { recursive: true });
-        }
-        fs.writeFileSync(zipResolved, 'MOCK_ZIP_PACKAGE');
-        return {
-          status: 'success',
-          packagePath: zipResolved,
-          sizeBytes: 15420,
-          message: `Пакет для клиента успешно экспортирован по пути: ${zipResolved}`
-        };
+        throw new Error('[UNSUPPORTED_BY_VERSION] Формирование ZIP-пакета клиента требует валидных скомпилированных ассетов и отчетов рендеринга.');
       });
     }
   },

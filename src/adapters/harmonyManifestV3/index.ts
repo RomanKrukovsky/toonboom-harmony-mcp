@@ -65,7 +65,7 @@ export class HarmonyManifestV3Compiler {
       occlusionGraph: input.occlusionGraph,
 
       // Animation
-      keyPoses: input.keyPoses,
+      ...(input.keyPoses && input.keyPoses.poses ? { keyPoses: input.keyPoses } : {}),
       motionTracks,
       cameraLayout: input.cameraLayout,
       cameraTrack: input.cameraLayout?.cameraTrack,

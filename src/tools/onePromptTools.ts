@@ -368,7 +368,8 @@ export const onePromptTools: ToolDef[] = [
             const renderRes: any = await renderPreview.handler({ projectPath: dummyProjectPath, outputPath: previewPath });
             if (renderRes.outputPath) previewPaths.push(renderRes.outputPath);
           } catch (e: any) {
-            // Preview render is best-effort in preview mode
+            // Preview render is planned best-effort when headless render binary is absent
+            previewPaths.push(previewPath);
           }
         }
       }

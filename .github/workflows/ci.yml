@@ -49,7 +49,7 @@ jobs:
       
       - name: Run Python tests
         run: |
-          pytest services/reconstruction-core/tests -q
+          PYTHONPATH=services/reconstruction-core pytest services/reconstruction-core/tests -q
 
   lint:
     name: Lint & Security

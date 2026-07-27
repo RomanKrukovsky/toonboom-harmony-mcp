@@ -1,5 +1,18 @@
 import { z } from 'zod';
 import { ActingPlanner } from '../adapters/actingPlanner/index.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.js';
+
+async function runRigBridge(command: string, args: any): Promise<any> {
+  try {
+    return await HarmonyPython.runCommand(command, args);
+  } catch (err: any) {
+    if (err instanceof HarmonyError && err.code === 'PYTHON_API_UNAVAILABLE') {
+      return { status: 'unsupported', reason: 'Python API is not available.' };
+    }
+    throw err;
+  }
+}
 
 /**
  * actingTools — acting planning layer.
@@ -127,6 +140,32 @@ export const actingTools = [
       const planner = new ActingPlanner();
       const score = planner.estimateReadability(args.actingPlan.emotionalArc || []);
       return { status: score >= 70 ? 'success' : 'partial_success', readabilityScore: score };
+    }
+  },
+
+  {
+    name: 'harmony.acting.apply_to_scene',
+    description: 'Bakes acting plan into keyframes in Harmony via Python API.',
+    inputSchema: z.object({
+      projectPath: z.string().optional(),
+      actingPlan: z.any().describe('ActingPlan from harmony.acting.apply_rough_acting'),
+      dryRun: z.boolean().optional().default(true)
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      
+      return executeWithDryRun('acting.apply_to_scene', args, args.dryRun, async () => {
+        const res = await runRigBridge('execute_acting_plan', {
+          projectPath: checkedPath,
+          plan: args.actingPlan
+        });
+        if (res.status === 'unsupported') return res;
+        return {
+          status: 'success',
+          bridgeResponse: res,
+          message: res.message
+        };
+      });
     }
   }
 ];

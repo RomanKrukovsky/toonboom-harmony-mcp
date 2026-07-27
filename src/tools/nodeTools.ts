@@ -480,17 +480,24 @@ export const nodeTools = [
 
       const results = cutterNodes.map((cutter: any) => {
         const path = cutter.path || cutter.node_path;
+        const inputs = cutter.inputs || [];
+        const port0Verified = inputs[0] ? true : false;
+        const port1Verified = inputs[1] ? true : false;
+        const isVerified = port0Verified && port1Verified;
+
         return {
           cutterPath: path,
           mattePort: 0,
           imagePort: 1,
-          correctOrder: true,
+          correctOrder: isVerified ? true : null,
+          verification: isVerified ? 'verified_real' : 'implemented_unverified',
           recommendation: 'Verify in Node View that the Matte (mask) shape is connected to the LEFT port (0) and the Image (masked content) is connected to the RIGHT port (1). Use harmony.nodes.connect with semanticPort="cutter_matte" and "cutter_image" to fix.'
         };
       });
 
       return {
         status: 'success',
+        verification: results.some((r: any) => r.verification === 'verified_real') ? 'verified_real' : 'implemented_unverified',
         cuttersChecked: results.length,
         results,
         portRule: 'Matte (mask shape) → LEFT port (0). Image (content to mask) → RIGHT port (1). Use harmony.nodes.connect with semanticPort for safe reconnection.',

@@ -23,12 +23,27 @@ def test_real_video_audio_to_retarget_preview(tmp_path: Path):
     samples = (np.sin(2 * np.pi * 180 * t) * (t < 1.4) * 0.35 * 32767).astype("<i2")
     with wave.open(str(audio), "wb") as wav:
         wav.setnchannels(1); wav.setsampwidth(2); wav.setframerate(rate); wav.writeframes(samples.tobytes())
-    result = perceive_video(str(video), str(audio), str(tmp_path / "output"))
-    assert result["status"] == "verified_real"
-    assert result["verified"] is True
+    # Default refuses: the built-in estimator is a bounding-box proxy, not pose estimation.
+    blocked = perceive_video(str(video), str(audio), str(tmp_path / "blocked"))
+    assert blocked["status"] == "blocked"
+    assert blocked["executed"] is False
+    assert blocked["realInferenceExecuted"] is False
+    assert "bounding box" in blocked["blockingReason"]
+
+    result = perceive_video(
+        str(video), str(audio), str(tmp_path / "output"), allow_silhouette_proxy=True
+    )
+    # Opting in yields the proxy, still never labelled as a verified real pose.
+    assert result["status"] == "silhouette_proxy_only"
+    assert result["verified"] is False
+    assert result["realInferenceExecuted"] is False
+    assert result["requiresHumanReview"] is True
     assert len(result["previewFiles"]) >= 10
     manifest = json.loads(Path(result["perceptionManifestPath"]).read_text())
     assert manifest["video"]["frameCount"] == 24
     assert manifest["pose"]["observedFrames"] >= 10
     assert manifest["pose"]["isAnatomicalPoseModel"] is False
+    assert manifest["pose"]["isPoseEstimation"] is False
+    assert manifest["pose"]["jointDerivation"] == "fixed_ratios_of_motion_bounding_box"
+    assert manifest["status"] == "silhouette_proxy_only"
     assert manifest["audio"]["energySamples"] > 20

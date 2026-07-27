@@ -14,7 +14,45 @@ from .retargeting_models import JointMapping, RigJoint, RigProfile
 from .retargeting_preview import generate_svg_previews
 
 
-def perceive_video(video_path: str, audio_path: str, output_dir: str) -> dict:
+SILHOUETTE_BLOCKING_REASON = (
+    "perceive_video has no anatomical pose model wired in. Its only built-in estimator places "
+    "13 joints at fixed ratios of a motion-detected bounding box, so the 'landmarks' encode the "
+    "box, not the body: a raised arm does not move the wrist. Pass "
+    "allow_silhouette_proxy=True to obtain that box-derived proxy explicitly, clearly labelled, "
+    "and never as a verified pose."
+)
+
+
+def perceive_video(
+    video_path: str,
+    audio_path: str,
+    output_dir: str,
+    allow_silhouette_proxy: bool = False,
+) -> dict:
+    """
+    Perceive a video into a retargeting manifest.
+
+    The built-in estimator is a *silhouette proxy*, not pose estimation. It is therefore
+    opt-in: by default this function refuses rather than emitting joint positions that look
+    anatomical but are geometrically derived from a bounding box.
+
+    Previously this path always ran and reported `status: "verified_real"`, `verified: True`
+    for those synthetic joints. A real whole-body estimator now exists at
+    services/ml-runtime/providers/dwpose_provider.py (YOLOX detection + DWPose SimCC);
+    wiring it in per-frame is the next step for this function.
+    """
+    if not allow_silhouette_proxy:
+        return {
+            "status": "blocked",
+            "executed": False,
+            "verified": False,
+            "realInferenceExecuted": False,
+            "artifactCreated": False,
+            "isAnatomicalPoseModel": False,
+            "blockingReason": SILHOUETTE_BLOCKING_REASON,
+            "requiresHumanReview": True,
+        }
+
     video = Path(video_path).resolve(strict=True)
     audio = Path(audio_path).resolve(strict=True)
     out = Path(output_dir).resolve()
@@ -77,11 +115,17 @@ def perceive_video(video_path: str, audio_path: str, output_dir: str) -> dict:
     converted = {k: {n: tuple(v) for n, v in pts.items()} for k, pts in landmarks.items()}
     generate_svg_previews(manifest, converted, preview_dir)
     perception = {
-        "schemaVersion": "1.0", "status": "verified_real", "executed": True, "verified": True,
-        "artifactCreated": True, "video": {"path": str(video), "sha256": sha256(video), "width": width, "height": height, "fps": fps, "frameCount": frame},
+        # NOT "verified_real": these joints are geometric ratios of a bounding box.
+        "schemaVersion": "1.1", "status": "silhouette_proxy_only", "executed": True, "verified": False,
+        "realInferenceExecuted": False, "requiresHumanReview": True, "artifactCreated": True, "video": {"path": str(video), "sha256": sha256(video), "width": width, "height": height, "fps": fps, "frameCount": frame},
         "audio": {"path": str(audio), "sha256": sha256(audio), **audio_features},
-        "pose": {"provider": "opencv_moving_silhouette_v1", "isAnatomicalPoseModel": False, "observedFrames": len(landmarks), "failedFrames": frame - len(landmarks), "landmarks": {str(k): v for k, v in landmarks.items()}},
-        "warnings": ["Landmarks are inferred from an observed moving silhouette, not an anatomical pose model."],
+        "pose": {"provider": "opencv_moving_silhouette_v1", "isAnatomicalPoseModel": False, "isPoseEstimation": False,
+                 "jointDerivation": "fixed_ratios_of_motion_bounding_box", "observedFrames": len(landmarks), "failedFrames": frame - len(landmarks), "landmarks": {str(k): v for k, v in landmarks.items()}},
+        "warnings": [
+            "Landmarks are fixed ratios of a motion-detected bounding box, not pose estimation.",
+            "Joint positions do not respond to limb movement; they only track the box.",
+            "Confidence is derived from contour fill ratio and is not a per-joint detection score.",
+        ],
         "provenance": {"opencv": cv2.__version__, "videoSha256": sha256(video), "audioSha256": sha256(audio)},
     }
     perception_path = out / "perception_manifest.json"
@@ -91,7 +135,9 @@ def perceive_video(video_path: str, audio_path: str, output_dir: str) -> dict:
     previews = sorted(str(p) for p in preview_dir.glob("*.svg"))
     if not previews or any(Path(p).stat().st_size == 0 for p in previews):
         raise RuntimeError("Preview verification failed")
-    return {"status": "verified_real", "executed": True, "verified": True, "artifactCreated": True, "perceptionManifestPath": str(perception_path), "retargetingManifestPath": str(retarget_path), "previewFiles": previews, "warnings": perception["warnings"], "provenance": perception["provenance"]}
+    return {"status": "silhouette_proxy_only", "executed": True, "verified": False,
+            "realInferenceExecuted": False, "requiresHumanReview": True,
+            "artifactCreated": True, "perceptionManifestPath": str(perception_path), "retargetingManifestPath": str(retarget_path), "previewFiles": previews, "warnings": perception["warnings"], "provenance": perception["provenance"]}
 
 
 def analyze_wav(path: Path) -> dict:

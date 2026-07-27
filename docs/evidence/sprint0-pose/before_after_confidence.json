@@ -1,0 +1,42 @@
+{
+  "_comment": "Measured before/after for the DWPose confidence defect. 'before' re-executes the exact pre-fix formula on the same real model and image.",
+  "generatedAt": "2026-07-27",
+  "fixture": {
+    "path": "fixtures/character.png",
+    "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+    "note": "scikit-image astronaut sample photograph, not an animation character"
+  },
+  "before": {
+    "decode": "np.max(np.exp(simcc - max(simcc)))  [incomplete softmax]",
+    "personDetection": "none - pose run on full uncropped image",
+    "min": 1.0,
+    "max": 1.0,
+    "mean": 1.0,
+    "uniqueValues": 1,
+    "keypointsVisibleAt0.3": 133,
+    "keypointsTotal": 133,
+    "reportedTopLevelConfidence": 0.9,
+    "reportedTopLevelConfidenceSource": "hardcoded: 0.9 if len(points) > 10 else 0.4"
+  },
+  "after": {
+    "decode": "mmpose get_simcc_maximum (raw response maximum)",
+    "personDetection": "yolox_l.onnx, score 0.9540",
+    "min": 0.09410138428211212,
+    "max": 1.038989782333374,
+    "mean": 0.7043629288673401,
+    "uniqueValues": 133,
+    "keypointsVisibleAt0.3": 107,
+    "keypointsTotal": 133,
+    "reportedTopLevelConfidence": 0.7043629288673401,
+    "reportedTopLevelConfidenceSource": "mean of measured per-keypoint scores"
+  },
+  "rejectedAlternative": {
+    "decode": "normalized softmax over SimCC bins",
+    "why": "SimCC spreads response over 576/768 bins; softmax collapses all scores to ~0.003 and marks 0/133 keypoints visible. Verified against the real model before choosing the decode."
+  },
+  "artifacts": {
+    "skeleton.json": "671f17229879734c5cad0224100780762c9ae66196de204b286840c784123800",
+    "keypoints_overlay.png": "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870",
+    "provenance.json": "335e3ebd98cb3345aecf69822f06c83a006153770680899612c06ae5451e24e4"
+  }
+}

@@ -176,4 +176,29 @@ describe('Security Regression Tests', () => {
       results.forEach(r => expect(r).toBeDefined());
     });
   });
+
+  describe('ScreenshotAdapter Security Hardening', () => {
+    it('should reject screenshot output path outside allowed root', async () => {
+      const { ScreenshotAdapter } = await import('../src/adapters/screenshot/index.js');
+      await expect(ScreenshotAdapter.capture({
+        outputPath: '/etc/passwd_screenshot.png',
+        simulate: true
+      })).rejects.toThrow(HarmonyError);
+    });
+
+    it('should reject command injection attempt in output path', async () => {
+      const { ScreenshotAdapter } = await import('../src/adapters/screenshot/index.js');
+      const injectionPath = path.join(allowedRoot, 'shot_injection.png; touch /tmp/pwned');
+      // Verify that verifyPathAccess or execFile handles file path without executing injection
+      try {
+        await ScreenshotAdapter.capture({
+          outputPath: injectionPath,
+          simulate: false
+        });
+      } catch (err: any) {
+        // Will fail cleanly due to executable missing or path error, NOT run touch /tmp/pwned
+      }
+      expect(fs.existsSync('/tmp/pwned')).toBe(false);
+    });
+  });
 });

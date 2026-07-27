@@ -1,6 +1,21 @@
 import { z } from 'zod';
 import { Rig360Synthesizer } from '../adapters/rig360Synthesizer/index.js';
 import { RigSynthesizer } from '../adapters/rigSynthesizer/index.js';
+import { Rig360Assembler } from '../adapters/rig360Assembler.js';
+import { rig360SpecSchema } from '../schemas/rig360PIR.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.js';
+
+async function runRigBridge(command: string, args: any): Promise<any> {
+  try {
+    return await HarmonyPython.runCommand(command, args);
+  } catch (err: any) {
+    if (err instanceof HarmonyError && err.code === 'PYTHON_API_UNAVAILABLE') {
+      return { status: 'unsupported', reason: 'Python API is not available.' };
+    }
+    throw err;
+  }
+}
 
 /**
  * rig360GenerationTools — 360 rig synthesizer tools.
@@ -16,6 +31,35 @@ export const rig360GenerationTools = [
       const synth = new Rig360Synthesizer();
       const spec = synth.generateSpec(args.characterSpec);
       return { status: 'success', rig360Spec: spec };
+    }
+  },
+  {
+    name: 'harmony.rig360.build_head_turn_from_pir',
+    description: 'Интегрирует несколько ракурсов головы (PIR) в один узел с Drawing Substitutions и Master Controller Grid.',
+    inputSchema: z.object({
+      rig360Spec: z.record(z.unknown()),
+      projectPath: z.string().optional(),
+      dryRun: z.boolean().optional().default(true)
+    }),
+    handler: async (args: any) => {
+      const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+      const spec = rig360SpecSchema.parse(args.rig360Spec);
+      
+      const assemblyPlan = Rig360Assembler.assemblePlan(spec);
+      
+      return executeWithDryRun('build_head_turn_from_pir', args, args.dryRun, async () => {
+        const res = await runRigBridge('execute_rig360_plan', {
+          projectPath: checkedPath,
+          plan: assemblyPlan
+        });
+        if (res.status === 'unsupported') return res;
+        
+        return {
+          status: 'success',
+          assemblyPlan,
+          bridgeResponse: res
+        };
+      });
     }
   },
 

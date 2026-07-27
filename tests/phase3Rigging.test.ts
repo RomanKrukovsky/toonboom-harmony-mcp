@@ -75,4 +75,25 @@ describe('Phase 3: Rigging Pipeline', () => {
     const commandPlan2 = builder.buildPlan(mockPir, bindingPlan, entry);
     expect(commandPlan.sourceManifestSha256).toBe(commandPlan2.sourceManifestSha256);
   });
+
+  it('executes harmony.rig.create_pegs and harmony.rig.create_deformers tools', async () => {
+    const { rigTools } = await import('../src/tools/rigTools.js');
+    
+    const pegsTool = rigTools.find(t => t.name === 'harmony.rig.create_pegs');
+    expect(pegsTool).toBeDefined();
+    const pegRes: any = await pegsTool!.handler({
+      nodePaths: ['Head_Drawing', 'Body_Drawing'],
+      dryRun: true
+    } as any);
+    expect(pegRes.dryRun).toBe(true);
+
+    const deformerTool = rigTools.find(t => t.name === 'harmony.rig.create_deformers');
+    expect(deformerTool).toBeDefined();
+    const defRes: any = await deformerTool!.handler({
+      nodePath: 'Arm_Drawing',
+      type: 'Bone',
+      dryRun: true
+    } as any);
+    expect(defRes.dryRun).toBe(true);
+  });
 });

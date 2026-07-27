@@ -570,8 +570,30 @@ def run_motion_retargeting(
         for mapping in mappings:
             key = (mapping.peg_node_path, mapping.transform_type)
             
-            if mapping.transform_type == "rotation" and len(mapping.source_joints) >= 2:
-                # Вращения всегда вычисляем на локальных (центрированных) координатах
+            if mapping.transform_type == "rotation" and len(mapping.source_joints) == 3:
+                j_root = l_lms.get(mapping.source_joints[0])
+                j_mid = l_lms.get(mapping.source_joints[1])
+                j_end = l_lms.get(mapping.source_joints[2])
+                if j_root and j_mid and j_end:
+                    l1 = math.sqrt((j_mid[0] - j_root[0])**2 + (j_mid[1] - j_root[1])**2)
+                    l2 = math.sqrt((j_end[0] - j_mid[0])**2 + (j_end[1] - j_mid[1])**2)
+                    root_pos = (j_root[0], j_root[1])
+                    target_pos = (j_end[0], j_end[1])
+                    is_lower = "ELBOW" in mapping.source_joints[1] or "KNEE" in mapping.source_joints[1]
+                    flip = "KNEE" in mapping.source_joints[1] or "RIGHT" in mapping.source_joints[0]
+                    angle1, angle2 = solve_ik_2joint(root_pos, target_pos, l1, l2, flip_elbow=flip)
+                    angle = angle2 if is_lower else angle1
+                    if mapping.min_angle_limit is not None:
+                        angle = max(mapping.min_angle_limit, angle)
+                    if mapping.max_angle_limit is not None:
+                        angle = min(mapping.max_angle_limit, angle)
+                    raw_tracks[key].append(angle)
+                    confidences[key].append(min(j_root[3], j_mid[3], j_end[3]))
+                else:
+                    raw_tracks[key].append(0.0)
+                    confidences[key].append(0.0)
+            elif mapping.transform_type == "rotation" and len(mapping.source_joints) >= 2:
+                # Вращения для 2 joint связей через atan2
                 j1 = l_lms.get(mapping.source_joints[0])
                 j2 = l_lms.get(mapping.source_joints[1])
                 if j1 and j2:
