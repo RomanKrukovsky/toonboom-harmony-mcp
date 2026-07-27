@@ -90,6 +90,11 @@ Recorded rather than hidden.
 - **no fabricated media**: a media file that is under 4 KB, printable ASCII, and contains a
   placeholder marker (`MOCK_VIDEO_STREAM`, `SIMULATED_VIDEO_STREAM_PLACEHOLDER`, …) fails the gate.
 
+Both checks walk nested directories and cover `.json`, `.jsonl`, `.md`, `.txt`, `.csv` and
+YAML. The first version scanned only the bundle's top level and only `.json`, so
+`representative-frames/*.png` and the `raw-/smoothed-keypoints.jsonl` streams — the bulk of a
+pose bundle — were never inspected.
+
 Both run in CI as separate steps.
 
 ### What the gates caught on first run

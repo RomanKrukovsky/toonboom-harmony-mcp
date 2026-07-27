@@ -212,6 +212,27 @@ const MEDIA_EXTENSIONS = new Set([
   '.mp4', '.mov', '.avi', '.mkv', '.png', '.jpg', '.jpeg', '.tvg', '.xstage', '.tpl'
 ]);
 
+/**
+ * Text artifacts that must not carry an absolute machine path. `.jsonl` matters as much as
+ * `.json` here: the pose bundles store their per-frame keypoint streams as JSON Lines, and
+ * an earlier version of this gate checked only `.json`, so those files were never scanned.
+ */
+const TEXT_EXTENSIONS = new Set(['.json', '.jsonl', '.md', '.txt', '.csv', '.yaml', '.yml']);
+
+/** Every file in a bundle, including nested directories, as paths relative to the bundle. */
+function walkBundleFiles(root: string, prefix = ''): string[] {
+  const found: string[] = [];
+  for (const entry of fs.readdirSync(path.join(root, prefix), { withFileTypes: true })) {
+    const relative = prefix ? path.join(prefix, entry.name) : entry.name;
+    if (entry.isDirectory()) {
+      found.push(...walkBundleFiles(root, relative));
+    } else if (entry.isFile()) {
+      found.push(relative);
+    }
+  }
+  return found.sort();
+}
+
 export function sha256OfFile(target: string): string {
   return crypto.createHash('sha256').update(fs.readFileSync(target)).digest('hex');
 }
@@ -247,20 +268,21 @@ export function validateEvidenceBundle(bundleDir: string): EvidenceViolation[] {
     return violations;
   }
 
-  for (const entry of fs.readdirSync(bundleDir, { withFileTypes: true })) {
-    if (!entry.isFile()) continue;
-    const full = path.join(bundleDir, entry.name);
-    const ext = path.extname(entry.name).toLowerCase();
+  // Walk nested directories too: bundles keep artifacts such as representative-frames/*.png
+  // in subdirectories, and a flat readdir would never look at them.
+  for (const relative of walkBundleFiles(bundleDir)) {
+    const full = path.join(bundleDir, relative);
+    const ext = path.extname(relative).toLowerCase();
 
     if (MEDIA_EXTENSIONS.has(ext)) {
       const check = isFabricatedMedia(full);
       if (check.fabricated) {
-        add('no-fabricated-media', `${entry.name} is a placeholder, not real media: ${check.reason}`);
+        add('no-fabricated-media', `${relative} is a placeholder, not real media: ${check.reason}`);
       }
     }
 
-    if (ext === '.json' && fs.readFileSync(full, 'utf-8').includes('/Users/')) {
-      add('portable-paths', `${entry.name} contains an absolute /Users/ path`);
+    if (TEXT_EXTENSIONS.has(ext) && fs.readFileSync(full, 'utf-8').includes('/Users/')) {
+      add('portable-paths', `${relative} contains an absolute /Users/ path`);
     }
   }
 

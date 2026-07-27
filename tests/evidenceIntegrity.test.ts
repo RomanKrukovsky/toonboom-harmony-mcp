@@ -45,13 +45,27 @@ describe('evidence integrity gate', () => {
     expect(fabricated.map(f => path.relative(REPO_ROOT, f.file))).toEqual([]);
   });
 
-  it('keeps absolute user paths out of committed evidence JSON', () => {
-    for (const bundle of bundles) {
-      for (const entry of fs.readdirSync(bundle)) {
-        if (!entry.endsWith('.json')) continue;
-        expect(fs.readFileSync(path.join(bundle, entry), 'utf-8')).not.toContain('/Users/');
+  it('keeps absolute user paths out of every committed text artifact, at any depth', () => {
+    // Deliberately not a flat `.json` scan: the pose bundles store per-frame keypoints as
+    // `.jsonl` and keep PNGs under representative-frames/, both of which an earlier version
+    // of this check walked straight past.
+    const TEXT = ['.json', '.jsonl', '.md', '.txt', '.csv', '.yaml', '.yml'];
+    let inspected = 0;
+
+    const walk = (dir: string): void => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+        } else if (TEXT.includes(path.extname(entry.name).toLowerCase())) {
+          inspected += 1;
+          expect(fs.readFileSync(full, 'utf-8')).not.toContain('/Users/');
+        }
       }
-    }
+    };
+
+    for (const bundle of bundles) walk(bundle);
+    expect(inspected).toBeGreaterThan(0);
   });
 
   describe('fabrication detection', () => {
@@ -112,6 +126,29 @@ describe('evidence integrity gate', () => {
         JSON.stringify({ 'gone.json': 'a'.repeat(64) })
       );
       expect(validateEvidenceBundle(bundle).some(v => v.rule === 'hashed-file-exists')).toBe(true);
+    });
+
+    it('detects fabricated media inside a nested subdirectory', () => {
+      // representative-frames/ lives one level down in the real pose bundles; a flat
+      // readdir never looked at it.
+      const bundle = path.join(scratch, 'nested');
+      fs.mkdirSync(path.join(bundle, 'representative-frames'), { recursive: true });
+      fs.writeFileSync(path.join(bundle, 'representative-frames', 'frame_000000.png'), 'MOCK_IMAGE');
+      const violations = validateEvidenceBundle(bundle);
+      expect(violations.some(v => v.rule === 'no-fabricated-media')).toBe(true);
+      expect(violations.some(v => v.detail.includes('representative-frames/frame_000000.png'))).toBe(true);
+    });
+
+    it('detects an absolute user path in a .jsonl stream', () => {
+      // The pose bundles store per-frame keypoints as JSON Lines. An earlier version of
+      // this gate checked only .json, so these files were never scanned.
+      const bundle = path.join(scratch, 'jsonl');
+      fs.mkdirSync(bundle, { recursive: true });
+      fs.writeFileSync(
+        path.join(bundle, 'raw-keypoints.jsonl'),
+        JSON.stringify({ frameIndex: 0, source: '/Users/someone/clip.mp4' }) + '\n'
+      );
+      expect(validateEvidenceBundle(bundle).some(v => v.rule === 'portable-paths')).toBe(true);
     });
 
     it('detects an absolute user path in bundle JSON', () => {
