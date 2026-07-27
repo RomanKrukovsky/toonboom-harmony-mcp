@@ -25,9 +25,10 @@
   "framesWithoutDetection": 0,
   "detectionRate": 1.0,
   "smoothing": {
-    "filterApplied": "one_euro",
-    "chosenBy": "lowest median jitter among candidates measured on this sequence",
+    "filterApplied": "none",
+    "chosenBy": "lowest median jitter among candidates measured on this sequence, including 'none' \u2014 a filter is applied only when it beats leaving the signal unfiltered",
     "candidatesMeasured": {
+      "none": 0.04851594478391713,
       "one_euro": 3.6150123551820066,
       "ema": 3.788470679163636
     },
@@ -38,12 +39,12 @@
       "sampleCount": 20216
     },
     "jitterAfter": {
-      "medianPixelsPerFrame": 3.6150123551820066,
-      "meanPixelsPerFrame": 6.115456335156627,
-      "p95PixelsPerFrame": 17.826319834435708,
+      "medianPixelsPerFrame": 0.04851594478391713,
+      "meanPixelsPerFrame": 7.802929563993638,
+      "p95PixelsPerFrame": 35.31316393654444,
       "sampleCount": 20216
     },
-    "jitterReductionPercent": -7351.184082434628,
+    "jitterReductionPercent": 0.0,
     "confidenceThreshold": 0.3,
     "maxHoldFrames": 3,
     "smoothedKeypointCount": 20349,

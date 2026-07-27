@@ -180,6 +180,10 @@ def _apply_filter(frames: List[VideoPoseFrame], fps: float, kind: str, threshold
             return OneEuroFilter(freq=fps)
         if kind == "ema":
             return EmaFilter(alpha=0.5)
+        if kind == "none":
+            # Identity: smoothed mirrors raw. Keeps the smoothed-keypoints contract intact
+            # for downstream consumers while applying no filtering at all.
+            return lambda value: value
         raise ValueError(f"unknown filter {kind}")
 
     for frame in frames:
@@ -386,8 +390,13 @@ def track_video_pose(
     # ---- jitter measured BEFORE any smoothing, then the filter chosen by measurement ----
     jitter_before = measure_jitter(frames, use_smoothed=False, confidence_threshold=confidence_threshold)
 
+    # "none" is a real candidate. Without it the engine could only choose between filters and
+    # would apply one even when every filter is worse than leaving the signal alone. That is
+    # not hypothetical: on the real cartoon fixture the raw median jitter is 0.0485 px/frame
+    # while one_euro gives 3.615 and ema 3.788 — applying either degraded the signal ~74x
+    # while the report still called it a "reduction".
     candidates: Dict[str, float] = {}
-    for candidate in ("one_euro", "ema"):
+    for candidate in ("none", "one_euro", "ema"):
         _reset_smoothing(frames)
         _apply_filter(frames, fps, candidate, confidence_threshold)
         candidates[candidate] = measure_jitter(
@@ -412,7 +421,10 @@ def track_video_pose(
 
     smoothing = SmoothingReport(
         filterApplied=chosen_filter,
-        chosenBy="lowest median jitter among candidates measured on this sequence",
+        chosenBy=(
+            "lowest median jitter among candidates measured on this sequence, including "
+            "'none' — a filter is applied only when it beats leaving the signal unfiltered"
+        ),
         candidatesMeasured=candidates,
         jitterBefore=jitter_before,
         jitterAfter=jitter_after,

@@ -83,7 +83,9 @@
         "services/ml-runtime/pipelines/video_pose.py",
         "services/ml-runtime/pipelines/video_pose_schema.py",
         "services/ml-runtime/pipelines/cartoon_motion_metrics.py",
+        "services/ml-runtime/pipelines/arm_raise_metrics.py",
         "scripts/ml/run_video_pose_acceptance.py",
+        "scripts/ml/run_arm_raise_acceptance.py",
         "services/reconstruction-core/reconstruction_core/perception.py"
       ],
       "publicTools": [
@@ -94,6 +96,7 @@
       "evidencePaths": [
         "docs/evidence/sprint1-video-pose-real/tracking-metrics.json",
         "docs/evidence/sprint1-video-pose-real/cartoon-motion-metrics.json",
+        "docs/evidence/sprint1-video-pose-real/arm-raise-metrics.json",
         "docs/evidence/sprint1-video-pose-real/confidence-report.json",
         "docs/evidence/sprint1-video-pose-real/execution-report.json",
         "docs/evidence/sprint1-video-pose-real/source-provenance.json",
@@ -122,7 +125,8 @@
         "DWPose is evaluation-only: COCO-WholeBody training-data terms have not been approved for commercial production. RTMPose remains the required production default.",
         "On the cartoon clip, median per-keypoint movement increased after smoothing from 0.0485 to 3.6150 px/frame because many raw points were nearly static; p95 improved from 35.3132 to 17.8263 px/frame. The current aggregate jitter objective is not a reliable production-quality metric for stylised animation.",
         "Single person only. Identity is IoU + pose similarity, not tracking.",
-        "Validated on one five-second published 2D cartoon clip with a plain background; no varied-style, occlusion or multi-character robustness data."
+        "Validated on one five-second published 2D cartoon clip with a plain background; no varied-style, occlusion or multi-character robustness data.",
+        "Temporal smoothing is currently a no-op on this footage: measured raw median jitter (0.0485 px/frame) beats both One Euro (3.615) and EMA (3.788), so the engine selects 'none'. Smoothing has therefore never been validated as beneficial on real 2D animation; p95 outliers (35.31 px) remain unfiltered."
       ],
       "blockingReason": "Production use remains blocked until a commercially approved pose provider replaces the DWPose evaluation provider and the temporal-quality metric is validated across several 2D animation styles. Real evaluation inference is verified.",
       "lastVerifiedAt": "2026-07-27",
@@ -134,19 +138,20 @@
         "framesWithDetection": 153,
         "detectionRate": 1.0,
         "identitySwitchCount": 0,
-        "acceptedLimb": "right_ankle",
-        "relativeToRoot": "right_hip",
-        "relativeMotionAmplitudePx": 329.8654,
-        "relativeMotionBoxRatio": 0.3865,
-        "rootStdDevPx": 8.8359,
+        "acceptedLimb": "right_wrist",
+        "relativeToRoot": "right_shoulder",
+        "relativeMotionAmplitudePx": 103.625,
+        "relativeMotionBoxRatio": 0.1214,
+        "rootStdDevPx": 14.2355,
         "matchedLimbFrames": 153,
         "jitterBeforeMedianPx": 0.0485,
-        "jitterAfterMedianPx": 3.615,
-        "jitterReductionPercent": -7351.1841,
+        "jitterAfterMedianPx": 0.0485,
+        "jitterReductionPercent": 0.0,
         "jitterBeforeP95Px": 35.3132,
-        "jitterAfterP95Px": 17.8263,
-        "filterChosen": "one_euro",
+        "jitterAfterP95Px": 35.3132,
+        "filterChosen": "none",
         "filterCandidates": {
+          "none": 0.0485,
           "one_euro": 3.615,
           "ema": 3.7885
         },

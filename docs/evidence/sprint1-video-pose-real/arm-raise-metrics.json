@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "LimbRelativeMotionAcceptance",
+  "accepted": true,
+  "minimumMatchedFrames": 5,
+  "minimumRelativeMotionPixels": 40.0,
+  "minimumRelativeMotionBoxRatio": 0.05,
+  "medianDetectorBoxHeight": 853.52197265625,
+  "limbs": {
+    "left_wrist_to_shoulder": {
+      "limb": "left_wrist",
+      "root": "left_shoulder",
+      "relativeXAmplitude": 72.1672636667887,
+      "relativeYAmplitude": 45.50831228494644,
+      "relativeMotionAmplitude": 85.31776152816018,
+      "relativeMotionBoxRatio": 0.09995965453899487,
+      "rootStdDev": 15.813942326595763,
+      "frames": 153
+    },
+    "right_wrist_to_shoulder": {
+      "limb": "right_wrist",
+      "root": "right_shoulder",
+      "relativeXAmplitude": 98.77211380004883,
+      "relativeYAmplitude": 31.340139508247375,
+      "relativeMotionAmplitude": 103.62497193691395,
+      "relativeMotionBoxRatio": 0.12140867517964671,
+      "rootStdDev": 14.235456703789493,
+      "frames": 153
+    }
+  },
+  "bestLimb": {
+    "limb": "right_wrist",
+    "root": "right_shoulder",
+    "relativeXAmplitude": 98.77211380004883,
+    "relativeYAmplitude": 31.340139508247375,
+    "relativeMotionAmplitude": 103.62497193691395,
+    "relativeMotionBoxRatio": 0.12140867517964671,
+    "rootStdDev": 14.235456703789493,
+    "frames": 153
+  },
+  "selectedArm": "right",
+  "blockingReason": null
+}

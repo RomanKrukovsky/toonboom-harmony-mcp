@@ -393,3 +393,71 @@ def test_limb_moves_relative_to_torso_on_real_2d_animation(tmp_path):
     (tmp_path / "acceptance" / "cartoon-motion-metrics.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"
     )
+
+
+# ------------------------------------------------ smoothing must never make things worse
+
+
+def test_no_filter_is_a_candidate_and_never_loses_to_a_worse_filter(mechanism_run):
+    """
+    Regression guard: the engine must be allowed to choose "no smoothing".
+
+    Before this guard the selection compared only one_euro against ema, so a filter was
+    applied even when both were far worse than the raw signal. Measured on the real cartoon
+    fixture: raw median jitter 0.0485 px/frame vs one_euro 3.615 and ema 3.788 — the report
+    called that a "reduction" of -7351%.
+    """
+    _, out = mechanism_run
+    smoothing = json.loads((out / "tracking-metrics.json").read_text())["smoothing"]
+    candidates = smoothing["candidatesMeasured"]
+
+    assert "none" in candidates, "'no smoothing' must be an option the engine can pick"
+
+    chosen = smoothing["filterApplied"]
+    assert chosen in candidates
+    # The winner must genuinely be the best measured option.
+    assert candidates[chosen] == min(candidates.values())
+    # And it can never be worse than doing nothing.
+    assert candidates[chosen] <= candidates["none"] + 1e-9, (
+        f"chose {chosen} at {candidates[chosen]} px/frame when leaving the signal "
+        f"unfiltered gives {candidates['none']}"
+    )
+
+
+def test_reported_jitter_reduction_is_never_negative(mechanism_run):
+    """A negative 'reduction' means smoothing degraded the signal and was applied anyway."""
+    _, out = mechanism_run
+    smoothing = json.loads((out / "tracking-metrics.json").read_text())["smoothing"]
+    assert smoothing["jitterReductionPercent"] >= -1e-6, (
+        f"smoothing made jitter worse: {smoothing['jitterReductionPercent']}%"
+    )
+
+
+def test_none_filter_mirrors_raw_coordinates(tmp_path):
+    """When 'none' wins, smoothed values must equal raw so consumers keep a valid contract."""
+    if not WEIGHTS_PRESENT:
+        pytest.skip("weights not downloaded")
+    clip = _build_mechanism_clip()
+    out = tmp_path / "none-check"
+    result = track_video_pose(str(clip), str(out), frame_stride=8, max_frames=6)
+    assert result["status"] == "success"
+
+    if result["filterApplied"] != "none":
+        pytest.skip("a real filter won on this sequence; identity path not exercised here")
+
+    raw = {}
+    for line in (out / "raw-keypoints.jsonl").read_text().strip().splitlines():
+        frame = json.loads(line)
+        raw[frame["frameIndex"]] = {k["index"]: k for k in frame["keypoints"]}
+
+    compared = 0
+    for line in (out / "smoothed-keypoints.jsonl").read_text().strip().splitlines():
+        frame = json.loads(line)
+        for kp in frame["keypoints"]:
+            if kp["smoothedX"] is None:
+                continue
+            source = raw[frame["frameIndex"]][kp["index"]]
+            assert kp["smoothedX"] == pytest.approx(source["x"], abs=1e-9)
+            assert kp["smoothedY"] == pytest.approx(source["y"], abs=1e-9)
+            compared += 1
+    assert compared > 0

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-27T18:22:37Z",
+  "generatedAt": "2026-07-27T20:03:06Z",
   "realInferenceExecuted": true,
   "analyzedFrames": 153,
   "detectionRate": 1.0,
-  "filterApplied": "one_euro",
+  "filterApplied": "none",
   "overlayVideo": {
     "status": "ok",
     "path": "keypoints-overlay.mp4",
@@ -18,15 +18,5 @@
     "representative-frames/frame_000000.png",
     "representative-frames/frame_000076.png",
     "representative-frames/frame_000152.png"
-  ],
-  "cartoonMotionAcceptance": {
-    "status": "passed",
-    "path": "cartoon-motion-metrics.json"
-  },
-  "sourceProvenance": "source-provenance.json",
-  "evidenceIntegrity": {
-    "hashAlgorithm": "sha256",
-    "hashesPath": "hashes.json",
-    "verifiedAfterWrite": true
-  }
+  ]
 }
