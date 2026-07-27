@@ -29,7 +29,14 @@ __pycache__/
 *.bin
 *.pt
 weights/
-services/ml-runtime/weights/
+# Weight blobs stay out, but the manifest carries verified SHA-256s and must be reviewable.
+# The generic `weights/` rule above excludes the directory, so each level is re-included
+# explicitly before the manifest exception can apply.
+!services/ml-runtime/weights/
+services/ml-runtime/weights/*
+!services/ml-runtime/weights/dwpose/
+services/ml-runtime/weights/dwpose/*
+!services/ml-runtime/weights/dwpose/manifest.json
 
 # Harmony Action Recorder evidence (local capture data, never committed)
 artifacts/harmony-captures/

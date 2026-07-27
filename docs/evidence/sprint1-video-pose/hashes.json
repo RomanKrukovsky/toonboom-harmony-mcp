@@ -1,0 +1,14 @@
+{
+  "acceptance-status.json": "e7f4d961287854aadaaaa7ba13a9c62d5ac6caf60043c7824e9ce964443b63b3",
+  "confidence-report.json": "2bc91b9ad82a07d77f50e901e5c938a583f4cc33dd853847758fe97740a5a1f3",
+  "execution-report.json": "b261664313feef78f0a16a7ec42b03cc180df4d2daf8534fdbee3ce7f90b9ce5",
+  "input-manifest.json": "140521406217bb913e1f19335fa74a690070dc0d9023cd78252ad9d23ad98beb",
+  "keypoints-overlay.mp4": "d55ad2b2c07379766b9a41b59182acc31b53b63c6fa0cf8c9c69ff8d09f14334",
+  "mechanism_camera_move.mp4": "b84fc2a66de0d92e15add3214ba06503e4a5ef69b846580071c224b1898a516c",
+  "raw-keypoints.jsonl": "c8c19b1c1ccc16e876816082b8136f95eeb140ecc2c6e3eba9788134a8920bb5",
+  "representative-frames/frame_000000.png": "623673444df63b4e6a1eccbc16320fd615292bbb53d19667885e1173e7448a06",
+  "representative-frames/frame_000024.png": "bab88713218e533807d4ad84a8b8b0a3e96aa74adbf55eca8b9e0572d0a1c337",
+  "representative-frames/frame_000047.png": "1f5b7bea588bdbe31df9fe05978209d29d6f16e26e5c3d8651264a05d32660ee",
+  "smoothed-keypoints.jsonl": "aa16c837a16bc993d8eb2b3240dcb1a5c5559c784249851d4da0e2b1fc0d0470",
+  "tracking-metrics.json": "5fc4b4d67c1ba455a2c48f299257776aa158f2de0bf91f98297886a8bf5e5ade"
+}

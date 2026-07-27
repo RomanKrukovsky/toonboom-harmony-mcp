@@ -1,0 +1,41 @@
+{
+  "sprint": "Sprint 1 - Real Video Pose Tracking",
+  "mechanismVerification": {
+    "status": "passed",
+    "input": "mechanism_camera_move.mp4",
+    "inputNature": "SYNTHETIC CAMERA MOTION over a real photograph (fixtures/character.png).",
+    "subjectMoves": false,
+    "proves": [
+      "real per-frame YOLOX+DWPose inference",
+      "coordinates mapped into source-video space",
+      "measured non-constant confidence",
+      "identity association across frames",
+      "jitter measured before smoothing; filter chosen by measurement",
+      "low-confidence points not smoothed",
+      "deterministic re-run",
+      "portable relative paths",
+      "overlay video really decodes"
+    ],
+    "doesNotProve": [
+      "that a wrist moves relative to a shoulder",
+      "any biomechanical motion",
+      "robustness on real footage, lighting or occlusion"
+    ]
+  },
+  "acceptanceTest": {
+    "status": "blocked",
+    "test": "test_wrist_moves_relative_to_shoulder_on_real_arm_raise",
+    "blockingReason": "No real arm-raise video exists in the repository or any installed dependency.",
+    "searched": {
+      "output/**/*.mp4": "71 files, ALL fabricated ASCII placeholders (MOCK_VIDEO_STREAM / SIMULATED_VIDEO_STREAM_PLACEHOLDER), 0 decodable",
+      "opencv sample videos": "none installed",
+      "skimage/data/no_time_for_that_tiny.gif": "14x25 px, unusable for pose"
+    },
+    "howToUnblock": "Place a 2-6s clip of one person raising an arm at fixtures/video/arm_raise.mp4 (or set HARMONY_POSE_TEST_VIDEO). See fixtures/video/README.md.",
+    "willNotAccept": [
+      "synthetic footage",
+      "static images",
+      "looped stills"
+    ]
+  }
+}

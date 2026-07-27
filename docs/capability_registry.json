@@ -79,25 +79,58 @@
       "capabilityId": "perception.video_to_retarget",
       "productionStage": "perception",
       "implementationFiles": [
+        "services/ml-runtime/pipelines/video_pose.py",
+        "services/ml-runtime/pipelines/video_pose_schema.py",
         "services/reconstruction-core/reconstruction_core/perception.py"
       ],
-      "publicTools": ["harmony.ml.perceive_video"],
-      "backendType": "opencv_background_subtraction",
-      "verificationLevel": "not_implemented",
-      "evidencePaths": [],
-      "knownFailures": [
-        "The only built-in estimator places 13 joints at fixed ratios of a motion-detected bounding box; joint positions do not respond to limb movement.",
-        "Confidence was derived from contour fill ratio, not per-joint detection."
+      "publicTools": [
+        "harmony.ml.perceive_video"
       ],
-      "blockingReason": "No anatomical pose model is wired in. Default call now returns blocked; the box proxy requires allow_silhouette_proxy=True and is labelled silhouette_proxy_only.",
+      "backendType": "onnxruntime_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/sprint1-video-pose/tracking-metrics.json",
+        "docs/evidence/sprint1-video-pose/confidence-report.json",
+        "docs/evidence/sprint1-video-pose/acceptance-status.json",
+        "output/video-pose-sprint1/keypoints-overlay.mp4 (local only; output/ is gitignored)"
+      ],
+      "knownFailures": [
+        "Acceptance test (wrist moves relative to shoulder) has NEVER run: no real arm-raise footage exists locally.",
+        "Validated only on synthetic camera motion over a still photograph; no real subject motion.",
+        "p95 jitter increased 8.20 -> 17.76 px/frame after One Euro filtering; the adaptive cutoff overshoots at direction changes under strong camera motion.",
+        "Single person only. Identity is IoU + pose similarity, not tracking.",
+        "No occlusion, lighting or multi-subject robustness data."
+      ],
+      "blockingReason": "Real arm-raise video absent. All 71 mp4 files under output/ are fabricated ASCII placeholders; no usable clip ships with any dependency. See fixtures/video/README.md.",
       "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "Wire DWPoseProvider per-frame into perceive_video and prove keypoints track a moving limb."
+      "nextRequiredProof": "Place fixtures/video/arm_raise.mp4 and pass test_wrist_moves_relative_to_shoulder_on_real_arm_raise. Only then may this become real_model_verified.",
+      "measured": {
+        "input": "synthetic camera motion over fixtures/character.png (subject does not move)",
+        "analyzedFrames": 48,
+        "framesWithDetection": 48,
+        "detectionRate": 1.0,
+        "identitySwitchCount": 0,
+        "jitterBeforeMedianPx": 1.9907,
+        "jitterAfterMedianPx": 1.7339,
+        "jitterReductionPercent": 12.9,
+        "filterChosen": "one_euro",
+        "filterCandidates": {
+          "one_euro": 1.7339,
+          "ema": 1.8663
+        },
+        "overlayVideoDecodable": true,
+        "overlayDecodedPackets": 48
+      }
     },
     {
       "capabilityId": "inbetweening.generative",
       "productionStage": "animation",
-      "implementationFiles": ["services/ml-runtime/providers/animeinbet_provider.py"],
-      "publicTools": ["harmony.animation.generate_inbetweens"],
+      "implementationFiles": [
+        "services/ml-runtime/providers/animeinbet_provider.py"
+      ],
+      "publicTools": [
+        "harmony.animation.generate_inbetweens"
+      ],
       "backendType": "none",
       "verificationLevel": "not_implemented",
       "evidencePaths": [],
@@ -118,7 +151,9 @@
       "publicTools": [],
       "backendType": "local_filesystem",
       "verificationLevel": "offline_verified",
-      "evidencePaths": ["docs/evidence/sprint0-pose/before_after_confidence.json"],
+      "evidencePaths": [
+        "docs/evidence/sprint0-pose/before_after_confidence.json"
+      ],
       "knownFailures": [
         "Before this session the downloader declared expected SHA-256 values that matched neither file and never compared them; the manifest recorded whatever bytes arrived.",
         "The manifest stored machine-specific absolute paths, so the ML stack did not resolve on any other checkout."
@@ -165,7 +200,9 @@
         "scripts/python/harmony_bridge.py",
         "src/adapters/harmonyPython.ts"
       ],
-      "publicTools": ["harmony.scene.open_project"],
+      "publicTools": [
+        "harmony.scene.open_project"
+      ],
       "backendType": "toonboom_python_package",
       "verificationLevel": "not_implemented",
       "evidencePaths": [
@@ -185,7 +222,9 @@
         "services/reconstruction-core/reconstruction_core/stroke_extractor.py",
         "services/reconstruction-core/reconstruction_core/native_vectorizer.py"
       ],
-      "publicTools": ["harmony.vectorization.analyze_image"],
+      "publicTools": [
+        "harmony.vectorization.analyze_image"
+      ],
       "backendType": "opencv_local",
       "verificationLevel": "unaudited",
       "evidencePaths": [],
@@ -194,7 +233,7 @@
       ],
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced — Zhang-Suen thinning plus cubic Bezier fitting is present."
+      "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced \u2014 Zhang-Suen thinning plus cubic Bezier fitting is present."
     },
     {
       "capabilityId": "production.shot_factory",
@@ -208,6 +247,21 @@
       "blockingReason": "Not started. Deliberately deferred: building a shot factory on top of a perception layer that fabricated keypoints would have industrialised a false result.",
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "ShotManifest schema, deterministic compiler and an offline golden-path bundle."
+    },
+    {
+      "capabilityId": "tracking.multi_person",
+      "productionStage": "perception",
+      "implementationFiles": [],
+      "publicTools": [],
+      "backendType": "none",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Single-person only. With several people the highest-IoU detection wins and identity can swap silently."
+      ],
+      "blockingReason": "Recorded capability gap for Sprint 1. Deliberately deferred; LocoTrack not integrated.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Multi-person association with stable IDs measured on footage containing at least two people."
     }
   ],
   "fixtureNotes": [
@@ -215,6 +269,11 @@
       "path": "fixtures/character.png",
       "finding": "This is a 512x512 photograph of an astronaut (STS-93 mission patch visible), i.e. the standard scikit-image 'astronaut' sample, not an animation character. ML claims described as verified on a 'character' were verified on a stock photograph.",
       "impact": "Any capability claiming validation for stylised animation line art via this fixture is unproven."
+    },
+    {
+      "path": "output/**/*.mp4",
+      "finding": "All 71 mp4 files under output/ are fabricated: 17-byte ASCII 'MOCK_VIDEO_STREAM' or 34-byte 'SIMULATED_VIDEO_STREAM_PLACEHOLDER'. Zero decode, including one named SC_TEST_REAL_preview.mp4.",
+      "impact": "Any past claim of rendered preview video is false. Verified with ffprobe on 2026-07-27: 0 decodable of 71."
     }
   ]
 }

@@ -1,0 +1,14 @@
+{
+  "sourceVideo": "output/video-pose-sprint1/mechanism_camera_move.mp4",
+  "sourceVideoSha256": "b84fc2a66de0d92e15add3214ba06503e4a5ef69b846580071c224b1898a516c",
+  "sourceWidth": 384,
+  "sourceHeight": 384,
+  "fps": 24.0,
+  "totalFrames": 48,
+  "analyzedFrames": 48,
+  "frameStride": 1,
+  "detectorModel": "yolox_l",
+  "detectorModelSha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+  "poseModel": "dw-ll_ucoco_384",
+  "poseModelSha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843"
+}

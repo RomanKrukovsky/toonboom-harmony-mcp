@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "VideoPoseSequence",
+  "sourceVideo": "output/video-pose-sprint1/mechanism_camera_move.mp4",
+  "sourceVideoSha256": "b84fc2a66de0d92e15add3214ba06503e4a5ef69b846580071c224b1898a516c",
+  "sourceWidth": 384,
+  "sourceHeight": 384,
+  "fps": 24.0,
+  "totalFrames": 48,
+  "analyzedFrames": 48,
+  "frameStride": 1,
+  "realInferenceExecuted": true,
+  "detectorModel": "yolox_l",
+  "poseModel": "dw-ll_ucoco_384",
+  "detectorModelSha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+  "poseModelSha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+  "isTracking": false,
+  "identityMethod": "iou_plus_pose_similarity_single_person",
+  "identitySwitchCount": 0,
+  "personCount": 1,
+  "framesWithDetection": 48,
+  "framesWithoutDetection": 0,
+  "detectionRate": 1.0,
+  "smoothing": {
+    "filterApplied": "one_euro",
+    "chosenBy": "lowest median jitter among candidates measured on this sequence",
+    "candidatesMeasured": {
+      "one_euro": 1.7339150754027255,
+      "ema": 1.8662877081815998
+    },
+    "jitterBefore": {
+      "medianPixelsPerFrame": 1.990696453561526,
+      "meanPixelsPerFrame": 5.76323634661657,
+      "p95PixelsPerFrame": 8.202616776398468,
+      "sampleCount": 4962
+    },
+    "jitterAfter": {
+      "medianPixelsPerFrame": 1.7339150754027255,
+      "meanPixelsPerFrame": 3.8734694388414828,
+      "p95PixelsPerFrame": 17.76130851482484,
+      "sampleCount": 4962
+    },
+    "jitterReductionPercent": 12.899072467798725,
+    "confidenceThreshold": 0.3,
+    "maxHoldFrames": 3,
+    "smoothedKeypointCount": 5135,
+    "skippedLowConfidenceCount": 1249,
+    "interpolatedKeypointCount": 114
+  },
+  "warnings": [],
+  "errors": [],
+  "requiresHumanReview": false,
+  "notCaptured": [
+    "multi_person_tracking",
+    "face_expression",
+    "hand_articulation_quality"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "Paths are relative to this manifest so a checkout is portable; they previously contained machine-specific absolute paths that only resolved on one workstation. Hashes verified against the files on 2026-07-27.",
+  "yolox": {
+    "path": "yolox_l.onnx",
+    "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+    "license": "Apache 2.0"
+  },
+  "dwpose": {
+    "path": "dw-ll_ucoco_384.onnx",
+    "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+    "license": "Apache 2.0"
+  }
+}

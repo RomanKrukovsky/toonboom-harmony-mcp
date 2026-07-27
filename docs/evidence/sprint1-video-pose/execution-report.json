@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-07-27T16:12:22Z",
+  "realInferenceExecuted": true,
+  "analyzedFrames": 48,
+  "detectionRate": 1.0,
+  "filterApplied": "one_euro",
+  "overlayVideo": {
+    "status": "ok",
+    "path": "keypoints-overlay.mp4",
+    "decodable": true,
+    "codec": "mpeg4",
+    "width": 384,
+    "height": 384,
+    "decodedPackets": 48,
+    "sizeBytes": 719057
+  },
+  "representativeFrames": [
+    "representative-frames/frame_000000.png",
+    "representative-frames/frame_000024.png",
+    "representative-frames/frame_000047.png"
+  ]
+}
