@@ -1,0 +1,193 @@
+{
+  "$comment": "Machine-readable verification status. docs/VERIFIED_TOOL_MATRIX.md must not contradict this file; tests/verifiedToolMatrixConsistency.test.ts enforces that for every tool listed here.",
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-27",
+  "statusVocabulary": {
+    "real_harmony_verified": "Executed against a licensed, running Toon Boom Harmony and produced real artifacts.",
+    "offline_tested": "Verified offline by Zod schema validation and the Jest suite; no Harmony involved.",
+    "implemented": "Code exists and typechecks, but the behaviour has not been verified.",
+    "blocked": "Verification was attempted and could not run; blockingReason states exactly why.",
+    "not_applicable": "The check does not apply to this tool."
+  },
+  "tools": [
+    {
+      "name": "harmony.capture.start",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "blocked",
+      "evidencePath": "docs/evidence/harmony-action-recorder-real-smoke/blocked.json",
+      "blockingReason": "ToonBoom.harmony open_project fails with RuntimeError: Invalid license (FlexNet: no license file at /usr/local/flexlm/licenses/license.dat, LM_LICENSE_FILE unset).",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts",
+        "tests/integration/harmonyActionRecorder.offline.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.record_instruction",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Stores the human task description; does not touch Harmony.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/integration/harmonyActionRecorder.offline.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.snapshot",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "blocked",
+      "evidencePath": "docs/evidence/harmony-action-recorder-real-smoke/blocked.json",
+      "blockingReason": "Requires a licensed Harmony read; same license blocker as harmony.capture.start.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.status",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Reads the local artifact store only.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.stop",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "blocked",
+      "evidencePath": "docs/evidence/harmony-action-recorder-real-smoke/blocked.json",
+      "blockingReason": "Requires a licensed Harmony read for the after-state; same license blocker as harmony.capture.start.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts",
+        "tests/integration/harmonyActionRecorder.offline.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.approve",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Writes an immutable decision record; does not touch Harmony.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.reject",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Writes an immutable decision record; does not touch Harmony.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.export_dataset_entry",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Assembles the dataset entry from stored artifacts; does not touch Harmony.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts",
+        "tests/integration/harmonyActionRecorder.offline.test.ts"
+      ]
+    },
+    {
+      "name": "harmony.capture.compare_sessions",
+      "implementationFile": "src/tools/harmonyActionRecorderTools.ts",
+      "backendFile": "src/services/harmonyActionRecorder/index.ts",
+      "schemaValidation": "zod",
+      "unitTest": "offline_tested",
+      "contractTest": "offline_tested",
+      "offlineIntegration": "offline_tested",
+      "realHarmony": "not_applicable",
+      "evidencePath": null,
+      "blockingReason": "Compares two stored patches; does not touch Harmony.",
+      "testFiles": [
+        "tests/harmonyActionRecorderTools.test.ts",
+        "tests/harmonyActionRecorderLifecycle.test.ts"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "name": "HarmonySceneState capture contract",
+      "implementationFile": "src/services/sceneStateCapture/index.ts",
+      "status": "offline_tested",
+      "notes": "Canonical ordering, size limits, schema validation, order-independent hashing. Categories not read in v1 are declared in notCaptured: palettes, deformer_chains, master_controllers, drawing_strokes, art_layers, sound_columns, node_view_groups."
+    },
+    {
+      "name": "SemanticSceneDiffEngine",
+      "implementationFile": "src/services/sceneDiffEngine/semantic.ts",
+      "status": "offline_tested",
+      "notes": "Deterministic semantic patch over normalized states; 15 operation types; inverse patch as data; MCP-claim attribution."
+    },
+    {
+      "name": "Immutable capture evidence store",
+      "implementationFile": "src/services/harmonyActionRecorder/store.ts",
+      "status": "offline_tested",
+      "notes": "Write-once artifacts, append-only JSONL spool with sequence numbers, truncated-tail recovery."
+    },
+    {
+      "name": "Harmony-side SceneChangeNotifier script",
+      "implementationFile": "scripts/harmony/harmony_action_recorder.js",
+      "status": "implemented",
+      "notes": "Static QtScript, no eval. Written against the SceneChangeNotifier reference bundled with the local Harmony 25 installation. Never executed inside Harmony in this session — no licensed GUI session was available."
+    },
+    {
+      "name": "HarmonyBridgeSceneStateProvider (real read path)",
+      "implementationFile": "src/services/sceneStateCapture/harmonyBridgeProvider.ts",
+      "status": "blocked",
+      "notes": "ToonBoom.harmony imports successfully (python 3.9.25); harmony.open_project raises RuntimeError: Invalid license. Evidence: docs/evidence/harmony-action-recorder-real-smoke/blocked.json. Node View coordinates, node connections, per-frame exposures and keyframe interpolation are not exposed by the headless bridge and are reported as warnings, never invented."
+    }
+  ]
+}

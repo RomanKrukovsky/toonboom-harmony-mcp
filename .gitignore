@@ -30,3 +30,8 @@ __pycache__/
 *.pt
 weights/
 services/ml-runtime/weights/
+
+# Harmony Action Recorder evidence (local capture data, never committed)
+artifacts/harmony-captures/
+# Real-smoke capture data stays local; only blocked.json / verified.json are committed
+docs/evidence/harmony-action-recorder-real-smoke/captures/

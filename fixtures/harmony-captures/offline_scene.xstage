@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLACEHOLDER — NOT A REAL TOON BOOM HARMONY SCENE.
+
+  The Harmony Action Recorder needs a scene path that exists on disk so that its
+  allowlist and canonical-path checks run for real. In offline mode the scene state
+  comes from fixtures/harmony-captures/scene-before.json and scene-after.json, and
+  every produced artifact is labelled source="fixture".
+
+  Do not open this file in Harmony and do not treat it as evidence of a real read.
+-->
+<scene name="offline_scene" placeholder="true"/>

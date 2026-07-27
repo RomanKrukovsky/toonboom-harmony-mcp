@@ -66,12 +66,18 @@ import { productionMemoryTools } from './tools/productionMemoryTools.js';
 import { approvalTools } from './tools/approvalTools.js';
 import { legalTools } from './tools/legalTools.js';
 import { systemHealthTools } from './tools/systemHealthTools.js';
+import { vectorizationTools } from './tools/vectorizationTools.js';
+import { studioPackageTools } from './tools/studioPackageTools.js';
+import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
 
 const allTools = [
+  ...harmonyActionRecorderTools,
+  ...vectorizationTools,
+  ...studioPackageTools,
   ...systemTools,
   ...controlCenterTools,
   ...sceneTools,

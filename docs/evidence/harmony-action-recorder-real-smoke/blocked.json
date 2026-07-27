@@ -1,0 +1,11 @@
+{
+  "_comment": "Recorded output of tests/integration/harmonyActionRecorder.realHarmony.smoke.test.ts on 2026-07-27. A real Harmony capture was ATTEMPTED and BLOCKED. This file is evidence of a blocked attempt, NOT a verification. The absolute scene path has been reduced to a repo-relative one.",
+  "checkedAt": "2026-07-27T07:36:43.205Z",
+  "realHarmonyStatus": "blocked",
+  "stateProvider": "harmony_python_bridge",
+  "scenePath": "fixtures/experimental/smoke_scene_379b.xstage",
+  "blockingReason": "Invalid license",
+  "blockingDetail": "ToonBoom.harmony imports successfully (python 3.9.25), but harmony.open_project() raises RuntimeError: Invalid license. FlexNet reports no license file at /usr/local/flexlm/licenses/license.dat and LM_LICENSE_FILE is unset.",
+  "harmonyInstall": "/Applications/Harmony 25 Premium.app",
+  "platform": "darwin-arm64"
+}

@@ -1,0 +1,58 @@
+{
+  "_comment": "Offline HarmonySceneState fixture (AFTER). Represents the animator task 'soften the right-arm anticipation and move the accent from frame 12 to frame 18'. Hand-authored test data, NOT a real Harmony read.",
+  "nodes": [
+    { "path": "Top/Camera", "name": "Camera", "type": "CAMERA", "parentPath": "Top", "positionX": -220, "positionY": -120, "enabled": true },
+    { "path": "Top/Composite", "name": "Composite", "type": "COMPOSITE", "parentPath": "Top", "positionX": 0, "positionY": 240, "enabled": true },
+    { "path": "Top/RIG", "name": "RIG", "type": "GROUP", "parentPath": "Top", "positionX": 0, "positionY": 0, "enabled": true },
+    { "path": "Top/RIG/Arm_R", "name": "Arm_R", "type": "READ", "parentPath": "Top/RIG", "positionX": -60, "positionY": 60, "enabled": true },
+    { "path": "Top/RIG/Arm_R-P", "name": "Arm_R-P", "type": "PEG", "parentPath": "Top/RIG", "positionX": -60, "positionY": 140, "enabled": true },
+    { "path": "Top/RIG/Hand_R", "name": "Hand_R", "type": "READ", "parentPath": "Top/RIG", "positionX": 120, "positionY": 60, "enabled": true }
+  ],
+  "connections": [
+    { "fromNode": "Top/RIG/Arm_R", "fromPort": 0, "toNode": "Top/RIG/Arm_R-P", "toPort": 0 },
+    { "fromNode": "Top/RIG/Arm_R-P", "fromPort": 0, "toNode": "Top/Composite", "toPort": 0 },
+    { "fromNode": "Top/RIG/Hand_R", "fromPort": 0, "toNode": "Top/Composite", "toPort": 1 }
+  ],
+  "nodeAttributes": [
+    { "nodePath": "Top/RIG/Arm_R-P", "attribute": "OFFSET.X", "value": 0.05, "animated": false },
+    { "nodePath": "Top/RIG/Arm_R-P", "attribute": "OFFSET.Y", "value": 0, "animated": true, "columnName": "Arm_R-P_OFFSET_Y" },
+    { "nodePath": "Top/RIG/Arm_R-P", "attribute": "ROTATION.ANGLEZ", "value": 0, "animated": true, "columnName": "Arm_R-P_ROTATION" },
+    { "nodePath": "Top/RIG/Arm_R-P", "attribute": "SCALE.X", "value": 1, "animated": false },
+    { "nodePath": "Top/RIG/Arm_R", "attribute": "DRAWING.ELEMENT", "value": "Arm_R", "animated": false },
+    { "nodePath": "Top/RIG/Hand_R", "attribute": "DRAWING.ELEMENT", "value": "Hand_R", "animated": false }
+  ],
+  "columns": [
+    { "name": "Arm_R-P_OFFSET_Y", "type": "BEZIER", "linkedNodePath": "Top/RIG/Arm_R-P", "linkedAttribute": "OFFSET.Y" },
+    { "name": "Arm_R-P_ROTATION", "type": "BEZIER", "linkedNodePath": "Top/RIG/Arm_R-P", "linkedAttribute": "ROTATION.ANGLEZ" }
+  ],
+  "keyframes": [
+    { "columnName": "Arm_R-P_ROTATION", "frame": 1, "value": 0, "interpolation": "BEZIER", "easeIn": 6, "easeOut": 6 },
+    { "columnName": "Arm_R-P_ROTATION", "frame": 18, "value": -35, "interpolation": "BEZIER", "easeIn": 0, "easeOut": 0 },
+    { "columnName": "Arm_R-P_ROTATION", "frame": 24, "value": 22, "interpolation": "BEZIER", "easeIn": 0, "easeOut": 0 },
+    { "columnName": "Arm_R-P_OFFSET_Y", "frame": 1, "value": 0, "interpolation": "BEZIER" },
+    { "columnName": "Arm_R-P_OFFSET_Y", "frame": 24, "value": 0.25, "interpolation": "BEZIER" }
+  ],
+  "exposures": [
+    { "nodePath": "Top/RIG/Hand_R", "frame": 3, "drawing": "a-1" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 4, "drawing": "a-1" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 5, "drawing": "a-2" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 6, "drawing": "a-2" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 7, "drawing": "a-3" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 8, "drawing": "a-3" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 9, "drawing": "a-4" },
+    { "nodePath": "Top/RIG/Hand_R", "frame": 10, "drawing": "a-4" }
+  ],
+  "camera": {
+    "nodePath": "Top/Camera",
+    "properties": { "fov": 38.0, "nearPlane": 0.1, "farPlane": 1000 }
+  },
+  "sceneSettings": {
+    "frameCount": 24,
+    "currentFrame": 18,
+    "frameRate": 24,
+    "resolutionX": 1920,
+    "resolutionY": 1080
+  },
+  "warnings": [],
+  "errors": []
+}
