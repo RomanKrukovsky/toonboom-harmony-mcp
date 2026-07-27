@@ -24,14 +24,20 @@ def test_real_video_audio_to_retarget_preview(tmp_path: Path):
     with wave.open(str(audio), "wb") as wav:
         wav.setnchannels(1); wav.setsampwidth(2); wav.setframerate(rate); wav.writeframes(samples.tobytes())
     # Default refuses: the built-in estimator is a bounding-box proxy, not pose estimation.
-    blocked = perceive_video(str(video), str(audio), str(tmp_path / "blocked"))
+    blocked = perceive_video(
+        str(video), str(audio), str(tmp_path / "blocked"), mode="silhouette_proxy_only"
+    )
     assert blocked["status"] == "blocked"
     assert blocked["executed"] is False
     assert blocked["realInferenceExecuted"] is False
     assert "bounding box" in blocked["blockingReason"]
 
     result = perceive_video(
-        str(video), str(audio), str(tmp_path / "output"), allow_silhouette_proxy=True
+        str(video),
+        str(audio),
+        str(tmp_path / "output"),
+        mode="silhouette_proxy_only",
+        allow_silhouette_proxy=True,
     )
     # Opting in yields the proxy, still never labelled as a verified real pose.
     assert result["status"] == "silhouette_proxy_only"

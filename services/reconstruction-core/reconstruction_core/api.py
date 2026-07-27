@@ -154,6 +154,7 @@ def perceive_video_endpoint(payload: dict):
             payload["videoPath"],
             payload["audioPath"],
             payload["outputDir"],
+            mode=payload.get("mode", "real"),
             allow_silhouette_proxy=bool(payload.get("allowSilhouetteProxy", False)),
         )
     except Exception as exc:

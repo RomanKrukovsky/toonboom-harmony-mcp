@@ -23,10 +23,36 @@ SILHOUETTE_BLOCKING_REASON = (
 )
 
 
+ML_RUNTIME_ROOT = Path(__file__).resolve().parents[3] / "services" / "ml-runtime"
+
+
+def _load_video_pose_pipeline():
+    """
+    Import the real pose pipeline from services/ml-runtime.
+
+    Returns (callable, None) or (None, reason). The reason is surfaced verbatim instead of
+    silently degrading to the silhouette proxy — reconstruction-core's virtualenv does not
+    currently carry onnxruntime, and pretending otherwise is what this module is fixing.
+    """
+    import sys
+
+    if not ML_RUNTIME_ROOT.exists():
+        return None, f"ml-runtime not found at {ML_RUNTIME_ROOT}"
+    if str(ML_RUNTIME_ROOT) not in sys.path:
+        sys.path.insert(0, str(ML_RUNTIME_ROOT))
+    try:
+        from pipelines.video_pose import track_video_pose
+
+        return track_video_pose, None
+    except Exception as exc:  # noqa: BLE001
+        return None, f"{type(exc).__name__}: {exc}"
+
+
 def perceive_video(
     video_path: str,
     audio_path: str,
     output_dir: str,
+    mode: str = "real",
     allow_silhouette_proxy: bool = False,
 ) -> dict:
     """
@@ -41,6 +67,32 @@ def perceive_video(
     services/ml-runtime/providers/dwpose_provider.py (YOLOX detection + DWPose SimCC);
     wiring it in per-frame is the next step for this function.
     """
+    if mode not in ("real", "silhouette_proxy_only"):
+        raise ValueError(f"unknown mode {mode!r}; expected 'real' or 'silhouette_proxy_only'")
+
+    # Normal mode runs the real detector + pose models.
+    if mode == "real":
+        pipeline, reason = _load_video_pose_pipeline()
+        if pipeline is None:
+            return {
+                "status": "blocked",
+                "executed": False,
+                "verified": False,
+                "realInferenceExecuted": False,
+                "artifactCreated": False,
+                "blockingReason": (
+                    "Real pose pipeline unavailable in this environment "
+                    f"({reason}). Run from a virtualenv with onnxruntime, e.g. .venv-ml. "
+                    "The silhouette proxy is NOT used as a fallback."
+                ),
+                "requiresHumanReview": True,
+            }
+        result = pipeline(video_path, output_dir)
+        # A real run is never labelled verified_real here; verification is the test's job.
+        result.setdefault("mode", "real")
+        result["isAnatomicalPoseModel"] = True
+        return result
+
     if not allow_silhouette_proxy:
         return {
             "status": "blocked",

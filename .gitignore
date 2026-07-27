@@ -35,3 +35,7 @@ services/ml-runtime/weights/
 artifacts/harmony-captures/
 # Real-smoke capture data stays local; only blocked.json / verified.json are committed
 docs/evidence/harmony-action-recorder-real-smoke/captures/
+
+# Video fixtures may contain a real person; keep them local. README stays tracked.
+fixtures/video/*
+!fixtures/video/README.md
