@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "LimbIdentityStability",
+  "jumpThresholdPx": 30.0,
+  "swapMargin": 0.5,
+  "analyzedFrames": 153,
+  "pairs": {
+    "shoulder": {
+      "leftKeypoint": "left_shoulder",
+      "rightKeypoint": "right_shoulder",
+      "largeJumps": 11,
+      "swapExplainedJumps": 0,
+      "swapRatio": 0.0,
+      "swapFrames": [],
+      "comparableFrames": 153,
+      "leftOnRightSideRatio": 1.0,
+      "sideStability": 1.0,
+      "identityReliable": true
+    },
+    "elbow": {
+      "leftKeypoint": "left_elbow",
+      "rightKeypoint": "right_elbow",
+      "largeJumps": 22,
+      "swapExplainedJumps": 0,
+      "swapRatio": 0.0,
+      "swapFrames": [],
+      "comparableFrames": 153,
+      "leftOnRightSideRatio": 1.0,
+      "sideStability": 1.0,
+      "identityReliable": true
+    },
+    "wrist": {
+      "leftKeypoint": "left_wrist",
+      "rightKeypoint": "right_wrist",
+      "largeJumps": 25,
+      "swapExplainedJumps": 0,
+      "swapRatio": 0.0,
+      "swapFrames": [],
+      "comparableFrames": 153,
+      "leftOnRightSideRatio": 1.0,
+      "sideStability": 1.0,
+      "identityReliable": true
+    },
+    "hip": {
+      "leftKeypoint": "left_hip",
+      "rightKeypoint": "right_hip",
+      "largeJumps": 11,
+      "swapExplainedJumps": 0,
+      "swapRatio": 0.0,
+      "swapFrames": [],
+      "comparableFrames": 153,
+      "leftOnRightSideRatio": 1.0,
+      "sideStability": 1.0,
+      "identityReliable": true
+    },
+    "ankle": {
+      "leftKeypoint": "left_ankle",
+      "rightKeypoint": "right_ankle",
+      "largeJumps": 38,
+      "swapExplainedJumps": 14,
+      "swapRatio": 0.3684,
+      "swapFrames": [
+        8,
+        16,
+        20,
+        40,
+        48,
+        52,
+        80,
+        84,
+        104,
+        112,
+        116,
+        140,
+        144,
+        148
+      ],
+      "comparableFrames": 153,
+      "leftOnRightSideRatio": 0.5229,
+      "sideStability": 0.0458,
+      "identityReliable": false
+    }
+  },
+  "unreliablePairs": [
+    "ankle"
+  ],
+  "allPairsReliable": false,
+  "interpretation": "A pair is reliable only when no large jump is better explained by a left/right exchange AND the left keypoint stays on a consistent side. Unreliable pairs must not be bound to per-side rig controls: the correspondence is wrong, and temporal smoothing cannot repair a label swap."
+}

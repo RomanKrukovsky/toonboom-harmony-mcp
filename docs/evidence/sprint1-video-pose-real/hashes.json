@@ -1,15 +1,19 @@
 {
-  "arm-raise-metrics.json": "c270b8a807bd8cd1f322bd9a15bf645f8b9a6ab3edc50f780bc6a7c17ed43237",
-  "cartoon-motion-metrics.json": "66ab3ef2536a3231f67ea4e52ac202aa59bf7142d6c8070495574ee5a9518705",
-  "confidence-report.json": "4995ae86ae554e7390af9e3f80ff9584ec3e4f8ed0f4fd024d6052a0f8e4560f",
-  "execution-report.json": "aba3382cd4821d013941872887105bbafb591370bfc4e39e7e24583589a86ccf",
-  "input-manifest.json": "86fa39824e40a309e3ecd98b25bda652f4d7f93a004a496085471268c633cead",
-  "keypoints-overlay.mp4": "8d6b60321e5e38f8cb17aadadbefa6c3e2d28b908eb9105ac78f637fe70539c3",
-  "raw-keypoints.jsonl": "1fae8061b282accf6d16c2eb0b571ffaad55b4579bac8e59286dda82f6ac7d2f",
-  "representative-frames/frame_000000.png": "e9bb0dbe14043e705b4ff27e9fb1556b1c386b5a92369873121d7a9685b7de86",
-  "representative-frames/frame_000076.png": "39adb5767a2bb773ae8bae5fc62a42dee62d57e1381459c4958a881a10aa4571",
-  "representative-frames/frame_000152.png": "22bc4868c2c5daa9d737af13e60412da89635569a96e3b7e4a0028e2352eb083",
-  "smoothed-keypoints.jsonl": "604223950ee1f4c617af7466bfe0914058705d3f02b3c0a80a1e4be93aaae22c",
-  "source-provenance.json": "c1416ee54eab2448695281bbc51ee1141719256e4dc9c033adc66014d0ddc15d",
-  "tracking-metrics.json": "49e9b17f1c3c3267815d1467cf9cf333914846c7f682cd3d07bf8da94cbd4fe9"
+  "_comment": "SHA-256 of every artifact in this bundle.",
+  "hashes": {
+    "arm-raise-metrics.json": "c270b8a807bd8cd1f322bd9a15bf645f8b9a6ab3edc50f780bc6a7c17ed43237",
+    "cartoon-motion-metrics.json": "66ab3ef2536a3231f67ea4e52ac202aa59bf7142d6c8070495574ee5a9518705",
+    "confidence-report.json": "4995ae86ae554e7390af9e3f80ff9584ec3e4f8ed0f4fd024d6052a0f8e4560f",
+    "execution-report.json": "aba3382cd4821d013941872887105bbafb591370bfc4e39e7e24583589a86ccf",
+    "input-manifest.json": "86fa39824e40a309e3ecd98b25bda652f4d7f93a004a496085471268c633cead",
+    "keypoints-overlay.mp4": "8d6b60321e5e38f8cb17aadadbefa6c3e2d28b908eb9105ac78f637fe70539c3",
+    "limb-identity-metrics.json": "10a286ad36399741af139000aa1c9e745717b5235af31b8571270dc3ce76e4a0",
+    "raw-keypoints.jsonl": "1fae8061b282accf6d16c2eb0b571ffaad55b4579bac8e59286dda82f6ac7d2f",
+    "representative-frames/frame_000000.png": "e9bb0dbe14043e705b4ff27e9fb1556b1c386b5a92369873121d7a9685b7de86",
+    "representative-frames/frame_000076.png": "39adb5767a2bb773ae8bae5fc62a42dee62d57e1381459c4958a881a10aa4571",
+    "representative-frames/frame_000152.png": "22bc4868c2c5daa9d737af13e60412da89635569a96e3b7e4a0028e2352eb083",
+    "smoothed-keypoints.jsonl": "604223950ee1f4c617af7466bfe0914058705d3f02b3c0a80a1e4be93aaae22c",
+    "source-provenance.json": "c1416ee54eab2448695281bbc51ee1141719256e4dc9c033adc66014d0ddc15d",
+    "tracking-metrics.json": "49e9b17f1c3c3267815d1467cf9cf333914846c7f682cd3d07bf8da94cbd4fe9"
+  }
 }
