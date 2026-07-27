@@ -445,6 +445,13 @@ def track_video_pose(
         poseModel="dw-ll_ucoco_384",
         detectorModelSha256=provider.manifest["yolox"]["sha256"],
         poseModelSha256=provider.manifest["dwpose"]["sha256"],
+        providerTier="experimental_fallback",
+        commercialUseApproved=False,
+        productionBlockingReason=(
+            "DWPose code is Apache-2.0, but the COCO-WholeBody training-data terms "
+            "have not been approved for this project's commercial production use. "
+            "Use this provider for evaluation only; RTMPose is the required production default."
+        ),
         identitySwitchCount=identity_switches,
         framesWithDetection=frames_with,
         framesWithoutDetection=analyzed - frames_with,
@@ -543,6 +550,9 @@ def _write_artifacts(
                 "detectorModelSha256": sequence.detectorModelSha256,
                 "poseModel": sequence.poseModel,
                 "poseModelSha256": sequence.poseModelSha256,
+                "providerTier": sequence.providerTier,
+                "commercialUseApproved": sequence.commercialUseApproved,
+                "productionBlockingReason": sequence.productionBlockingReason,
             },
             indent=2,
         ),

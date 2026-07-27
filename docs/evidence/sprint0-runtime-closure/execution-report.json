@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-27T20:46:27+03:00",
+  "scope": "Sprint 0 runtime truth and dependency closure",
+  "claimsRealModelPromotion": false,
+  "changesVerified": [
+    "HarmonyPython persistent daemon has an awaited shutdown and can restart",
+    "generic enabled ML providers without a real backend return blocked",
+    "MLJobResponse rejects success when realInferenceExecuted is false",
+    "all three Python services have declared clean-environment dependencies",
+    "all three Python suites run in CI configuration"
+  ],
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test -- --runInBand",
+      "exitCode": 0,
+      "result": "61 suites passed, 1 skipped; 455 tests passed, 7 skipped"
+    },
+    {
+      "command": "npm run test:python:all",
+      "exitCode": 0,
+      "result": "reconstruction-core: 48 passed, 1 skipped; ml-core: 5 passed; ml-runtime: 29 passed, 1 skipped"
+    },
+    {
+      "command": "uv pip install --python <temporary-python-3.12> -r services/reconstruction-core/requirements.lock -r services/ml-runtime/requirements.lock -e services/ml-core[test]",
+      "exitCode": 0,
+      "result": "39 compatible packages after adding the missing soundfile dependency"
+    }
+  ],
+  "blocked": [
+    {
+      "capabilityId": "perception.video_to_retarget",
+      "reason": "fixtures/video/arm_raise.mp4 is absent; no real subject-motion fixture exists",
+      "realInferenceExecuted": false
+    },
+    {
+      "capabilityId": "perception.face_blendshapes",
+      "reason": "services/ml-runtime/weights/mediapipe/face_landmarker.task is absent",
+      "realInferenceExecuted": false
+    },
+    {
+      "capabilityId": "perception.speech_timing",
+      "reason": "managed WhisperX large-v3 weights are absent",
+      "realInferenceExecuted": false
+    },
+    {
+      "capabilityId": "harmony.scene_execution",
+      "reason": "Harmony is installed but no FlexNet license is configured",
+      "realInferenceExecuted": false
+    }
+  ],
+  "cleanWorktreeVerification": {
+    "status": "verified",
+    "baseCommit": "2534b31a2006ba6e012a82f2ccb72ff92294bcf3",
+    "weightsPresent": false,
+    "commands": [
+      {
+        "command": "npm ci",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run typecheck && npm run build",
+        "exitCode": 0
+      },
+      {
+        "command": "npm test -- --runInBand",
+        "exitCode": 0,
+        "result": "61 suites passed, 1 skipped; 455 tests passed, 7 skipped"
+      },
+      {
+        "command": "pytest for reconstruction-core, ml-core and ml-runtime using the fresh Python 3.12 environment",
+        "exitCode": 0,
+        "result": "all suites passed; model-dependent tests skipped because ignored local weights were absent"
+      }
+    ]
+  }
+}

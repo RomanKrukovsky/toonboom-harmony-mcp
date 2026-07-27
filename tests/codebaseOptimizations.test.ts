@@ -201,7 +201,7 @@ describe('Harmony MCP Codebase Optimizations', () => {
       expect(fs.existsSync(path.join(tempOutputDir, 'client_v01', 'review_manifest.json'))).toBe(true);
       
       const manifest = JSON.parse(fs.readFileSync(path.join(tempOutputDir, 'client_v01', 'review_manifest.json'), 'utf-8'));
-      expect(manifest.sceneName).toBe('toon-boom-harmony-mcp');
+      expect(manifest.sceneName).toBe(path.basename(path.dirname(tempXstage)));
     });
   });
 

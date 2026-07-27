@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "CartoonArticulatedMotionAcceptanceMetrics",
+  "accepted": true,
+  "minimumMatchedFrames": 5,
+  "minimumRelativeMotionPixels": 40.0,
+  "minimumRelativeMotionBoxRatio": 0.05,
+  "medianDetectorBoxHeight": 853.52197265625,
+  "limbs": {
+    "left_wrist_to_shoulder": {
+      "limb": "left_wrist",
+      "root": "left_shoulder",
+      "relativeXAmplitude": 72.36976117875702,
+      "relativeYAmplitude": 44.14062284687384,
+      "relativeMotionAmplitude": 84.76896199895506,
+      "relativeMotionBoxRatio": 0.09931667222947425,
+      "rootStdDev": 9.997398485415234,
+      "frames": 153
+    },
+    "right_wrist_to_shoulder": {
+      "limb": "right_wrist",
+      "root": "right_shoulder",
+      "relativeXAmplitude": 88.70251105606383,
+      "relativeYAmplitude": 30.071517140025776,
+      "relativeMotionAmplitude": 93.66125992508316,
+      "relativeMotionBoxRatio": 0.10973503076153913,
+      "rootStdDev": 9.280756221875121,
+      "frames": 153
+    },
+    "left_ankle_to_hip": {
+      "limb": "left_ankle",
+      "root": "left_hip",
+      "relativeXAmplitude": 290.38332426043974,
+      "relativeYAmplitude": 78.88138221299278,
+      "relativeMotionAmplitude": 300.90654274770424,
+      "relativeMotionBoxRatio": 0.3525469201586592,
+      "rootStdDev": 13.04593642510471,
+      "frames": 153
+    },
+    "right_ankle_to_hip": {
+      "limb": "right_ankle",
+      "root": "right_hip",
+      "relativeXAmplitude": 327.86437332869286,
+      "relativeYAmplitude": 36.2789457209783,
+      "relativeMotionAmplitude": 329.865441052624,
+      "relativeMotionBoxRatio": 0.38647562877151026,
+      "rootStdDev": 8.83590154282441,
+      "frames": 153
+    }
+  },
+  "bestLimb": {
+    "limb": "right_ankle",
+    "root": "right_hip",
+    "relativeXAmplitude": 327.86437332869286,
+    "relativeYAmplitude": 36.2789457209783,
+    "relativeMotionAmplitude": 329.865441052624,
+    "relativeMotionBoxRatio": 0.38647562877151026,
+    "rootStdDev": 8.83590154282441,
+    "frames": 153
+  },
+  "blockingReason": null
+}

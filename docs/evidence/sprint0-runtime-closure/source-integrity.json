@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "algorithm": "sha256",
+  "files": {
+    ".github/workflows/ci.yml": "2e9ae8bc0810f2907bf8032315379a062aecf491f930794e24fd39b37947a55d",
+    "package.json": "aa296203419584aaea83f6208e761978ef1127c7103577d402c606bc0e66d167",
+    "services/ml-core/pyproject.toml": "7cfada3eb807ceb9ad5c1610623eef429abb77c62d132eb6ad44ee0d1c593bec",
+    "services/ml-runtime/app.py": "e57a92473f79fa8fb92f258ca0c2ec031fad88264601810e30c776a382ff2de7",
+    "services/ml-runtime/schemas.py": "f7a9ec491bb8621f893f29e2a2f53e6c4477e29b327feefce5ce4a9d89990c6a",
+    "services/ml-runtime/pyproject.toml": "6ce98a4b4e98948eabf97ae345336fa680c1cb85857a90bc1a2417bb136f79a7",
+    "services/ml-runtime/requirements.lock": "670f40ac1a17a62b9fd7a5ac6ff2dd713e3344a89992aa47f1344d6c3cad1143",
+    "services/reconstruction-core/pyproject.toml": "2385b63bbf14185e4b88766450713468e7ffc7e10dc3adb1f90238328deaf8ff",
+    "services/reconstruction-core/requirements.lock": "21da45a6a133d6a028d4cd54b17cb52d62a39ed17f484d6b051bb2ce46c97e98",
+    "src/adapters/harmonyPython.ts": "79eda101253581123d5e4f772aa5521fa74f821dc0e172bfe798d4b5ad74517b",
+    "tests/vectorizationTools.test.ts": "b5ffe7c3016e1b9ad4ecd476d5cbf7575ce299e8175780c4c05c6906f0da5234",
+    "tests/harmonyPythonDaemonLifecycle.test.ts": "3d60e4c825893aa8bf847564479b27198262fcc4a2a711723a1a606bba81dd49",
+    "tests/pythonSuiteClosure.test.ts": "2bce1741e471e2fe25a13b8fe4b749f15520c01ef2b13e8dce5e16b10e3bfd02",
+    "services/ml-runtime/tests/test_runtime_dispatch_truth.py": "c6cc69215d8b0ec84b2805c42f153eb813cc5847d3f3a3a7d6cb540a75231104",
+    "tests/codebaseOptimizations.test.ts": "9db750621b6d2f63a5ec458243e7e6ad57ac090dc178f6f3a79136e9230fe238",
+    "tests/rigEnhancements.test.ts": "2bbd63e6820246e005fb478864ae718cf43b6c623c0729ce83ebe9bb854813b0"
+  }
+}

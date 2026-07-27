@@ -1,18 +1,25 @@
 # Video fixtures for Sprint 1 pose tracking
 
-The Sprint 1 acceptance test is **blocked** until a real clip is placed here. Nothing in
-this repository substitutes for it: synthetic footage and static images cannot demonstrate
-that a wrist moves relative to a shoulder over time, which is the whole claim under test.
+The real acceptance fixture is stored locally at
+`fixtures/video/cartoon_character_motion.mp4`. It is a five-second excerpt from a
+published 2D cartoon walk cycle. Its source, license, source hash, trim operation and
+fixture SHA-256 are recorded in `fixtures/video/cartoon_character_motion.source.json`.
 
-## What to add
+## Local fixture
 
-Place a short clip at:
+The MP4 stays gitignored because the Pixabay Content License does not permit redistributing
+the stock clip as a standalone file. Restore and verify it from the manifest before running
+the acceptance test:
 
+```bash
+curl -fL "$(python3 -c 'import json; print(json.load(open("fixtures/video/cartoon_character_motion.source.json"))["downloadUrl"])')" \
+  -o /tmp/cartoon_character_motion_source.mp4
+ffmpeg -i /tmp/cartoon_character_motion_source.mp4 -t 5 -c copy \
+  fixtures/video/cartoon_character_motion.mp4
+shasum -a 256 fixtures/video/cartoon_character_motion.mp4
 ```
-fixtures/video/arm_raise.mp4
-```
 
-Or point the tests at another path:
+You may instead point the test at another real clip:
 
 ```bash
 export HARMONY_POSE_TEST_VIDEO=/absolute/path/to/your/clip.mp4
@@ -22,19 +29,19 @@ export HARMONY_POSE_TEST_VIDEO=/absolute/path/to/your/clip.mp4
 
 | Property | Requirement | Why |
 |---|---|---|
-| Content | **One person raising an arm** from beside the body to at least shoulder height, then lowering it | The acceptance metric is wrist displacement relative to the shoulder |
+| Content | One clearly articulated 2D cartoon character with visible arms or legs | The metric needs limb motion relative to a shoulder or hip |
 | Duration | 2–6 seconds | Enough frames for jitter statistics; short enough for CPU inference |
 | Frame rate | 24–30 fps | Temporal filtering assumes roughly this range |
 | Resolution | 640×480 minimum, 1280×720 preferred | YOLOX needs enough pixels to detect the person |
-| Framing | Upper body or full body visible, person occupying ≥ 25% of frame height | Top-down pose needs a usable person crop |
-| People | Exactly one | v1 is single-person; multi-person is a recorded capability gap |
+| Framing | Upper body or full body visible, character occupying ≥ 25% of frame height | Top-down pose needs a usable character crop |
+| Characters | Exactly one | v1 is single-character; multi-subject tracking is a recorded capability gap |
 | Codec | H.264 / MPEG-4 in MP4, decodable by `ffprobe` | Verified before use |
-| Lighting | Even, person clearly separated from background | Avoids detector dropout |
+| Contrast | Character clearly separated from background | Avoids detector dropout |
 
 ### Verify it before relying on it
 
 ```bash
-ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=codec_name,width,height,nb_read_packets -of default=noprint_wrappers=1 fixtures/video/arm_raise.mp4
+ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=codec_name,width,height,nb_read_packets -of default=noprint_wrappers=1 fixtures/video/cartoon_character_motion.mp4
 ```
 
 Then run the acceptance test:
@@ -43,22 +50,14 @@ Then run the acceptance test:
 .venv-ml/bin/python -m pytest services/ml-runtime/tests/test_video_pose.py -q
 ```
 
-## Privacy
+## Storage
 
-The clip is used only for local inference. No frame is uploaded anywhere. If it shows a real
-person, treat it as personal data: keep it out of commits. `fixtures/video/*.mp4` is
-gitignored for that reason — only this README is tracked.
+The source license does not permit distributing the unmodified stock asset as a standalone
+download. Therefore `fixtures/video/*.mp4` remains gitignored. The tracked source manifest
+contains everything needed to reproduce and verify the local trimmed fixture.
 
-## Why no fixture ships with the repository
+## Provenance
 
-Searched on 2026-07-27 and found nothing usable:
-
-- All 71 `.mp4` files under `output/` are fabricated placeholders — 17-byte ASCII files
-  containing `MOCK_VIDEO_STREAM` or 34-byte `SIMULATED_VIDEO_STREAM_PLACEHOLDER`. **Zero**
-  are decodable, including one named `SC_TEST_REAL_preview.mp4`.
-- No OpenCV sample videos are installed in any virtualenv.
-- The only real clip bundled with a dependency is
-  `skimage/data/no_time_for_that_tiny.gif` at 14×25 px — far too small for pose estimation.
-
-Rather than fabricate footage, the pipeline is built and mechanism-tested, and the
-biomechanical acceptance test reports `blocked` with these instructions.
+Pixabay permits free use and modification under its Content License, subject to its
+prohibited uses. Attribution is not required, but the creator credit is retained. The clip
+is a published 2D animation input, not output generated by this project.

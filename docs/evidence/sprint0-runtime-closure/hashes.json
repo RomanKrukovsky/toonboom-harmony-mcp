@@ -1,0 +1,7 @@
+{
+  "algorithm": "sha256",
+  "hashes": {
+    "execution-report.json": "e03d0c2d6f1727ab2afd02e7bf8ccf24ecffb619811ec289709a09900634c4dd",
+    "source-integrity.json": "47cfc1f88a90992ad57715a341feb205c8306feccd758ab50bf159d444767f5b"
+  }
+}

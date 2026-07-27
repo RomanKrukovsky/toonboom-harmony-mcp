@@ -1,13 +1,24 @@
-import sys
-import json
-import logging
 import asyncio
+import logging
+import time
+from pathlib import Path
+
+import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
+
 from config import CONFIG
-from schemas import MLJobRequest, MLJobResponse, InbetweenRequest, InbetweenResponse, VoxCPMRequest, VoxCPMResponse
 from providers.animeinbet_provider import AnimeInbetProvider
+from providers.dwpose_provider import DWPoseProvider
 from providers.voxcpm_provider import VoxCPMProvider
+from schemas import (
+    InbetweenRequest,
+    InbetweenResponse,
+    MLJobRequest,
+    MLJobResponse,
+    VoxCPMRequest,
+    VoxCPMResponse,
+)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("ml-runtime")
@@ -24,6 +35,37 @@ async def health_check():
 
 active_jobs = {}
 
+
+def blocked_job_response(
+    request: MLJobRequest,
+    *,
+    reason: str,
+    error_code: str,
+) -> MLJobResponse:
+    return MLJobResponse(
+        jobId=request.jobId,
+        provider=request.provider,
+        model=request.modelId,
+        modelVersion="unavailable",
+        status="blocked",
+        realInferenceExecuted=False,
+        simulated=False,
+        inputArtifacts=request.inputArtifacts,
+        outputArtifacts=[],
+        pirArtifacts=[],
+        confidence=None,
+        warnings=[reason],
+        errors=[error_code],
+        device="cpu",
+        durationMs=0.0,
+        peakMemoryMb=None,
+        cacheHit=False,
+        provenancePath="",
+        executionReportPath="",
+        correlationId=request.jobId,
+    )
+
+
 @app.get("/readiness")
 async def readiness_check():
     models = CONFIG.get("models", {})
@@ -39,6 +81,7 @@ async def list_models():
 @app.post("/jobs/execute", response_model=MLJobResponse)
 async def execute_job(request: MLJobRequest, req: Request):
     logger.info(f"Processing job {request.jobId} for provider {request.provider}")
+    started = time.perf_counter()
     
     # Track job
     active_jobs[request.jobId] = {"cancelled": False}
@@ -53,84 +96,58 @@ async def execute_job(request: MLJobRequest, req: Request):
                 
         model_settings = CONFIG.get("models", {}).get(request.modelId, {})
         if not model_settings.get("enabled", False):
-            return MLJobResponse(
-                jobId=request.jobId,
-                provider=request.provider,
-                model=request.modelId,
-                modelVersion="1.0",
-                status="blocked",
-                realInferenceExecuted=False,
-                simulated=False,
-                inputArtifacts=request.inputArtifacts,
-                outputArtifacts=[],
-                pirArtifacts=[],
-                confidence=0.0,
-                warnings=["Model is disabled or weights are missing."],
-                errors=["weights_missing"],
-                device="cpu",
-                durationMs=0,
-                peakMemoryMb=0,
-                cacheHit=False,
-                provenancePath="",
-                executionReportPath="",
-                correlationId=request.jobId
+            return blocked_job_response(
+                request,
+                reason="Model is disabled or its managed weights are unavailable.",
+                error_code="weights_missing_or_disabled",
             )
 
         # Execute DWPose
         if request.provider == "dwpose_provider":
-            from providers.dwpose_provider import DWPoseProvider
-            provider = DWPoseProvider(CONFIG.get("models", {}).get("dwpose", {}))
-            provider.enabled = True # Override for testing the real model if requested
+            provider = DWPoseProvider(model_settings)
             
             output_dir = request.parameters.get("outputDir", "./output")
             image_path = request.parameters.get("imagePath", "")
             
             res = provider.run(image_path, output_dir)
+            real_inference_executed = bool(res.get("realInferenceExecuted", False))
+            artifact_candidates = [
+                res.get("skeletonPath"),
+                res.get("overlayPath"),
+                res.get("executionReportPath"),
+            ]
+            output_artifacts = [
+                str(candidate)
+                for candidate in artifact_candidates
+                if candidate and Path(str(candidate)).is_file()
+            ]
             return MLJobResponse(
                 jobId=request.jobId,
                 provider=request.provider,
                 model=request.modelId,
-                modelVersion="1.0",
+                modelVersion="managed-onnx",
                 status=res.get("status", "failed"),
-                realInferenceExecuted=res.get("realInferenceExecuted", False),
+                realInferenceExecuted=real_inference_executed,
                 simulated=False,
                 inputArtifacts=request.inputArtifacts,
-                outputArtifacts=[res.get("skeletonPath", ""), res.get("overlayPath", "")],
+                outputArtifacts=output_artifacts,
                 pirArtifacts=[],
-                confidence=res.get("confidence", 0.0),
-                warnings=[],
+                confidence=res.get("confidence") if real_inference_executed else None,
+                warnings=[res["blockingReason"]] if res.get("blockingReason") else [],
                 errors=res.get("errors", []),
                 device="cpu",
-                durationMs=500,
-                peakMemoryMb=1024,
+                durationMs=(time.perf_counter() - started) * 1000.0,
+                peakMemoryMb=None,
                 cacheHit=False,
                 provenancePath=res.get("provenancePath", ""),
                 executionReportPath=res.get("executionReportPath", ""),
                 correlationId=request.jobId
             )
 
-        # Stub response for supported model
-        return MLJobResponse(
-            jobId=request.jobId,
-            provider=request.provider,
-            model=request.modelId,
-            modelVersion="1.0",
-            status="success",
-            realInferenceExecuted=True,
-            simulated=False,
-            inputArtifacts=request.inputArtifacts,
-            outputArtifacts=[],
-            pirArtifacts=[],
-            confidence=0.9,
-            warnings=[],
-            errors=[],
-            device="cpu",
-            durationMs=100,
-            peakMemoryMb=256,
-            cacheHit=False,
-            provenancePath="",
-            executionReportPath="",
-            correlationId=request.jobId
+        return blocked_job_response(
+            request,
+            reason=f"Provider {request.provider!r} is not connected to a real inference backend.",
+            error_code="unsupported_provider",
         )
     finally:
         active_jobs.pop(request.jobId, None)
@@ -175,5 +192,4 @@ async def infer_voxcpm(req: VoxCPMRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

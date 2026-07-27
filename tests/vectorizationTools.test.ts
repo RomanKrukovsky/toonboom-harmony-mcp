@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
 
+import { HarmonyPython } from '../src/adapters/harmonyPython.js';
+
 process.env.HARMONY_ALLOW_DESTRUCTIVE = 'true';
 
 import { config } from '../src/config.js';
@@ -23,7 +25,8 @@ describe('Vectorization MCP Tools Tests', () => {
     fs.writeFileSync(testImgPath, transparentPng);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    await HarmonyPython.shutdownDaemon();
     if (fs.existsSync(testImgPath)) {
       fs.unlinkSync(testImgPath);
     }

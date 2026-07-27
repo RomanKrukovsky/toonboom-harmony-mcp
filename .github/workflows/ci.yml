@@ -54,10 +54,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r services/reconstruction-core/requirements.lock
+          pip install -r services/ml-runtime/requirements.lock
+          pip install -e 'services/ml-core[test]'
       
       - name: Run Python tests
         run: |
           PYTHONPATH=services/reconstruction-core pytest services/reconstruction-core/tests -q
+          PYTHONPATH=services/ml-core pytest services/ml-core/tests -q
+          PYTHONPATH=services/ml-runtime pytest services/ml-runtime/tests -q
 
   lint:
     name: Lint & Security
@@ -79,7 +83,7 @@ jobs:
       
       - name: Check for MOCK_* strings in production code
         run: |
-          if grep -R -E "MOCK_|fake success|hardcoded success" src/tools/factoryFoundationTools.ts src/adapters/factoryFoundation services/reconstruction-core/reconstruction_core/perception.py; then
+          if grep -R -E "MOCK_|fake success|hardcoded success" src/tools/factoryFoundationTools.ts src/adapters/factoryFoundation services/reconstruction-core/reconstruction_core/perception.py services/ml-runtime/app.py; then
             echo "ERROR: Found fake-success marker in Phase 1 production surface!"
             exit 1
           fi

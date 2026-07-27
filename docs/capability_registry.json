@@ -82,45 +82,76 @@
       "implementationFiles": [
         "services/ml-runtime/pipelines/video_pose.py",
         "services/ml-runtime/pipelines/video_pose_schema.py",
+        "services/ml-runtime/pipelines/cartoon_motion_metrics.py",
+        "scripts/ml/run_video_pose_acceptance.py",
         "services/reconstruction-core/reconstruction_core/perception.py"
       ],
       "publicTools": [
         "harmony.ml.perceive_video"
       ],
       "backendType": "onnxruntime_local",
-      "verificationLevel": "offline_verified",
+      "verificationLevel": "real_model_verified",
       "evidencePaths": [
-        "docs/evidence/sprint1-video-pose/tracking-metrics.json",
-        "docs/evidence/sprint1-video-pose/confidence-report.json",
-        "docs/evidence/sprint1-video-pose/acceptance-status.json",
-        "output/video-pose-sprint1/keypoints-overlay.mp4 (local only; output/ is gitignored)"
+        "docs/evidence/sprint1-video-pose-real/tracking-metrics.json",
+        "docs/evidence/sprint1-video-pose-real/cartoon-motion-metrics.json",
+        "docs/evidence/sprint1-video-pose-real/confidence-report.json",
+        "docs/evidence/sprint1-video-pose-real/execution-report.json",
+        "docs/evidence/sprint1-video-pose-real/source-provenance.json",
+        "docs/evidence/sprint1-video-pose-real/raw-keypoints.jsonl",
+        "docs/evidence/sprint1-video-pose-real/smoothed-keypoints.jsonl",
+        "docs/evidence/sprint1-video-pose-real/keypoints-overlay.mp4",
+        "docs/evidence/sprint1-video-pose-real/hashes.json"
+      ],
+      "models": [
+        {
+          "name": "yolox_l",
+          "role": "person_detection",
+          "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+          "sizeBytes": 216746733,
+          "hashVerified": true
+        },
+        {
+          "name": "dw-ll_ucoco_384",
+          "role": "experimental_wholebody_pose_simcc",
+          "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "sizeBytes": 134399116,
+          "hashVerified": true
+        }
       ],
       "knownFailures": [
-        "Acceptance test (wrist moves relative to shoulder) has NEVER run: no real arm-raise footage exists locally.",
-        "Validated only on synthetic camera motion over a still photograph; no real subject motion.",
-        "p95 jitter increased 8.20 -> 17.76 px/frame after One Euro filtering; the adaptive cutoff overshoots at direction changes under strong camera motion.",
+        "DWPose is evaluation-only: COCO-WholeBody training-data terms have not been approved for commercial production. RTMPose remains the required production default.",
+        "On the cartoon clip, median per-keypoint movement increased after smoothing from 0.0485 to 3.6150 px/frame because many raw points were nearly static; p95 improved from 35.3132 to 17.8263 px/frame. The current aggregate jitter objective is not a reliable production-quality metric for stylised animation.",
         "Single person only. Identity is IoU + pose similarity, not tracking.",
-        "No occlusion, lighting or multi-subject robustness data."
+        "Validated on one five-second published 2D cartoon clip with a plain background; no varied-style, occlusion or multi-character robustness data."
       ],
-      "blockingReason": "Real arm-raise video absent. All 71 mp4 files under output/ are fabricated ASCII placeholders; no usable clip ships with any dependency. See fixtures/video/README.md.",
+      "blockingReason": "Production use remains blocked until a commercially approved pose provider replaces the DWPose evaluation provider and the temporal-quality metric is validated across several 2D animation styles. Real evaluation inference is verified.",
       "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "Place fixtures/video/arm_raise.mp4 and pass test_wrist_moves_relative_to_shoulder_on_real_arm_raise. Only then may this become real_model_verified.",
+      "nextRequiredProof": "Implement RTMPose with verified official weights, define a motion-aware temporal metric that separates static points from true articulation, and repeat acceptance on several published 2D cartoon styles.",
       "measured": {
-        "input": "synthetic camera motion over fixtures/character.png (subject does not move)",
-        "analyzedFrames": 48,
-        "framesWithDetection": 48,
+        "input": "Pixabay 130787, published 2D cartoon character walking",
+        "inputSha256": "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d",
+        "analyzedFrames": 153,
+        "framesWithDetection": 153,
         "detectionRate": 1.0,
         "identitySwitchCount": 0,
-        "jitterBeforeMedianPx": 1.9907,
-        "jitterAfterMedianPx": 1.7339,
-        "jitterReductionPercent": 12.9,
+        "acceptedLimb": "right_ankle",
+        "relativeToRoot": "right_hip",
+        "relativeMotionAmplitudePx": 329.8654,
+        "relativeMotionBoxRatio": 0.3865,
+        "rootStdDevPx": 8.8359,
+        "matchedLimbFrames": 153,
+        "jitterBeforeMedianPx": 0.0485,
+        "jitterAfterMedianPx": 3.615,
+        "jitterReductionPercent": -7351.1841,
+        "jitterBeforeP95Px": 35.3132,
+        "jitterAfterP95Px": 17.8263,
         "filterChosen": "one_euro",
         "filterCandidates": {
-          "one_euro": 1.7339,
-          "ema": 1.8663
+          "one_euro": 3.615,
+          "ema": 3.7885
         },
         "overlayVideoDecodable": true,
-        "overlayDecodedPackets": 48
+        "overlayDecodedPackets": 153
       }
     },
     {
@@ -287,6 +318,109 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Run the gates in CI against a real runner; CI has never executed on this repository (0 of 13 historical runs started a job)."
+    },
+    {
+      "capabilityId": "governance.runtime_truth_closure",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "services/ml-runtime/app.py",
+        "services/ml-runtime/schemas.py",
+        "services/ml-runtime/pyproject.toml",
+        "services/ml-runtime/requirements.lock",
+        "src/adapters/harmonyPython.ts",
+        "tests/harmonyPythonDaemonLifecycle.test.ts",
+        "tests/pythonSuiteClosure.test.ts",
+        "services/ml-runtime/tests/test_runtime_dispatch_truth.py"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_python_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/sprint0-runtime-closure/execution-report.json"
+      ],
+      "knownFailures": [
+        "GitHub Actions has not executed this revision; CI parity was validated locally and in a fresh Python 3.12 environment.",
+        "The local developer environments remain split by service; package scripts orchestrate them, while CI installs a combined dependency set.",
+        "No real Harmony execution is included because the installed Harmony runtime has no configured FlexNet license."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Run the updated workflow on GitHub Actions and retain its job URL; this offline_verified entry must not be promoted from local results alone."
+    },
+    {
+      "capabilityId": "perception.face_blendshapes",
+      "productionStage": "perception",
+      "implementationFiles": [
+        "services/ml-runtime/pipelines/face_performance_schema.py",
+        "services/ml-runtime/providers/face_landmarker_provider.py",
+        "src/schemas/facePerformance.ts"
+      ],
+      "publicTools": [
+        "harmony.ml.perceive_video (face_blendshapes task, pending)"
+      ],
+      "backendType": "mediapipe_face_landmarker",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Block semantics only: when the MediaPipe face_landmarker.task weights are absent the provider returns a blocked sequence with realInferenceExecuted=False. No blendshape coefficients or landmarks are fabricated.",
+        "Single-face only: num_faces=1. Multi-face tracking is not implemented.",
+        "No facial transformation matrix validated against ground-truth head pose.",
+        "Mediapipe python package is not a declared dependency; the lazy import path is exercised only when the package is installed."
+      ],
+      "blockingReason": "MediaPipe FaceLandmarker model task file is not present under services/ml-runtime/weights/mediapipe/. Download face_landmarker.task from https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task and place it at that repo-relative path, or set HARMONY_FACE_LANDMARKER_TASK to an absolute path, then re-run the video pipeline. Until then every call returns blocked with realInferenceExecuted=false.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Run track_face_performance() over a short real face-video fixture with the .task weights present and confirm: at least one frame carries 478 landmarks and 52 measured blendshape coefficients, transformationMatrix is 16 floats, and realInferenceExecuted=true in provenance.",
+      "models": [],
+      "measured": {}
+    },
+    {
+      "capabilityId": "perception.speech_timing",
+      "productionStage": "perception",
+      "implementationFiles": [
+        "services/ml-runtime/pipelines/speech_timing_schema.py",
+        "services/ml-runtime/providers/whisperx_provider.py",
+        "src/schemas/speechTiming.ts"
+      ],
+      "publicTools": [
+        "harmony.ml.transcribe_audio (pending whisperx provider wiring)",
+        "harmony.audio.generate_lipsync (consumes SpeechTimingSequence)"
+      ],
+      "backendType": "whisperx_plus_mfa",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Block semantics only: when WhisperX weights for the requested model (default large-v3) are absent the provider returns a blocked sequence with realInferenceExecuted=False and zero words/pauses/phonemes. No timestamps are fabricated.",
+        "HuggingFace cache is intentionally NOT used as a managed location: refusing to depend on ~/.cache/huggingface keeps the supply chain explicit.",
+        "MFA aligner integration is optional and remains blocked unless 'mfa' binary is on PATH or the alignmanager python package is importable.",
+        "WhisperX python package is not a declared project dependency; the lazy import path returns blocked until the operator installs it."
+      ],
+      "blockingReason": "WhisperX weights are not present under services/ml-runtime/weights/whisperx/<model>/ and the whisperx python package may not be importable. Download the requested model (default large-v3) into services/ml-runtime/weights/whisperx/, or set HARMONY_WHISPER_MODEL_PATH to an absolute model file/dir, and `pip install whisperx` before re-running. Until then every call returns blocked with realInferenceExecuted=false.",
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Run transcribe_audio() over a short real speech fixture with WhisperX weights and the whisperx package present and confirm: words[] is non-empty with real measured confidence, speechRateWpm > 0, pauses[] derived from measured gaps, and realInferenceExecuted=true in provenance. Optionally verify MFA phoneme alignment writes non-empty phonemes[] without holes inside the utterance.",
+      "models": [],
+      "measured": {}
+    },
+    {
+      "capabilityId": "governance.hermetic_test_environment",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "tests/setup/hermetic.ts",
+        "tests/hermeticEnvironment.test.ts",
+        "jest.config.cjs"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/DEPENDENCY_CLOSURE.md"
+      ],
+      "knownFailures": [
+        "Blocks by hostname only; a test could still reach an external service through a non-fetch client (raw http/https module, child process curl).",
+        "dotenv is neutralised by monkey-patching its config(); a future loader that reads .env directly would bypass this."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-27",
+      "nextRequiredProof": "Extend the guard to node:http/https agents so non-fetch clients cannot reach external hosts either."
     }
   ],
   "fixtureNotes": [
@@ -299,6 +433,11 @@
       "path": "output/**/*.mp4",
       "finding": "All 71 mp4 files under output/ are fabricated: 17-byte ASCII 'MOCK_VIDEO_STREAM' or 34-byte 'SIMULATED_VIDEO_STREAM_PLACEHOLDER'. Zero decode, including one named SC_TEST_REAL_preview.mp4.",
       "impact": "Any past claim of rendered preview video is false. Verified with ffprobe on 2026-07-27: 0 decodable of 71."
+    },
+    {
+      "path": "services/ml-runtime/weights/mediapipe/ + services/ml-runtime/weights/whisperx/",
+      "finding": "services/ml-runtime/weights/mediapipe/ and services/ml-runtime/weights/whisperx/<model>/ are deliberately NOT checked into the repository: the providers refuse any path that resolves through the HuggingFace cache, so a real run requires the operator to download real weights. Blocked sequences with realInferenceExecuted=false are the only permitted output in the absence of weights.",
+      "impact": "Capabilities perception.face_blendshapes and perception.speech_timing sit at contract_verified until a real run produces 52 measured blendshape coefficients / non-empty measured word timestamps with realInferenceExecuted=true."
     }
   ]
 }

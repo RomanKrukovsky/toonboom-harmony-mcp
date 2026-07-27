@@ -33,6 +33,8 @@ KEYPOINT_INDEX = {
     "right_wrist": 10,
     "left_hip": 11,
     "right_hip": 12,
+    "left_ankle": 15,
+    "right_ankle": 16,
 }
 
 
@@ -122,6 +124,9 @@ class VideoPoseSequence(BaseModel):
     poseModel: str
     detectorModelSha256: str
     poseModelSha256: str
+    providerTier: Literal["experimental_fallback"]
+    commercialUseApproved: Literal[False]
+    productionBlockingReason: str = Field(..., min_length=20)
 
     # Heuristic identity association, deliberately not called tracking.
     isTracking: bool = False

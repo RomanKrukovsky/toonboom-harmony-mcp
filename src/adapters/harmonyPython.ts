@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -13,16 +13,34 @@ export interface PythonBridgeResponse {
 }
 
 export class HarmonyPython {
-  private static daemonProcess: any = null;
+  private static daemonProcess: ChildProcessWithoutNullStreams | null = null;
   private static pendingPromises: Map<string, { resolve: (val: any) => void; reject: (err: any) => void }> = new Map();
   private static stdoutBuffer: string = '';
   private static daemonStderr: string = '';
 
-  static killDaemon() {
-    if (this.daemonProcess && !this.daemonProcess.killed) {
-      this.daemonProcess.kill();
-      this.daemonProcess = null;
+  static killDaemon(): void {
+    void this.shutdownDaemon();
+  }
+
+  static async shutdownDaemon(): Promise<void> {
+    const daemon = this.daemonProcess;
+    if (!daemon) return;
+
+    const closed = new Promise<void>((resolve) => {
+      daemon.once('close', () => resolve());
+    });
+
+    try {
+      daemon.stdin.end();
+    } catch {
+      // The process may already have closed its input pipe.
     }
+
+    if (daemon.exitCode === null && !daemon.killed) {
+      daemon.kill();
+    }
+
+    await closed;
   }
 
   private static getPythonExecutable(): string {
@@ -160,6 +178,13 @@ export class HarmonyPython {
     }
 
     this.initDaemon(pythonBin, bridgeScript);
+    const daemon = this.daemonProcess;
+    if (!daemon) {
+      throw new HarmonyError(
+        'PYTHON_API_UNAVAILABLE',
+        'Фоновый демон Python не запустился.'
+      );
+    }
 
     const requestId = Math.random().toString(36).substring(7);
     const payload = {
@@ -191,7 +216,7 @@ export class HarmonyPython {
         }
       });
 
-      this.daemonProcess.stdin.write(JSON.stringify(payload) + '\n');
+      daemon.stdin.write(JSON.stringify(payload) + '\n');
     });
   }
 
@@ -267,15 +292,7 @@ export class HarmonyPython {
     });
   }
 
-  static stopDaemon(): void {
-    if (this.daemonProcess) {
-      try {
-        this.daemonProcess.kill();
-      } catch (_e) {}
-      this.daemonProcess = null;
-      this.stdoutBuffer = '';
-      this.daemonStderr = '';
-      this.pendingPromises.clear();
-    }
+  static stopDaemon(): Promise<void> {
+    return this.shutdownDaemon();
   }
 }

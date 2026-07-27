@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "Published2DAnimationFixtureSource",
+  "title": "Boy Walking Cartoon Character",
+  "creator": "GreenScreenFX",
+  "sourcePage": "https://pixabay.com/videos/boy-walking-cartoon-character-130787/",
+  "downloadUrl": "https://cdn.pixabay.com/video/2022/09/10/130787-748398315_large.mp4",
+  "license": {
+    "name": "Pixabay Content License",
+    "url": "https://pixabay.com/service/license-summary/",
+    "attributionRequired": false,
+    "attributionRetained": true
+  },
+  "sourceSha256": "405df75744c7b0a48a40f778797f018e72e25656fd94c86ca2477e068aebcb4f",
+  "fixturePath": "fixtures/video/cartoon_character_motion.mp4",
+  "fixtureSha256": "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d",
+  "transformation": {
+    "kind": "lossless_stream_copy_trim",
+    "command": "ffmpeg -i SOURCE -t 5 -c copy fixtures/video/cartoon_character_motion.mp4",
+    "generatedContentAdded": false
+  },
+  "codec": "h264",
+  "width": 1920,
+  "height": 1080,
+  "frameRate": "30000/1001",
+  "durationSeconds": 5.1051,
+  "videoPackets": 153,
+  "sizeBytes": 536388,
+  "mediaType": "published_two_dimensional_cartoon_animation",
+  "realPersonVisible": false
+}

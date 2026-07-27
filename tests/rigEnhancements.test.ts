@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { nodeTools } from '../src/tools/nodeTools.js';
 import { rigTools } from '../src/tools/rigTools.js';
 import { systemTools } from '../src/tools/systemTools.js';
@@ -8,7 +10,7 @@ describe('Rigging Enhancements based on YouTube Playlist Knowledge Base', () => 
     expect(tool).toBeDefined();
 
     const result = await (tool!.handler as any)({
-      path: '/Users/romanmolodyko/Documents/toon-boom-harmony-mcp',
+      path: path.resolve(process.cwd()),
       checkHarmonyPreferences: true
     });
 

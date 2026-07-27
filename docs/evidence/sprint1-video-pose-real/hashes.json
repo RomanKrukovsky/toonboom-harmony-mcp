@@ -1,0 +1,14 @@
+{
+  "cartoon-motion-metrics.json": "66ab3ef2536a3231f67ea4e52ac202aa59bf7142d6c8070495574ee5a9518705",
+  "confidence-report.json": "4995ae86ae554e7390af9e3f80ff9584ec3e4f8ed0f4fd024d6052a0f8e4560f",
+  "execution-report.json": "a83f78b0b1edf7aa9d6e37b7d0d8e5f376196718f4d6981a5f46a6b233f08905",
+  "input-manifest.json": "86fa39824e40a309e3ecd98b25bda652f4d7f93a004a496085471268c633cead",
+  "keypoints-overlay.mp4": "8d6b60321e5e38f8cb17aadadbefa6c3e2d28b908eb9105ac78f637fe70539c3",
+  "raw-keypoints.jsonl": "6523370c01bf81ea9ffaf585d4edee272a3622f9ef6132e880584d2949022b15",
+  "representative-frames/frame_000000.png": "e9bb0dbe14043e705b4ff27e9fb1556b1c386b5a92369873121d7a9685b7de86",
+  "representative-frames/frame_000076.png": "39adb5767a2bb773ae8bae5fc62a42dee62d57e1381459c4958a881a10aa4571",
+  "representative-frames/frame_000152.png": "22bc4868c2c5daa9d737af13e60412da89635569a96e3b7e4a0028e2352eb083",
+  "smoothed-keypoints.jsonl": "abed8154a358d66818be0b5dbb147f8460bdafcb33060f0c424b31b900778101",
+  "source-provenance.json": "c1416ee54eab2448695281bbc51ee1141719256e4dc9c033adc66014d0ddc15d",
+  "tracking-metrics.json": "01bfeb35ae53d3a7c73262bc7a73fa442bb48818d81702d4f746e86e0c04142e"
+}

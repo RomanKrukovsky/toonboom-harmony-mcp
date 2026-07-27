@@ -44,6 +44,7 @@ import { reconstructionTools } from './tools/reconstructionTools.js';
 import { aiStudioTools } from './tools/aiStudioTools.js';
 import { retargetingTools } from './tools/retargetingTools.js';
 import { factoryFoundationTools } from './tools/factoryFoundationTools.js';
+import { factoryCompilerTools } from './tools/factoryCompilerTools.js';
 import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
 import { mlTools } from './tools/mlTools.js';
 
@@ -113,6 +114,7 @@ const allTools = [
   ...aiStudioTools,
   ...retargetingTools,
   ...factoryFoundationTools,
+  ...factoryCompilerTools,
   ...harmonyNativePhase2Tools,
   ...mlTools,
   ...capabilityTools,

@@ -140,8 +140,24 @@ capability described as validated for stylised animation line art via this fixtu
 | `.venv-ml/bin/python -m pytest services/ml-runtime/tests -q` | **7 passed** (incl. real ONNX inference) |
 | `.venv-reconstruction/bin/python -m pytest services/reconstruction-core/tests -q` | 44 passed, 1 skipped* |
 
-\* excluding `test_api_auth_ratelimit.py`, which fails to import for lack of `httpx` in that venv.
-Pre-existing: that file is untracked prior work and the gap is environmental.
+\* Historical result. The later closure pass added the missing `httpx` dependency and now runs
+the complete reconstruction suite.
+
+### Runtime closure addendum
+
+The follow-up closure pass found three Sprint 0 gaps that the earlier table did not cover:
+
+- `services/ml-runtime/app.py` returned `status: "success"`,
+  `realInferenceExecuted: true`, `confidence: 0.9`, fixed duration and fixed memory for any
+  enabled provider that was not DWPose. It now returns an exact `blocked` result with no
+  fabricated measurement.
+- `npm test -- --runInBand` passed assertions but never exited because a persistent
+  `HarmonyPython` process remained open. The adapter now exposes an awaited shutdown and the
+  calling suite performs teardown.
+- CI installed and ran only reconstruction-core. It now installs and runs all three Python
+  services from declared manifests.
+
+Evidence: `docs/evidence/sprint0-runtime-closure/`.
 
 ### Tests added
 

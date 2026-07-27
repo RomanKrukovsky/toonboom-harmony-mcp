@@ -3,15 +3,15 @@ Sprint 1 — video pose tracking tests.
 
 Two tiers, deliberately separated so neither can be mistaken for the other:
 
-  * MECHANISM tests run against a clip built by moving a synthetic camera over a real
-    photograph of a real person. They prove the plumbing: real per-frame inference,
+  * MECHANISM tests run against a clip built by moving a synthetic camera over a reference
+    image. They prove the plumbing: real per-frame inference,
     coordinate mapping back into video space, identity association, measured confidence,
     smoothing, determinism, portable paths. The subject does not move, so these tests can
     never prove biomechanical motion and never claim to.
 
-  * The ACCEPTANCE test needs a real clip of a person raising an arm. Without it the test
-    reports blocked with the exact fixture requirements — it is never satisfied by
-    synthetic footage or a static image.
+  * The ACCEPTANCE test needs a real published 2D cartoon clip with articulated character
+    motion. Without it the test reports blocked with the exact fixture requirements — it
+    is never satisfied by synthetic footage or a static image.
 
 See fixtures/video/README.md.
 """
@@ -24,6 +24,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pytest
 
@@ -36,6 +37,7 @@ from pipelines.video_pose import (  # noqa: E402
     measure_jitter,
     track_video_pose,
 )
+from pipelines.cartoon_motion_metrics import measure_cartoon_motion  # noqa: E402
 from pipelines.video_pose_schema import KEYPOINT_INDEX, VideoPoseSequence  # noqa: E402
 from providers.dwpose_provider import WEIGHTS_DIR  # noqa: E402
 
@@ -45,22 +47,23 @@ WEIGHTS_PRESENT = (WEIGHTS_DIR / "dw-ll_ucoco_384.onnx").exists() and (
 
 MECHANISM_CLIP = REPO_ROOT / "output" / "video-pose-sprint1-mechanism" / "mechanism_camera_move.mp4"
 ACCEPTANCE_VIDEO = Path(
-    os.environ.get("HARMONY_POSE_TEST_VIDEO", REPO_ROOT / "fixtures" / "video" / "arm_raise.mp4")
+    os.environ.get(
+        "HARMONY_POSE_TEST_VIDEO",
+        REPO_ROOT / "fixtures" / "video" / "cartoon_character_motion.mp4",
+    )
 )
 
 ACCEPTANCE_INSTRUCTIONS = (
-    "Sprint 1 acceptance is BLOCKED: no real arm-raise clip is present.\n"
-    f"Place a 2-6s clip of one person raising an arm at: {ACCEPTANCE_VIDEO}\n"
+    "Sprint 1 acceptance is BLOCKED: no real published 2D cartoon clip is present.\n"
+    f"Place a 2-6s clip with articulated character motion at: {ACCEPTANCE_VIDEO}\n"
     "or set HARMONY_POSE_TEST_VIDEO to its absolute path.\n"
-    "Requirements are in fixtures/video/README.md. Synthetic footage and static images are "
-    "NOT accepted: they cannot demonstrate wrist motion relative to the shoulder."
+    "Requirements are in fixtures/video/README.md. Generated footage and static images are "
+    "NOT accepted: they cannot demonstrate measured limb motion relative to the torso."
 )
 
 
 def _build_mechanism_clip() -> Path:
     """Synthetic CAMERA motion over a real photograph. Not a substitute for real footage."""
-    import cv2
-
     if MECHANISM_CLIP.exists():
         return MECHANISM_CLIP
     source = REPO_ROOT / "fixtures" / "character.png"
@@ -306,6 +309,9 @@ def test_sequence_validates_against_schema(mechanism_run):
     metrics = json.loads((out / "tracking-metrics.json").read_text())
     sequence = VideoPoseSequence.model_validate(metrics)
     assert sequence.realInferenceExecuted is True
+    assert sequence.providerTier == "experimental_fallback"
+    assert sequence.commercialUseApproved is False
+    assert "COCO-WholeBody" in sequence.productionBlockingReason
     # Heuristic association must never advertise itself as tracking.
     assert sequence.isTracking is False
     assert "multi_person_tracking" in sequence.notCaptured
@@ -346,12 +352,13 @@ def test_one_euro_filter_is_stable_and_tracks_steps():
 
 
 @pytest.mark.skipif(not WEIGHTS_PRESENT, reason="DWPose/YOLOX weights not downloaded")
-def test_wrist_moves_relative_to_shoulder_on_real_arm_raise(tmp_path):
+def test_limb_moves_relative_to_torso_on_real_2d_animation(tmp_path):
     """
     Test 4 — THE acceptance test.
 
-    Requires real footage of a person raising an arm. It asserts the property a
-    bounding-box mannequin can never satisfy: the wrist displaces relative to the shoulder.
+    Requires a real published 2D cartoon animation. It asserts the property a
+    bounding-box mannequin or translated still can never satisfy: a limb moves relative
+    to its shoulder or hip.
     """
     if not ACCEPTANCE_VIDEO.exists():
         pytest.skip(ACCEPTANCE_INSTRUCTIONS)
@@ -366,42 +373,23 @@ def test_wrist_moves_relative_to_shoulder_on_real_arm_raise(tmp_path):
         for l in (tmp_path / "acceptance" / "smoothed-keypoints.jsonl").read_text().strip().splitlines()
     ]
 
-    def series(index):
-        pts = []
-        for frame in frames:
-            kp = next((k for k in frame["keypoints"] if k["index"] == index), None)
-            if kp and kp.get("smoothedX") is not None:
-                pts.append((frame["frameIndex"], kp["smoothedX"], kp["smoothedY"]))
-        return pts
+    raw_frames = [
+        json.loads(l)
+        for l in (tmp_path / "acceptance" / "raw-keypoints.jsonl").read_text().strip().splitlines()
+    ]
+    metrics = measure_cartoon_motion(frames, raw_frames)
+    assert metrics["accepted"] is True, metrics
+    results = metrics["limbs"]
+    best = metrics["bestLimb"]
 
-    results = {}
-    for side in ("left", "right"):
-        wrist = {f: (x, y) for f, x, y in series(KEYPOINT_INDEX[f"{side}_wrist"])}
-        shoulder = {f: (x, y) for f, x, y in series(KEYPOINT_INDEX[f"{side}_shoulder"])}
-        common = sorted(set(wrist) & set(shoulder))
-        if len(common) < 5:
-            continue
-        # Wrist position expressed in the shoulder's frame removes camera/body translation.
-        rel_y = np.array([wrist[f][1] - shoulder[f][1] for f in common])
-        shoulder_xy = np.array([shoulder[f] for f in common])
-        results[side] = {
-            "relativeYAmplitude": float(rel_y.max() - rel_y.min()),
-            "shoulderStdDev": float(np.linalg.norm(shoulder_xy.std(axis=0))),
-            "frames": len(common),
-        }
-
-    assert results, "neither arm produced enough tracked frames"
-    best = max(results.values(), key=lambda r: r["relativeYAmplitude"])
-
-    # A raised arm moves the wrist substantially relative to the shoulder.
-    assert best["relativeYAmplitude"] > 40.0, (
-        f"wrist did not move relative to shoulder: {results}"
+    # Articulated motion moves at least one limb substantially relative to its torso joint.
+    assert best["relativeMotionAmplitude"] > 40.0, (
+        f"no limb moved relative to the torso: {results}"
     )
-    # The shoulder should stay comparatively stable, proving relative (not global) motion.
-    assert best["shoulderStdDev"] < best["relativeYAmplitude"], (
-        f"shoulder moved as much as the wrist; this is global motion, not an arm raise: {results}"
+    assert best["rootStdDev"] < best["relativeMotionAmplitude"], (
+        f"root moved as much as the limb; this is global motion, not articulation: {results}"
     )
 
-    (tmp_path / "acceptance" / "acceptance-metrics.json").write_text(
-        json.dumps(results, indent=2), encoding="utf-8"
+    (tmp_path / "acceptance" / "cartoon-motion-metrics.json").write_text(
+        json.dumps(metrics, indent=2), encoding="utf-8"
     )

@@ -1,0 +1,17 @@
+{
+  "sourceVideo": "fixtures/video/cartoon_character_motion.mp4",
+  "sourceVideoSha256": "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d",
+  "sourceWidth": 1920,
+  "sourceHeight": 1080,
+  "fps": 29.97002997002997,
+  "totalFrames": 153,
+  "analyzedFrames": 153,
+  "frameStride": 1,
+  "detectorModel": "yolox_l",
+  "detectorModelSha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+  "poseModel": "dw-ll_ucoco_384",
+  "poseModelSha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+  "providerTier": "experimental_fallback",
+  "commercialUseApproved": false,
+  "productionBlockingReason": "DWPose code is Apache-2.0, but the COCO-WholeBody training-data terms have not been approved for this project's commercial production use. Use this provider for evaluation only; RTMPose is the required production default."
+}
