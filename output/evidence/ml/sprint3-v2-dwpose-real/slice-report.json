@@ -1,0 +1,83 @@
+{
+  "runId": "sprint3-v2-dwpose-real",
+  "status": "production_package_ready_for_harmony_execution",
+  "generatedAt": "2026-07-28",
+  "stages": [
+    {
+      "stage": "artifact_upload",
+      "executionMode": "real_ml",
+      "endpoint": "POST /v2/artifacts",
+      "input": "fixtures/character.png",
+      "inputSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "inputSizeBytes": 791555,
+      "artifactId": "art_88431cd9653ccd539741b555",
+      "registered": true
+    },
+    {
+      "stage": "pose_estimation",
+      "executionMode": "real_ml",
+      "endpoint": "POST /v2/jobs",
+      "inputArtifactId": "art_88431cd9653ccd539741b555",
+      "realInferenceExecuted": true,
+      "modelId": "dwpose-ll-ucoco-384",
+      "modelRevision": "dw-ll_ucoco_384",
+      "weightsSha256": [
+        "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+        "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+      ],
+      "device": "CPUExecutionProvider",
+      "precision": "float32",
+      "durationMs": 2626.44,
+      "peopleFound": 1,
+      "detectionScore": 0.9539542198181152,
+      "keypointsTotal": 133,
+      "outputArtifacts": [
+        {
+          "role": "raw_model_output",
+          "sha256": "ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea",
+          "sizeBytes": 16005,
+          "relativePath": "job_sprint3_v2_real/raw-output.json"
+        },
+        {
+          "role": "normalized_pir",
+          "sha256": "882632372d9506aba6cdf7d1b9091bd0d933d44063da6d019bc8d1810ff36fb7",
+          "sizeBytes": 8514,
+          "relativePath": "job_sprint3_v2_real/normalized-pir.json"
+        },
+        {
+          "role": "overlay",
+          "sha256": "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870",
+          "sizeBytes": 463416,
+          "relativePath": "job_sprint3_v2_real/overlay.png"
+        }
+      ]
+    },
+    {
+      "stage": "schema_validation",
+      "executionMode": "real_ml",
+      "checks": [
+        "normalizedPir.schemaVersion == '2.0'",
+        "coordinates.coordinateSpace == 'image_pixels'",
+        "coordinates.origin == 'top_left'",
+        "coordinates.width == 512.0",
+        "timing.frameBase == 1 (not 0)",
+        "timing.fps == 24.0",
+        "keypoints.length == 133 (whole body)",
+        "every keypoint has x/y/confidence in real-valued ranges"
+      ],
+      "passed": true
+    },
+    {
+      "stage": "weights_hash_verification",
+      "executionMode": "real_ml",
+      "yolox_l.onnx_sha256_matches_manifest": true,
+      "dw-ll_ucoco_384.onnx_sha256_matches_manifest": true,
+      "input_artifact_hash_matches_measured": true
+    }
+  ],
+  "harmonyApplied": false,
+  "isRealHarmonyExecution": false,
+  "harmonyNote": "Toon Boom Harmony was not invoked. The normalized PIR carries a harmonyFieldTransform that converts pixel coordinates to Harmony field coordinates (unitsPerField=12); a downstream retargeting stage can consume it without any further pixel-space computation.",
+  "licenseNote": "This slice was run under COMMERCIAL_BUILD=false and ALLOW_LEGAL_REVIEW_PENDING=true. The licence override is explicitly recorded in provenance.licenseDecisionId. This run is NOT commercially releasable until verifiedBy is filled in on DWPose in catalog.json.",
+  "failedChecks": []
+}

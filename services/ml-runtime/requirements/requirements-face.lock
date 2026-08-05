@@ -1,0 +1,16 @@
+# ==========================================================================================
+# Face performance: MediaPipe landmarker (production) and LivePortrait (preview only).
+#
+# Hand-curated EXACT pins for direct dependencies. This is not a pip-compile --generate-hashes
+# lock: transitive versions are resolved by pip at install time. See README.md.
+#
+# Install into an isolated venv, never the system Python:
+#   python -m venv .venv-face && .venv-face/bin/pip install -r requirements-face.lock
+# ==========================================================================================
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+mediapipe==0.10.14
+# LivePortrait stays commented: its transitive InsightFace checkpoints carry non-commercial
+# terms, so the model is preview_only until a permitted detector is substituted.
+# torch==2.5.1
+# liveportrait @ git+https://github.com/KlingAIResearch/LivePortrait.git@<PIN_COMMIT_SHA_BEFORE_USE>

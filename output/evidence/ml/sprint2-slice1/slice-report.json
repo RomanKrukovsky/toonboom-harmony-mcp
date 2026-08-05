@@ -1,0 +1,49 @@
+{
+  "runId": "sprint2-slice1",
+  "status": "production_package_ready_for_harmony_execution",
+  "generatedAt": "2026-07-28T05:07:51.496Z",
+  "stages": [
+    {
+      "stage": "pose_estimation",
+      "executionMode": "real_ml",
+      "input": "fixtures/video/cartoon_character_motion.mp4",
+      "inputMode": "video",
+      "frames": 153,
+      "realInferenceExecuted": true,
+      "modelId": "dwpose-ll-ucoco-384",
+      "modelRevision": "dw-ll_ucoco_384",
+      "weightsSha256": [
+        "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+        "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+      ],
+      "device": "CPUExecutionProvider",
+      "durationMs": 30295.586583997647
+    },
+    {
+      "stage": "retargeting",
+      "executionMode": "offline_deterministic",
+      "realInferenceExecuted": false,
+      "channels": 12,
+      "keysKept": 798,
+      "keysRaw": 1476,
+      "maxReconstructionError": 0.499223
+    },
+    {
+      "stage": "command_compilation",
+      "executionMode": "offline_deterministic",
+      "realInferenceExecuted": false,
+      "commands": 800
+    },
+    {
+      "stage": "verification",
+      "executionMode": "offline_deterministic",
+      "realInferenceExecuted": false,
+      "passed": true
+    }
+  ],
+  "harmonyApplied": false,
+  "isRealHarmonyExecution": false,
+  "harmonyNote": "Toon Boom Harmony was not invoked. The command plan is compiled and validated offline; nothing in this run proves an editable Harmony scene exists.",
+  "licenseNote": "DWPose licence review is still open, so this run is explicitly non-commercial. See dwpose/license-decision.json.",
+  "failedChecks": []
+}

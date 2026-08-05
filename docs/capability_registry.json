@@ -1,8 +1,8 @@
 {
   "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-27",
-  "auditedBy": "sprint-0-truth-restoration",
+  "generatedAt": "2026-07-28",
+  "auditedBy": "sprint-3-v2-dwpose-real-end-to-end",
   "verificationLevels": [
     "not_implemented",
     "unaudited",
@@ -22,7 +22,8 @@
     "offline_verified": "Deterministic behaviour proven by the test suite; no model or Harmony.",
     "real_model_verified": "Executed against real model weights producing real artifacts.",
     "real_harmony_smoke_verified": "One successful operation against a licensed Harmony with evidence.",
-    "shot_verified": "A complete shot was produced, rendered, reviewed and approved."
+    "shot_verified": "A complete shot was produced, rendered, reviewed and approved.",
+    "simulator_verified": "Behaviour proven by the Harmony contract simulator: a deterministic model of a supported HarmonyCommandPlanV5 subset. Strictly weaker than any real_harmony level - it proves the plan is internally coherent and the rig can receive it, never that Harmony would accept it."
   },
   "capabilities": [
     {
@@ -288,7 +289,7 @@
       ],
       "blockingReason": "Not audited in any session so far. Zhang-Suen thinning plus cubic Bezier fitting is present and reads correctly, but no run was executed and curve fidelity against a source centerline has never been measured, so no level above unaudited can be claimed.",
       "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced \u2014 Zhang-Suen thinning plus cubic Bezier fitting is present."
+      "nextRequiredProof": "Measure max deviation between fitted curves and the source centerline on a real drawing; the preliminary claim that this produced 'broken polygons' was NOT reproduced — Zhang-Suen thinning plus cubic Bezier fitting is present."
     },
     {
       "capabilityId": "production.shot_factory",
@@ -444,6 +445,453 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Extend the guard to node:http/https agents so non-fetch clients cannot reach external hosts either."
+    },
+    {
+      "capabilityId": "platform.ml_orchestration",
+      "productionStage": "platform",
+      "implementationFiles": [
+        "src/services/mlOrchestrator/index.ts",
+        "src/services/mlProviderRegistry/index.ts",
+        "src/services/mlJobStore/index.ts",
+        "src/services/mlJobStore/migrations.ts",
+        "src/clients/mlRuntimeClient.ts",
+        "src/errors/mlErrorRegistry.ts"
+      ],
+      "publicTools": [
+        "harmony.ml.v2.submit_job",
+        "harmony.ml.v2.get_job",
+        "harmony.ml.v2.wait_for_job",
+        "harmony.ml.v2.cancel_job",
+        "harmony.ml.v2.retry_job",
+        "harmony.ml.v2.select_provider",
+        "harmony.ml.v2.get_provider_readiness",
+        "harmony.ml.v2.get_model_readiness",
+        "harmony.ml.v2.unload_model",
+        "harmony.ml.v2.get_metrics"
+      ],
+      "backendType": "typescript_sqlite",
+      "verificationLevel": "real_model_verified",
+      "evidencePaths": [
+        "tests/mlContracts/orchestrator.test.ts",
+        "output/evidence/ml/sprint3-v2-dwpose-real/slice-report.json",
+        "output/evidence/ml/sprint3-v2-dwpose-real/provenance.json",
+        "output/evidence/ml/sprint3-v2-dwpose-real/artifacts/raw-output.json",
+        "output/evidence/ml/sprint3-v2-dwpose-real/artifacts/normalized-pir.json",
+        "output/evidence/ml/sprint3-v2-dwpose-real/artifacts/overlay.png"
+      ],
+      "models": [
+        {
+          "name": "dw-ll_ucoco_384",
+          "role": "wholebody_pose_simcc",
+          "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "sizeBytes": 134399116,
+          "hashVerified": true
+        },
+        {
+          "name": "yolox_l",
+          "role": "person_detection",
+          "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+          "sizeBytes": 216746733,
+          "hashVerified": true
+        }
+      ],
+      "measured": {
+        "testsPassing": 30,
+        "coveredBehaviours": [
+          "idempotent resubmission returns the stored result without re-running inference",
+          "timeout produces ML_TIMEOUT and a failed job row",
+          "cancellation is honoured through a durable flag",
+          "retry is refused for terminal error classes and allowed for worker crashes",
+          "in-flight jobs become interrupted after a restart"
+        ]
+      },
+      "knownFailures": [
+        "Exercised against a runtime stub. The only provider with real weights behind /v2/jobs is DWPose.",
+        "Remote GPU worker transport is defined by the same protocol but has no implementation."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Run the same lifecycle against a second real provider once its weights and licence clear."
+    },
+    {
+      "capabilityId": "governance.license_policy_engine",
+      "productionStage": "governance",
+      "implementationFiles": [
+        "src/services/licensePolicyEngine/index.ts",
+        "src/services/modelCatalog/index.ts",
+        "services/ml-runtime/runtime/license_guard.py",
+        "data/models/registry/catalog.json",
+        "data/models/registry/catalog.schema.json"
+      ],
+      "publicTools": [
+        "harmony.ml.v2.evaluate_license",
+        "harmony.ml.v2.evaluate_package_license",
+        "harmony.ml.v2.list_catalog"
+      ],
+      "backendType": "typescript_and_python",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "tests/mlContracts/catalogAndLicense.test.ts",
+        "output/evidence/ml/sprint2-dwpose-license-block/dwpose/license-decision.json"
+      ],
+      "models": [],
+      "measured": {
+        "catalogModels": 25,
+        "modelsClearedForCommercialUse": 0,
+        "commercialBuildDefault": true,
+        "testsPassing": 28
+      },
+      "knownFailures": [
+        "NOT ONE licence in the catalog was independently read in this session. Every entry is legal_review_required, preview_only or research_only, so the engine currently blocks every model in commercial mode. That is the correct behaviour, not a cleared supply chain.",
+        "Territorial restriction handling is exercised only against synthetic catalog entries; no real model in the catalog declares a territory."
+      ],
+      "blockingReason": "No model has a signed licence verification. verifiedBy is null everywhere.",
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Open the upstream LICENSE and model card for one model, record verifiedSourceUrls, sign verifiedBy, and show a production_allowed decision passing the packaging gate."
+    },
+    {
+      "capabilityId": "perception.pose_to_harmony_plan",
+      "productionStage": "animation",
+      "implementationFiles": [
+        "src/services/poseRetargetCompiler/index.ts",
+        "src/schemas/harmonyCommandPlanV5.ts",
+        "scripts/demo_ml_production_slice.mjs"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_deterministic",
+      "verificationLevel": "real_model_verified",
+      "evidencePaths": [
+        "output/evidence/ml/sprint2-slice1/slice-report.json",
+        "output/evidence/ml/sprint2-slice1/retargeting-plan.json",
+        "output/evidence/ml/sprint2-slice1/harmony-command-plan.json",
+        "output/evidence/ml/sprint2-slice1/verification-report.json",
+        "output/evidence/ml/sprint2-slice1/dwpose/provenance.json"
+      ],
+      "models": [
+        {
+          "name": "yolox_l",
+          "role": "person_detection",
+          "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+          "sizeBytes": 216746733,
+          "hashVerified": true
+        },
+        {
+          "name": "dw-ll_ucoco_384",
+          "role": "wholebody_pose_simcc",
+          "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "sizeBytes": 134399116,
+          "hashVerified": true
+        }
+      ],
+      "measured": {
+        "fixture": "fixtures/video/cartoon_character_motion.mp4",
+        "framesProcessed": 153,
+        "inferenceMs": 30295.6,
+        "sourceFps": 29.97,
+        "targetFps": 24,
+        "channels": 12,
+        "keysRaw": 1476,
+        "keysKept": 798,
+        "keyReductionPercent": 45.9,
+        "maxReconstructionErrorDegrees": 0.499223,
+        "maxReconstructionErrorField": 0.009838,
+        "harmonyCommands": 800,
+        "offlineChecksPassed": "9/9"
+      },
+      "knownFailures": [
+        "Single-person only: DWPose runs on the highest-scoring detection.",
+        "The rig used by the demo is a synthetic definition inside the demo script, not a real CharacterRigPIR from an approved Harmony rig.",
+        "The command plan has never been executed. No Harmony scene was created, so nothing here proves the plan applies cleanly.",
+        "Foot locking detects contact frames but the plan does not yet pin the ankle; contact frames are reported only."
+      ],
+      "blockingReason": "requires_real_harmony for execution; DWPose licence review still open for commercial use.",
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Execute the compiled plan against a licensed Harmony, read the scene back and confirm the function point count per column matches."
+    },
+    {
+      "capabilityId": "platform.runtime_provider_architecture",
+      "productionStage": "platform",
+      "implementationFiles": [
+        "services/ml-runtime/app.py",
+        "services/ml-runtime/runtime/provider_registry.py",
+        "services/ml-runtime/runtime/job_manager.py",
+        "services/ml-runtime/runtime/model_loader.py",
+        "services/ml-runtime/runtime/artifact_store.py",
+        "services/ml-runtime/runtime/hardware_probe.py",
+        "services/ml-runtime/runtime/security.py",
+        "services/ml-runtime/runtime/providers/base.py",
+        "services/ml-runtime/runtime/providers/dwpose_v2.py"
+      ],
+      "publicTools": [],
+      "backendType": "python_fastapi",
+      "verificationLevel": "real_model_verified",
+      "evidencePaths": [
+        "services/ml-runtime/tests/test_runtime_v2_contracts.py",
+        "output/evidence/ml/sprint2-dwpose-v2/dwpose/execution-report.json"
+      ],
+      "models": [
+        {
+          "name": "dw-ll_ucoco_384",
+          "role": "wholebody_pose_simcc",
+          "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "sizeBytes": 134399116,
+          "hashVerified": true
+        }
+      ],
+      "measured": {
+        "registeredProviders": 1,
+        "v2Endpoints": [
+          "/v2/jobs",
+          "/v2/jobs/{jobId}",
+          "/v2/jobs/{jobId}/cancel",
+          "/v2/providers",
+          "/v2/models",
+          "/v2/hardware",
+          "/health",
+          "/readiness",
+          "/metrics"
+        ],
+        "deprecatedAdapters": [
+          "/jobs/execute",
+          "/jobs/cancel/{job_id}",
+          "/infer/animeinbet",
+          "/infer/voxcpm"
+        ],
+        "defaultBind": "127.0.0.1",
+        "testsPassing": 41
+      },
+      "knownFailures": [
+        "Exactly one provider is registered. AnimeInbet and VoxCPM lost their ad-hoc endpoints and now return 412 until they are implemented against the provider contract.",
+        "No provider other than DWPose has installed weights, so the multi-provider dispatch path is proven by contract tests rather than by a second real model."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Register a second provider with real weights and show both dispatching through the same /v2/jobs endpoint."
+    },
+    {
+      "capabilityId": "harmony.contract_simulator",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/services/harmonyContractSimulator/index.ts",
+        "src/schemas/simulatedSceneStateV1.ts",
+        "src/schemas/harmonyCommandPlanV5.ts",
+        "src/tools/harmonySimulatorTools.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.create_scene",
+        "harmony.simulator.execute_plan",
+        "harmony.simulator.dry_run",
+        "harmony.simulator.cancel",
+        "harmony.simulator.list_rigs"
+      ],
+      "backendType": "typescript_simulation",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/execution-result.json",
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/dry-run-diff.json",
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/rollback-report.json",
+        "tests/harmonySimulator/contract.test.ts",
+        "tests/harmonySimulator/adversarial.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "v5CommandTypes": 41,
+        "supportedBySimulator": 25,
+        "refusedWithStatedReason": 16,
+        "roundTripChecksPassed": "21/21",
+        "demoPlanCommands": 181,
+        "unitContractIntegrationAdversarialTests": 129
+      },
+      "knownFailures": [
+        "This is NOT Harmony. It cannot author TVG geometry, render, or open an .xstage, and it cannot tell you whether Harmony would accept the same command.",
+        "16 of 41 V5 command types are refused with a stated reason rather than executed; deformers, rendering and project lifecycle are outside the v1 scene model.",
+        "The scene model covers nodes, connections, columns, keyframes, exposures, substitutions, switches, palettes, cameras and controller bindings. Deformer chains and vector geometry are not modelled."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Execute the same command plan against a licensed Toon Boom Harmony and compare its scene readback with the simulator's."
+    },
+    {
+      "capabilityId": "rig.manifest",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/schemas/rigManifestV1.ts",
+        "src/services/rigFixtureLoader/index.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.list_rigs"
+      ],
+      "backendType": "typescript_schema",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/input-rig-manifest.json",
+        "tests/harmonySimulator/unit.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "fixtures": 4,
+        "validFixtures": 3,
+        "controllersPerValidRig": 10,
+        "deliberateDefectsInInvalidRig": 8
+      },
+      "knownFailures": [
+        "All four rig manifests are HAND-AUTHORED fixtures. None was captured from a real Harmony rig, so the node paths are conventions rather than observations.",
+        "No .xstage or third-party rig asset was read; nothing here is validated against a real Harmony rig structure."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Capture a real Harmony rig and show that the manifest schema can describe it without loss."
+    },
+    {
+      "capabilityId": "rig.compatibility_validation",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/services/rigCompatibilityValidator/index.ts",
+        "src/schemas/rigManifestV1.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.validate_rig"
+      ],
+      "backendType": "typescript_simulation",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/compatibility-report.json",
+        "tests/harmonySimulator/contract.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "checksImplemented": 14,
+        "invalidRigErrorsDetected": 9,
+        "demoCoverage": 1.0,
+        "blocksExecutionOnError": true
+      },
+      "knownFailures": [
+        "Compatibility is judged against the rig MANIFEST, not against a real rig. A manifest that misdescribes its rig produces a confident but wrong report.",
+        "Channel and limit checks only cover what the manifest declares; an undeclared constraint in the real rig is invisible."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Validate a plan against a manifest derived from a real Harmony rig and confirm the report matches what Harmony accepts."
+    },
+    {
+      "capabilityId": "scene.snapshot_roundtrip",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/services/harmonySnapshotStore/index.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.save_snapshot",
+        "harmony.simulator.load_snapshot",
+        "harmony.simulator.list_revisions",
+        "harmony.simulator.compare_revisions",
+        "harmony.simulator.rollback"
+      ],
+      "backendType": "typescript_filesystem",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/snapshot-manifest.json",
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/reloaded-scene-state.json",
+        "tests/harmonySimulator/integration.test.ts",
+        "tests/harmonySimulator/adversarial.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "atomicWrite": "temp file + rename",
+        "checksumLayers": 2,
+        "corruptionCasesRejected": 5,
+        "reloadIsFromDisk": true
+      },
+      "knownFailures": [
+        "Snapshots are the simulator's own JSON, not Harmony project files. Loading one into Harmony is not possible.",
+        "Only one migration map entry exists (empty); the migration path is exercised by a rejection test, not by a real version upgrade."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Round-trip through a real Harmony save/reopen and compare the readback."
+    },
+    {
+      "capabilityId": "scene.readback_simulation",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/schemas/simulatedSceneStateV1.ts",
+        "src/services/harmonySceneDiff/index.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.readback",
+        "harmony.simulator.compare_revisions"
+      ],
+      "backendType": "typescript_simulation",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/readback.json",
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/readback-diff.json",
+        "tests/harmonySimulator/unit.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "orderIndependent": true,
+        "toleranceConfigurable": true,
+        "defaultTolerance": 1e-06,
+        "volatileFieldsExcluded": [
+          "revision",
+          "commandHistory",
+          "artifactReferences"
+        ]
+      },
+      "knownFailures": [
+        "This reads back the SIMULATOR's state. It is not a Harmony scene capture; the existing sceneStateCapture service covers that and remains blocked without Harmony."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "Compare a simulator readback with a real Harmony capture of a scene built by the same plan."
+    },
+    {
+      "capabilityId": "structural_offline_qa",
+      "productionStage": "simulation",
+      "implementationFiles": [
+        "src/services/structuralOfflineQa/index.ts"
+      ],
+      "publicTools": [
+        "harmony.simulator.structural_qa"
+      ],
+      "backendType": "typescript_simulation",
+      "verificationLevel": "simulator_verified",
+      "evidencePaths": [
+        "output/evidence/harmony-simulator-roundtrip/roundtrip-latest/structural-qa-report.json",
+        "tests/harmonySimulator/unit.test.ts"
+      ],
+      "models": [],
+      "measured": {
+        "checks": 12,
+        "injectedDefectsDetectedInDemo": 2,
+        "visualReviewPerformed": false,
+        "renderInspected": false
+      },
+      "knownFailures": [
+        "It is structural only. It cannot see the scene, has no opinion on animation quality, timing, staging or appeal, and must never be presented as a visual or artistic review.",
+        "Motion-step and key-count checks are budgets with configurable thresholds, not correctness claims; they emit warnings, not errors."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "A rendered-frame QA pass, which requires a real Harmony renderer and is out of scope for this component."
+    },
+    {
+      "capabilityId": "harmony.real_executor",
+      "productionStage": "execution",
+      "implementationFiles": [],
+      "publicTools": [],
+      "backendType": "not_implemented",
+      "verificationLevel": "not_implemented",
+      "evidencePaths": [],
+      "models": [],
+      "measured": {},
+      "knownFailures": [
+        "There is no real Harmony executor. The contract simulator does not become one by resembling it.",
+        "No .xstage reader or writer exists. No render path exists."
+      ],
+      "blockingReason": "Toon Boom Harmony is not installed on any machine this work has run on. Everything downstream of command compilation is requires_real_harmony.",
+      "lastVerifiedAt": "2026-07-28",
+      "nextRequiredProof": "A licensed Harmony install, one executed command, a scene read back, and native entity inspection confirming the expected change."
     }
   ],
   "fixtureNotes": [

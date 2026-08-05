@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RomanKrukovsky/toonboom-harmony-mcp/data/models/registry/catalog.schema.json",
+  "title": "Harmony ML Model Catalog",
+  "description": "Version-controlled upstream metadata only. Contains no machine-specific paths, no installation state and no unverified digests. Physical locations live in the gitignored local-state.json; the root comes from HARMONY_MODEL_CACHE.",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "models"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "2.0" },
+    "generatedAt": { "type": "string", "format": "date" },
+    "$comment": { "type": "string" },
+    "models": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/model" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "hashSource": {
+      "description": "Where the expected digest came from. 'locally_computed_and_reviewed' means a human ran the quarantine flow and accepted the value; it is NOT a substitute for an upstream-published digest.",
+      "enum": [
+        "upstream_published_checksum",
+        "upstream_url_path_segment",
+        "huggingface_lfs_oid",
+        "locally_computed_and_reviewed",
+        "not_published_upstream"
+      ]
+    },
+    "licenseStatus": {
+      "enum": [
+        "production_allowed",
+        "production_allowed_with_attribution",
+        "preview_only",
+        "research_only",
+        "legal_review_required",
+        "blocked",
+        "unknown"
+      ]
+    },
+    "weightsFile": {
+      "type": "object",
+      "required": ["role", "fileName", "url", "sizeBytes", "format", "sha256", "hashSource"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "fileName": { "type": "string", "pattern": "^[A-Za-z0-9._\\-]+$" },
+        "url": { "type": "string", "format": "uri" },
+        "sizeBytes": { "type": ["integer", "null"], "minimum": 0 },
+        "format": { "enum": ["onnx", "safetensors", "pytorch_pickle", "tflite_task", "gguf", "zip", "other"] },
+        "sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "hashSource": { "$ref": "#/$defs/hashSource" },
+        "requiresQuarantineReview": { "type": "boolean" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": [
+        "codeLicense", "weightsLicense", "datasetLicense", "commercialUse", "derivativeWeights",
+        "redistribution", "attribution", "territorialRestrictions", "personalDataRisk",
+        "biometricDataRisk", "consentRequired", "status", "legalNotes",
+        "verifiedSourceUrls", "verifiedAt", "verifiedBy"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "codeLicense": { "type": "string" },
+        "weightsLicense": { "type": "string" },
+        "datasetLicense": { "type": "string" },
+        "commercialUse": { "enum": ["allowed", "allowed_with_attribution", "forbidden", "unknown"] },
+        "derivativeWeights": { "enum": ["allowed", "forbidden", "unknown"] },
+        "redistribution": { "enum": ["allowed", "forbidden", "unknown"] },
+        "attribution": { "type": "string" },
+        "territorialRestrictions": { "type": "array", "items": { "type": "string" } },
+        "personalDataRisk": { "enum": ["none", "low", "medium", "high", "unknown"] },
+        "biometricDataRisk": { "enum": ["none", "low", "medium", "high", "unknown"] },
+        "consentRequired": { "type": "boolean" },
+        "status": { "$ref": "#/$defs/licenseStatus" },
+        "legalNotes": { "type": "string" },
+        "verifiedSourceUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "verifiedAt": { "type": ["string", "null"], "format": "date" },
+        "verifiedBy": { "type": ["string", "null"] }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": [
+        "modelId", "providerId", "taskTypes", "displayName", "upstreamRepository",
+        "upstreamCommit", "revision", "cacheKey", "weightsFiles", "runtime", "hardware",
+        "license", "maturity"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "modelId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._\\-]*$", "$comment": "Lowercase. Underscores are permitted because several ids predate this schema and are referenced by existing callers." },
+        "providerId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_]*$" },
+        "taskTypes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "pose_estimation", "character_segmentation", "video_segmentation", "point_tracking",
+              "face_performance_extraction", "speech_transcription", "phoneme_alignment",
+              "viseme_generation", "tts", "motion_reference_generation", "inbetween_generation",
+              "frame_interpolation", "line_art_colorization", "depth_estimation", "optical_flow",
+              "visual_quality_review", "sound_effect_retrieval", "sound_effect_generation",
+              "music_generation"
+            ]
+          }
+        },
+        "displayName": { "type": "string", "minLength": 1 },
+        "upstreamRepository": { "type": ["string", "null"], "format": "uri" },
+        "upstreamCommit": {
+          "description": "Pinned commit SHA. null means the integration is not yet pinned and must not be installed.",
+          "oneOf": [{ "type": "string", "pattern": "^[a-f0-9]{7,40}$" }, { "type": "null" }]
+        },
+        "revision": { "type": "string", "minLength": 1 },
+        "cacheKey": {
+          "description": "Logical location under $HARMONY_MODEL_CACHE. Never an absolute path.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._\\-]*(/[a-z0-9][a-z0-9._\\-]*)*$"
+        },
+        "weightsFiles": { "type": "array", "items": { "$ref": "#/$defs/weightsFile" } },
+        "runtime": {
+          "type": "object",
+          "required": ["kind", "trustRemoteCode", "requiresPickle"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["onnxruntime", "pytorch", "mediapipe", "huggingface_transformers", "external_binary", "not_integrated"] },
+            "trustRemoteCode": { "const": false },
+            "requiresPickle": { "type": "boolean" },
+            "pythonEnvironment": { "enum": ["ml-runtime", "ml-core", "reconstruction-core", "external"] },
+            "requirementsLock": { "type": ["string", "null"] }
+          }
+        },
+        "hardware": {
+          "type": "object",
+          "required": ["devices", "minRamGb"],
+          "additionalProperties": false,
+          "properties": {
+            "devices": { "type": "array", "items": { "enum": ["cpu", "mps", "cuda", "remote"] }, "minItems": 1 },
+            "minRamGb": { "type": "number", "minimum": 0 },
+            "minVramGb": { "type": ["number", "null"], "minimum": 0 },
+            "recommendedProfiles": { "type": "array", "items": { "enum": ["cpu_only", "apple_silicon", "cuda_8gb", "cuda_16gb", "cuda_24gb", "cuda_48gb", "cuda_80gb", "remote_gpu"] } }
+          }
+        },
+        "license": { "$ref": "#/$defs/license" },
+        "maturity": {
+          "description": "Integration maturity in THIS repository, independent of licence.",
+          "enum": ["planned", "schema_only", "stub", "fixture_verified", "contract_verified", "offline_verified", "real_model_verified", "blocked", "deprecated"]
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

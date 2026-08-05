@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "2.0",
+  "jobId": "job_9880b294-1fd6-4ef9-8448-164739417a70",
+  "correlationId": "sprint2-dwpose-license-block",
+  "idempotencyKey": "smoke_be68c470ccf98cf8aca86b66ae09b1bc",
+  "taskType": "pose_estimation",
+  "providerId": "dwpose",
+  "modelId": "dwpose-ll-ucoco-384",
+  "modelRevision": "dw-ll_ucoco_384",
+  "executionMode": "real_ml",
+  "commercialMode": "preview",
+  "inputArtifacts": [
+    {
+      "artifactId": "art_88431cd9653ccd539741b555",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "sizeBytes": 791555,
+      "mimeType": "image/png",
+      "relativePath": "sprint2-dwpose-license-block/inputs/000_character.png",
+      "role": "input_image"
+    }
+  ],
+  "parameters": {},
+  "timeoutMs": 600000,
+  "seed": null,
+  "requestedDevice": "auto"
+}

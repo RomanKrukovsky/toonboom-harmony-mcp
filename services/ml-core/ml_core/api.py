@@ -74,25 +74,83 @@ def get_system():
 
 @app.get("/v1/ml/models")
 def list_models():
-    return registry.list_models()
+    return [
+        {**m.model_dump(), "localState": registry.get_state(m.modelId).model_dump()}
+        for m in registry.list_models()
+    ]
 
 @app.post("/v1/ml/models/install")
 def install_model(req: InstallRequest):
+    """Installation is a deliberate operator action, not an HTTP side effect.
+
+    The previous implementation flipped `installed=True, status="ready"` without downloading a
+    single byte, so the registry reported models as ready that had never existed on disk. This
+    endpoint now refuses and points at the audited download path, which shows the operator the
+    URL, licence, size and expected digest before anything is fetched.
+    """
     model = registry.get_model(req.modelId)
     if not model:
-        raise HTTPException(status_code=404, detail=f"Model {req.modelId} not found in registry")
-    
-    registry.update_status(req.modelId, status="ready", installed=True)
-    return {"status": "success", "model": registry.get_model(req.modelId)}
+        raise HTTPException(status_code=404, detail=f"Model {req.modelId} not found in catalog")
+    raise HTTPException(
+        status_code=409,
+        detail={
+            "code": "ML_INSTALL_REQUIRES_OPERATOR",
+            "message": (
+                "Weights are not installed over HTTP. Run the audited downloader, which prints "
+                "the upstream URL, licence status, download size, free disk and expected digest, "
+                "and quarantines any file with no trusted digest."
+            ),
+            "command": f"npm run ml:models:install -- --model-id {req.modelId}",
+            "licenseStatus": model.license.status,
+        },
+    )
 
 @app.post("/v1/ml/models/verify")
 def verify_model(req: VerifyRequest):
+    """Re-hashes what is actually on disk. It never asserts verification it did not perform."""
     model = registry.get_model(req.modelId)
     if not model:
-        raise HTTPException(status_code=404, detail=f"Model {req.modelId} not found in registry")
-    
-    registry.update_status(req.modelId, importVerified=True, inferenceVerified=True, status="ready")
-    return {"status": "success", "model": registry.get_model(req.modelId)}
+        raise HTTPException(status_code=404, detail=f"Model {req.modelId} not found in catalog")
+
+    import hashlib
+
+    measured: Dict[str, str] = {}
+    problems: List[str] = []
+    for wf in model.weightsFiles:
+        path = model.local_path(wf.fileName)
+        if not path.is_file():
+            problems.append(f"{wf.fileName}: not present under {model.cacheKey}")
+            continue
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        actual = digest.hexdigest()
+        measured[wf.fileName] = actual
+        if wf.sha256 is None:
+            problems.append(f"{wf.fileName}: catalog has no trusted digest (hashSource={wf.hashSource})")
+        elif actual != wf.sha256:
+            problems.append(f"{wf.fileName}: digest mismatch (expected {wf.sha256}, measured {actual})")
+
+    if not model.weightsFiles:
+        problems.append("catalog declares no weights files for this model")
+
+    status = "ready" if not problems else ("not_installed" if not measured else "degraded")
+    state = registry.update_status(
+        req.modelId,
+        installed=bool(measured) and not problems,
+        installedRevision=model.revision if not problems else None,
+        verifiedFiles=measured,
+        importVerified=False,
+        inferenceVerified=False,
+        status=status,
+    )
+    return {
+        "status": "verified" if not problems else "blocked",
+        "modelId": req.modelId,
+        "problems": problems,
+        "localState": state.model_dump(),
+    }
 
 @app.get("/v1/ml/datasets")
 def list_datasets():

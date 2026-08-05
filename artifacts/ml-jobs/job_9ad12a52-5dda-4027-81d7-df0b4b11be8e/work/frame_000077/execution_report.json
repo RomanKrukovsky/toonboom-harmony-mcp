@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "realInferenceExecuted": true,
+  "peopleFound": 1,
+  "personScore": 0.8929500579833984,
+  "personBox": [
+    734.279661655426,
+    132.61197566986084,
+    1106.4608674049377,
+    950.5718450546265
+  ],
+  "keypointsTotal": 133,
+  "keypointsVisible": 133,
+  "keypointThreshold": 0.3,
+  "meanConfidence": 0.8870809078216553,
+  "minConfidence": 0.5068347454071045,
+  "maxConfidence": 1.0353864431381226,
+  "executionProvider": "CPUExecutionProvider"
+}

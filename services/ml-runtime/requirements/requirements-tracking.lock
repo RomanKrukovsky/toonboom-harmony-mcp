@@ -1,0 +1,16 @@
+# ==========================================================================================
+# Point tracking and optical flow: CoTracker, RAFT.
+#
+# Hand-curated EXACT pins for direct dependencies. This is not a pip-compile --generate-hashes
+# lock: transitive versions are resolved by pip at install time. See README.md.
+#
+# Install into an isolated venv, never the system Python:
+#   python -m venv .venv-tracking && .venv-tracking/bin/pip install -r requirements-tracking.lock
+# ==========================================================================================
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+torch==2.5.1
+torchvision==0.20.1
+einops==0.8.0
+# co-tracker @ git+https://github.com/facebookresearch/co-tracker.git@<PIN_COMMIT_SHA_BEFORE_USE>
+# RAFT ships no package; vendor the weights and import the reference implementation by commit.

@@ -3,6 +3,7 @@
 ## Strict Status Classifications
 - **real_harmony_verified**: Verified against live running Toon Boom Harmony instance with actual scene modifications.
 - **real_model_verified**: Verified with actual local neural network execution (e.g., local DWPose ONNX model processing image).
+- **simulator_verified**: Verified against the Harmony Contract Simulator — a deterministic model of a supported `HarmonyCommandPlanV5` subset. Strictly weaker than `real_harmony_verified`: it proves a plan is internally coherent and that the rig can receive it, never that Harmony would accept it. See `docs/HARMONY_CONTRACT_SIMULATOR.md`.
 - **offline_tested**: Verified offline using deterministic TypeScript compilers, Zod schema validation, and Jest unit test suite.
 - **implemented**: Code written and integrated, pending live execution verification.
 - **planned**: Architecture defined, pending implementation.
@@ -23,7 +24,13 @@
 | AnimeInbet Orchestrator | `offline_tested` | Python provider endpoint & TS orchestrator integration |
 | SceneDiffEngine & RetakeManifest | `offline_tested` | Snapshot PIR comparison with float epsilon handling |
 | Harmony Script Server Connection | `implemented` | QtScript server ping & command dispatcher |
-| Live Harmony .xstage Execution | `planned` | Requires active Harmony license & running TB_Harmony script server |
+| Harmony Contract Simulator (HarmonyCommandPlanV5 execution) | `simulator_verified` | 25 of 41 V5 command types executed against a canonical `SimulatedSceneStateV1`; the other 16 refused with a stated reason. Round-trip evidence: `output/evidence/harmony-simulator-roundtrip/`. |
+| RigManifestV1 & RigControllerV1 | `simulator_verified` | 4 hand-authored fixtures (3 valid, 1 with 8 deliberate defects). No fixture was captured from a real Harmony rig. |
+| RigCompatibilityValidator | `simulator_verified` | 14 checks; blocks execution on any error. Judged against the manifest, not against a real rig. |
+| Snapshot save / reload / rollback round-trip | `simulator_verified` | Atomic temp-file + rename, two integrity layers, 5 corruption cases rejected. The reload reads bytes back off disk. |
+| Scene readback & structural diff | `simulator_verified` | Order-independent, configurable float tolerance. Reads back the SIMULATOR's state, not a Harmony capture. |
+| structural_offline_qa | `simulator_verified` | 12 structural checks. Explicitly NOT a visual or artistic review: `visualReviewPerformed: false` is a schema literal. |
+| Live Harmony .xstage Execution | `planned` | Requires active Harmony license & running TB_Harmony script server. The contract simulator does not become an executor by resembling one. |
 
 ## MCP Tools Classification
 

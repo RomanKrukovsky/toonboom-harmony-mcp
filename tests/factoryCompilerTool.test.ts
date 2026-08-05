@@ -126,6 +126,9 @@ describe('harmony.factory.compile_shot MCP tool', () => {
   let tmpDir: string;
   let showBiblePath: string;
   const tool = factoryCompilerTools[0];
+  const qaTool = factoryCompilerTools[1];
+  const sessionStartTool = factoryCompilerTools[2];
+  const sessionDecideTool = factoryCompilerTools[3];
 
   beforeAll(() => {
     tmpDir = path.resolve(process.cwd(), 'output', 'test-factory-tool');
@@ -169,9 +172,11 @@ describe('harmony.factory.compile_shot MCP tool', () => {
       }
     });
     expect(res.status).toBe('success');
-    expect(res.verified).toBe(true);
-    expect(res.violations).toEqual([]);
-    expect(res.performancePIR!.performanceId).toMatch(/^PERF-/);
+    if (res.status === 'success') {
+      expect(res.verified).toBe(true);
+      expect(res.violations).toEqual([]);
+      expect(res.performancePIR.performanceId).toMatch(/^PERF-/);
+    }
   });
 
   it('returns status=rejected with violations when the manifest uses an unknown emotion', async () => {
@@ -201,8 +206,159 @@ describe('harmony.factory.compile_shot MCP tool', () => {
       }
     });
     expect(res.status).toBe('rejected');
-    expect(res.verified).toBe(true);
-    expect(res.violations.some((v: { kind: string; ref: string }) => v.kind === 'unknown_emotion' && v.ref === 'fury')).toBe(true);
-    expect(res.showBible!.allowedEmotions).toEqual(expect.arrayContaining(['neutral', 'surprise']));
+    if (res.status === 'rejected') {
+      expect(res.verified).toBe(true);
+      expect(res.violations.some((v: { kind: string; ref: string }) => v.kind === 'unknown_emotion' && v.ref === 'fury')).toBe(true);
+      expect(res.showBible.allowedEmotions).toEqual(expect.arrayContaining(['neutral', 'surprise']));
+    }
+  });
+
+  it('harmony.factory.qa_check returns an approved QaReport for clean metrics', async () => {
+    const res = await qaTool.handler({
+      showBiblePath,
+      shotId: 'shot_qa_ok',
+      performancePIR: {
+        schema: 'toon-boom-mcp/performance-pir-v1',
+        performanceId: 'PERF-qa-ok',
+        characterId: 'char_main_v1',
+        durationFrames: 48,
+        fps: 24,
+        tracks: [],
+        holds: []
+      },
+      metrics: {
+        silhouetteQuality: 0.95,
+        lipsyncDriftMs: 30,
+        poseLibraryMatch: 0.95
+      }
+    });
+    expect(res.status).toBe('success');
+    if (res.status === 'success') {
+      expect(res.qaReport.overallStatus).toBe('approved');
+      expect(res.qaReport.findings).toEqual([]);
+    }
+  });
+
+  it('harmony.factory.qa_check blocks when pose library match is too low', async () => {
+    const res = await qaTool.handler({
+      showBiblePath,
+      shotId: 'shot_qa_bad',
+      performancePIR: {
+        schema: 'toon-boom-mcp/performance-pir-v1',
+        performanceId: 'PERF-qa-bad',
+        characterId: 'char_main_v1',
+        durationFrames: 48,
+        fps: 24,
+        tracks: [],
+        holds: []
+      },
+      metrics: { poseLibraryMatch: 0.5 }
+    });
+    expect(res.status).toBe('success');
+    if (res.status === 'success') {
+      expect(res.qaReport.overallStatus).toBe('blocked');
+      expect(res.qaReport.requiresHumanApproval).toBe(true);
+    }
+  });
+
+  it('harmony.factory.session.start + decide approve freezes a session', async () => {
+    const compileRes = await tool.handler({
+      showBiblePath,
+      shotManifest: {
+        schemaVersion: '1.0',
+        shotId: 'shot_session_e2e',
+        showBibleRef: showBiblePath,
+        production: 'polygon_show',
+        episode: 'E01',
+        sceneName: 'S01',
+        description: 'Session e2e.',
+        staging: {
+          positions: [{ characterId: 'char_main_v1', preset: 'center' }],
+          shotSize: 'close_up',
+          cameraMove: 'static',
+          backgroundRef: 'bg/room_v1.png'
+        },
+        timing: { totalFrames: 24, fps: 24, minBeatFrames: 2, maxBeatFrames: 96, anticipationFrames: 4, followThroughFrames: 6, pauseBeforeBeats: {} },
+        beats: [
+          { beatId: 'b1', startFrame: 1, endFrame: 24, characterId: 'char_main_v1', intent: 'look', emotion: 'neutral' }
+        ],
+        fx: [],
+        render: { preview: true, format: 'mp4', quality: 'standard' },
+        provenance: { director: 'llm_director_v1', createdAt: APPROVED_AT, sourceScriptRef: 'scripts/E01/S01.txt' }
+      }
+    });
+    expect(compileRes.status).toBe('success');
+    if (compileRes.status !== 'success') {
+      throw new Error('compile shot failed');
+    }
+    const performancePIR = compileRes.performancePIR;
+
+    const qaRes = await qaTool.handler({
+      showBiblePath,
+      shotId: 'shot_session_e2e',
+      performancePIR,
+      metrics: { silhouetteQuality: 0.9, poseLibraryMatch: 0.9 }
+    });
+    expect(qaRes.status).toBe('success');
+    if (qaRes.status !== 'success') {
+      throw new Error('qa failed');
+    }
+    const qaReport = qaRes.qaReport;
+
+    const startRes = await sessionStartTool.handler({
+      shotManifest: {
+        schemaVersion: '1.0',
+        shotId: 'shot_session_e2e',
+        showBibleRef: showBiblePath,
+        production: 'polygon_show',
+        episode: 'E01',
+        sceneName: 'S01',
+        description: 'Session e2e.',
+        staging: {
+          positions: [{ characterId: 'char_main_v1', preset: 'center' }],
+          shotSize: 'close_up',
+          cameraMove: 'static',
+          backgroundRef: 'bg/room_v1.png'
+        },
+        timing: { totalFrames: 24, fps: 24, minBeatFrames: 2, maxBeatFrames: 96, anticipationFrames: 4, followThroughFrames: 6, pauseBeforeBeats: {} },
+        beats: [{ beatId: 'b1', startFrame: 1, endFrame: 24, characterId: 'char_main_v1', intent: 'look', emotion: 'neutral' }],
+        fx: [],
+        render: { preview: true, format: 'mp4', quality: 'standard' },
+        provenance: { director: 'llm_director_v1', createdAt: APPROVED_AT, sourceScriptRef: 'scripts/E01/S01.txt' }
+      },
+      performancePIR,
+      qaReport
+    });
+    expect(startRes.status).toBe('success');
+    if (startRes.status !== 'success' || !startRes.session) {
+      throw new Error('session start failed');
+    }
+    const startedSession = startRes.session;
+    expect(startedSession.status).toBe('pending');
+
+    const decideRes = await sessionDecideTool.handler({
+      sessionId: startedSession.sessionId,
+      decision: 'approve',
+      decidedBy: 'director_a',
+      retakeNote: { author: 'animator_a', body: 'Looks good.', severity: 'low' }
+    });
+    expect(decideRes.status).toBe('success');
+    if (decideRes.status !== 'success' || !decideRes.session) {
+      throw new Error('session decide failed');
+    }
+    const decidedSession = decideRes.session;
+    expect(decidedSession.status).toBe('approved');
+    expect(decidedSession.retakeNotes).toHaveLength(1);
+
+    // Second decide must be refused — session is frozen.
+    const second = await sessionDecideTool.handler({
+      sessionId: startedSession.sessionId,
+      decision: 'reject',
+      decidedBy: 'director_a'
+    });
+    expect(second.status).toBe('error');
+    if (second.status === 'error') {
+      expect(second.message).toMatch(/frozen/);
+    }
   });
 });

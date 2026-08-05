@@ -1,0 +1,8 @@
+882632372d9506aba6cdf7d1b9091bd0d933d44063da6d019bc8d1810ff36fb7  output/evidence/ml/sprint3-v2-dwpose-real/artifacts/normalized-pir.json
+5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870  output/evidence/ml/sprint3-v2-dwpose-real/artifacts/overlay.png
+ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea  output/evidence/ml/sprint3-v2-dwpose-real/artifacts/raw-output.json
+37f34362fabace2e403a54361011c1cfd5676ee9c55f4ccce2ef5f710919811f  output/evidence/ml/sprint3-v2-dwpose-real/execution-report.json
+02058e44d9700b23d07e51f67b8e561a7f2ce9f6bfb316fc393bc264f7832cc2  output/evidence/ml/sprint3-v2-dwpose-real/job-result.json
+79ee58c1a5a10ef9987e1f88d39f3306104137d48a6e8c862e0b0331ca91c440  output/evidence/ml/sprint3-v2-dwpose-real/normalized-pir-full.json
+b7cf02ece0ed7a4f463f88212c44e93859065ec73579aa7cc296738183e69730  output/evidence/ml/sprint3-v2-dwpose-real/provenance.json
+af0f34c6fff9ad6c13ee330982036204f57dc5ed19442d6fb35f3fbb014eca8c  output/evidence/ml/sprint3-v2-dwpose-real/slice-report.json

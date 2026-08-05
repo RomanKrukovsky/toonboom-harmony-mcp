@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2.0",
+  "jobId": "job_9410827e-1e7f-41b4-8895-c7f60df05dab",
+  "correlationId": "sprint2-slice1",
+  "idempotencyKey": "smoke_51ac0f6cde936926ba9d1a5bf7f8c146",
+  "taskType": "pose_estimation",
+  "providerId": "dwpose",
+  "modelId": "dwpose-ll-ucoco-384",
+  "modelRevision": "dw-ll_ucoco_384",
+  "executionMode": "real_ml",
+  "commercialMode": "preview",
+  "inputArtifacts": [
+    {
+      "artifactId": "art_a5b3b8b792fde4bf47a44b15",
+      "sha256": "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d",
+      "sizeBytes": 536388,
+      "mimeType": "video/mp4",
+      "relativePath": "sprint2-slice1/inputs/000_cartoon_character_motion.mp4",
+      "role": "input_image"
+    }
+  ],
+  "parameters": {
+    "inputMode": "video",
+    "fps": 29.97,
+    "temporalSmoothing": "savitzky_golay",
+    "smoothingWindow": 5,
+    "outlierRejection": "median_absolute_deviation",
+    "maxInterpolatedGapFrames": 2
+  },
+  "timeoutMs": 600000,
+  "seed": null,
+  "requestedDevice": "auto"
+}

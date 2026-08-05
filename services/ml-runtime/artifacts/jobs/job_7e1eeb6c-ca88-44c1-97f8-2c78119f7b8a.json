@@ -1,0 +1,437 @@
+{
+  "jobId": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a",
+  "correlationId": "20260728T053055Z",
+  "idempotencyKey": "slice_e54ef36ad9bc9261e75be45438ba08ee",
+  "taskType": "pose_estimation",
+  "providerId": "dwpose",
+  "modelId": "dwpose-ll-ucoco-384",
+  "modelRevision": "dw-ll_ucoco_384",
+  "executionMode": "real_ml",
+  "commercialMode": "preview",
+  "status": "succeeded",
+  "attempt": 1,
+  "createdAt": "2026-07-28T05:30:55.663103+00:00",
+  "updatedAt": "2026-07-28T05:30:56.503098+00:00",
+  "timeoutMs": 600000,
+  "licenseDecisionId": "lic_runtime_1e303b6b-203d-4a41-9215-f3de5e994147",
+  "request": {
+    "schemaVersion": "2.0",
+    "jobId": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a",
+    "correlationId": "20260728T053055Z",
+    "idempotencyKey": "slice_e54ef36ad9bc9261e75be45438ba08ee",
+    "taskType": "pose_estimation",
+    "providerId": "dwpose",
+    "modelId": "dwpose-ll-ucoco-384",
+    "modelRevision": "dw-ll_ucoco_384",
+    "executionMode": "real_ml",
+    "commercialMode": "preview",
+    "inputArtifacts": [
+      {
+        "artifactId": "art_88431cd9653ccd539741b555",
+        "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+        "sizeBytes": 791555,
+        "mimeType": "image/png",
+        "relativePath": "20260728T053055Z/inputs/000_character.png",
+        "role": "input_image"
+      }
+    ],
+    "parameters": {
+      "inputMode": "image",
+      "skeletonMappingId": "coco_wholebody133_to_canonical_v1",
+      "confidenceGate": 0.3,
+      "fps": 24,
+      "frameBase": 1,
+      "maxInterpolatedGapFrames": 2,
+      "temporalSmoothing": "none",
+      "outlierRejection": "none",
+      "personId": "person_0"
+    },
+    "timeoutMs": 600000,
+    "seed": null,
+    "requestedDevice": "auto"
+  },
+  "result": {
+    "schemaVersion": "2.0",
+    "jobId": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a",
+    "correlationId": "20260728T053055Z",
+    "idempotencyKey": "slice_e54ef36ad9bc9261e75be45438ba08ee",
+    "taskType": "pose_estimation",
+    "status": "succeeded",
+    "attempt": 1,
+    "outputArtifacts": [
+      {
+        "artifactId": "art_ed6931a0bccbd4b906ab1be9",
+        "sha256": "ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea",
+        "sizeBytes": 16005,
+        "mimeType": "application/json",
+        "relativePath": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a/raw-output.json",
+        "role": "raw_model_output"
+      },
+      {
+        "artifactId": "art_5cedc51849f82a8b40f2b4d4",
+        "sha256": "5cedc51849f82a8b40f2b4d45f0a53089dca075a1215e149809aa94c1224ed54",
+        "sizeBytes": 8553,
+        "mimeType": "application/json",
+        "relativePath": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a/normalized-pir.json",
+        "role": "normalized_pir"
+      },
+      {
+        "artifactId": "art_5bbb09049517767eac2da4d5",
+        "sha256": "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870",
+        "sizeBytes": 463416,
+        "mimeType": "image/png",
+        "relativePath": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a/overlay.png",
+        "role": "overlay"
+      }
+    ],
+    "normalizedPir": {
+      "schemaVersion": "2.0",
+      "sequenceId": "pose_job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a",
+      "taskType": "pose_estimation",
+      "skeletonConvention": "coco_wholebody133",
+      "skeletonMappingId": "coco_wholebody133_to_canonical_v1",
+      "coordinates": {
+        "coordinateSpace": "image_pixels",
+        "origin": "top_left",
+        "axisDirection": {
+          "x": "right",
+          "y": "down"
+        },
+        "width": 512.0,
+        "height": 512.0,
+        "normalized": false,
+        "pixelAspectRatio": 1.0,
+        "harmonyFieldTransform": {
+          "a": 0.0234375,
+          "b": 0.0,
+          "tx": -6.0,
+          "c": 0.0,
+          "d": -0.0234375,
+          "ty": 6.0,
+          "unitsPerField": 12.0
+        }
+      },
+      "timing": {
+        "frameBase": 1,
+        "fps": 24.0,
+        "frameCount": 1,
+        "startFrame": 1,
+        "endFrame": 1
+      },
+      "frames": [
+        {
+          "frame": 1,
+          "personId": "person_0",
+          "bbox": {
+            "x": 16.87867889404297,
+            "y": 15.021139526367188,
+            "width": 348.4967529296875,
+            "height": 492.68925781250005
+          },
+          "detectionScore": 0.9539542198181152,
+          "keypoints": [
+            {
+              "joint": "nose",
+              "sourceIndex": 0,
+              "x": 224.0050844086541,
+              "y": 123.43845240275064,
+              "confidence": 0.8354240655899048,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "eye_left",
+              "sourceIndex": 1,
+              "x": 247.26027244991724,
+              "y": 101.78706900278726,
+              "confidence": 0.8874853849411011,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "eye_right",
+              "sourceIndex": 2,
+              "x": 203.15560547510782,
+              "y": 100.1832628250122,
+              "confidence": 0.8648526668548584,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "ear_left",
+              "sourceIndex": 3,
+              "x": 273.7230726348029,
+              "y": 119.42893695831299,
+              "confidence": 0.7842921018600464,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "ear_right",
+              "sourceIndex": 4,
+              "x": 175.89090225431653,
+              "y": 114.6175184249878,
+              "confidence": 0.7860365509986877,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "shoulder_left",
+              "sourceIndex": 5,
+              "x": 323.4410608609517,
+              "y": 273.39433002471924,
+              "confidence": 0.7771137952804565,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "shoulder_right",
+              "sourceIndex": 6,
+              "x": 100.51201687918768,
+              "y": 260.56388060251874,
+              "confidence": 0.6347447037696838,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "elbow_left",
+              "sourceIndex": 7,
+              "x": 346.6962489022149,
+              "y": 430.56733544667566,
+              "confidence": 0.7391223311424255,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "elbow_right",
+              "sourceIndex": 8,
+              "x": 64.42638026343451,
+              "y": 422.5483045578003,
+              "confidence": 0.7786321640014648,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "wrist_left",
+              "sourceIndex": 9,
+              "x": 349.9038610458374,
+              "y": 481.88913313547766,
+              "confidence": 0.48551419377326965,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "wrist_right",
+              "sourceIndex": 10,
+              "x": 134.9938474231296,
+              "y": 498.72909800211596,
+              "confidence": 0.6591102480888367,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "hip_left",
+              "sourceIndex": 11,
+              "x": 284.9497151374817,
+              "y": 507.5500319798788,
+              "confidence": 0.6398212909698486,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "hip_right",
+              "sourceIndex": 12,
+              "x": 153.43761724895901,
+              "y": 509.1538381576538,
+              "confidence": 0.5319586992263794,
+              "interpolated": false,
+              "gated": false
+            },
+            {
+              "joint": "knee_left",
+              "sourceIndex": 13,
+              "x": 421.2732312414381,
+              "y": 568.4946667353312,
+              "confidence": 0.2969328761100769,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "knee_right",
+              "sourceIndex": 14,
+              "x": 421.2732312414381,
+              "y": 568.4946667353312,
+              "confidence": 0.24104322493076324,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "ankle_left",
+              "sourceIndex": 15,
+              "x": 254.47739977306787,
+              "y": 568.4946667353313,
+              "confidence": 0.16184574365615845,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "ankle_right",
+              "sourceIndex": 16,
+              "x": 421.2732312414381,
+              "y": 568.4946667353312,
+              "confidence": 0.18440960347652435,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "foot_left",
+              "sourceIndex": 19,
+              "x": 151.83381117714777,
+              "y": 481.0872300465902,
+              "confidence": 0.16070421040058136,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "foot_right",
+              "sourceIndex": 22,
+              "x": 177.49470832612778,
+              "y": 488.304357846578,
+              "confidence": 0.18815554678440094,
+              "interpolated": false,
+              "gated": true
+            },
+            {
+              "joint": "neck",
+              "sourceIndex": 5,
+              "x": 211.9765388700697,
+              "y": 266.979105313619,
+              "confidence": 0.6347447037696838,
+              "interpolated": true,
+              "gated": false
+            },
+            {
+              "joint": "hip_center",
+              "sourceIndex": 11,
+              "x": 219.19366619322034,
+              "y": 508.3519350687663,
+              "confidence": 0.5319586992263794,
+              "interpolated": true,
+              "gated": false
+            },
+            {
+              "joint": "spine_mid",
+              "sourceIndex": 5,
+              "x": 215.58510253164502,
+              "y": 387.6655201911926,
+              "confidence": 0.5319586992263794,
+              "interpolated": true,
+              "gated": false
+            }
+          ],
+          "mirrored": false
+        }
+      ],
+      "rawOutputArtifactId": "art_ed6931a0bccbd4b906ab1be9",
+      "overlayArtifactId": "art_5bbb09049517767eac2da4d5",
+      "postProcessing": {
+        "confidenceGate": 0.3,
+        "maxInterpolatedGapFrames": 2,
+        "outlierRejection": "none",
+        "temporalSmoothing": "none",
+        "smoothingParameters": {
+          "window": 5.0
+        },
+        "scaleNormalized": false
+      },
+      "warnings": [],
+      "provenance": {
+        "providerId": "dwpose",
+        "modelId": "dwpose-ll-ucoco-384",
+        "modelRevision": "dw-ll_ucoco_384",
+        "repositoryUrl": "https://github.com/IDEA-Research/DWPose",
+        "repositoryCommit": null,
+        "weightsFiles": [
+          "dw-ll_ucoco_384.onnx",
+          "yolox_l.onnx"
+        ],
+        "weightsSha256": [
+          "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+          "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+        ],
+        "runtimeName": "onnxruntime",
+        "runtimeVersion": "1.28.0",
+        "pythonVersion": "3.14.6",
+        "device": "CPUExecutionProvider",
+        "precision": "float32",
+        "startedAt": "2026-07-28T05:30:56.103594+00:00",
+        "completedAt": "2026-07-28T05:30:56.502769+00:00",
+        "durationMs": 399.02887499920325,
+        "peakMemoryMb": null,
+        "seed": null,
+        "deterministic": true,
+        "inputArtifactHashes": [
+          "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+        ],
+        "outputArtifactHashes": [
+          "ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea",
+          "5cedc51849f82a8b40f2b4d45f0a53089dca075a1215e149809aa94c1224ed54",
+          "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870"
+        ],
+        "licenseDecisionId": "lic_runtime_1e303b6b-203d-4a41-9215-f3de5e994147",
+        "commercialMode": "preview",
+        "realInferenceExecuted": true,
+        "simulated": false,
+        "cacheHit": false,
+        "correlationId": "20260728T053055Z",
+        "jobId": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a"
+      }
+    },
+    "error": null,
+    "warnings": [],
+    "provenance": {
+      "providerId": "dwpose",
+      "modelId": "dwpose-ll-ucoco-384",
+      "modelRevision": "dw-ll_ucoco_384",
+      "repositoryUrl": "https://github.com/IDEA-Research/DWPose",
+      "repositoryCommit": null,
+      "weightsFiles": [
+        "dw-ll_ucoco_384.onnx",
+        "yolox_l.onnx"
+      ],
+      "weightsSha256": [
+        "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+        "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+      ],
+      "runtimeName": "onnxruntime",
+      "runtimeVersion": "1.28.0",
+      "pythonVersion": "3.14.6",
+      "device": "CPUExecutionProvider",
+      "precision": "float32",
+      "startedAt": "2026-07-28T05:30:56.103594+00:00",
+      "completedAt": "2026-07-28T05:30:56.502769+00:00",
+      "durationMs": 399.02887499920325,
+      "peakMemoryMb": null,
+      "seed": null,
+      "deterministic": true,
+      "inputArtifactHashes": [
+        "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+      ],
+      "outputArtifactHashes": [
+        "ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea",
+        "5cedc51849f82a8b40f2b4d45f0a53089dca075a1215e149809aa94c1224ed54",
+        "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870"
+      ],
+      "licenseDecisionId": "lic_runtime_1e303b6b-203d-4a41-9215-f3de5e994147",
+      "commercialMode": "preview",
+      "realInferenceExecuted": true,
+      "simulated": false,
+      "cacheHit": false,
+      "correlationId": "20260728T053055Z",
+      "jobId": "job_7e1eeb6c-ca88-44c1-97f8-2c78119f7b8a"
+    }
+  },
+  "errorCode": null,
+  "errorMessage": null,
+  "warnings": []
+}

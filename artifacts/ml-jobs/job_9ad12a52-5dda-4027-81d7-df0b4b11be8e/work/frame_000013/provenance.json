@@ -1,0 +1,15 @@
+{
+  "detector": {
+    "model": "yolox_l",
+    "sha256": "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411",
+    "license": "Apache 2.0"
+  },
+  "pose": {
+    "model": "dwpose",
+    "sha256": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+    "license": "Apache 2.0"
+  },
+  "decode": "simcc_raw_maximum",
+  "executionProvider": "CPUExecutionProvider",
+  "onnxruntime": "1.28.0"
+}

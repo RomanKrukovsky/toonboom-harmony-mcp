@@ -1,0 +1,43 @@
+{
+  "runId": "sprint2-slice1",
+  "checks": [
+    {
+      "name": "plan reparses against HarmonyCommandPlanV5",
+      "passed": true
+    },
+    {
+      "name": "no cross-command invariant violated",
+      "passed": true
+    },
+    {
+      "name": "every command has a rollback",
+      "passed": true
+    },
+    {
+      "name": "every command names its source PIR",
+      "passed": true
+    },
+    {
+      "name": "no key outside the declared frame range",
+      "passed": true
+    },
+    {
+      "name": "no frame 0 on a 1-based timeline",
+      "passed": true
+    },
+    {
+      "name": "no NaN or Infinity in any written value",
+      "passed": true
+    },
+    {
+      "name": "key reduction stayed within each channel’s tolerance",
+      "passed": true
+    },
+    {
+      "name": "plan does not claim Harmony execution",
+      "passed": true
+    }
+  ],
+  "invariantViolations": [],
+  "passed": true
+}

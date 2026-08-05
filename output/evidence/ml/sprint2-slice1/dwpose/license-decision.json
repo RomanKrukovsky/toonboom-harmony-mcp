@@ -1,0 +1,12 @@
+{
+  "modelId": "dwpose-ll-ucoco-384",
+  "allowed": true,
+  "status": "legal_review_required",
+  "reasonCodes": [
+    "LICENSE_REVIEW_PENDING_OVERRIDDEN"
+  ],
+  "humanReason": "allowed for technical evaluation only: licence review is still pending and ALLOW_LEGAL_REVIEW_PENDING was set in a non-commercial build",
+  "commercialBuild": false,
+  "studioRegion": null,
+  "decidedAt": "2026-07-28T05:07:47.056237+00:00"
+}

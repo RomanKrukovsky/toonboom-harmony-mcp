@@ -1,0 +1,484 @@
+{
+  "schemaVersion": "1.0",
+  "rigId": "invalid_rig_v1",
+  "rigVersion": "1.0.0",
+  "displayName": "Intentionally broken rig — used only by negative tests",
+  "fps": 24,
+  "sceneWidth": 1920,
+  "sceneHeight": 1080,
+  "coordinateSystem": {
+    "unitsPerField": 12,
+    "handedness": "right_handed_y_up",
+    "rotationDirection": "counter_clockwise",
+    "angleUnit": "degrees"
+  },
+  "rootControllerId": "does_not_exist",
+  "controllers": [
+    {
+      "controllerId": "loop_a",
+      "displayName": "Loop A",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/A",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_A"
+      },
+      "parentId": "loop_b",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "loop_b",
+      "displayName": "Loop B",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/B",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_B"
+      },
+      "parentId": "loop_a",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "orphan",
+      "displayName": "Orphan",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/Orphan",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_Orphan"
+      },
+      "parentId": "ghost_parent",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "alias_one",
+      "displayName": "Alias One",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/One",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_One"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [
+        "shared_alias"
+      ],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "alias_two",
+      "displayName": "Alias Two",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/Two",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_Two"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [
+        "shared_alias"
+      ],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "mirror_left",
+      "displayName": "Mirror L",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/L",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_L"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": "mirror_right",
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "mirror_right",
+      "displayName": "Mirror R",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/R",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_R"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "dup_path_a",
+      "displayName": "Dup A",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/Same",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_Same"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "dup_path_b",
+      "displayName": "Dup B",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Broken/Same",
+        "nodeType": "PEG",
+        "columnPrefix": "Broken_Same"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    }
+  ],
+  "drawings": [
+    {
+      "elementName": "Mouth",
+      "nodePath": "Top/Broken/Mouth",
+      "drawings": [
+        "REST"
+      ]
+    }
+  ],
+  "deformers": [],
+  "constraints": [],
+  "ikChains": [
+    {
+      "chainId": "ghost_chain",
+      "rootControllerId": "loop_a",
+      "midControllerId": "loop_b",
+      "endControllerId": "nowhere",
+      "poleSign": 1
+    }
+  ],
+  "switchDrawings": [
+    {
+      "controllerId": "loop_a",
+      "elementName": "Mouth",
+      "drawings": [
+        "REST",
+        "NOT_DECLARED"
+      ],
+      "defaultDrawing": "REST"
+    }
+  ],
+  "mouthChart": null,
+  "eyeControls": [],
+  "channelMappings": [
+    {
+      "canonicalJoint": "nose",
+      "controllerId": "loop_a",
+      "channel": "scaleX"
+    }
+  ],
+  "supportedCapabilities": [
+    "transform_keys",
+    "drawing_substitution",
+    "switch_selection",
+    "palettes",
+    "camera_animation",
+    "grouping",
+    "sound"
+  ],
+  "requiredCommandTypes": [
+    "set_transform_keyframe"
+  ],
+  "compatibility": {
+    "harmonyVersions": [],
+    "minimumPlanSchemaVersion": "5.0",
+    "notes": "DO NOT USE. Eight deliberate defects; see tests/harmonySimulator/rigCompatibility.test.ts."
+  }
+}

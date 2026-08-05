@@ -1,0 +1,41 @@
+{
+  "providerId": "dwpose",
+  "modelId": "dwpose-ll-ucoco-384",
+  "modelRevision": "dw-ll_ucoco_384",
+  "repositoryUrl": "https://github.com/IDEA-Research/DWPose",
+  "repositoryCommit": null,
+  "weightsFiles": [
+    "dw-ll_ucoco_384.onnx",
+    "yolox_l.onnx"
+  ],
+  "weightsSha256": [
+    "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
+    "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+  ],
+  "runtimeName": "onnxruntime",
+  "runtimeVersion": "1.28.0",
+  "pythonVersion": "3.14.6",
+  "device": "CPUExecutionProvider",
+  "precision": "float32",
+  "startedAt": "2026-07-28T05:02:20.042091+00:00",
+  "completedAt": "2026-07-28T05:02:50.337820+00:00",
+  "durationMs": 30295.586583997647,
+  "peakMemoryMb": null,
+  "seed": null,
+  "deterministic": true,
+  "inputArtifactHashes": [
+    "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d"
+  ],
+  "outputArtifactHashes": [
+    "7d8bbe1c05b118e966d61655544dc78faa9faf5489f0fcedaf44a047055ea089",
+    "75a4d24d278c7f31cff54ed01be6a71a1b7e8f5f303ed87645b3e8eb3976f0bf",
+    "e9bb0dbe14043e705b4ff27e9fb1556b1c386b5a92369873121d7a9685b7de86"
+  ],
+  "licenseDecisionId": "lic_runtime_f2c74db3-2069-4a14-8171-d4eccbe0af95",
+  "commercialMode": "preview",
+  "realInferenceExecuted": true,
+  "simulated": false,
+  "cacheHit": true,
+  "correlationId": "sprint2-slice1",
+  "jobId": "job_9410827e-1e7f-41b4-8895-c7f60df05dab"
+}

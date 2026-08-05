@@ -1,0 +1,18 @@
+# ==========================================================================================
+# Line-art colorization: MangaNinjia.
+#
+# Hand-curated EXACT pins for direct dependencies. This is not a pip-compile --generate-hashes
+# lock: transitive versions are resolved by pip at install time. See README.md.
+#
+# Install into an isolated venv, never the system Python:
+#   python -m venv .venv-colorization && .venv-colorization/bin/pip install -r requirements-colorization.lock
+# ==========================================================================================
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+torch==2.5.1
+torchvision==0.20.1
+diffusers==0.31.0
+transformers==4.46.3
+safetensors==0.4.5
+scikit-image==0.24.0
+# manganinjia @ git+https://github.com/ali-vilab/MangaNinjia.git@<PIN_COMMIT_SHA_BEFORE_USE>

@@ -74,6 +74,18 @@ npm run demo:factory:phase1
 
 Демо Iteration 2 создаёт тестовый WAV, реально измеряет его энергию и высоту, строит три варианта актёрской игры и сохраняет автономный HTML-отчёт в `output/ai_studio/iteration2_demo_report.html`.
 
+### Harmony Contract Simulator
+
+```bash
+npm run demo:harmony:simulator-roundtrip
+```
+
+Полный round-trip без Harmony: rig manifest → сцена → `HarmonyCommandPlanV5` → проверка совместимости рига → dry-run → атомарное применение → снапшот → **выгрузка из памяти и повторная загрузка с диска** → readback → структурный QA → доказательство идемпотентности → доказательство отката.
+
+Симулятор действительно изменяет каноническое состояние сцены, проверяет предусловия и откатывается атомарно. Он **не является Harmony**: он не создаёт TVG-геометрию, не рендерит, не открывает `.xstage` и не может сказать, приняла бы Harmony ту же команду. Максимальный уровень верификации здесь — `simulator_verified`; `isRealHarmonyExecution: false` зафиксировано литералом в схеме, поэтому обратное утверждение невыразимо.
+
+Подробности: [`docs/HARMONY_CONTRACT_SIMULATOR.md`](docs/HARMONY_CONTRACT_SIMULATOR.md).
+
 ## Как запустить мост Control Center MCP
 
 Для работы в режиме Harmony Server запустите сервер сценариев Control Center на хост-машине:

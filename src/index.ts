@@ -10,6 +10,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { systemTools } from './tools/systemTools.js';
+import { mlProductionTools } from './tools/mlProductionTools.js';
+import { MlOrchestrator } from './services/mlOrchestrator/index.js';
+import { MlProviderRegistry } from './services/mlProviderRegistry/index.js';
 import { controlCenterTools } from './tools/controlCenterTools.js';
 import { sceneTools } from './tools/sceneTools.js';
 import { renderTools } from './tools/renderTools.js';
@@ -70,6 +73,7 @@ import { systemHealthTools } from './tools/systemHealthTools.js';
 import { vectorizationTools } from './tools/vectorizationTools.js';
 import { studioPackageTools } from './tools/studioPackageTools.js';
 import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.js';
+import { harmonySimulatorTools } from './tools/harmonySimulatorTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
@@ -77,6 +81,7 @@ import { HarmonyError } from './security.js';
 
 const allTools = [
   ...harmonyActionRecorderTools,
+  ...harmonySimulatorTools,
   ...vectorizationTools,
   ...studioPackageTools,
   ...systemTools,
@@ -135,7 +140,8 @@ const allTools = [
   ...productionMemoryTools,
   ...approvalTools,
   ...legalTools,
-  ...systemHealthTools
+  ...systemHealthTools,
+  ...mlProductionTools({ orchestrator: new MlOrchestrator(), registry: new MlProviderRegistry() })
 ];
 
 function zodFieldToJsonSchema(schema: any): any {
@@ -217,10 +223,17 @@ class HarmonyMcpServer {
       }
 
       try {
-        const parsedArgs = tool.inputSchema.safeParse(request.params.arguments);
+        const schema = tool.inputSchema as unknown as { safeParse?: (input: unknown) => { success: boolean; data?: unknown; error?: { message: string } } };
+        if (typeof schema.safeParse !== 'function') {
+          return {
+            content: [{ type: 'text', text: `Инструмент ${request.params.name} объявил inputSchema в виде plain JSON Schema, а не Zod; safeParse не доступен.` }],
+            isError: true
+          };
+        }
+        const parsedArgs = schema.safeParse(request.params.arguments);
         if (!parsedArgs.success) {
           return {
-            content: [{ type: 'text', text: `Некорректные параметры вызова: ${parsedArgs.error.message}` }],
+            content: [{ type: 'text', text: `Некорректные параметры вызова: ${parsedArgs.error?.message ?? 'unknown schema error'}` }],
             isError: true
           };
         }

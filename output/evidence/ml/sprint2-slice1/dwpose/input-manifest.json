@@ -1,0 +1,12 @@
+{
+  "inputs": [
+    {
+      "artifactId": "art_a5b3b8b792fde4bf47a44b15",
+      "sha256": "a5b3b8b792fde4bf47a44b15784242709b873121ba4ab72c423665619b5d077d",
+      "sizeBytes": 536388,
+      "mimeType": "video/mp4",
+      "relativePath": "sprint2-slice1/inputs/000_cartoon_character_motion.mp4",
+      "role": "input_image"
+    }
+  ]
+}

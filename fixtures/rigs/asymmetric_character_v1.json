@@ -1,0 +1,675 @@
+{
+  "schemaVersion": "1.0",
+  "rigId": "asymmetric_character_v1",
+  "rigVersion": "1.0.0",
+  "displayName": "Asymmetric character — one long arm, one short, no mirror pairing",
+  "fps": 24,
+  "sceneWidth": 1920,
+  "sceneHeight": 1080,
+  "coordinateSystem": {
+    "unitsPerField": 12,
+    "handedness": "right_handed_y_up",
+    "rotationDirection": "counter_clockwise",
+    "angleUnit": "degrees"
+  },
+  "rootControllerId": "root",
+  "controllers": [
+    {
+      "controllerId": "root",
+      "displayName": "Root",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Root_Peg",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Root_Peg"
+      },
+      "parentId": null,
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "offsetX",
+        "offsetY",
+        "offsetZ",
+        "rotationZ"
+      ],
+      "limits": [
+        {
+          "channel": "offsetX",
+          "min": -12,
+          "max": 12,
+          "onViolation": "clamp"
+        },
+        {
+          "channel": "offsetY",
+          "min": -8,
+          "max": 8,
+          "onViolation": "clamp"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [
+        "hips"
+      ],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "torso",
+      "displayName": "Torso",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Torso_Peg",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Torso_Peg"
+      },
+      "parentId": "root",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ",
+        "scaleX",
+        "scaleY"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": -35,
+          "max": 35,
+          "onViolation": "clamp"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "head",
+      "displayName": "Head",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Head_Peg",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Head_Peg"
+      },
+      "parentId": "torso",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ",
+        "offsetX",
+        "offsetY"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": -45,
+          "max": 45,
+          "onViolation": "clamp"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "shoulder_l",
+      "displayName": "Shoulder L",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Arm_L_Upper",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Arm_L_Upper"
+      },
+      "parentId": "torso",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": -170,
+          "max": 170,
+          "onViolation": "clamp"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "root",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "elbow_l",
+      "displayName": "Elbow L",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Arm_L_Lower",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Arm_L_Lower"
+      },
+      "parentId": "shoulder_l",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": 0,
+          "max": 165,
+          "onViolation": "clamp"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "mid",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "hand_l",
+      "displayName": "Hand L",
+      "kind": "drawing",
+      "target": {
+        "nodePath": "Top/Character/Hand_L",
+        "nodeType": "READ",
+        "columnPrefix": "Character_Hand_L"
+      },
+      "parentId": "elbow_l",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ",
+        "drawingSubstitution"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "end",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "shoulder_r",
+      "displayName": "Shoulder R",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Arm_R_Upper",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Arm_R_Upper"
+      },
+      "parentId": "torso",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": -60,
+          "max": 90,
+          "onViolation": "reject"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "root",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "elbow_r",
+      "displayName": "Elbow R",
+      "kind": "peg",
+      "target": {
+        "nodePath": "Top/Character/Arm_R_Lower",
+        "nodeType": "PEG",
+        "columnPrefix": "Character_Arm_R_Lower"
+      },
+      "parentId": "shoulder_r",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ"
+      ],
+      "limits": [
+        {
+          "channel": "rotationZ",
+          "min": -40,
+          "max": 0,
+          "onViolation": "reject"
+        }
+      ],
+      "mirrorPairId": null,
+      "ikRole": "mid",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "hand_r",
+      "displayName": "Hand R",
+      "kind": "drawing",
+      "target": {
+        "nodePath": "Top/Character/Hand_R",
+        "nodeType": "READ",
+        "columnPrefix": "Character_Hand_R"
+      },
+      "parentId": "elbow_r",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "rotationZ",
+        "drawingSubstitution"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "end",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    },
+    {
+      "controllerId": "mouth",
+      "displayName": "Mouth",
+      "kind": "switch",
+      "target": {
+        "nodePath": "Top/Character/Mouth",
+        "nodeType": "READ",
+        "columnPrefix": "Character_Mouth"
+      },
+      "parentId": "head",
+      "localTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "restTransform": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "skew": 0,
+        "pivotX": 0,
+        "pivotY": 0
+      },
+      "channels": [
+        "drawingSubstitution",
+        "switchSelection"
+      ],
+      "limits": [],
+      "mirrorPairId": null,
+      "ikRole": "none",
+      "aliases": [],
+      "provenance": {
+        "author": "harmony-simulator-sprint",
+        "createdAt": "2026-07-28",
+        "source": "hand_authored_fixture"
+      }
+    }
+  ],
+  "drawings": [
+    {
+      "elementName": "Hand_L",
+      "nodePath": "Top/Character/Hand_L",
+      "drawings": [
+        "open",
+        "fist",
+        "point"
+      ]
+    },
+    {
+      "elementName": "Hand_R",
+      "nodePath": "Top/Character/Hand_R",
+      "drawings": [
+        "open",
+        "fist",
+        "point"
+      ]
+    },
+    {
+      "elementName": "Mouth",
+      "nodePath": "Top/Character/Mouth",
+      "drawings": [
+        "REST",
+        "MBP",
+        "AI",
+        "E",
+        "O"
+      ]
+    }
+  ],
+  "deformers": [],
+  "constraints": [],
+  "ikChains": [
+    {
+      "chainId": "arm_left",
+      "rootControllerId": "shoulder_l",
+      "midControllerId": "elbow_l",
+      "endControllerId": "hand_l",
+      "poleSign": 1
+    },
+    {
+      "chainId": "arm_right",
+      "rootControllerId": "shoulder_r",
+      "midControllerId": "elbow_r",
+      "endControllerId": "hand_r",
+      "poleSign": -1
+    }
+  ],
+  "switchDrawings": [
+    {
+      "controllerId": "mouth",
+      "elementName": "Mouth",
+      "drawings": [
+        "REST",
+        "MBP",
+        "AI",
+        "E",
+        "O"
+      ],
+      "defaultDrawing": "REST"
+    },
+    {
+      "controllerId": "hand_l",
+      "elementName": "Hand_L",
+      "drawings": [
+        "open",
+        "fist",
+        "point"
+      ],
+      "defaultDrawing": "open"
+    }
+  ],
+  "mouthChart": {
+    "controllerId": "mouth",
+    "elementName": "Mouth",
+    "shapes": {
+      "REST": "REST",
+      "MBP": "MBP",
+      "AI": "AI",
+      "E": "E",
+      "O": "O"
+    },
+    "restShape": "REST"
+  },
+  "eyeControls": [],
+  "channelMappings": [
+    {
+      "canonicalJoint": "hip_center",
+      "controllerId": "root",
+      "channel": "offsetX"
+    },
+    {
+      "canonicalJoint": "spine_mid",
+      "controllerId": "torso",
+      "channel": "rotationZ"
+    },
+    {
+      "canonicalJoint": "nose",
+      "controllerId": "head",
+      "channel": "rotationZ"
+    },
+    {
+      "canonicalJoint": "shoulder_left",
+      "controllerId": "shoulder_l",
+      "channel": "rotationZ"
+    },
+    {
+      "canonicalJoint": "elbow_left",
+      "controllerId": "elbow_l",
+      "channel": "rotationZ"
+    },
+    {
+      "canonicalJoint": "shoulder_right",
+      "controllerId": "shoulder_r",
+      "channel": "rotationZ"
+    },
+    {
+      "canonicalJoint": "elbow_right",
+      "controllerId": "elbow_r",
+      "channel": "rotationZ"
+    }
+  ],
+  "supportedCapabilities": [
+    "transform_keys",
+    "drawing_substitution",
+    "switch_selection",
+    "palettes",
+    "camera_animation",
+    "grouping",
+    "sound"
+  ],
+  "requiredCommandTypes": [
+    "set_transform_keyframe"
+  ],
+  "compatibility": {
+    "harmonyVersions": [],
+    "minimumPlanSchemaVersion": "5.0",
+    "notes": "The right arm uses onViolation=reject, so an over-rotation is a hard failure rather than a clamp."
+  }
+}

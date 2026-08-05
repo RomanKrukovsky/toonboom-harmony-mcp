@@ -1,0 +1,20 @@
+# ==========================================================================================
+# Speech: WhisperX ASR, MFA forced alignment, VoxCPM/CosyVoice TTS.
+#
+# Hand-curated EXACT pins for direct dependencies. This is not a pip-compile --generate-hashes
+# lock: transitive versions are resolved by pip at install time. See README.md.
+#
+# Install into an isolated venv, never the system Python:
+#   python -m venv .venv-speech && .venv-speech/bin/pip install -r requirements-speech.lock
+# ==========================================================================================
+numpy==1.26.4
+soundfile==0.12.1
+librosa==0.10.2.post1
+torch==2.5.1
+torchaudio==2.5.1
+transformers==4.46.3
+faster-whisper==1.0.3
+whisperx==3.3.1
+# Montreal Forced Aligner is a conda-first distribution with its own acoustic-model downloads.
+# It is deliberately NOT pip-installed here: install it separately and record the acoustic model
+# and dictionary ids in the catalog, because they are licensed per language.

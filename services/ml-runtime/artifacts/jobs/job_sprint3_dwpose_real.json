@@ -1,0 +1,48 @@
+{
+  "jobId": "job_sprint3_dwpose_real",
+  "correlationId": "corr_sprint3_dwpose_real",
+  "idempotencyKey": "idem_sprint3_dwpose_real",
+  "taskType": "pose_estimation",
+  "providerId": "dwpose",
+  "modelId": "dwpose-ll-ucoco-384",
+  "modelRevision": "dw-ll_ucoco_384",
+  "executionMode": "real_ml",
+  "commercialMode": "preview",
+  "status": "interrupted",
+  "attempt": 1,
+  "createdAt": "2026-07-28T12:48:47.616803+00:00",
+  "updatedAt": "2026-07-28T15:18:21.744115+00:00",
+  "timeoutMs": 60000,
+  "licenseDecisionId": "lic_runtime_babaf690-5e87-40bc-a6cf-2b76e881bf7c",
+  "request": {
+    "schemaVersion": "2.0",
+    "jobId": "job_sprint3_dwpose_real",
+    "correlationId": "corr_sprint3_dwpose_real",
+    "idempotencyKey": "idem_sprint3_dwpose_real",
+    "taskType": "pose_estimation",
+    "providerId": "dwpose",
+    "modelId": "dwpose-ll-ucoco-384",
+    "modelRevision": "dw-ll_ucoco_384",
+    "executionMode": "real_ml",
+    "commercialMode": "preview",
+    "inputArtifacts": [
+      {
+        "role": "primary_image",
+        "path": "fixtures/character.png",
+        "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+        "mimeType": "image/png",
+        "sizeBytes": 70789
+      }
+    ],
+    "parameters": {
+      "mode": "image"
+    },
+    "timeoutMs": 60000,
+    "seed": null,
+    "requestedDevice": "cpu"
+  },
+  "result": null,
+  "errorCode": "ML_WORKER_CRASHED",
+  "errorMessage": "runtime restarted while the job was in flight",
+  "warnings": []
+}

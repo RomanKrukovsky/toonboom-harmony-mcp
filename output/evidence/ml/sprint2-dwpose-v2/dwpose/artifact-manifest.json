@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    {
+      "artifactId": "art_ed6931a0bccbd4b906ab1be9",
+      "sha256": "ed6931a0bccbd4b906ab1be977eb528a3cb0dd6a9ef89172a011289c98a1ddea",
+      "sizeBytes": 16005,
+      "mimeType": "application/json",
+      "relativePath": "job_2fe718f3-00b5-490a-b6cc-fa7a5aa8af9f/raw-output.json",
+      "role": "raw_model_output"
+    },
+    {
+      "artifactId": "art_ff54d96f8b770503cfd65ba1",
+      "sha256": "ff54d96f8b770503cfd65ba1e57d5a1ac2bb5693909f037ea25cdd35a60d2597",
+      "sizeBytes": 7037,
+      "mimeType": "application/json",
+      "relativePath": "job_2fe718f3-00b5-490a-b6cc-fa7a5aa8af9f/normalized-pir.json",
+      "role": "normalized_pir"
+    },
+    {
+      "artifactId": "art_5bbb09049517767eac2da4d5",
+      "sha256": "5bbb09049517767eac2da4d54f7871c3c07fa44f038cc88f2a2bb223e0244870",
+      "sizeBytes": 463416,
+      "mimeType": "image/png",
+      "relativePath": "job_2fe718f3-00b5-490a-b6cc-fa7a5aa8af9f/overlay.png",
+      "role": "overlay"
+    }
+  ]
+}

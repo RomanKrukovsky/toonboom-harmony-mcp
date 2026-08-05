@@ -1,0 +1,12 @@
+{
+  "inputs": [
+    {
+      "artifactId": "art_88431cd9653ccd539741b555",
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "sizeBytes": 791555,
+      "mimeType": "image/png",
+      "relativePath": "sprint2-dwpose-v2/inputs/000_character.png",
+      "role": "input_image"
+    }
+  ]
+}
