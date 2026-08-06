@@ -1,0 +1,161 @@
+"""
+test_provenance.py — тесты реестра происхождения. Без Harmony.
+
+Главный тест здесь — про подделку: журнал обязан ЗАМЕТИТЬ правку
+задним числом. Реестр, который можно тихо переписать, юридически
+хуже, чем отсутствие реестра: он создаёт ложную уверенность.
+"""
+
+from __future__ import annotations
+
+import json
+import tempfile
+from pathlib import Path
+
+from provenance import GENESIS, Ledger
+
+
+def make_ledger(tmp: Path) -> Ledger:
+    lg = Ledger(tmp / "scene01.provenance.jsonl")
+    lg.record("human", "ivan.petrov", "drawing", "scene01", (1, 48),
+              ["Top/head"], timestamp="2026-08-01T10:00:00+00:00")
+    lg.record("agent", "claude/lipsync", "substitution_set", "scene01",
+              (10, 30), ["Top/mouth"], seed=42,
+              detail={"phoneme_source": "ep01_line04.wav"},
+              timestamp="2026-08-01T11:00:00+00:00")
+    lg.record("style-transfer", "claude/inbetween", "curve_set", "scene01",
+              (20, 40), ["Top/arm-P_rot"], style_of="anna.founder",
+              timestamp="2026-08-01T12:00:00+00:00")
+    return lg
+
+
+def test_chain_starts_at_genesis():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        first = next(lg.entries())
+        assert first.prev_hash == GENESIS
+
+
+def test_clean_ledger_verifies():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        assert lg.verify() == []
+
+
+def test_reload_from_disk_still_verifies():
+    with tempfile.TemporaryDirectory() as d:
+        make_ledger(Path(d))
+        lg2 = Ledger(Path(d) / "scene01.provenance.jsonl")
+        assert len(list(lg2.entries())) == 3
+        assert lg2.verify() == []
+
+
+def test_tampered_record_detected():
+    """Кто-то переписал «agent» на «human» в середине журнала —
+    verify обязан закричать."""
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "scene01.provenance.jsonl"
+        make_ledger(Path(d))
+        lines = p.read_text().splitlines()
+        rec = json.loads(lines[1])
+        rec["origin"] = "human"                      # подделка
+        lines[1] = json.dumps(rec, sort_keys=True, separators=(",", ":"))
+        p.write_text("\n".join(lines) + "\n")
+
+        problems = Ledger(p).verify()
+        assert any("edited after the fact" in x for x in problems)
+
+
+def test_deleted_record_breaks_chain():
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "scene01.provenance.jsonl"
+        make_ledger(Path(d))
+        lines = p.read_text().splitlines()
+        del lines[1]                                  # выкинули запись
+        p.write_text("\n".join(lines) + "\n")
+        problems = Ledger(p).verify()
+        assert problems, "deletion went unnoticed"
+
+
+def test_frame_report_mixed():
+    """Кадр 25: рисовал человек, рты ставил агент, фазы — в чужом стиле.
+    Вердикт mixed, стиль назван."""
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        r = lg.frame_report("scene01", 25)
+        assert r["verdict"] == "mixed"
+        assert r["styles_used"] == ["anna.founder"]
+        assert len(r["touches"]) == 3
+
+
+def test_frame_report_human_only():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        r = lg.frame_report("scene01", 5)     # до кадра 10 — только рисунок
+        assert r["verdict"] == "human"
+
+
+def test_frame_report_untracked():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        assert lg.frame_report("scene01", 200)["verdict"] == "untracked"
+        assert lg.frame_report("scene99", 5)["verdict"] == "untracked"
+
+
+def test_generated_only_verdict():
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "x.jsonl")
+        lg.record("agent", "claude/all", "curve_set", "s", (1, 10), ["c"])
+        assert lg.frame_report("s", 5)["verdict"] == "generated"
+
+
+def test_scene_summary_counts():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        s = lg.scene_summary("scene01", 48)
+        b = s["breakdown"]
+        assert b["human"] + b["generated"] + b["mixed"] + b["untracked"] == 48
+        assert b["human"] == 9 + 8       # 1-9 и 41-48
+        assert b["mixed"] == 31          # 10-40: везде агент поверх человека
+        assert s["styles_used"] == ["anna.founder"]
+
+
+def test_bad_frame_range_rejected():
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "x.jsonl")
+        try:
+            lg.record("human", "x", "y", "s", (10, 5), ["t"])
+            assert False
+        except ValueError:
+            pass
+
+
+def test_hash_stable_across_key_order():
+    """Канонический JSON: хэш не зависит от порядка ключей в detail."""
+    with tempfile.TemporaryDirectory() as d:
+        lg1 = Ledger(Path(d) / "a.jsonl")
+        lg2 = Ledger(Path(d) / "b.jsonl")
+        e1 = lg1.record("agent", "x", "y", "s", (1, 2), ["t"],
+                        detail={"a": 1, "b": 2}, timestamp="T")
+        e2 = lg2.record("agent", "x", "y", "s", (1, 2), ["t"],
+                        detail={"b": 2, "a": 1}, timestamp="T")
+        assert e1.hash == e2.hash
+
+
+if __name__ == "__main__":
+    import sys
+    import traceback
+
+    failures = 0
+    for name, fn in sorted(globals().items()):
+        if not name.startswith("test_") or not callable(fn):
+            continue
+        try:
+            fn()
+            print(f"  ok   {name}")
+        except Exception:
+            failures += 1
+            print(f"  FAIL {name}")
+            traceback.print_exc()
+    print(f"\n{failures} failure(s)")
+    sys.exit(1 if failures else 0)

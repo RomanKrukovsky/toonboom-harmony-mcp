@@ -15,13 +15,12 @@ logs/
 output/
 examples/commercial-demo/temp_*/
 
-# Виртуальные окружения
-.venv39/
-.venv/
-.venv-reconstruction/
+# Виртуальные окружения (все локальные venv одним паттерном)
+.venv*/
 __pycache__/
 *.py[cod]
 *.egg-info/
+.pytest_cache/
 
 # Model weights
 *.onnx
@@ -47,3 +46,8 @@ docs/evidence/harmony-action-recorder-real-smoke/captures/
 fixtures/video/*
 !fixtures/video/README.md
 !fixtures/video/*.source.json
+
+# Стенд testrig: рендеры и видео — артефакты, не исходники
+*.mp4
+harmony/client/testrig/out_*.png
+harmony/client/out_*.png

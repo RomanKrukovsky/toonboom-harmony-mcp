@@ -1,7 +1,0 @@
-{
-  "model": "dwpose",
-  "version": "1.0",
-  "weights_hash": "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843",
-  "license": "Apache 2.0",
-  "execution_provider": "CPUExecutionProvider"
-}
