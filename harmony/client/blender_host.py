@@ -102,6 +102,9 @@ class BSceneSpec:
     # Полигонные `parts` и рисованные `image_parts` сосуществуют:
     # фон может быть фигурами, персонаж — рисунком.
     image_parts: list[dict] = field(default_factory=list)
+    # Подмена рисунков: {name, members:[part], timeline:[{frame,drawing}],
+    # default}. Рот/глаза/кисть — набор вариантов, видим один (идея №24).
+    swap_groups: list[dict] = field(default_factory=list)
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), indent=1)

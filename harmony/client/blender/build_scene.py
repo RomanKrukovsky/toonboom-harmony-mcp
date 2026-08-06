@@ -178,6 +178,48 @@ def make_image_plane(name, quad, image_path, depth):
     return obj
 
 
+
+def apply_swaps(spec, objs):
+    """Подмена рисунков (drawing substitution): рты, глаза, кисти.
+
+    В cutout-анимации рот — это НЕ деформация, а набор нарисованных
+    вариантов, из которых на каждом кадре показан один. Здесь это
+    реализовано ключами на видимость: все варианты лежат в сцене друг
+    на друге, видим ровно один.
+
+    Почему CONSTANT обязателен: интерполяция видимости между 0 и 1 дала
+    бы полупрозрачные кадры на стыках — рот «проявлялся» бы вместо
+    мгновенной смены. Дефект был бы виден только на просмотре.
+    """
+    for group in spec.get("swap_groups") or []:
+        members = [m for m in group["members"] if m in objs]
+        missing = [m for m in group["members"] if m not in objs]
+        if missing:
+            raise KeyError("swap group %r references unknown parts: %s"
+                           % (group.get("name", "?"), ", ".join(missing)))
+        if not members:
+            continue
+        # Кадры, на которых что-то меняется, плюс первый кадр сцены.
+        events = sorted({int(a["frame"]) for a in group["timeline"]})
+        if not events or events[0] > spec["frame_start"]:
+            events.insert(0, int(spec["frame_start"]))
+        table = {int(a["frame"]): a["drawing"] for a in group["timeline"]}
+        current = group.get("default") or members[0]
+        for f in events:
+            current = table.get(f, current)
+            for m in members:
+                o = objs[m]
+                o.hide_render = (m != current)
+                o.hide_viewport = (m != current)
+                o.keyframe_insert("hide_render", frame=f)
+                o.keyframe_insert("hide_viewport", frame=f)
+        for m in members:
+            for fc in iter_fcurves(objs[m]):
+                if "hide" in fc.data_path:
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = "CONSTANT"
+
+
 def build(spec, out_dir):
     wipe_scene()
     scene = bpy.context.scene
@@ -320,6 +362,8 @@ def build(spec, out_dir):
         st = se.strips.new_sound(tr.get("name", "dialogue"), tr["path"],
                                  1, int(tr.get("start_frame", 1)))
         st.volume = float(tr.get("volume", 1.0))
+
+    apply_swaps(spec, objs)
 
     blend = os.path.join(out_dir, spec["name"] + ".blend")
     bpy.ops.wm.save_as_mainfile(filepath=blend)
