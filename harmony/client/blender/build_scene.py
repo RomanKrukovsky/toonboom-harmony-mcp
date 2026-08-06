@@ -122,6 +122,62 @@ def iter_fcurves(obj):
                 yield fc
 
 
+
+def make_image_material(name, image_path):
+    """Материал из PNG с альфой: плоский цвет + прозрачность.
+
+    Emission, а не BSDF: рисунок художника уже содержит освещение и
+    тени. Досвечивать его — значит спорить с автором.
+
+    Alpha идёт в Mix Shader с Transparent BSDF: это работает и в EEVEE, и
+    в Cycles. Straight alpha (не premultiplied) — иначе по краям штриха
+    появляется тёмная кайма, которую художник не рисовал.
+    """
+    img = bpy.data.images.load(image_path, check_existing=True)
+    img.alpha_mode = "STRAIGHT"
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = img
+    tex.interpolation = "Closest" if max(img.size) < 256 else "Linear"
+    em = nt.nodes.new("ShaderNodeEmission")
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Color"], em.inputs["Color"])
+    nt.links.new(tex.outputs["Alpha"], mix.inputs["Fac"])
+    nt.links.new(tr.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(em.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    m.blend_method = "BLEND" if hasattr(m, "blend_method") else m.blend_method
+    m.use_backface_culling = False
+    return m
+
+
+def make_image_plane(name, quad, image_path, depth):
+    """Плоскость с текстурой. UV кладутся явно: автоматическая развёртка
+    для четырёхугольника может прийти повёрнутой, и рисунок окажется
+    зеркальным — без единого сообщения об ошибке."""
+    mesh = bpy.data.meshes.new(name + "_mesh")
+    verts = [(x, depth, z) for (x, z) in quad]
+    mesh.from_pydata(verts, [], [[0, 1, 2, 3]])
+    mesh.update()
+    if mesh.polygons and mesh.polygons[0].normal.y > 0.0:
+        mesh.flip_normals()
+        mesh.update()
+    uv = mesh.uv_layers.new(name="UVMap")
+    # порядок вершин quad: BL, BR, TR, TL
+    for i, co in enumerate([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]):
+        uv.data[i].uv = co
+    obj = bpy.data.objects.new(name, mesh)
+    obj.data.materials.append(make_image_material(name + "_mat", image_path))
+    bpy.context.collection.objects.link(obj)
+    return obj
+
+
 def build(spec, out_dir):
     wipe_scene()
     scene = bpy.context.scene
@@ -168,7 +224,16 @@ def build(spec, out_dir):
         o = make_flat_poly(p["name"], p["points"], p["color"], p["depth"])
         objs[p["name"]] = o
 
-    for p in spec["parts"]:
+    # Части-рисунки: PNG художника вместо полигонов. Иерархия, пивоты и
+    # каналы для них те же — движок таймингов ничего не знает о том,
+    # нарисована часть или собрана из фигур.
+    for p in spec.get("image_parts") or []:
+        if not os.path.exists(p["image"]):
+            raise FileNotFoundError("artwork missing: " + p["image"])
+        objs[p["name"]] = make_image_plane(
+            p["name"], [tuple(q) for q in p["quad"]], p["image"], p["depth"])
+
+    for p in list(spec["parts"]) + list(spec.get("image_parts") or []):
         o = objs[p["name"]]
         px, pz = p["pivot"]
         if p["parent"]:

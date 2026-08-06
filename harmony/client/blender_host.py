@@ -98,6 +98,10 @@ class BSceneSpec:
     # Звук В СЦЕНЕ (Blender VSE), а не только в финальном сведении:
     # без него нельзя проверить липсинк до рендера.
     audio_tracks: list[dict] = field(default_factory=list)
+    # Части-рисунки (PNG художника с альфой) — см. artwork.py.
+    # Полигонные `parts` и рисованные `image_parts` сосуществуют:
+    # фон может быть фигурами, персонаж — рисунком.
+    image_parts: list[dict] = field(default_factory=list)
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), indent=1)
