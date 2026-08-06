@@ -61,7 +61,27 @@ class HarmonyBridge:
         tmp.write_text(text, encoding="utf-8")
         os.replace(tmp, path)  # атомарно в пределах одной ФС
 
-    def call(self, op: str, args: dict | None = None, deadline_s: float = 30.0) -> Response:
+    def call(self, op: str, args: dict | None = None, deadline_s: float = 30.0,
+             grace_s: float | None = None) -> Response:
+        """
+        Отправить заявку и дождаться ответа.
+
+        deadline_s — сколько ждёт КЛИЕНТ. grace_s — надбавка на дорогу
+        (мост мог начать работу за миллисекунду до дедлайна). По
+        умолчанию надбавка пропорциональна дедлайну и ограничена сверху.
+
+        Дефект, пойманный тестом на зависший мост: раньше надбавка была
+        `max(deadline*1.5, deadline+5.0)`, и на коротком дедлайне
+        превращала 0.4с ожидания в 5.4с — в тринадцать раз больше
+        запрошенного. Для человека за экраном это «программа повисла»:
+        он просил ответ за полсекунды, а интерфейс молчит шесть.
+        Надбавка обязана быть ДОЛЕЙ дедлайна, а не константой.
+        """
+        if deadline_s <= 0:
+            raise ValueError("deadline_s must be positive")
+        if grace_s is None:
+            grace_s = min(2.0, max(0.05, deadline_s * 0.25))
+
         rid = uuid.uuid4().hex[:16]
         req = {
             "v": 1,
@@ -74,9 +94,7 @@ class HarmonyBridge:
         self._write_atomic(self.spool / f"req-{rid}.json", json.dumps(req, ensure_ascii=True))
 
         res_path = self.spool / f"res-{rid}.json"
-        # Клиентский дедлайн даём с запасом: рендер может честно идти дольше
-        # логического таймаута скрипта.
-        hard_deadline = time.monotonic() + max(deadline_s * 1.5, deadline_s + 5.0)
+        hard_deadline = time.monotonic() + deadline_s + grace_s
 
         while time.monotonic() < hard_deadline:
             if res_path.exists():
@@ -101,8 +119,26 @@ class HarmonyBridge:
         raise HarmonyTimeout("CLIENT_TIMEOUT", f"no response for {op} within {deadline_s}s")
 
     def _abandon(self, rid: str) -> None:
-        for name in (f"req-{rid}.json", f"work-{rid}.json"):
-            (self.spool / name).unlink(missing_ok=True)
+        """
+        Снять с очереди заявку, которую мы перестали ждать.
+
+        Удаляется ТОЛЬКО req-файл: если его ещё не забрали, мост не
+        исполнит правку через час, когда клиента давно нет.
+
+        work-файл НЕ удаляется намеренно. Он означает «мост забрал
+        работу и не ответил» — это единственный след для разбора
+        аварии: зависание на GUI-потоке, падение Harmony, модальный
+        диалог. Раньше он тоже стирался, и картина выглядела так,
+        будто заявки не существовало: мина №2 из MINES.md становилась
+        неотличима от «клиент сам придумал таймаут».
+        """
+        (self.spool / f"req-{rid}.json").unlink(missing_ok=True)
+
+    def orphaned_work(self) -> list[Path]:
+        """Заявки, забранные мостом без ответа. Для диагностики и для
+        того, чтобы внешний слой мог отличить «Harmony занят» от
+        «Harmony мёртв»."""
+        return sorted(self.spool.glob("work-*.json"))
 
     # ---- удобные обёртки ---------------------------------------------------
 
