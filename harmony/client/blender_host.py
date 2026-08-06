@@ -95,6 +95,9 @@ class BSceneSpec:
     camera_ortho_scale: float = 6.0
     camera_loc: tuple[float, float] = (0.0, 1.6)     # x, z (y фиксирован)
     line_width: float = 0.012
+    # Звук В СЦЕНЕ (Blender VSE), а не только в финальном сведении:
+    # без него нельзя проверить липсинк до рендера.
+    audio_tracks: list[dict] = field(default_factory=list)
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), indent=1)

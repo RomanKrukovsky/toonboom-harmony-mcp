@@ -21,6 +21,7 @@ import { drawingTools } from './tools/drawingTools.js';
 import { paletteTools } from './tools/paletteTools.js';
 import { rigTools } from './tools/rigTools.js';
 import { lipsyncTools } from './tools/lipsyncTools.js';
+import { bridgeTools } from './tools/bridgeTools.js';
 import { productionTools } from './tools/productionTools.js';
 import { auditTools } from './tools/auditTools.js';
 import { uiOperatorTools } from './tools/uiOperatorTools.js';
@@ -91,6 +92,7 @@ const allTools = [
   ...paletteTools,
   ...rigTools,
   ...lipsyncTools,
+  ...bridgeTools,
   ...productionTools,
   ...auditTools,
   ...uiOperatorTools,
@@ -160,6 +162,22 @@ function zodFieldToJsonSchema(schema: any): any {
   if (typeName === 'ZodEnum') return { type: 'string', enum: schema._def.values, ...(description ? { description } : {}) };
   if (typeName === 'ZodLiteral') return { const: schema._def.value, ...(description ? { description } : {}) };
   if (typeName === 'ZodArray') return { type: 'array', items: zodFieldToJsonSchema(schema._def.type), ...(description ? { description } : {}) };
+  if (typeName === 'ZodUnion' || typeName === 'ZodDiscriminatedUnion') {
+    const options: any[] = Array.from(schema._def.options?.values?.() ?? schema._def.options ?? []);
+    return { anyOf: options.map((opt: any) => zodFieldToJsonSchema(opt)), ...(description ? { description } : {}) };
+  }
+  if (typeName === 'ZodRecord') {
+    return {
+      type: 'object',
+      additionalProperties: schema._def.valueType ? zodFieldToJsonSchema(schema._def.valueType) : true,
+      ...(description ? { description } : {})
+    };
+  }
+  if (typeName === 'ZodAny' || typeName === 'ZodUnknown') {
+    // Без ограничения типа: {} принимает любое значение (честнее, чем 'string').
+    return { ...(description ? { description } : {}) };
+  }
+  if (typeName === 'ZodNull') return { type: 'null', ...(description ? { description } : {}) };
   if (typeName === 'ZodObject') {
     const shape = schema.shape as Record<string, any>;
     return {
@@ -225,7 +243,12 @@ class HarmonyMcpServer {
           };
         }
 
-        const result = await tool.handler(parsedArgs.data);
+        // Each tool carries its own inferred arg type, so across the whole
+        // registry `handler`'s parameter narrows to `never`. Dispatch is
+        // inherently dynamic: the payload was just validated against this
+        // tool's own inputSchema by safeParse above, so it matches by
+        // construction.
+        const result = await (tool.handler as (args: unknown) => Promise<unknown>)(parsedArgs.data);
         return {
           content: [
             {

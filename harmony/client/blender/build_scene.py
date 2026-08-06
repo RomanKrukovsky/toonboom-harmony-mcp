@@ -242,6 +242,20 @@ def build(spec, out_dir):
         except TypeError:
             continue
 
+    # Звуковая дорожка в VSE. Проверено на живом Blender 5.1:
+    # sequence_editor_create().strips.new_sound(...).
+    #
+    # Дорожка нужна В СЦЕНЕ, а не только в финальном mux: без неё
+    # художник не может проверить попадание рта в звук — а это главная
+    # причина, по которой липсинк «почти совпадает».
+    for tr in spec.get("audio_tracks") or []:
+        if not os.path.exists(tr["path"]):
+            raise FileNotFoundError("audio track missing: " + tr["path"])
+        se = scene.sequence_editor_create()
+        st = se.strips.new_sound(tr.get("name", "dialogue"), tr["path"],
+                                 1, int(tr.get("start_frame", 1)))
+        st.volume = float(tr.get("volume", 1.0))
+
     blend = os.path.join(out_dir, spec["name"] + ".blend")
     bpy.ops.wm.save_as_mainfile(filepath=blend)
     return scene
