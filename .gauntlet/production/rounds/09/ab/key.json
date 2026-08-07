@@ -1,0 +1,7 @@
+{
+  "A": "reference",
+  "B": "candidate",
+  "reference_source": ".gauntlet/production/ref/production_targets.md",
+  "candidate_source": ".gauntlet/production/rounds/09/artifact.md",
+  "shrink": 1000
+}

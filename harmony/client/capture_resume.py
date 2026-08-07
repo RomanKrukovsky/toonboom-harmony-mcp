@@ -190,6 +190,64 @@ def concurrent_runs(shots: int = 6, frames: int = 8) -> dict:
             "guard_exit_seen": 3 in (a.returncode, b.returncode)}
 
 
+def changed_episode(shots: int = 6, frames: int = 6) -> dict:
+    """
+    Серию ПРАВИЛИ между падением и перезапуском — обычная монтажная ситуация.
+
+    Три случая, каждый из которых бывает на живом проекте:
+      - шоту добавили кадров (реплику удлинили);
+      - шот удалили из раскадровки;
+      - шот вставили в середину.
+
+    Опасность не в падении, а в тихом принятии старого результата: шот на 6
+    кадров записан в журнал как готовый, длину подняли до 12, и возобновление
+    считает его сделанным. Серия выходит с коротким шотом, ошибки нет.
+    """
+    sys.path.insert(0, str(HERE))
+    from episode import Episode, demo_episode, run_episode, shot_is_done, read_journal
+
+    out = WORK / "changed"
+    shutil.rmtree(out, ignore_errors=True)
+    ep = demo_episode(out, shots=shots, frames=frames)
+    run_episode(ep, workers=3)
+    journal = read_journal(ep)
+
+    # 1. Шоту добавили кадров. Проверяется БЕЗ мутации самой серии — иначе
+    # следующие пробы наследуют изменённую длину и их числа объясняются моей
+    # правкой, а не поведением конвейера. Дефект был именно такой: «шот удалён
+    # -> пересчитан 1» показывал удлинённый шот из пробы №1, а не последствие
+    # удаления.
+    from copy import deepcopy
+    probe_ep = deepcopy(ep)
+    probe_ep.shots[1].frames = frames * 2
+    lengthened_done = shot_is_done(probe_ep, probe_ep.shots[1],
+                                   journal.get(probe_ep.shots[1].name))
+
+    # 2. Шот удалён из раскадровки: пересчитывать нечего.
+    removed = ep.shots[-1].name
+    trimmed = Episode(ep.name, deepcopy(ep.shots[:-1]), ep.out_dir)
+    events: list[dict] = []
+    run_episode(trimmed, workers=3, on_event=events.append)
+    trimmed_recomputed = events[0]["todo"]
+
+    # 3. Вставлен новый шот в середину — считается только он?
+    from episode import ShotSpec
+    newshot = ShotSpec(name="sc999", parts_json=ep.shots[0].parts_json,
+                       frames=frames, fps=24, resolution=(320, 240),
+                       channels={"arm.rot": [(1.0, 0.0), (float(frames), 40.0)]},
+                       camera_ortho_scale=1.9, camera_loc=(0.0, 0.3))
+    grown = Episode(ep.name, deepcopy(ep.shots[:2]) + [newshot]
+                    + deepcopy(ep.shots[2:]), ep.out_dir)
+    events2: list[dict] = []
+    run_episode(grown, workers=3, on_event=events2.append)
+
+    return {"lengthened_shot_treated_done": lengthened_done,
+            "removed_shot": removed,
+            "recompute_after_trim": trimmed_recomputed,
+            "recompute_after_insert": events2[0]["todo"],
+            "inserted_only": events2[0]["todo"] == 1}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -219,6 +277,8 @@ def main() -> int:
     tax = crash_tax()
     print("two runs at once (resilience lens) ...")
     conc = concurrent_runs()
+    print("episode edited between crash and restart (resume lens) ...")
+    chg = changed_episode()
 
     L = [
         "# resume — сколько работы спасает падение",
@@ -266,6 +326,15 @@ def main() -> int:
         f"{'есть, второй отклонён с кодом 3' if conc['guarded'] else '**НЕТ**'}",
         f"- коды выхода: {conc['exit_a']} и {conc['exit_b']}",
         "",
+        "## Серию правили между падением и перезапуском (линза resume)",
+        "",
+        f"- шоту добавили кадров — старый результат принят как готовый: "
+        f"**{'ДА (дефект)' if chg['lengthened_shot_treated_done'] else 'нет, пересчитается'}**",
+        f"- шот удалён из раскадровки — пересчитано {chg['recompute_after_trim']} шотов",
+        f"- шот вставлен в середину — пересчитано "
+        f"{chg['recompute_after_insert']} "
+        f"({'только новый' if chg['inserted_only'] else 'лишнее'})",
+        "",
         "## Числа по возобновлению",
         "",
     ]
@@ -286,6 +355,17 @@ def main() -> int:
         problems.append(f"падение стоит +{tax['tax_pct']}% общего времени — "
                         f"возобновление спасает работу, но ночь всё равно "
                         f"растягивается")
+    if chg["lengthened_shot_treated_done"]:
+        problems.append("шоту добавили кадров, а возобновление считает его "
+                        "готовым по старой длине — серия выйдет с коротким шотом, "
+                        "и ошибки не будет")
+    if chg["recompute_after_trim"] != 0:
+        problems.append(f"после удаления шота пересчитано "
+                        f"{chg['recompute_after_trim']} — удаление не должно "
+                        f"стоить работы")
+    if not chg["inserted_only"]:
+        problems.append(f"после вставки одного шота пересчитано "
+                        f"{chg['recompute_after_insert']} — лишняя работа")
     if conc["shots_with_wrong_frames"]:
         problems.append(f"два прогона одновременно испортили кадры: "
                         f"{conc['shots_with_wrong_frames']} — мастер собрался бы "
@@ -315,7 +395,7 @@ def main() -> int:
     art.write_text("\n".join(L) + "\n", encoding="utf-8")
     (art.parent / "metrics.json").write_text(json.dumps(
         {"kill_points": points, "resume_cost": cost, "episode_scale": full,
-         "crash_tax": tax, "concurrent": conc},
+         "crash_tax": tax, "concurrent": conc, "changed_episode": chg},
         ensure_ascii=False, indent=1),
         encoding="utf-8")
     print(f"done, {len(problems)} problem(s)")

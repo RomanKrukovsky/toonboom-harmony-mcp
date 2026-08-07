@@ -199,6 +199,68 @@ def test_empty_journal_is_a_clean_first_run():
 
 
 # ---------------------------------------------------------------------------
+# Отпечаток описания шота
+# ---------------------------------------------------------------------------
+
+def test_timing_edit_without_length_change_forces_recompute():
+    """Самая частая правка на монтаже: поменяли тайминг, длина та же. Раньше
+    старый рендер принимался за готовый, и серия собиралась по вчерашней
+    версии БЕЗ единой ошибки. Регрессия раунда 9."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=5)
+        ep.shots[1].channels = {"arm.rot": [(1.0, 0.0), (5.0, 40.0)]}
+        run(ep)
+        # правим ТОЛЬКО значения канала, длина неизменна
+        ep.shots[1].channels = {"arm.rot": [(1.0, 0.0), (5.0, 90.0)]}
+        _, events = run(ep)
+        assert events[0]["todo"] == 1, \
+            f"пересчитано {events[0]['todo']} — правка тайминга прошла молча"
+        assert events[0]["resumed"] == 2
+
+
+def test_unrelated_shots_not_recomputed_after_an_edit():
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=4, frames=4)
+        run(ep)
+        ep.shots[0].camera_ortho_scale = 3.5
+        _, events = run(ep)
+        assert events[0]["todo"] == 1 and events[0]["resumed"] == 3
+
+
+def test_fingerprint_ignores_irrelevant_fields():
+    """Отпечаток обязан меняться только от того, что влияет на пиксели.
+    Иначе любая правка описания пересчитывает всю серию."""
+    from episode import ShotSpec
+    a = ShotSpec("sc001", "p.json", 24)
+    b = ShotSpec("sc001", "p.json", 24)
+    assert a.fingerprint() == b.fingerprint()
+    b.name = "sc002"                      # имя адресует каталог, не пиксели
+    assert a.fingerprint() == b.fingerprint()
+    b.frames = 25
+    assert a.fingerprint() != b.fingerprint()
+
+
+def test_old_journal_without_fingerprint_is_honoured():
+    """Иначе первый запуск после обновления пересчитал бы всю серию — три часа
+    за то, что мы добавили поле."""
+    from episode import shot_is_done
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(ep)
+        jp = ep.out_dir / "journal.jsonl"
+        lines = []
+        for line in jp.read_text().splitlines():
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            rec.pop("fingerprint", None)          # журнал старого формата
+            lines.append(json.dumps(rec, ensure_ascii=False))
+        jp.write_text("\n".join(lines) + "\n")
+        journal = read_journal(ep)
+        assert all(shot_is_done(ep, s, journal.get(s.name)) for s in ep.shots)
+
+
+# ---------------------------------------------------------------------------
 # Замок: один прогон на серию
 # ---------------------------------------------------------------------------
 

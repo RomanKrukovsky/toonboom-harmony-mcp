@@ -70,6 +70,33 @@ class ShotSpec:
     def seconds(self) -> float:
         return self.frames / self.fps
 
+    def fingerprint(self) -> str:
+        """
+        Отпечаток ОПИСАНИЯ шота: всё, что влияет на пиксели.
+
+        Зачем: готовность шота проверялась по числу кадров и записи в журнале.
+        Правка тайминга без изменения длины — самая частая правка на монтаже —
+        проходила незамеченной, и серия собиралась по вчерашней версии без
+        единой ошибки.
+
+        Пути к рисункам и звуку входят как строки, а не как содержимое: читать
+        все PNG на каждый запуск дороже, чем пересчитать шот. Если художник
+        перерисовал файл, не меняя имени, это ловится не здесь, а флагом
+        --force на шот.
+        """
+        import hashlib
+        payload = json.dumps({
+            "frames": self.frames, "fps": self.fps,
+            "resolution": list(self.resolution),
+            "parts": self.parts_json,
+            "channels": {k: [list(x) for x in v]
+                         for k, v in sorted(self.channels.items())},
+            "audio": self.audio, "lipsync": self.lipsync,
+            "camera": [self.camera_ortho_scale, list(self.camera_loc)],
+            "bg": list(self.bg_color),
+        }, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(payload.encode()).hexdigest()[:16]
+
 
 @dataclass
 class Episode:
@@ -243,16 +270,28 @@ def append_journal(ep: Episode, rec: dict) -> None:
 
 def shot_is_done(ep: Episode, s: ShotSpec, rec: dict | None) -> bool:
     """
-    Готовность проверяется по ДИСКУ, а не только по журналу.
+    Готовность = журнал + кадры на диске + СОВПАДЕНИЕ ОПИСАНИЯ.
 
-    Журнал может утверждать, что шот готов, а кадры быть удалены (чистка, полный
-    диск, ручное вмешательство). Доверять записи без проверки — значит собрать
-    мастер с дырой на месте шота и не заметить.
+    Три условия, каждое из-за конкретной ловушки:
+
+    - запись в журнале со статусом ok — иначе пересчитываем;
+    - кадры реально лежат на диске: журнал может утверждать «готово», а кадры
+      быть удалены (чистка, полный диск, ручное вмешательство). Доверять записи
+      без проверки — собрать мастер с дырой и не заметить;
+    - отпечаток описания совпадает: правка тайминга без изменения длины иначе
+      проходит молча, и серия собирается по вчерашней версии.
+
+    Старые журналы без отпечатка считаются совпадающими: иначе первый запуск
+    после обновления пересчитал бы всю серию, а это три часа за то, что мы
+    добавили поле.
     """
     if not rec or rec.get("status") != "ok":
         return False
     d = ep.out_dir / s.name
-    return len(list(d.glob("f*.png"))) >= s.frames
+    if len(list(d.glob("f*.png"))) < s.frames:
+        return False
+    stored = rec.get("fingerprint")
+    return stored is None or stored == s.fingerprint()
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +450,8 @@ def render_one_shot(payload: dict) -> dict:
                     "seconds": round(time.monotonic() - t0, 2), "frames": rendered}
         return {"name": name, "status": "ok", "frames": rendered,
                 "seconds": round(time.monotonic() - t0, 2),
-                "dir": str(out), "audio": payload.get("audio")}
+                "dir": str(out), "audio": payload.get("audio"),
+                "fingerprint": payload.get("fingerprint")}
     except Exception as e:                                  # noqa: BLE001
         return {"name": name, "status": "failed", "code": type(e).__name__,
                 "message": str(e)[:400],
@@ -437,6 +477,7 @@ def _payload(ep: Episode, s: ShotSpec, client_dir: str) -> dict:
         "camera_ortho_scale": s.camera_ortho_scale,
         "camera_loc": list(s.camera_loc), "bg_color": list(s.bg_color),
         "shot_dir": str(ep.out_dir / s.name), "client_dir": client_dir,
+        "fingerprint": s.fingerprint(),
     }
 
 
@@ -529,6 +570,7 @@ def render_batch(payload: dict) -> list[dict]:
             ok = rep["returncode"] == 0 and rep["frames_rendered"] >= shot["frames"]
             out.append({
                 "name": spec.name,
+                "fingerprint": shot.get("fingerprint"),
                 "status": "ok" if ok else "failed",
                 "code": None if ok else "RENDER_FAILED",
                 "message": None if ok else
@@ -610,10 +652,19 @@ def _run_locked(ep: Episode, workers: int,
     results: dict[str, dict] = {n: journal[n] for n in skipped if n in journal}
     done_frames = 0
 
+    by_name = {s.name: s for s in todo}
+
     def settle(rec: dict, i: int) -> None:
         """Один завершённый шот: в журнал, в результаты, в событие."""
         nonlocal done_frames
         rec["finished_at"] = time.time()
+        # Отпечаток ставит оркестратор, а не счётчик шота. Иначе любой свой
+        # renderer (тест, планировщик фермы, обёртка с логированием) молча
+        # теряет поле, и проверка «описание не менялось» перестаёт работать —
+        # ровно так и вышло при первой попытке.
+        spec = by_name.get(rec.get("name"))
+        if spec is not None and rec.get("status") == "ok":
+            rec.setdefault("fingerprint", spec.fingerprint())
         append_journal(ep, rec)              # пережить kill -9 сразу же
         results[rec["name"]] = rec
         done_frames += rec.get("frames", 0)
