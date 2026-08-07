@@ -44,6 +44,10 @@ from typing import Callable, Iterable, Sequence
 
 JOURNAL = "journal.jsonl"
 MASTER = "master.mp4"
+# Промежуточный сегмент: .mov с PCM, чтобы aac не сдвигал звук на склейке
+# (раунд 16). Имя в одном месте: смоук искал "segment.mp4" и после смены
+# расширения молча получал None вместо числа кадров.
+SEGMENT = "segment.mov"
 LOCK = "run.lock"
 
 
@@ -205,6 +209,38 @@ def preflight(ep: Episode, need_free_gb: float | None = None) -> PreflightResult
                 "remedy": f"Set a positive \"frames\" for shot {s.name} in the "
                           f"episode JSON — it is the shot length in frames "
                           f"(4 seconds at 24 fps = 96)."})
+
+    # Формат серии: шоты РАЗНОГО размера склеиваются в один контейнер, и concat
+    # с `-c copy` менять размер не умеет — он берёт заголовок первого сегмента и
+    # дописывает остальные как есть. Раунд 16: шот 320x180 внутри мастера
+    # 320x240 отдавался ffmpeg-ом как 320x180, то есть кадры разного размера в
+    # одном файле, а что с ними сделает плеер — не наше решение. Проверки это
+    # пропускали: кадров ровно столько, сколько нужно, длина сходится.
+    #
+    # Ловится ДО счёта, потому что самая вероятная причина — опечатка в JSON
+    # ([1920, 1800] вместо [1920, 1080]), и узнать о ней через час рендера
+    # дороже, чем сразу. Разный fps при этом законен (шот на двойках), а разный
+    # размер — нет.
+    sizes = {tuple(s.resolution) for s in ep.shots}
+    if len(sizes) > 1:
+        by_size: dict[tuple, list[str]] = {}
+        for sh in ep.shots:
+            by_size.setdefault(tuple(sh.resolution), []).append(sh.name)
+        main_size = max(by_size, key=lambda k: len(by_size[k]))
+        odd = [(k, v) for k, v in by_size.items() if k != main_size]
+        listing = "; ".join(
+            f"{w}x{h}: {', '.join(v[:3])}{'...' if len(v) > 3 else ''}"
+            for (w, h), v in odd)
+        problems.append({
+            "code": "MIXED_RESOLUTION",
+            "message": (f"shots have different frame sizes — most are "
+                        f"{main_size[0]}x{main_size[1]}, but {listing}"),
+            "remedy": ('Set the same "resolution" for every shot in the episode '
+                       'JSON. The master is one container: a shot of a different '
+                       'size is joined without rescaling, and how a player shows '
+                       'it is not up to us. If an inset of another size is '
+                       'intended, render it at the episode size with the inset '
+                       'composed inside the frame.')})
 
     # Место: ~120 КБ на кадр PNG при 720p — эмпирика с этого конвейера.
     est_gb = ep.total_frames * 120_000 / 1e9
@@ -951,7 +987,15 @@ def assemble(ep: Episode, master: Path | None = None,
         if not shot_is_done(ep, s, journal.get(s.name)):
             missing.append(s.name)
             continue
-        seg = ep.out_dir / s.name / "segment.mp4"
+        # .mov с PCM, а не .mp4 с aac. Раунд 16: aac кладёт priming-кадр с
+        # отрицательным pts (-0.023 с), и concat съезжает — в мастере видео
+        # стартовало на 23 мс позже звука, то есть звук шёл впереди картинки ВСЮ
+        # серию. Ни один флаг concat этого не лечит (проверены -avoid_negative_ts,
+        # -fflags +genpts, перекодирование звука на выходе) — потому что источник
+        # в сегменте, а не в склейке. PCM priming не имеет: сдвиг 0 мс.
+        # Цена: сегменты 1390 МБ вместо 1280 на серию 314 шотов, времени не
+        # добавляет (3.5 с против 3.9 на шести шотах).
+        seg = ep.out_dir / s.name / SEGMENT
         stamp = ep.out_dir / s.name / "segment.fingerprint"
         if _segment_is_current(seg, ep.out_dir / s.name, s, stamp):
             reused.append(s.name)
@@ -968,14 +1012,14 @@ def assemble(ep: Episode, master: Path | None = None,
         args = ["ffmpeg", "-y", "-framerate", str(s.fps),
                 "-i", str(ep.out_dir / s.name / "f%04d.png")]
         if s.audio:
-            args += ["-i", s.audio, "-c:a", "aac", "-b:a", "192k",
+            args += ["-i", s.audio, "-c:a", "pcm_s16le",
                      "-map", "0:v:0", "-map", "1:a:0"]
         else:
             # Тишина нужной длины: без звуковой дорожки concat склеит шоты с
             # разъезжающимся звуком у последующих сегментов.
             args += ["-f", "lavfi", "-t", f"{s.seconds:.4f}",
                      "-i", "anullsrc=channel_layout=mono:sample_rate=44100",
-                     "-c:a", "aac", "-b:a", "192k",
+                     "-c:a", "pcm_s16le",
                      "-map", "0:v:0", "-map", "1:a:0"]
         # БЕЗ -shortest. Раунд 14: -shortest обрезал сегмент по КОРОТЧАЙШЕМУ
         # потоку, и им оказывалась не тишина, а видео — последний кадр каждого
@@ -1020,7 +1064,11 @@ def assemble(ep: Episode, master: Path | None = None,
                        encoding="utf-8")
     r = subprocess.run(
         ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
-         "-c", "copy", str(master)], capture_output=True, text=True)
+         # Видео копируется, звук кодируется в aac ОДИН РАЗ на весь мастер —
+         # именно поэтому priming попадает в начало один раз и не сдвигает
+         # ничего внутри. PCM в мастере дал бы гигабайты.
+         "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+         str(master)], capture_output=True, text=True)
     if r.returncode != 0:
         raise AssemblyError(
             "ffmpeg could not join the segments into a master",

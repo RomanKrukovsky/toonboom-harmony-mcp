@@ -43,7 +43,7 @@ start: 3 shots to render (0 already done), 12 workers
   ok   sc001  2/3  4.9 fps, eta 2.5s
   ok   sc003  3/3  6.1 fps
 rendered 36 frames in 5.9s (6.1 fps), 0 failed
-master: /tmp/my_first_episode/master.mp4 — 1.523s (expected 1.5s, drift +0.023s), streams ['video', 'audio']
+master: /tmp/my_first_episode/master.mp4 — 1.5s (expected 1.5s, drift +0.000s), streams ['video', 'audio']
 ```
 
 Готовая серия — `master.mp4` в каталоге, который вы указали в `--out`.
@@ -121,7 +121,7 @@ start: 6 shots to render (2 already done), 12 workers
 скажет, чего в нём нет:
 
 ```
-master: /path/out/master.mp4 — 0.773s (expected 0.75s, drift +0.023s), streams ['video', 'audio']
+master: /path/out/master.mp4 — 0.75s (expected 0.75s, drift +0.000s), streams ['video', 'audio']
   INCOMPLETE: 2 shot(s) missing from the master: sc004, sc005
   Re-run the same command to render them, then assemble again.
 ```
@@ -129,6 +129,18 @@ master: /path/out/master.mp4 — 0.773s (expected 0.75s, drift +0.023s), streams
 Код выхода 1, чтобы скрипт в CI не считал неполную серию успехом. Длительность
 сверяется с ВОШЕДШИМИ шотами, а не с полной раскадровкой: иначе частичная сборка
 объявляла бы ложное расхождение каждый раз.
+
+**Все шоты серии должны быть одного размера.** Проверка не пропустит серию, где
+у одного шота другое разрешение:
+
+```
+  [MIXED_RESOLUTION] shots have different frame sizes — most are 1920x1080, but 1920x1800: sc003
+      -> Set the same "resolution" for every shot in the episode JSON.
+```
+
+Мастер — один контейнер: шот другого размера склеивается без масштабирования, и
+как его покажет плеер, конвейер не решает. Если вставка другого формата нужна по
+замыслу, рендерить её в размере серии, вписав внутрь кадра.
 
 **Битый рисунок в посчитанном шоте.** ffmpeg останавливается на нечитаемом PNG
 и не считает это ошибкой — шот выходит короче. Сборка теперь ловит это и

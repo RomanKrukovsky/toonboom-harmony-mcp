@@ -121,10 +121,10 @@ def main() -> int:
     # Кадры сегмента против кадров шота. Раунд 14: `-shortest` съедал последний
     # кадр КАЖДОГО шота, и проверка по длительности этого не видела — длину
     # задаёт звук. Считать надо кадры.
-    from episode import _count_frames
+    from episode import _count_frames, SEGMENT
     lost = []
     for sh in ep.shots:
-        seg = ep.out_dir / sh.name / "segment.mp4"
+        seg = ep.out_dir / sh.name / SEGMENT
         got = _count_frames(seg)
         if got != sh.frames:
             lost.append(f"{sh.name}: {got}/{sh.frames}")

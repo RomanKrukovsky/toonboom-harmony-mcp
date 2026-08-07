@@ -34,6 +34,32 @@ COLOURS = [(0.90, 0.10, 0.10), (0.10, 0.90, 0.10), (0.10, 0.10, 0.90),
            (0.60, 0.10, 0.30), (0.50, 0.50, 0.50), (0.20, 0.20, 0.20)]
 
 
+def sanity(measure, healthy, name: str) -> str:
+    """
+    Проверка ВЕЛИЧИНЫ на известно-здоровом образце, прежде чем ей верить.
+
+    Раунд 16: аудиошвы искались по интервалам пакетов, и на ИСПРАВНОМ мастере
+    нашлось 88 «разрывов» — артефакт разбора, а не дефект. Настоящий сдвиг 23 мс
+    обнаружился только когда был запрошен `start_time` потоков. Три пробы ушли на
+    то, что снималось одной: если величина сигналит беду там, где беды нет, она
+    не отвечает на заданный вопрос.
+
+    Тот же класс, что раунд 14 (длину контейнера задаёт звук, потеря кадров по
+    ней не видна) и раунд 5 (345 жалоб вместо одной). Здесь это записано
+    механически, а не как совет: `measure` считается на здоровом образце, и если
+    результат не «чисто» — величина отвергается ДО того, как на ней построен
+    вывод.
+
+    measure: функция, возвращающая список найденных проблем
+    healthy: образец, на котором проблем быть не должно
+    """
+    found = measure(healthy)
+    if found:
+        return (f"ОТВЕРГНУТА величина «{name}»: на исправном образце она нашла "
+                f"{len(found)} проблем(ы) — значит отвечает не на тот вопрос")
+    return f"величина «{name}» на исправном образце чиста — можно верить"
+
+
 def srgb(c: float) -> int:
     v = 1.055 * (c ** (1 / 2.4)) - 0.055 if c > 0.0031308 else 12.92 * c
     return max(0, min(255, round(255 * v)))
@@ -124,12 +150,34 @@ def probe(with_audio: bool) -> dict:
          "default=nw=1:nk=1", asm["master"]],
         capture_output=True, text=True).stdout.strip() or 0)
 
+    # Взаимное положение потоков. Раунд 16: видео стартовало на 23 мс позже
+    # звука (priming-кадр aac утекал из сегментов в мастер), и НИ ОДНА прошлая
+    # проверка этого не видела — кадры считались, длина сходилась, порядок был
+    # верен. Величина выбрана после того, как «интервалы пакетов» дали 88
+    # ложных находок на исправном мастере: она отвечает на вопрос «идут ли
+    # картинка и звук вместе», а не «ровно ли лежат пакеты».
+    starts = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries",
+         "stream=codec_type,start_time", "-of", "csv=p=0", asm["master"]],
+        capture_output=True, text=True).stdout.strip().splitlines()
+    st = {}
+    for line in starts:
+        parts = line.split(",")
+        if len(parts) >= 2:
+            try:
+                st[parts[0]] = float(parts[1])
+            except ValueError:
+                pass
+    av_offset_ms = (round((st["video"] - st["audio"]) * 1000)
+                    if "video" in st and "audio" in st else None)
+
     return {"streams": asm["streams"], "duration": asm["duration"],
             "expected": asm["expected"], "drift": asm["drift"],
             "in_tolerance": asm["in_tolerance"], "segments": asm["segments"],
             "order_wrong": wrong, "seam_problems": seams,
             "frames_in_master": frames_total,
             "frames_expected": FRAMES * len(COLOURS),
+            "av_offset_ms": av_offset_ms,
             "missing_shots": asm["missing_shots"]}
 
 
@@ -159,6 +207,8 @@ def main() -> int:
         ("длительность", "duration", lambda v: f"{v} с"),
         ("ожидалось", "expected", lambda v: f"{v} с"),
         ("расхождение (±0.1 с)", "drift", lambda v: f"{v:+.3f} с"),
+        ("сдвиг видео-звук", "av_offset_ms",
+         lambda v: "—" if v is None else f"{v:+d} мс"),
         ("кадров в мастере", "frames_in_master", str),
         ("кадров ожидалось", "frames_expected", str),
     ):
@@ -185,6 +235,11 @@ def main() -> int:
                             f"это замечает только человек на просмотре")
         if r["seam_problems"]:
             problems.append(f"{tag}: швы {r['seam_problems'][:2]}")
+        # Сдвиг звука против картинки: 23 мс на серию слышны как рассинхрон.
+        off = r.get("av_offset_ms")
+        if off is not None and abs(off) > 5:
+            problems.append(f"{tag}: видео против звука {off:+d} мс — "
+                            f"картинка и звук идут не вместе")
         if r["frames_in_master"] != r["frames_expected"]:
             problems.append(f"{tag}: кадров в мастере {r['frames_in_master']} "
                             f"вместо {r['frames_expected']}")

@@ -240,6 +240,61 @@ def test_damage_makes_the_exit_code_nonzero():
     assert "DAMAGED ARTWORK" in src, "оператор не увидит порчу в терминале"
 
 
+def test_audio_and_video_start_together_in_the_master():
+    """aac кладёт priming-кадр с отрицательным pts (-0.023 с). При склейке
+    сегментов это уезжало в мастер: видео стартовало на 23 мс ПОЗЖЕ звука, то
+    есть звук шёл впереди картинки всю серию. Ни один флаг concat не лечит
+    (проверены -avoid_negative_ts make_zero, -fflags +genpts, перекодирование
+    звука на выходе) — источник в сегменте, а не в склейке.
+
+    Тот же priming давал «drift +0.023s», который печатался в каждом прогоне
+    шестнадцати раундов и объяснялся округлением aac. После перехода сегментов
+    на PCM дрейф стал ровно нулём."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert '"pcm_s16le"' in src, "сегменты снова на aac — вернётся сдвиг 23 мс"
+    assert 'SEGMENT' in src, "имя сегмента не из константы"
+    assert E.SEGMENT.endswith(".mov"), E.SEGMENT
+
+
+def test_count_frames_returns_none_loudly():
+    """Смоук искал `segment.mp4` после смены расширения и получал None вместо
+    числа кадров — проверка целостности молча превращалась в «потеряны все
+    кадры». Имя сегмента теперь одно на весь код; None означает нечитаемый
+    файл, и это должно быть отличимо от нуля кадров."""
+    with tempfile.TemporaryDirectory() as d:
+        assert E._count_frames(Path(d) / "нет.mov") is None
+        broken = Path(d) / "b.mov"
+        broken.write_bytes(b"not a movie")
+        assert E._count_frames(broken) is None
+
+
+def test_mixed_resolution_caught_before_rendering():
+    """Шоты РАЗНОГО размера склеиваются в один контейнер, и concat с -c copy
+    менять размер не умеет: шот 320x180 внутри мастера 320x240 отдавался как
+    320x180 — кадры разного размера в одном файле, а что с ними сделает плеер,
+    не наше решение. Проверки это пропускали: кадров ровно столько, длина
+    сходится. Самая вероятная причина — опечатка в JSON ([1920, 1800] вместо
+    [1920, 1080]), поэтому ловится ДО счёта."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        ep = make_ep(tmp, n=3, frames=4)
+        ep.shots[2].resolution = (1920, 1800)
+        probs = {p["code"]: p for p in E.preflight(ep).problems}
+        assert "MIXED_RESOLUTION" in probs, sorted(probs)
+        assert "sc003" in probs["MIXED_RESOLUTION"]["message"]
+        assert probs["MIXED_RESOLUTION"]["remedy"]
+
+
+def test_same_resolution_passes():
+    """Разный fps законен (шот на двойках), разный размер — нет."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        ep.shots[1].fps = 12
+        codes = {p["code"] for p in E.preflight(ep).problems}
+        assert "MIXED_RESOLUTION" not in codes, codes
+
+
 def test_segment_reuse_conditions_are_all_checked():
     """Сборка пересчитывала ВСЕ сегменты каждый раз: 1137 мс на шот при 1080p,
     357 с на серию 314 шотов, тогда как при досчёте одного шота нужно 0.7 с —
