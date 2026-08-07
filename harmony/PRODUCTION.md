@@ -130,6 +130,24 @@ master: /path/out/master.mp4 — 0.773s (expected 0.75s, drift +0.023s), streams
 сверяется с ВОШЕДШИМИ шотами, а не с полной раскадровкой: иначе частичная сборка
 объявляла бы ложное расхождение каждый раз.
 
+**Битый рисунок в посчитанном шоте.** ffmpeg останавливается на нечитаемом PNG
+и не считает это ошибкой — шот выходит короче. Сборка теперь ловит это и
+называет шот:
+
+```
+  DAMAGED ARTWORK: 1 shot(s) lost frames during assembly:
+    sc002: 3 of 8 frames — a PNG is missing or unreadable
+    -> delete these shot folders and re-run the same command to render them again
+```
+
+**Сборка не удалась.** Причина печатается первой строкой, действие — второй,
+лог ffmpeg уходит в `report.json` (в терминале он утопил бы причину):
+
+```
+ASSEMBLY FAILED: audio file missing for sc002: /Volumes/work/e07/audio/sc002.wav
+  -> restore the file, or clear "audio" for this shot in the episode JSON, then assemble again
+```
+
 **Отчёт лежит на диске:** `<outDir>/report.json`. Утром смотреть его, а не
 закрытый терминал.
 

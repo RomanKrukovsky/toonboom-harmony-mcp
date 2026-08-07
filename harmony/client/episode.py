@@ -810,6 +810,39 @@ def _run_locked(ep: Episode, workers: int,
 # Сборка мастера
 # ---------------------------------------------------------------------------
 
+class AssemblyError(RuntimeError):
+    """
+    Сбой сборки: причина первой строкой, действие второй, лог ffmpeg — отдельным
+    полем.
+
+    Раунд 14: сообщения были обрезанным хвостом `r.stderr[-400:]`, и оператор
+    получал «concat failed: 24 fps, 24 tbr, 12288 tbn Metadata: handler_name» —
+    технический лог без причины. Тот же класс, что трейсбек вместо инструкции в
+    раунде 8: информация есть, подача непригодна. Лог нужен тому, кто полезет
+    разбираться, и не должен быть ТЕКСТОМ ошибки.
+    """
+
+    def __init__(self, reason: str, remedy: str = "", log: str = ""):
+        self.reason = reason
+        self.remedy = remedy
+        self.log = log
+        text = reason if not remedy else f"{reason}\n  -> {remedy}"
+        super().__init__(text)
+
+
+def _count_frames(path: Path) -> int | None:
+    """Сколько кадров РЕАЛЬНО в файле. Не длительность контейнера: её задаёт
+    звук, и потеря кадров по ней не видна (раунд 14)."""
+    r = subprocess.run(["ffprobe", "-v", "error", "-count_frames",
+                        "-select_streams", "v:0", "-show_entries",
+                        "stream=nb_read_frames", "-of", "csv=p=0", str(path)],
+                       capture_output=True, text=True)
+    try:
+        return int(r.stdout.strip())
+    except ValueError:
+        return None
+
+
 def assemble(ep: Episode, master: Path | None = None,
              tolerance_s: float = 0.1) -> dict:
     """
@@ -854,15 +887,31 @@ def assemble(ep: Episode, master: Path | None = None,
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         raise RuntimeError("ffmpeg/ffprobe not on PATH")
     master = master or (ep.out_dir / MASTER)
+    # Предсказуемое проверяется ДО запуска ffmpeg. Раунд 14: занятое имя мастера
+    # давало «concat failed: 24 fps, 24 tbr, 12288 tbn Metadata: handler_name» —
+    # обрезанный хвост лога, из которого причину не восстановить.
+    if master.exists() and not master.is_file():
+        raise AssemblyError(
+            f"master destination is not a file: {master}",
+            remedy="remove it (it is a directory) and assemble again")
     journal = read_journal(ep)
 
     parts: list[Path] = []
     missing: list[str] = []
+    short_segments: list[dict] = []
     for s in ep.shots:
         if not shot_is_done(ep, s, journal.get(s.name)):
             missing.append(s.name)
             continue
         seg = ep.out_dir / s.name / "segment.mp4"
+        # Звук мог исчезнуть между рендером и сборкой (перемонтировали том,
+        # почистили каталог). Проверка здесь даёт причину одной строкой вместо
+        # 426 символов лога ffmpeg, где она лежала в середине.
+        if s.audio and not Path(s.audio).is_file():
+            raise AssemblyError(
+                f"audio file missing for {s.name}: {s.audio}",
+                remedy=('restore the file, or clear "audio" for this shot in '
+                        'the episode JSON, then assemble again'))
         args = ["ffmpeg", "-y", "-framerate", str(s.fps),
                 "-i", str(ep.out_dir / s.name / "f%04d.png")]
         if s.audio:
@@ -875,11 +924,35 @@ def assemble(ep: Episode, master: Path | None = None,
                      "-i", "anullsrc=channel_layout=mono:sample_rate=44100",
                      "-c:a", "aac", "-b:a", "192k",
                      "-map", "0:v:0", "-map", "1:a:0"]
+        # БЕЗ -shortest. Раунд 14: -shortest обрезал сегмент по КОРОТЧАЙШЕМУ
+        # потоку, и им оказывалась не тишина, а видео — последний кадр каждого
+        # шота не влезал. На серии 22 минуты это 314 потерянных кадров = 13
+        # секунд анимации, по одному кадру на КАЖДОМ стыке. Проверка длины этого
+        # видеть не могла: ffprobe отдаёт длительность контейнера, а её задаёт
+        # звук (aac округляет вверх), и «drift +0.023s» читался как погрешность
+        # округления, хотя кадров в шоте было на один меньше.
+        # Звуковая дорожка теперь обрезается по видео (-t), а не наоборот.
         args += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
-                 "-r", str(s.fps), "-shortest", str(seg)]
+                 "-r", str(s.fps), "-frames:v", str(s.frames), str(seg)]
         r = subprocess.run(args, capture_output=True, text=True)
         if r.returncode != 0:
-            raise RuntimeError(f"segment failed for {s.name}: {r.stderr[-400:]}")
+            raise AssemblyError(
+                f"ffmpeg could not encode {s.name}",
+                remedy=(f"check the frames in {ep.out_dir / s.name} — a PNG may "
+                        f"be unreadable; delete the folder and re-run the same "
+                        f"command to render the shot again"),
+                log=r.stderr[-1200:])
+
+        # Кадры сегмента сверяются с кадрами шота. Раунд 14: битый PNG (запись
+        # оборвалась, диск сбойнул) останавливает ffmpeg на нём БЕЗ ошибки —
+        # sc002 отдал 3 кадра из 8, мастер вышел на 0.185 с короче, и по итогу
+        # был виден только неверный drift без указания шота. Молча отдавать
+        # такой мастер нельзя: короткий шот в середине серии заметит человек на
+        # просмотре, а не конвейер.
+        got = _count_frames(seg)
+        if got is not None and got != s.frames:
+            short_segments.append({"shot": s.name, "frames": got,
+                                   "expected": s.frames})
         parts.append(seg)
 
     if not parts:
@@ -892,7 +965,11 @@ def assemble(ep: Episode, master: Path | None = None,
         ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
          "-c", "copy", str(master)], capture_output=True, text=True)
     if r.returncode != 0:
-        raise RuntimeError(f"concat failed: {r.stderr[-500:]}")
+        raise AssemblyError(
+            "ffmpeg could not join the segments into a master",
+            remedy=(f"check that {master} is writable and that the segments in "
+                    f"{ep.out_dir} are intact"),
+            log=r.stderr[-1200:])
 
     info = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries",
@@ -908,6 +985,10 @@ def assemble(ep: Episode, master: Path | None = None,
         "expected": round(expect, 3), "drift": round(actual - expect, 3),
         "in_tolerance": abs(actual - expect) <= tolerance_s,
         "missing_shots": missing,
+        # Шоты, у которых кадров в сегменте меньше, чем в шоте: битый или
+        # пропавший PNG. Названы поимённо — «мастер короче» без указания шота
+        # не даёт оператору куда смотреть.
+        "short_segments": short_segments,
         "order": [s.name for s in ep.shots if s.name not in missing],
     }
 
@@ -1066,6 +1147,15 @@ def main() -> int:
                 # доходили, и оператор утром видел «master: 1.523s» над серией
                 # без двух шотов. Тот же класс дефекта, что трейсбек вместо
                 # инструкции — верная информация в непригодной подаче.
+                if asm.get("short_segments"):
+                    print(f"  DAMAGED ARTWORK: {len(asm['short_segments'])} "
+                          f"shot(s) lost frames during assembly:", flush=True)
+                    for sh in asm["short_segments"]:
+                        print(f"    {sh['shot']}: {sh['frames']} of "
+                              f"{sh['expected']} frames — a PNG is missing or "
+                              f"unreadable", flush=True)
+                    print(f"    -> delete these shot folders and re-run the "
+                          f"same command to render them again", flush=True)
                 if asm["missing_shots"]:
                     print(f"  INCOMPLETE: {len(asm['missing_shots'])} shot(s) "
                           f"missing from the master: "
@@ -1076,16 +1166,31 @@ def main() -> int:
                     print(f"  LENGTH MISMATCH: {asm['drift']:+.3f}s against the "
                           f"shots that went in — frames were lost or doubled.")
         except Exception as e:                              # noqa: BLE001
-            report["assembly_error"] = str(e)
+            # Причина и действие — оператору; лог ffmpeg — в отчёт на диск, для
+            # того, кто полезет разбираться. Печатать 1200 символов лога в
+            # терминал значит утопить в нём причину (раунд 14).
+            report["assembly_error"] = getattr(e, "reason", str(e))
+            report["assembly_remedy"] = getattr(e, "remedy", "")
+            report["assembly_log"] = getattr(e, "log", "")
             if not a.json:
-                print(f"assembly failed: {e}")
+                print(f"\nASSEMBLY FAILED: {report['assembly_error']}", flush=True)
+                if report["assembly_remedy"]:
+                    print(f"  -> {report['assembly_remedy']}", flush=True)
+                if report["assembly_log"]:
+                    print(f"  (ffmpeg log saved to report.json)", flush=True)
+            # Отчёт с ошибкой обязан лечь на диск: утро оператора начинается с
+            # него, а не с закрытого терминала.
+            (ep.out_dir / "report.json").write_text(
+                json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+            return 1
 
     if a.json:
         print(json.dumps(report, ensure_ascii=False, indent=1))
     # Неполный мастер — тоже ненулевой код: скрипт в CI не должен считать
     # «собралось» успехом, если в серии дыра.
     asm = report.get("assembly") or {}
-    if asm.get("missing_shots") or not asm.get("in_tolerance", True):
+    if (asm.get("missing_shots") or asm.get("short_segments")
+            or not asm.get("in_tolerance", True)):
         return 1
     return 0 if report["complete"] else 1
 

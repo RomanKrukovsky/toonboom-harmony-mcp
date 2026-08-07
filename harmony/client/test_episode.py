@@ -200,6 +200,80 @@ def test_empty_journal_is_a_clean_first_run():
 
 
 # ---------------------------------------------------------------------------
+# Сборка ломается (раунд 14)
+# ---------------------------------------------------------------------------
+
+def test_segment_command_does_not_use_shortest():
+    """`-shortest` обрезал сегмент по КОРОТЧАЙШЕМУ потоку, и им оказывалось
+    видео: последний кадр каждого шота не влезал. На серии 22 минуты это 314
+    потерянных кадров = 13 секунд анимации, по одному на КАЖДОМ стыке.
+
+    Проверка длины этого видеть не могла: ffprobe отдаёт длительность
+    контейнера, её задаёт звук (aac округляет вверх), и «drift +0.023s» читался
+    как погрешность округления. Замер кадрами — в smoke_assemble на живых PNG;
+    здесь стоит договор, чтобы флаг не вернулся при следующей правке."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert '"-shortest"' not in src, "-shortest вернулся: сегмент потеряет кадр"
+    assert '"-frames:v"' in src, "число кадров сегмента не задано явно"
+
+
+def test_assemble_reports_short_segments_key():
+    """Порча кадров называется поимённо: «мастер короче» без указания шота не
+    даёт оператору куда смотреть. Ключ обязан быть в ответе всегда, иначе CLI
+    не может о нём напечатать."""
+    import shutil as sh
+    if sh.which("ffmpeg") is None:
+        return
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert '"short_segments"' in src, "порча кадров не попадает в ответ"
+    assert "_count_frames" in src, "кадры сегмента не сверяются с кадрами шота"
+
+
+def test_damage_makes_the_exit_code_nonzero():
+    """Длина может сойтись в допуске (один кадр из 96 — это 0.04 с), а шот всё
+    равно короче нарисованного. Скрипт в CI не должен считать это успехом."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert 'short_segments' in src, "CLI не смотрит на порчу кадров"
+    assert "DAMAGED ARTWORK" in src, "оператор не увидит порчу в терминале"
+
+
+def test_assembly_errors_put_the_reason_first():
+    """Сообщения были обрезанным хвостом ffmpeg: «concat failed: 24 fps, 24 tbr,
+    12288 tbn Metadata: handler_name : VideoHandler encoder» — 426 символов
+    технического лога, из которых причину не восстановить. Тот же класс, что
+    трейсбек вместо инструкции в раунде 8. Лог нужен тому, кто полезет
+    разбираться, и не должен быть ТЕКСТОМ ошибки."""
+    e = E.AssemblyError("audio file missing for sc002: /x.wav",
+                        remedy="restore the file", log="ffmpeg noise" * 50)
+    assert str(e).splitlines()[0] == "audio file missing for sc002: /x.wav"
+    assert "restore the file" in str(e)
+    assert "ffmpeg noise" not in str(e), "лог утёк в текст сообщения"
+    assert len(e.log) > 100, "лог не сохранён для разбора"
+
+
+def test_missing_audio_caught_before_ffmpeg_runs():
+    """Звук мог исчезнуть между рендером и сборкой (перемонтировали том,
+    почистили каталог). Предсказуемое проверяется ДО запуска ffmpeg — иначе
+    причина приходит внутри лога кодировщика."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert "audio file missing" in src, "исчезнувший звук не проверяется явно"
+    assert "master destination is not a file" in src, "занятое имя мастера не проверяется"
+
+
+def test_cli_prints_reason_and_remedy_not_the_log():
+    """1200 символов лога в терминале утопят причину."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "ASSEMBLY FAILED" in src
+    assert "assembly_remedy" in src, "действие не печатается"
+    assert "saved to report.json" in src, "лог не отложен в отчёт"
+
+
+# ---------------------------------------------------------------------------
 # Цена сборки (раунд 13)
 # ---------------------------------------------------------------------------
 

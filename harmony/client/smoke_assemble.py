@@ -118,6 +118,20 @@ def main() -> int:
               "come from the episode list, not from filenames)")
         return 1
 
+    # Кадры сегмента против кадров шота. Раунд 14: `-shortest` съедал последний
+    # кадр КАЖДОГО шота, и проверка по длительности этого не видела — длину
+    # задаёт звук. Считать надо кадры.
+    from episode import _count_frames
+    lost = []
+    for sh in ep.shots:
+        seg = ep.out_dir / sh.name / "segment.mp4"
+        got = _count_frames(seg)
+        if got != sh.frames:
+            lost.append(f"{sh.name}: {got}/{sh.frames}")
+    print(f"  frames per segment: {'все на месте' if not lost else 'ПОТЕРЯНЫ ' + ', '.join(lost)}")
+    assert not lost, f"сегменты потеряли кадры: {lost}"
+    assert asm["short_segments"] == [], asm["short_segments"]
+
     print(f"PASS: single master, both streams, drift {asm['drift']:+.3f}s, "
           f"all {len(SHOT_COLOURS)} shots in storyboard order")
     return 0
