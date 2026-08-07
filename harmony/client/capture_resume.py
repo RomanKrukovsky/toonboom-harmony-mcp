@@ -105,6 +105,91 @@ def resume_cost(shots: int = 40) -> dict:
             "recomputed": events[0]["todo"]}
 
 
+def crash_tax(shots: int = 8, frames: int = 8) -> dict:
+    """
+    Линза throughput на этой части: во что падение обходится ПО ВРЕМЕНИ.
+
+    Возобновление, которое спасает работу, но удваивает общее время, для ночного
+    прогона бесполезно. Мерится честно: непрерывный прогон против прогона с
+    падением посередине, суммарные стенные часы.
+    """
+    out = WORK / "tax_clean"
+    shutil.rmtree(out, ignore_errors=True)
+    sys.path.insert(0, str(HERE))
+    from episode import demo_episode, run_episode
+
+    ep = demo_episode(out, shots=shots, frames=frames)
+    t0 = time.monotonic()
+    run_episode(ep, workers=2)
+    clean_s = time.monotonic() - t0
+
+    k = kill_after(shots // 2)
+    crashed_s = k["resume_wall_s"]
+    # Полные часы прогона с падением: до падения работа тоже была сделана, но
+    # её время не измерить извне — оцениваем по доле сохранённых шотов.
+    est_before = clean_s * k["killed_after"] / shots
+    total_s = est_before + crashed_s
+    return {"clean_s": round(clean_s, 2), "resume_s": round(crashed_s, 2),
+            "est_before_crash_s": round(est_before, 2),
+            "total_with_crash_s": round(total_s, 2),
+            "tax_pct": round((total_s / clean_s - 1) * 100) if clean_s else 0,
+            "killed_after": k["killed_after"], "shots": shots}
+
+
+def concurrent_runs(shots: int = 6, frames: int = 8) -> dict:
+    """
+    Два прогона на одной серии одновременно — что будет?
+
+    Реальная опасность продакшна, которую я ни разу не проверял: оператор
+    запустил команду дважды, или ночной cron наложился на вчерашний прогон.
+    Оба процесса читают один журнал, считают одни шоты и пишут в один каталог.
+
+    Худший исход — не падение, а ТИХАЯ порча: два процесса рендерят один шот в
+    один каталог, кадры перемешиваются, мастер собирается из мусора и никто не
+    узнает. Поэтому проверяется целостность результата, а не код возврата.
+    """
+    out = WORK / "concurrent"
+    shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(parents=True, exist_ok=True)
+    cmd = [sys.executable, "episode.py", "--demo", "--shots", str(shots),
+           "--frames", str(frames), "--out", str(out), "--no-assemble",
+           "--workers", "2"]
+    a = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, text=True)
+    time.sleep(0.4)                      # второй стартует, пока первый работает
+    b = subprocess.Popen(cmd, cwd=HERE, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, text=True)
+    out_a, _ = a.communicate(timeout=1800)
+    out_b, _ = b.communicate(timeout=1800)
+
+    jp = out / "journal.jsonl"
+    lines = [l for l in jp.read_text(errors="replace").splitlines() if l.strip()]
+    names = []
+    for l in lines:
+        try:
+            names.append(json.loads(l)["name"])
+        except Exception:                                  # noqa: BLE001
+            pass
+    dupes = len(names) - len(set(names))
+
+    # Целостность: у каждого шота ровно frames кадров, ни больше ни меньше.
+    wrong_counts = {}
+    for i in range(1, shots + 1):
+        d = out / f"sc{i:03d}"
+        n = len(list(d.glob("f*.png"))) if d.is_dir() else 0
+        if n != frames:
+            wrong_counts[f"sc{i:03d}"] = n
+
+    return {"exit_a": a.returncode, "exit_b": b.returncode,
+            "journal_lines": len(lines), "duplicate_entries": dupes,
+            "shots_expected": shots, "shots_with_wrong_frames": wrong_counts,
+            # Ищется КОД, а не английская фраза: проба, зависящая от текста
+            # сообщения, врёт при первой же его правке или переводе.
+            "guarded": "ALREADY RUNNING" in (out_a + out_b)
+                       or "ALREADY_RUNNING" in (out_a + out_b),
+            "guard_exit_seen": 3 in (a.returncode, b.returncode)}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -130,6 +215,10 @@ def main() -> int:
     # поведение на серии. 314 записей — это объём 22-минутного эпизода.
     print("resume cost on 314 shots (real episode scale) ...")
     full = resume_cost(shots=314)
+    print("crash tax (throughput lens) ...")
+    tax = crash_tax()
+    print("two runs at once (resilience lens) ...")
+    conc = concurrent_runs()
 
     L = [
         "# resume — сколько работы спасает падение",
@@ -154,6 +243,29 @@ def main() -> int:
         f"**{full['read_ms']} мс**, прогон без работы {full['no_work_run_ms']} мс, "
         f"пересчитано {full['recomputed']}",
         "",
+        "## Цена падения по ВРЕМЕНИ (линза throughput)",
+        "",
+        f"- непрерывный прогон {tax['shots']} шотов: **{tax['clean_s']} с**",
+        f"- с падением после {tax['killed_after']} шотов: "
+        f"~{tax['est_before_crash_s']} с до падения + {tax['resume_s']} с "
+        f"возобновление = **{tax['total_with_crash_s']} с**",
+        # Знак печатается ОДИН раз: `+{v}%` при отрицательном v давало «+-1%»,
+        # и главный вывод раунда читался как опечатка. Тот же класс дефекта,
+        # что 345 жалоб вместо одной — число верное, вывод сделать нельзя.
+        f"- налог падения: **{tax['tax_pct']:+d}%** к общему времени"
+        + ("  (в пределах шума: падение не растягивает ночь)"
+           if abs(tax["tax_pct"]) <= 5 else ""),
+        "",
+        "## Два прогона одновременно (линза resilience)",
+        "",
+        f"- журнал: {conc['journal_lines']} записей, дублей "
+        f"**{conc['duplicate_entries']}**",
+        f"- шоты с неверным числом кадров: "
+        f"**{conc['shots_with_wrong_frames'] or 'нет'}**",
+        f"- защита от повторного запуска: "
+        f"{'есть, второй отклонён с кодом 3' if conc['guarded'] else '**НЕТ**'}",
+        f"- коды выхода: {conc['exit_a']} и {conc['exit_b']}",
+        "",
         "## Числа по возобновлению",
         "",
     ]
@@ -170,6 +282,21 @@ def main() -> int:
         if p["final_ok"] != SHOTS:
             problems.append(f"после возобновления {p['final_ok']}/{SHOTS} шотов — "
                             f"серия неполна")
+    if tax["tax_pct"] > 25:
+        problems.append(f"падение стоит +{tax['tax_pct']}% общего времени — "
+                        f"возобновление спасает работу, но ночь всё равно "
+                        f"растягивается")
+    if conc["shots_with_wrong_frames"]:
+        problems.append(f"два прогона одновременно испортили кадры: "
+                        f"{conc['shots_with_wrong_frames']} — мастер собрался бы "
+                        f"из мусора, и никто бы не узнал")
+    if conc["duplicate_entries"]:
+        problems.append(f"в журнале {conc['duplicate_entries']} дублей после "
+                        f"двух прогонов — возобновление будет считать неверно")
+    if not conc["guarded"]:
+        problems.append("нет защиты от повторного запуска на той же серии: "
+                        "оператор, нажавший команду дважды, получает два процесса "
+                        "в одном каталоге")
     if cost["recomputed"] != 0:
         problems.append(f"на готовой серии пересчитано {cost['recomputed']} шотов "
                         f"вместо нуля")
@@ -187,7 +314,8 @@ def main() -> int:
 
     art.write_text("\n".join(L) + "\n", encoding="utf-8")
     (art.parent / "metrics.json").write_text(json.dumps(
-        {"kill_points": points, "resume_cost": cost, "episode_scale": full},
+        {"kill_points": points, "resume_cost": cost, "episode_scale": full,
+         "crash_tax": tax, "concurrent": conc},
         ensure_ascii=False, indent=1),
         encoding="utf-8")
     print(f"done, {len(problems)} problem(s)")

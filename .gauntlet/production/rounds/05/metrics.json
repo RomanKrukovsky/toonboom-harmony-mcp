@@ -1,0 +1,14 @@
+{
+ "frames": 31400,
+ "entries": 690,
+ "answered": 30,
+ "samples": 30,
+ "verify_ms": 2.3,
+ "query_ms": 0.02,
+ "tampers": {
+  "edit": 1,
+  "delete": 3,
+  "insert": 2
+ },
+ "incomplete": []
+}

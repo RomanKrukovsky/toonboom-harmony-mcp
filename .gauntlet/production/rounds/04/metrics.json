@@ -1,0 +1,34 @@
+{
+ "with_audio": {
+  "streams": [
+   "video",
+   "audio"
+  ],
+  "duration": 3.023,
+  "expected": 3.0,
+  "drift": 0.023,
+  "in_tolerance": true,
+  "segments": 12,
+  "order_wrong": [],
+  "seam_problems": [],
+  "frames_in_master": 72,
+  "frames_expected": 72,
+  "missing_shots": []
+ },
+ "silent": {
+  "streams": [
+   "video",
+   "audio"
+  ],
+  "duration": 3.023,
+  "expected": 3.0,
+  "drift": 0.023,
+  "in_tolerance": true,
+  "segments": 12,
+  "order_wrong": [],
+  "seam_problems": [],
+  "frames_in_master": 72,
+  "frames_expected": 72,
+  "missing_shots": []
+ }
+}

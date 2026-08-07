@@ -1,0 +1,44 @@
+{
+ "kill9": {
+  "killed_after": 2,
+  "resumed": 2,
+  "recomputed": 4,
+  "shots_ok": 6,
+  "of": 6,
+  "work_preserved_pct": 33
+ },
+ "bad_artwork": {
+  "failed": 1,
+  "survived": 3,
+  "of": 4,
+  "named": "sc003",
+  "code": "BAD_ARTWORK",
+  "complete_flag": false
+ },
+ "no_ffmpeg": {
+  "exit": 2,
+  "codes": [
+   "NO_FFMPEG",
+   "NO_FFMPEG"
+  ],
+  "has_remedy": true,
+  "frames_rendered_anyway": 0
+ },
+ "no_space": {
+  "ok": false,
+  "codes": [
+   "NO_SPACE"
+  ],
+  "has_remedy": true,
+  "estimated_gb": 0.0
+ },
+ "truncated_journal": {
+  "entries_kept": 3,
+  "recomputed": 0,
+  "resumed": 3
+ },
+ "journal_lies": {
+  "recomputed": 1,
+  "resumed": 2
+ }
+}

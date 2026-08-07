@@ -1,0 +1,54 @@
+{
+ "kill_points": [
+  {
+   "killed_after": 2,
+   "resumed": 2,
+   "recomputed": 6,
+   "ideal_recompute": 6,
+   "wasted": 0,
+   "final_ok": 8,
+   "resume_wall_s": 6.17
+  },
+  {
+   "killed_after": 4,
+   "resumed": 4,
+   "recomputed": 4,
+   "ideal_recompute": 4,
+   "wasted": 0,
+   "final_ok": 8,
+   "resume_wall_s": 4.2
+  },
+  {
+   "killed_after": 6,
+   "resumed": 6,
+   "recomputed": 2,
+   "ideal_recompute": 2,
+   "wasted": 0,
+   "final_ok": 8,
+   "resume_wall_s": 2.45
+  }
+ ],
+ "resume_cost": {
+  "shots": 40,
+  "journal_entries": 40,
+  "read_ms": 0.1,
+  "no_work_run_ms": 1.1,
+  "recomputed": 0
+ },
+ "episode_scale": {
+  "shots": 314,
+  "journal_entries": 314,
+  "read_ms": 0.3,
+  "no_work_run_ms": 8.1,
+  "recomputed": 0
+ },
+ "crash_tax": {
+  "clean_s": 8.19,
+  "resume_s": 4.51,
+  "est_before_crash_s": 4.1,
+  "total_with_crash_s": 8.61,
+  "tax_pct": 5,
+  "killed_after": 4,
+  "shots": 8
+ }
+}

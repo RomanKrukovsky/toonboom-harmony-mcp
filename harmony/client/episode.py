@@ -44,6 +44,7 @@ from typing import Callable, Iterable, Sequence
 
 JOURNAL = "journal.jsonl"
 MASTER = "master.mp4"
+LOCK = "run.lock"
 
 
 # ---------------------------------------------------------------------------
@@ -252,6 +253,89 @@ def shot_is_done(ep: Episode, s: ShotSpec, rec: dict | None) -> bool:
         return False
     d = ep.out_dir / s.name
     return len(list(d.glob("f*.png"))) >= s.frames
+
+
+# ---------------------------------------------------------------------------
+# Замок: один прогон на серию
+# ---------------------------------------------------------------------------
+
+class AlreadyRunning(RuntimeError):
+    """Другой прогон уже держит эту серию."""
+
+
+class RunLock:
+    """
+    Файл-замок на каталоге серии.
+
+    Зачем: два прогона на одной серии не падают, а ТИХО удваивают работу.
+    Замер раунда 8 — 6 дублей в журнале из 12 записей, кадры при этом целы.
+    Именно целость кадров делает дефект опасным: ошибки нет, оператор ничего
+    не замечает, а журнал перестаёт говорить правду о готовности, ядра делятся
+    на два процесса и ночь растягивается вдвое.
+
+    Проверка живости — по PID, а не по наличию файла: после kill -9 замок
+    остаётся на диске, и «есть файл» означало бы, что серию нельзя больше
+    запустить никогда. Мёртвый замок снимается сам и об этом сообщается.
+    """
+
+    def __init__(self, out_dir: Path):
+        self.path = out_dir / LOCK
+        self.acquired = False
+
+    def _holder(self) -> dict | None:
+        try:
+            return json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+
+    @staticmethod
+    def _alive(pid: int) -> bool:
+        try:
+            os.kill(pid, 0)          # сигнал 0 не убивает, только проверяет
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True              # чужой процесс, но живой
+        return True
+
+    def acquire(self, on_event: Callable[[dict], None] | None = None) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        while True:
+            try:
+                # O_EXCL: создание файла и проверка его отсутствия — одна
+                # атомарная операция. Проверить-потом-создать проиграло бы
+                # гонку ровно в том случае, ради которого замок и нужен.
+                fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            except FileExistsError:
+                held = self._holder()
+                pid = (held or {}).get("pid")
+                if pid and self._alive(int(pid)):
+                    raise AlreadyRunning(
+                        f"another run is already working on this episode "
+                        f"(pid {pid}, started {held.get('started')}). "
+                        f"Wait for it, or stop that process. If you are sure it "
+                        f"is dead, delete {self.path}")
+                # Замок мёртв: снимаем и сообщаем, чтобы это не выглядело магией.
+                if on_event:
+                    on_event({"event": "stale_lock", "pid": pid,
+                              "message": f"removed a stale lock from pid {pid}"})
+                self.path.unlink(missing_ok=True)
+                continue
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump({"pid": os.getpid(), "started": time.strftime("%F %T")}, f)
+            self.acquired = True
+            return
+
+    def release(self) -> None:
+        if self.acquired:
+            self.path.unlink(missing_ok=True)
+            self.acquired = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.release()
 
 
 # ---------------------------------------------------------------------------
@@ -500,6 +584,19 @@ def run_episode(ep: Episode, workers: int | None = None,
     workers = workers or default_workers()
     ep.out_dir.mkdir(parents=True, exist_ok=True)
 
+    emit_early = on_event or (lambda e: None)
+    lock = RunLock(ep.out_dir)
+    lock.acquire(on_event=emit_early)
+
+    try:
+        return _run_locked(ep, workers, on_event, client_dir, renderer, batch)
+    finally:
+        lock.release()
+
+
+def _run_locked(ep: Episode, workers: int,
+                on_event: Callable[[dict], None] | None,
+                client_dir: str, renderer, batch: bool) -> dict:
     journal = read_journal(ep)
     todo = [s for s in ep.shots if not shot_is_done(ep, s, journal.get(s.name))]
     skipped = [s.name for s in ep.shots if s.name not in {t.name for t in todo}]
@@ -748,7 +845,19 @@ def main() -> int:
             print(f"rendered {e['frames_rendered']} frames in {e['seconds']}s "
                   f"({e['frames_per_s']} fps), {e['shots_failed']} failed")
 
-    report = run_episode(ep, workers=a.workers or None, on_event=show)
+    # Замок ловится ЗДЕСЬ, а не отдаётся трейсбеком: оператор, запустивший
+    # команду дважды, должен увидеть инструкцию, а не стек питона. Раунд 8:
+    # сообщение было правильным, но приходило как traceback, и на фоне
+    # красного стека его никто не читает.
+    try:
+        report = run_episode(ep, workers=a.workers or None, on_event=show)
+    except AlreadyRunning as e:
+        msg = {"error": {"code": "ALREADY_RUNNING", "message": str(e)}}
+        if a.json:
+            print(json.dumps(msg, ensure_ascii=False, indent=1))
+        else:
+            print(f"\nALREADY RUNNING: {e}")
+        return 3
 
     if not a.no_assemble and report["shots_ok"]:
         try:

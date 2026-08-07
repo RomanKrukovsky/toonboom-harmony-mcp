@@ -199,6 +199,66 @@ def test_empty_journal_is_a_clean_first_run():
 
 
 # ---------------------------------------------------------------------------
+# Замок: один прогон на серию
+# ---------------------------------------------------------------------------
+
+def test_second_run_refused_while_first_holds_lock():
+    """Два прогона на одной серии ТИХО удваивают работу: замер раунда 8 дал
+    6 дублей в журнале из 12 записей при целых кадрах. Ошибки нет, оператор
+    не замечает, журнал перестаёт говорить правду о готовности."""
+    from episode import AlreadyRunning, RunLock
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2)
+        ep.out_dir.mkdir(parents=True, exist_ok=True)
+        first = RunLock(ep.out_dir)
+        first.acquire()
+        try:
+            try:
+                run(ep)
+                assert False, "второй прогон не был отклонён"
+            except AlreadyRunning as e:
+                assert "already working" in str(e)
+                assert str(first.path) in str(e), "не сказано, как снять замок"
+        finally:
+            first.release()
+
+
+def test_lock_released_after_run():
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2)
+        run(ep)
+        assert not (ep.out_dir / "run.lock").exists(), "замок остался после прогона"
+
+
+def test_lock_released_even_when_a_shot_fails():
+    """Замок, оставшийся после падения шота, заблокировал бы серию навсегда."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3)
+        run(ep, renderer=fail_on({"sc002"}))
+        assert not (ep.out_dir / "run.lock").exists()
+
+
+def test_stale_lock_from_dead_process_is_cleared():
+    """После kill -9 замок остаётся на диске. Если считать его живым, серию
+    нельзя будет запустить больше никогда."""
+    import json as _json
+    import os as _os
+    from episode import RunLock
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2)
+        ep.out_dir.mkdir(parents=True, exist_ok=True)
+        # PID, которого точно нет: свой же, но недостижимо большой
+        (ep.out_dir / "run.lock").write_text(
+            _json.dumps({"pid": 2 ** 22, "started": "1999-01-01 00:00:00"}))
+        # on_event НЕ передаём: run() ставит свой сборщик событий, и два
+        # обработчика конфликтуют. Дефект был в тесте, не в замке.
+        rep, evs = run(ep)
+        assert rep["shots_ok"] == 2, "мёртвый замок не дал прогону пройти"
+        assert any(e.get("event") == "stale_lock" for e in evs), \
+            "снятие мёртвого замка не сообщено — выглядит как магия"
+
+
+# ---------------------------------------------------------------------------
 # Честность метрик
 # ---------------------------------------------------------------------------
 
