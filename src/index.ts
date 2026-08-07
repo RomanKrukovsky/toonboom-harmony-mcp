@@ -22,6 +22,7 @@ import { paletteTools } from './tools/paletteTools.js';
 import { rigTools } from './tools/rigTools.js';
 import { lipsyncTools } from './tools/lipsyncTools.js';
 import { bridgeTools } from './tools/bridgeTools.js';
+import { blenderTools } from './tools/blenderTools.js';
 import { productionTools } from './tools/productionTools.js';
 import { auditTools } from './tools/auditTools.js';
 import { uiOperatorTools } from './tools/uiOperatorTools.js';
@@ -93,6 +94,7 @@ const allTools = [
   ...rigTools,
   ...lipsyncTools,
   ...bridgeTools,
+  ...blenderTools,
   ...productionTools,
   ...auditTools,
   ...uiOperatorTools,

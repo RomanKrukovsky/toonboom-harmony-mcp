@@ -235,6 +235,16 @@ def validate(art: ArtSet, min_opaque: float = 0.005) -> list[Finding]:
 
     # Одинаковая глубина у соседей по родителю: порядок отрисовки не
     # определён, и части будут мерцать между кадрами.
+    #
+    # ИСКЛЮЧЕНИЕ — варианты одной группы подмены (mouth__A, mouth__flat).
+    # Они взаимоисключающие: в каждом кадре виден ровно один, поэтому
+    # спорить за порядок им не с кем, и общая глубина для них НОРМА.
+    # Без этого исключения любой набор с липсинком получал ложное
+    # предупреждение, и художник учился их игнорировать — а следующее
+    # предупреждение было бы настоящим.
+    def _swap_group(name: str) -> str | None:
+        return name.split("__", 1)[0] if "__" in name else None
+
     by_parent: dict[str | None, list[ArtPart]] = {}
     for p in art.parts:
         by_parent.setdefault(p.parent, []).append(p)
@@ -243,10 +253,14 @@ def validate(art: ArtSet, min_opaque: float = 0.005) -> list[Finding]:
         for p in group:
             depths.setdefault(p.depth, []).append(p.name)
         for d, ns in depths.items():
-            if len(ns) > 1:
-                out.append(Finding("warning", "depth-tie", ",".join(sorted(ns)),
-                                   f"parts share depth {d} under {parent!r}",
-                                   "Draw order between them is undefined — give distinct depths."))
+            if len(ns) < 2:
+                continue
+            groups = {_swap_group(n) for n in ns}
+            if len(groups) == 1 and None not in groups:
+                continue          # все — варианты одной группы подмены
+            out.append(Finding("warning", "depth-tie", ",".join(sorted(ns)),
+                               f"parts share depth {d} under {parent!r}",
+                               "Draw order between them is undefined — give distinct depths."))
     return out
 
 

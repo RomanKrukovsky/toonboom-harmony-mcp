@@ -256,6 +256,35 @@ def test_parent_and_attach_preserved():
         assert specs["arm"]["pivot"] == [0.25, 0.75]
 
 
+def test_swap_variants_may_share_depth():
+    """Варианты одной группы подмены взаимоисключающие: в кадре виден
+    ровно один, спорить за порядок не с кем. Ложное предупреждение здесь
+    учило бы художника игнорировать предупреждения вообще."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        make_png(tmp / "t.png"); make_png(tmp / "m.png", 40, 30)
+        parts = [ArtPart("torso", "t.png", None, (0.5, 0.9))]
+        for v in ("flat", "A", "O"):
+            parts.append(ArtPart(f"mouth__{v}", "m.png", "torso",
+                                 (0.5, 0.5), depth=-0.05))
+        f = validate(ArtSet("x", parts, tmp))
+        assert not any(x.rule == "depth-tie" for x in f), \
+            [x.message for x in f if x.rule == "depth-tie"]
+
+
+def test_depth_tie_still_caught_for_real_parts():
+    """Настоящая ничья (разные части, не варианты) — по-прежнему находится."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        make_png(tmp / "t.png"); make_png(tmp / "a.png", 40, 30)
+        parts = [
+            ArtPart("torso", "t.png", None, (0.5, 0.9)),
+            ArtPart("mouth__A", "a.png", "torso", (0.5, 0.5), depth=-0.05),
+            ArtPart("nose", "a.png", "torso", (0.5, 0.5), depth=-0.05),
+        ]
+        assert any(x.rule == "depth-tie" for x in validate(ArtSet("x", parts, tmp)))
+
+
 if __name__ == "__main__":
     import sys
     import traceback
