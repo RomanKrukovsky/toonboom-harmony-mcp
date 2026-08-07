@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+import time
 from pathlib import Path
 
 import episode as E
@@ -196,6 +197,68 @@ def test_empty_journal_is_a_clean_first_run():
     with tempfile.TemporaryDirectory() as d:
         ep = make_ep(Path(d), n=2)
         assert read_journal(ep) == {}
+
+
+# ---------------------------------------------------------------------------
+# Происхождение кадра (раунд 11)
+# ---------------------------------------------------------------------------
+
+def test_episode_writes_provenance():
+    """PRODUCTION.md обещает ответ на «кто сделал этот кадр». Механизм был
+    проверен 44 тестами и НЕ ВЫЗЫВАЛСЯ конвейером: отчёт возвращал untracked на
+    любой кадр любой серии. Регрессия раунда 11."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(ep)
+        led = ep.out_dir / "provenance.jsonl"
+        assert led.is_file(), "provenance.jsonl не создан"
+        lg = Ledger(led)
+        r = lg.frame_report(ep.name, 5)      # первый кадр второго шота
+        assert r["verdict"] != "untracked", r
+        assert lg.verify() == [], lg.verify()
+
+
+def test_provenance_frames_are_global_not_per_shot():
+    """Оператор смотрит МАСТЕР и знает глобальный номер кадра, а не «кадр 3
+    шота sc002». Нумерация от начала серии, по ВСЕЙ раскадровке — иначе при
+    досчёте после аварии номера поедут."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        run(ep)
+        lg = Ledger(ep.out_dir / "provenance.jsonl")
+        for frame, shot in ((1, "sc001"), (5, "sc002"), (9, "sc003")):
+            t = lg.frame_report(ep.name, frame)["touches"]
+            assert t, f"кадр {frame} не отслежен"
+            assert shot in t[0]["targets"], (frame, t[0]["targets"])
+
+
+def test_provenance_distinguishes_runs_across_a_crash():
+    """Между падением и досчётом Blender мог обновиться, машина могла быть
+    другой. Отпечаток шота стережёт ОПИСАНИЕ и о рендерере не знает — если
+    серия разъехалась по виду на границе шотов, ответ должен быть здесь."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=4, frames=4)
+        run(Episode(ep.name, ep.shots[:2], ep.out_dir))
+        time.sleep(1.05)                      # метка прогона в секундах
+        run(ep)
+        lg = Ledger(ep.out_dir / "provenance.jsonl")
+        runs = {lg.frame_report(ep.name, f)["touches"][0]["detail"]["run"]
+                for f in (1, 5, 9, 13)}
+        assert len(runs) == 2, f"прогоны не различимы: {runs}"
+        rend = lg.frame_report(ep.name, 1)["touches"][0]["detail"]["renderer"]
+        assert rend and rend != "None", rend
+
+
+def test_journal_records_which_run_made_the_shot():
+    """То же на уровне журнала шотов: ответить можно без чтения реестра."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(ep)
+        for rec in read_journal(ep).values():
+            assert rec.get("run"), rec
 
 
 # ---------------------------------------------------------------------------

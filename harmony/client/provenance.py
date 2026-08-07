@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, Literal, Sequence
@@ -87,15 +88,25 @@ class Ledger:
         self.path = Path(path)
         self._entries: list[Entry] = []
         self._hashes: list[str] = []
+        self.truncated = 0     # обрубков, отброшенных при загрузке
         if self.path.exists():
             self._load()
 
     def _load(self) -> None:
-        for line in self.path.read_text(encoding="utf-8").splitlines():
+        for line in self.path.read_text(encoding="utf-8",
+                                        errors="replace").splitlines():
             if not line.strip():
                 continue
-            rec = json.loads(line)
-            stored_hash = rec.pop("hash")
+            try:
+                rec = json.loads(line)
+                stored_hash = rec.pop("hash")
+            except (json.JSONDecodeError, KeyError):
+                # Падение посреди дописки: последняя строка обрублена. Она
+                # означает касание, которое не завершилось, то есть его нет.
+                # Ронять весь реестр из-за неё нельзя — тогда авария стирает
+                # ВСЮ историю серии, а не последнюю запись.
+                self.truncated += 1
+                continue
             e = Entry(
                 seq=rec["seq"], prev_hash=rec["prev_hash"],
                 origin=rec["origin"], actor=rec["actor"],
@@ -131,6 +142,8 @@ class Ledger:
         self._hashes.append(e.hash)
         with self.path.open("a", encoding="utf-8") as f:
             f.write(_canon({**e.payload(), "hash": e.hash}) + "\n")
+            f.flush()
+            os.fsync(f.fileno())   # без этого запись теряется при kill -9
         return e
 
     # -- проверка ------------------------------------------------------------
@@ -216,6 +229,7 @@ class Ledger:
                 "seq": e.seq, "origin": e.origin, "actor": e.actor,
                 "action": e.action, "targets": list(e.targets),
                 "seed": e.seed, "timestamp": e.timestamp,
+                "detail": e.detail,
             } for e in touched],
         }
 

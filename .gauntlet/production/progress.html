@@ -46,15 +46,15 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">10 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">11 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>10</b><span>rounds</span></div>
+<div class="stat"><b>11</b><span>rounds</span></div>
 <div class="stat"><b>6</b><span>ours won</span></div>
-<div class="stat"><b>3</b><span>win streak</span></div>
+<div class="stat"><b>0</b><span>win streak</span></div>
 <div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
@@ -316,6 +316,30 @@ Blender 5.1.1 · документация: PRODUCTION.md
 …</pre>
 <div class="body"><div class="row"><span class="rnd">10</span><span class="badge b-win">OURS WINS</span><span class="badge">assembly</span><span class="badge">возобновление после аварии</span></div>
 <div class="gap"><em>gap sent back</em>мастер из недосчитанной серии собирается и называет пропущенные шоты в возвращаемом словаре, но CLI печатает только длительность и потоки — оператор, запустивший сборку утром, видит «master: 1.523s» и не видит, что в серии дыра из двух шотов</div>
+</div></div>
+<div class="card">
+<pre># Раунд 11 — возобновление после аварии — линза: traceability
+
+Вопрос линзы на этой части: **после аварии мастер склеен из шотов, посчитанных
+разными прогонами. Можно ли по кадру из готовой серии узнать, откуда он взялся?**
+
+Замеры на живом конвейере (Blender 5.1.1, commit e22baba), не рассуждения.
+
+## Проба 1 — команда из документации на настоящей серии
+
+`PRODUCTION.md` обещает раздел «Кто сделал этот кадр» и даёт команду. Запустил её
+на серии, посчитанной штатным путём:
+
+```
+$ python3 episode.py --demo --shots 2 --frames 4 --out /tmp/prov_probe
+rendered 8 frames in 1.63s (4.92 fps), 0 failed
+master: /tmp/prov_probe/master.mp4 — 0.356s, streams [&#x27;video&#x27;, &#x27;audio&#x27;]
+
+$ ls /tmp/prov_probe/
+conc
+…</pre>
+<div class="body"><div class="row"><span class="rnd">11</span><span class="badge b-lose">BAR WINS</span><span class="badge">traceability</span><span class="badge">возобновление после аварии</span></div>
+<div class="gap"><em>gap sent back</em>`PRODUCTION.md` обещает раздел «Кто сделал этот кадр», но `episode.py` ни разу не вызывает `Ledger` — на серии, посчитанной штатной командой, `provenance.jsonl` не создаётся и обещанный документацией отчёт возвращает `untracked` на любой кадр</div>
 </div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>

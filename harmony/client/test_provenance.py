@@ -190,3 +190,46 @@ if __name__ == "__main__":
             traceback.print_exc()
     print(f"\n{failures} failure(s)")
     sys.exit(1 if failures else 0)
+
+
+# ---------------------------------------------------------------------------
+# Поведение в аварии (раунд 11)
+# ---------------------------------------------------------------------------
+
+def test_truncated_tail_does_not_destroy_the_ledger():
+    """Падение посреди дописки обрубает последнюю строку. Ронять из-за неё весь
+    реестр нельзя: тогда авария стирает ВСЮ историю серии, а не последнее
+    касание. Журнал шотов это уже умел, реестр — нет. Регрессия раунда 11."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "l.jsonl"
+        lg = Ledger(p)
+        for i in range(3):
+            lg.record("tool", "t", f"a{i}", "s", (1, 4), ["x"])
+        raw = p.read_text(encoding="utf-8")
+        p.write_text(raw + raw.splitlines()[0][:40], encoding="utf-8")
+        again = Ledger(p)
+        assert len(again._entries) == 3, len(again._entries)
+        assert again.truncated == 1, again.truncated
+        assert again.verify() == [], again.verify()
+
+
+def test_record_survives_kill_nine():
+    """Запись без fsync теряется при снятии питания, и кадр становится
+    неотслеживаемым при том, что он посчитан и лежит в мастере."""
+    import inspect
+    src = inspect.getsource(Ledger.record)
+    assert "fsync" in src, "record() пишет без fsync — запись не переживёт kill -9"
+
+
+def test_frame_report_carries_detail():
+    """«Кто сделал кадр» без «чем и в каком прогоне» — неполный ответ: именно
+    этим отличаются шоты, посчитанные до аварии и после."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "l.jsonl")
+        lg.record("tool", "mcpb/episode", "shot_rendered", "e07", (1, 4), ["sc001"],
+                  detail={"renderer": "Blender 5.1.1", "run": "123-456"})
+        t = lg.frame_report("e07", 2)["touches"][0]
+        assert t["detail"]["renderer"] == "Blender 5.1.1", t
+        assert t["detail"]["run"] == "123-456", t

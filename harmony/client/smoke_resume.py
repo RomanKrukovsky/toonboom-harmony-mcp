@@ -146,6 +146,17 @@ def main() -> int:
         return 1
 
     saved = resumed / SHOTS * 100
+    # Реестр происхождения тоже переживает падение: кадр из мастера,
+    # склеенного через аварию, обязан отвечать не "untracked".
+    from provenance import Ledger
+    led = Ledger(OUT / "provenance.jsonl")
+    rep = led.frame_report(ep.name, 1)
+    broken = led.verify()
+    print(f"  provenance: кадр 1 → {rep['verdict']}, обрубков {led.truncated}, "
+          f"цепочка {'цела' if not broken else 'СЛОМАНА: ' + broken[0]}")
+    assert rep["verdict"] != "untracked", "кадр из мастера не отслежен"
+    assert not broken, broken
+
     print(f"PASS: kill -9 mid-run, resume recomputed {todo}/{SHOTS} shots "
           f"({saved:.0f}% of work preserved), master complete")
     return 0

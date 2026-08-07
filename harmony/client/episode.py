@@ -237,6 +237,33 @@ def journal_path(ep: Episode) -> Path:
     return ep.out_dir / JOURNAL
 
 
+_RENDERER_ID: str | None = None
+
+
+def _renderer_id() -> str:
+    """
+    Чем рендерилось. Нужно именно на возобновлении: между падением и досчётом
+    Blender мог обновиться, `BLENDER_BIN` мог смениться, машина могла быть
+    другой. Отпечаток шота стережёт изменения ОПИСАНИЯ и о версии рендерера не
+    знает — тот же шот, посчитанный 5.1 и 5.2, даёт один отпечаток и считается
+    готовым. Если серия разъехалась по виду на границе шотов, ответ здесь.
+
+    Спрашивается один раз на процесс: `--version` стоит около секунды, а шотов
+    в серии триста.
+    """
+    global _RENDERER_ID
+    if _RENDERER_ID is None:
+        from blender_host import BLENDER
+        exe = os.environ.get("BLENDER_BIN", str(BLENDER))
+        try:
+            out = subprocess.run([exe, "--version"], capture_output=True,
+                                 text=True, timeout=30).stdout
+            _RENDERER_ID = (out.strip().splitlines() or ["?"])[0].strip()
+        except Exception:
+            _RENDERER_ID = f"unknown ({Path(exe).name})"
+    return _RENDERER_ID
+
+
 def read_journal(ep: Episode) -> dict[str, dict]:
     """Готовые шоты из журнала. Битая последняя строка (падение посреди записи)
     отбрасывается: она означает шот, который не дописался, то есть не готов."""
@@ -639,6 +666,9 @@ def run_episode(ep: Episode, workers: int | None = None,
 def _run_locked(ep: Episode, workers: int,
                 on_event: Callable[[dict], None] | None,
                 client_dir: str, renderer, batch: bool) -> dict:
+    # Метка прогона: шоты, посчитанные до аварии и после, различаются по ней.
+    # Без неё мастер после досчёта — смесь из неизвестно чего.
+    run_id = f"{int(time.time())}-{os.getpid()}"
     journal = read_journal(ep)
     todo = [s for s in ep.shots if not shot_is_done(ep, s, journal.get(s.name))]
     skipped = [s.name for s in ep.shots if s.name not in {t.name for t in todo}]
@@ -654,6 +684,48 @@ def _run_locked(ep: Episode, workers: int,
 
     by_name = {s.name: s for s in todo}
 
+    # Глобальный номер кадра считается по ВСЕЙ раскадровке, а не по
+    # посчитанным шотам: иначе при досчёте после аварии номера поедут и записи
+    # первого прогона станут указывать не туда.
+    frame_offsets: dict[str, int] = {}
+    _acc = 0
+    for _s in ep.shots:
+        frame_offsets[_s.name] = _acc
+        _acc += _s.frames
+
+    def record_provenance(rec: dict, spec: "ShotSpec") -> None:
+        """
+        Реестр происхождения кадра. Раунд 11: механизм существовал и был
+        проверен, но конвейер его не вызывал — на любой кадр посчитанной серии
+        отчёт отвечал `untracked`, хотя PRODUCTION.md обещал обратное.
+
+        Пишется ПОСЛЕ журнала: если упасть между ними, шот считается
+        непосчитанным и на следующем прогоне пересчитается вместе с записью.
+        Обратный порядок дал бы запись о кадрах, которых нет.
+        """
+        try:
+            from provenance import Ledger
+            lg = Ledger(ep.out_dir / "provenance.jsonl")
+            lg.record(
+                origin="tool", actor="mcpb/episode",
+                action="shot_rendered", scene=ep.name,
+                frames=(frame_offsets[spec.name] + 1,
+                        frame_offsets[spec.name] + spec.frames),
+                targets=[spec.name, Path(spec.parts_json).name],
+                detail={"fingerprint": rec.get("fingerprint"),
+                        "renderer": _renderer_id(),
+                        "run": run_id,
+                        "artwork": spec.parts_json,
+                        "audio": spec.audio,
+                        "generated": sorted(
+                            k for k in ("channels", "lipsync")
+                            if getattr(spec, k, None)),
+                        "fps": spec.fps},
+            )
+        except Exception as exc:                 # реестр не должен ронять прогон
+            emit({"event": "provenance_failed", "name": rec.get("name"),
+                  "message": f"{type(exc).__name__}: {exc}"})
+
     def settle(rec: dict, i: int) -> None:
         """Один завершённый шот: в журнал, в результаты, в событие."""
         nonlocal done_frames
@@ -665,7 +737,10 @@ def _run_locked(ep: Episode, workers: int,
         spec = by_name.get(rec.get("name"))
         if spec is not None and rec.get("status") == "ok":
             rec.setdefault("fingerprint", spec.fingerprint())
+            rec.setdefault("run", run_id)
         append_journal(ep, rec)              # пережить kill -9 сразу же
+        if spec is not None and rec.get("status") == "ok":
+            record_provenance(rec, spec)
         results[rec["name"]] = rec
         done_frames += rec.get("frames", 0)
         elapsed = time.monotonic() - t0
