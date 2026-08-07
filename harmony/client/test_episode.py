@@ -240,6 +240,53 @@ def test_damage_makes_the_exit_code_nonzero():
     assert "DAMAGED ARTWORK" in src, "оператор не увидит порчу в терминале"
 
 
+def test_assemble_returns_the_master_layout_shape():
+    """Реестр знал только про шоты, и на вопрос «из чего сделан ЭТОТ мастер»
+    ответа не было — притом что заказчику уходит именно мастер. Раскладка
+    строится по ВОШЕДШИМ шотам: упавший шот сдвигает всё, что за ним.
+
+    Замер на живых кадрах — в smoke_assemble (fake_render пишет заглушки, ffmpeg
+    их не читает); здесь проверяется арифметика раскладки, ради которой раунд 17
+    и случился."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert '"layout": layout' in src, "раскладки нет в ответе сборки"
+    assert 'if sh.name in missing' in src, "раскладка не исключает пропущенные шоты"
+    assert 'master_assembled' in src, "сборка не пишется в реестр"
+
+
+def test_hostile_sample_defeats_coincidence():
+    """Раунд 17: три пробы дали «0 неверных ответов», потому что серия была
+    ровной — при равных длинах пропуск шота сдвигает нумерацию ровно на длину
+    шота, и неверный ответ выглядит верным. Раунд 16 дал тот же урок с другой
+    стороны: непроверенная величина дала 88 ложных находок.
+
+    Образец теперь строится осознанно, и правило живёт в ОДНОМ месте, иначе
+    следующая проверка соберёт себе удобный образец заново."""
+    from capture_assembly import hostile_episode, failing_renderer
+    with tempfile.TemporaryDirectory() as d:
+        ep = hostile_episode(Path(d) / "o", shots=5)
+        lens = [s.frames for s in ep.shots]
+        assert len(set(lens)) == len(lens), f"длины шотов совпадают: {lens}"
+        # Пропуск шота должен сдвигать нумерацию НЕ на длину соседа
+        assert len({lens[i] for i in range(len(lens))}) > 2, lens
+        r = failing_renderer({"sc002"})({"name": "sc002", "shot_dir": str(Path(d)),
+                                        "frames": 4})
+        assert r["status"] == "failed", r
+
+
+def test_layout_computed_before_it_is_recorded():
+    """Расчёт раскладки стоял ПОСЛЕ записи в реестр, `except Exception: pass`
+    съедал NameError, и запись молча не появлялась. Полчаса раунда 17 ушло на
+    поиск причины, которую проглотил обработчик."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert src.index("layout, _acc = [], 0") < src.index("master_assembled"), \
+        "раскладка считается после записи — запись получит NameError"
+    assert "except Exception:\n        pass" not in src, \
+        "молчаливый pass вернулся: причина снова будет съедена"
+
+
 def test_audio_and_video_start_together_in_the_master():
     """aac кладёт priming-кадр с отрицательным pts (-0.023 с). При склейке
     сегментов это уезжало в мастер: видео стартовало на 23 мс ПОЗЖЕ звука, то

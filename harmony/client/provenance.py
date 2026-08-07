@@ -233,6 +233,50 @@ class Ledger:
             } for e in touched],
         }
 
+    def master_frame_report(self, scene: str, frame: int) -> dict:
+        """
+        Ответ на вопрос оператора: «кадр N ГОТОВОГО МАСТЕРА — чей?»
+
+        Раунд 17: `frame_report` отвечает по нумерации РАСКАДРОВКИ, и это верно
+        для планирования и досчёта — полная раскадровка не меняется, когда шоты
+        добавляются. Но в мастер попадают только посчитанные шоты, и упавший шот
+        сдвигает всё, что за ним: на серии, где упал один шот из пяти при разных
+        длинах, реестр давал 8 неверных ответов из 12 — называл чужой шот или
+        `untracked`.
+
+        Раскладка мастера пишется на сборке (`master_assembled`), потому что
+        только там известен его состав. Берётся ПОСЛЕДНЯЯ запись о сборке: серию
+        можно собрать заново, добавив досчитанные шоты, и старая раскладка
+        перестаёт описывать файл на диске.
+        """
+        asm = [e for e in self._entries
+               if e.scene == scene and e.action == "master_assembled"]
+        if not asm:
+            return {"scene": scene, "master_frame": frame, "verdict": "no_master",
+                    "hint": "мастер не собран или собран до того, как реестр "
+                            "стал записывать раскладку"}
+        layout = (asm[-1].detail or {}).get("layout") or []
+        for row in layout:
+            if row["from"] <= frame <= row["to"]:
+                # Найден шот: остальное отдаёт обычный отчёт по его собственной
+                # раскадровочной позиции, чтобы не дублировать логику.
+                shot_frame = frame - row["from"] + 1
+                inner = [e for e in self._entries
+                         if e.scene == scene and row["shot"] in e.targets]
+                return {
+                    "scene": scene, "master_frame": frame,
+                    "shot": row["shot"], "frame_in_shot": shot_frame,
+                    "verdict": "generated" if inner else "untracked",
+                    "master": asm[-1].targets[0] if asm[-1].targets else None,
+                    "touches": [{
+                        "seq": e.seq, "origin": e.origin, "actor": e.actor,
+                        "action": e.action, "timestamp": e.timestamp,
+                        "detail": e.detail,
+                    } for e in inner],
+                }
+        return {"scene": scene, "master_frame": frame, "verdict": "out_of_range",
+                "master_frames": layout[-1]["to"] if layout else 0}
+
     def scene_summary(self, scene: str, frame_count: int) -> dict:
         """Свод по сцене: сколько кадров каких. Для титров и для юриста."""
         counts = {"human": 0, "generated": 0, "mixed": 0, "untracked": 0}

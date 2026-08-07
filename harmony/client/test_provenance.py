@@ -233,3 +233,66 @@ def test_frame_report_carries_detail():
         t = lg.frame_report("e07", 2)["touches"][0]
         assert t["detail"]["renderer"] == "Blender 5.1.1", t
         assert t["detail"]["run"] == "123-456", t
+
+
+def test_master_frame_report_answers_by_the_assembled_file():
+    """Номер кадра значит ДВЕ разные вещи: позицию в раскадровке (стабильна при
+    досчёте) и позицию в мастере (сдвигается упавшим шотом). В раунде 11 была
+    записана только первая, и на вопрос «кадр N мастера — чей» реестр отвечал
+    чужим шотом или untracked: 8 неверных ответов из 12 на серии, где упал один
+    шот из пяти при РАЗНЫХ длинах шотов. Регрессия раунда 17."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "l.jsonl")
+        # sc002 (12 кадров) не вошёл: в мастере sc001[1..4], sc003[5..12]
+        for name, lo, hi in (("sc001", 1, 4), ("sc003", 17, 24)):
+            lg.record("tool", "mcpb/episode", "shot_rendered", "e07", (lo, hi), [name])
+        lg.record("tool", "mcpb/episode", "master_assembled", "e07", (1, 12),
+                  ["master.mp4"],
+                  detail={"layout": [{"shot": "sc001", "from": 1, "to": 4},
+                                     {"shot": "sc003", "from": 5, "to": 12}],
+                          "missing_shots": ["sc002"]})
+        assert lg.master_frame_report("e07", 3)["shot"] == "sc001"
+        # Кадр 8 мастера — это sc003, хотя по раскадровке там был бы sc002
+        r = lg.master_frame_report("e07", 8)
+        assert r["shot"] == "sc003", r
+        assert r["frame_in_shot"] == 4, r
+        # Раскадровочная адресация при этом НЕ ломается: она про другое
+        assert lg.frame_report("e07", 20)["touches"], "раскадровочный отчёт сломан"
+
+
+def test_master_report_uses_the_latest_assembly():
+    """Серию собирают заново после досчёта, и старая раскладка перестаёт
+    описывать файл на диске."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "l.jsonl")
+        lg.record("tool", "t", "shot_rendered", "e07", (1, 4), ["sc001"])
+        lg.record("tool", "t", "shot_rendered", "e07", (5, 8), ["sc002"])
+        lg.record("tool", "t", "master_assembled", "e07", (1, 4), ["master.mp4"],
+                  detail={"layout": [{"shot": "sc001", "from": 1, "to": 4}]})
+        lg.record("tool", "t", "master_assembled", "e07", (1, 8), ["master.mp4"],
+                  detail={"layout": [{"shot": "sc001", "from": 1, "to": 4},
+                                     {"shot": "sc002", "from": 5, "to": 8}]})
+        assert lg.master_frame_report("e07", 6)["shot"] == "sc002"
+
+
+def test_master_report_says_when_there_is_no_master():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "l.jsonl")
+        lg.record("tool", "t", "shot_rendered", "e07", (1, 4), ["sc001"])
+        r = lg.master_frame_report("e07", 2)
+        assert r["verdict"] == "no_master", r
+        assert r.get("hint"), "нет подсказки, что делать"
+
+
+def test_master_report_flags_a_frame_past_the_end():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        lg = Ledger(Path(d) / "l.jsonl")
+        lg.record("tool", "t", "master_assembled", "e07", (1, 4), ["m.mp4"],
+                  detail={"layout": [{"shot": "sc001", "from": 1, "to": 4}]})
+        r = lg.master_frame_report("e07", 99)
+        assert r["verdict"] == "out_of_range", r
+        assert r["master_frames"] == 4, r

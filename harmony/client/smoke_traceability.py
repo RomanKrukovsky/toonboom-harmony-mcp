@@ -108,5 +108,45 @@ def main() -> int:
     return 0
 
 
+# точка входа ниже: main() + проверка кадров мастера
+
+
+def check_master_frames() -> None:
+    """
+    Кадр ГОТОВОГО МАСТЕРА против физической раскладки. Раунд 17: реестр отвечал
+    по нумерации раскадровки, и при упавшем шоте называл чужой шот — 8 неверных
+    ответов из 12 на серии с разными длинами шотов.
+    """
+    import tempfile
+    from pathlib import Path as _P
+    from episode import (demo_episode, run_episode, assemble, render_one_shot)
+    from provenance import Ledger
+
+    # Образец от СБОЯ, а не от удобства: шоты разной длины, часть не входит,
+    # прогон видит полную раскадровку. На ровной серии обе нумерации кадров
+    # совпадают, и дефект раунда 17 невидим (три пробы подряд дали «0 неверных»).
+    from capture_assembly import hostile_episode, failing_renderer
+
+    with tempfile.TemporaryDirectory() as d:
+        ep = hostile_episode(_P(d) / "out", shots=5)
+        run_episode(ep, renderer=failing_renderer({"sc002"}))
+        asm = assemble(ep)
+        lg = Ledger(ep.out_dir / "provenance.jsonl")
+        acc, bad = 0, []
+        for name in asm["order"]:
+            n = next(sh.frames for sh in ep.shots if sh.name == name)
+            for fr in (acc + 1, acc + n // 2, acc + n):
+                got = lg.master_frame_report(ep.name, fr).get("shot")
+                if got != name:
+                    bad.append((fr, name, got))
+            acc += n
+        print(f"  master frames: {asm['frames']} in {len(asm['order'])} shots, "
+              f"{'все отвечают верно' if not bad else f'НЕВЕРНЫХ {len(bad)}: {bad[:3]}'}")
+        assert not bad, bad
+        assert lg.verify() == [], lg.verify()
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    _rc = main()
+    check_master_frames()
+    raise SystemExit(_rc)

@@ -262,7 +262,23 @@ print('цепочка цела:', lg.verify() == [])
 "
 ```
 
-Ответ выглядит так:
+Для кадра **готового мастера** — отдельный вопрос и отдельный ответ:
+
+```bash
+python3 -c "
+from provenance import Ledger
+lg = Ledger('/Volumes/work/e07/out/provenance.jsonl')
+import json; print(json.dumps(lg.master_frame_report('e07', 1234), ensure_ascii=False, indent=1))
+"
+```
+
+Почему два разных отчёта: номер кадра значит две вещи. `frame_report` отвечает по
+**раскадровке** — это адрес в замысле серии, он не меняется при досчёте.
+`master_frame_report` отвечает по **собранному файлу** — если шот не вошёл, всё
+после него сдвинуто, и номер из плеера означает уже другой кадр. Спрашивая про
+то, что видите на экране, берите второй.
+
+Ответ `frame_report` выглядит так:
 
 ```json
 {"scene": "e07", "frame": 1234, "verdict": "generated",

@@ -721,9 +721,19 @@ def _run_locked(ep: Episode, workers: int,
 
     by_name = {s.name: s for s in todo}
 
-    # Глобальный номер кадра считается по ВСЕЙ раскадровке, а не по
-    # посчитанным шотам: иначе при досчёте после аварии номера поедут и записи
-    # первого прогона станут указывать не туда.
+    # Номер кадра значит ДВЕ РАЗНЫЕ ВЕЩИ, и путать их нельзя (раунд 17):
+    #
+    #   позиция в РАСКАДРОВКЕ — стабильна при досчёте: шоты добавляются, полная
+    #     раскадровка не меняется, и записи первого прогона остаются верными;
+    #   позиция в МАСТЕРЕ — зависит от того, что в него вошло: упавший шот
+    #     сдвигает всё, что за ним.
+    #
+    # В раунде 11 записана была только первая, и на вопрос «кадр 1234 мастера —
+    # чей?» реестр отвечал чужим шотом или untracked (8 неверных ответов из 12
+    # на серии, где упал один шот из пяти при разных длинах). Оператор смотрит
+    # МАСТЕР, поэтому нужны обе: раскадровочная как основная адресация (её
+    # знает и planning, и досчёт), мастерная — в detail, и она пишется на
+    # сборке, когда состав мастера уже известен.
     frame_offsets: dict[str, int] = {}
     _acc = 0
     for _s in ep.shots:
@@ -1076,6 +1086,34 @@ def assemble(ep: Episode, master: Path | None = None,
                     f"{ep.out_dir} are intact"),
             log=r.stderr[-1200:])
 
+    # Раскладка мастера считается по ВОШЕДШИМ шотам в порядке раскадровки:
+    # это единственный источник ответа на «кадр N мастера — чей».
+    layout, _acc = [], 0
+    for sh in ep.shots:
+        if sh.name in missing:
+            continue
+        layout.append({"shot": sh.name, "from": _acc + 1, "to": _acc + sh.frames})
+        _acc += sh.frames
+
+    # Сборка регистрируется в реестре. Раунд 17: реестр знал только про шоты, и
+    # на вопрос «из чего сделан этот мастер» ответа не было — притом что именно
+    # мастер уходит заказчику. Запись несёт раскладку кадров, поэтому по кадру
+    # готового файла можно назвать шот, даже если состав серии потом поменяется.
+    try:
+        from provenance import Ledger
+        lg = Ledger(ep.out_dir / "provenance.jsonl")
+        lg.record(origin="tool", actor="mcpb/episode", action="master_assembled",
+                  scene=ep.name, frames=(1, max(1, _acc)),
+                  targets=[Path(master).name],
+                  detail={"layout": layout, "missing_shots": missing,
+                          "segments": len(parts), "reused": reused})
+    except Exception as exc:      # реестр не должен ронять сборку
+        # ...но и молчать нельзя: раунд 17 потерял на этом полчаса, потому что
+        # `pass` съел причину и запись просто не появлялась.
+        provenance_error = f"{type(exc).__name__}: {exc}"
+    else:
+        provenance_error = None
+
     info = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries",
          "format=duration:stream=codec_type", "-of", "default=nw=1", str(master)],
@@ -1111,6 +1149,9 @@ def assemble(ep: Episode, master: Path | None = None,
         # пересборка остальных — 5.9 минуты лишней работы на серии 314 шотов.
         "reused_segments": reused,
         "order": [s.name for s in ep.shots if s.name not in missing],
+        # Раскладка МАСТЕРА: какой кадр готового файла к какому шоту относится.
+        # Отличается от раскадровочной нумерации, когда шот не вошёл (раунд 17).
+        "layout": layout,
     }
 
 
