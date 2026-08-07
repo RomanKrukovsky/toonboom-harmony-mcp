@@ -138,10 +138,17 @@ def preflight(ep: Episode, need_free_gb: float | None = None) -> PreflightResult
         problems.append({"code": "NO_BLENDER", "message": msg,
                          "remedy": f"Install Blender or set BLENDER_BIN (looked at {BLENDER})."})
 
-    for tool in ("ffmpeg", "ffprobe"):
-        if shutil.which(tool) is None:
-            problems.append({"code": "NO_FFMPEG", "message": f"{tool} not on PATH",
-                             "remedy": "Install ffmpeg; without it shots cannot be assembled."})
+    # ОДНА проблема на все отсутствующие утилиты, а не по одной на каждую.
+    # Дефект, найденный раундом 2: preflight выдавал NO_FFMPEG дважды (ffmpeg и
+    # ffprobe идут в одном пакете), и оператор не мог понять, две у него беды
+    # или одна. Различение бед — весь смысл кода ошибки; дубль его уничтожает.
+    absent = [t for t in ("ffmpeg", "ffprobe") if shutil.which(t) is None]
+    if absent:
+        problems.append({
+            "code": "NO_FFMPEG",
+            "message": f"not on PATH: {', '.join(absent)}",
+            "remedy": "Install ffmpeg (it ships ffprobe too); without it shots "
+                      "cannot be assembled into a master."})
 
     if not ep.shots:
         problems.append({"code": "EMPTY_EPISODE", "message": "the episode has no shots",
@@ -160,7 +167,16 @@ def preflight(ep: Episode, need_free_gb: float | None = None) -> PreflightResult
             problems.append({"code": "NO_AUDIO", "message": f"{s.name}: audio not found: {s.audio}",
                              "remedy": "Fix the path or drop the audio field."})
         if s.frames < 1:
-            problems.append({"code": "BAD_FRAMES", "message": f"{s.name}: frames={s.frames}"})
+            # remedy обязателен у КАЖДОЙ проблемы. Раунд 6 нашёл единственную
+            # без него: оператор видел «sc001: frames=0» и не знал, где править.
+            # «Почти все ошибки объясняют себя» для человека в три ночи означает
+            # «однажды не объяснит».
+            problems.append({
+                "code": "BAD_FRAMES",
+                "message": f"{s.name}: frames={s.frames}, must be at least 1",
+                "remedy": f"Set a positive \"frames\" for shot {s.name} in the "
+                          f"episode JSON — it is the shot length in frames "
+                          f"(4 seconds at 24 fps = 96)."})
 
     # Место: ~120 КБ на кадр PNG при 720p — эмпирика с этого конвейера.
     est_gb = ep.total_frames * 120_000 / 1e9
@@ -572,6 +588,13 @@ def assemble(ep: Episode, master: Path | None = None,
 
     Длительность проверяется против суммы шотов: расхождение означает потерянные
     кадры или лишний шот, и молча отдавать такой мастер нельзя.
+
+    Про цену: каждый шот сначала перекодируется в промежуточный сегмент, и это
+    выглядит как расточительство. Замерено — 40 шотов собираются за 1.16 с, то
+    есть серия из 314 шотов за ~9 с, против ~45 минут счёта. 0.3% времени.
+    Сегменты нужны потому, что у шота может быть СВОЙ звук, а concat без
+    перекодирования требует совпадения параметров потоков; прямая склейка кадров
+    сэкономила бы девять секунд и сломала бы шоты с индивидуальными дорожками.
     """
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         raise RuntimeError("ffmpeg/ffprobe not on PATH")

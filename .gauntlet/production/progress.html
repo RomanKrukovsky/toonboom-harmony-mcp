@@ -46,16 +46,16 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">1 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">6 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>1</b><span>rounds</span></div>
-<div class="stat"><b>0</b><span>ours won</span></div>
-<div class="stat"><b>0</b><span>win streak</span></div>
-<div class="stat"><b>1</b><span>lenses used</span></div>
+<div class="stat"><b>6</b><span>rounds</span></div>
+<div class="stat"><b>3</b><span>ours won</span></div>
+<div class="stat"><b>1</b><span>win streak</span></div>
+<div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
 <div class="grid"><div class="card ref">
@@ -89,10 +89,139 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 <div class="body"><div class="row"><span class="rnd">01</span><span class="badge b-lose">BAR WINS</span><span class="badge">throughput</span><span class="badge">очередь эпизода</span></div>
 <div class="gap"><em>gap sent back</em>12 воркеров дают лишь 1.8× ускорения вместо 8× — почти всё съедает запуск отдельного процесса Blender на каждый шот (6.02 с на 72 кадра, из них счёт кадров ~1.4 с)</div>
 </div></div>
+<div class="card">
+<pre># resilience — поведение конвейера в настоящей аварии
+
+машина: 14 ядер · Blender 5.1.1
+
+| авария | остальное дошло? | код | что делать сказано? |
+|---|---|---|---|
+| kill -9 посреди прогона | да: 2/6 шотов сохранено, пересчитано 4 | — | возобновление той же командой |
+| битый рисунок в шоте | да: 3/4 дошли | `BAD_ARTWORK` | шот назван: sc003 |
+| нет ffmpeg в PATH | счёт не начался (кадров 0) | NO_FFMPEG, NO_FFMPEG | да |
+| нет места на диске | остановлено до счёта | NO_SPACE | да |
+| обрубок в журнале | обрубок отброшен, целых записей 3 | — | пересчёт 0 шотов |
+| журнал врёт (кадры стёрты) | пересчитано 1 шотов | — | проверка по диску, не по журналу |
+
+## Числа
+
+- kill -9: убит после 2 шотов
+…</pre>
+<div class="body"><div class="row"><span class="rnd">02</span><span class="badge b-win">OURS WINS</span><span class="badge">resilience</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>NO_FFMPEG выдаётся ДВАЖДЫ одной строкой на две утилиты, а «обрубок в журнале» показывает «пересчёт 0 шотов» — то есть повреждённый журнал не привёл ни к одному пересчёту, хотя обрубленная запись означает незавершённый шот</div>
+</div></div>
+<div class="card">
+<pre># resume — сколько работы спасает падение
+
+машина: 14 ядер · Blender 5.1.1 · серия 8 шотов × 8 кадров
+
+| упало после | пересчитано | идеал (N−k) | лишнего | итог |
+|---|---|---|---|---|
+| 2 шотов | **6** | 6 | 0 | 8/8 ок |
+| 4 шотов | **4** | 4 | 0 | 8/8 ок |
+| 6 шотов | **2** | 2 | 0 | 8/8 ок |
+
+## Цена возобновления
+
+- журнал на 40 шотов читается за **0.1 мс**
+- прогон, где всё уже готово: 1.2 мс, пересчитано 0 шотов
+- **замерено на 314 шотах** (объём серии 22 мин): журнал читается за **0.3 мс**, прогон без работы 6.4 мс, пересчитано 0
+
+## Числа по возобновлению
+
+- упало после 2: возобновление заняло 6.17 с, сохранено 2 шотов
+- упало после 4: возобновление заняло 4.17 с, сохранено 4 шотов
+
+…</pre>
+<div class="body"><div class="row"><span class="rnd">03</span><span class="badge b-win">OURS WINS</span><span class="badge">resume</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>возобновление проверено только на демо-серии из 8 шотов по 8 кадров — на 314 шотах журнал ни разу не читался, а бар говорит именно про серию, где падение стоит трёх часов</div>
+</div></div>
+<div class="card">
+<pre># assembly — что на выходе: один мастер или папка кадров
+
+Blender 5.1.1 · 12 шотов × 6 кадров @ 24 fps
+
+| требование бара | со звуком | без звука |
+|---|---|---|
+| один файл, потоки | video, audio | video, audio |
+| сегментов склеено | 12 | 12 |
+| длительность | 3.023 с | 3.023 с |
+| ожидалось | 3.0 с | 3.0 с |
+| расхождение (±0.1 с) | +0.023 с | +0.023 с |
+| кадров в мастере | 72 | 72 |
+| кадров ожидалось | 72 | 72 |
+| порядок по раскадровке | верный | верный |
+| швы между шотами | чистые | чистые |
+
+## Всё по бару
+
+Один файл, оба потока, длительность в допуске, порядок верный, швы чистые.
+</pre>
+<div class="body"><div class="row"><span class="rnd">04</span><span class="badge b-lose">BAR WINS</span><span class="badge">assembly</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>мастер собирается перекодированием каждого шота в промежуточный MP4 (12 сегментов на 12 шотов), то есть на серии из 314 шотов это 314 лишних проходов libx264 по всем кадрам — время сборки растёт линейно там, где concat мог бы работать почти мгновенно</div>
+</div></div>
+<div class="card">
+<pre># traceability — на любой кадр серии: кто, чем, каким сидом
+
+серия: 314 шотов × 100 кадров = **31400 кадров**, 690 записей в реестре
+
+| требование бара | наше |
+|---|---|
+| отвечает на СЛУЧАЙНЫЙ кадр | **30/30** случайных кадров отвечены полностью |
+| назван человек-автор | да, в каждом отвеченном |
+| назван сид | да, в каждом отвеченном |
+| назван стиль | да, где применялся |
+| цепочка хэшей цела | да |
+| правка записи ломает цепь | да (1 жалоб) |
+| удаление записи ломает цепь | да (3 жалоб) |
+| вставка записи ломает цепь | да (2 жалоб) |
+
+## Цена на объёме серии
+
+- запись 690 записей: 0.03 с
+- проверка всей цепочки: **2 мс**
+- ответ на один кадр: **0.0 мс** (среднее по 30)
+- свод по серии:
+…</pre>
+<div class="body"><div class="row"><span class="rnd">05</span><span class="badge b-lose">BAR WINS</span><span class="badge">traceability</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>правка одной записи даёт 1 жалобу, а удаление и вставка — 345 и 347: подделка середины журнала не локализуется, и оператор видит триста строк вместо «запись 345 изменена» — то есть цепочка ловит факт подделки, но не показывает, ГДЕ она</div>
+</div></div>
+<div class="card">
+<pre># operability — что видит человек, который не писал этот код
+
+Blender 5.1.1 · документация: PRODUCTION.md
+
+## Команды из «Быстрого старта», выполненные дословно
+
+| команда | код выхода | время |
+|---|---|---|
+| `python3 episode.py --demo --shots 3 --dry-run` | ok | 0.3 с |
+| `python3 episode.py --demo --shots 3 --frames 12 --out /tmp/ca...` | ok | 6.7 с |
+
+## Прогресс отвечает на вопросы оператора
+
+| вопрос | отвечает? |
+|---|---|
+| сколько всего работы | да |
+| сколько потоков занято | да |
+| сколько сделано из сколько | да |
+| с какой скоростью | да |
+| сколько ещё ждать | да |
+| итог в конце | да |
+
+## Ошибки говорят, что делать
+
+- проверено проблем: 6
+- у всех есть указание действия: **д
+…</pre>
+<div class="body"><div class="row"><span class="rnd">06</span><span class="badge b-win">OURS WINS</span><span class="badge">operability</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>из шести проблем preflight одна — BAD_FRAMES — идёт без указания действия, то есть оператор видит «sc001: frames=0» и не знает, где это править</div>
+</div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>
 <li>BLOCKED: батч шотов внутри одного процесса Blender не даёт измеримого выигрыша.</li>
 <li>накладные на шот в capture_episode считаются формулой, дающей отрицательные</li>
+<li>ЗАКРЫТ ЗАМЕРОМ, а не кодом. Разрыв был сформулирован как «314 лишних проходов</li>
 </ul>
 <footer>Gauntlet Loop — sequential, one critic per round, one gap per round. The bar does not have to be reachable; it has to stop us settling.</footer>
 </div></body></html>

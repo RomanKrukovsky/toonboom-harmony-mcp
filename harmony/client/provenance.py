@@ -141,19 +141,54 @@ class Ledger:
           - подменённую запись (хэш не сходится с содержимым);
           - разрыв цепочки (prev_hash не равен хэшу предыдущей);
           - перенумерацию.
+
+        Сообщается ПЕРВАЯ точка разрыва, а каскад после неё сворачивается в
+        одну строку. Дефект, найденный раундом 5: удаление одной записи из
+        середины давало 345 жалоб — каждая последующая запись жаловалась на
+        разрыв предшественника. Технически верно и практически бесполезно:
+        ни юрист, ни супервайзер не найдёт в трёхсотстрочном списке точку
+        взлома, а именно её и надо назвать.
         """
         problems: list[str] = []
         prev = GENESIS
+        first_break: int | None = None
+        cascade = 0
         for i, (e, stored) in enumerate(zip(self._entries, self._hashes)):
+            broken = False
             if e.seq != i:
-                problems.append(f"entry {i}: seq mismatch ({e.seq})")
-            if e.prev_hash != prev:
-                problems.append(f"entry {i}: chain broken (prev_hash mismatch)")
+                if first_break is None:
+                    problems.append(f"entry {i}: seq mismatch ({e.seq}) — records "
+                                    f"were renumbered")
+                broken = True
             if e.hash != stored:
-                problems.append(f"entry {i}: content does not match its hash "
-                                f"— record was edited after the fact")
+                if first_break is None:
+                    problems.append(f"entry {i}: content does not match its hash "
+                                    f"— record was edited after the fact")
+                broken = True
+            elif e.prev_hash != prev:
+                if first_break is None:
+                    problems.append(f"entry {i}: chain broken here — the previous "
+                                    f"record was edited, deleted or inserted")
+                broken = True
+            if broken and first_break is None:
+                first_break = i
+            elif broken:
+                cascade += 1
             prev = stored
+        if cascade:
+            problems.append(f"entries {first_break + 1}..{len(self._entries) - 1}: "
+                            f"{cascade} further mismatch(es) — consequence of the "
+                            f"break at entry {first_break}, not separate tampering")
         return problems
+
+    def first_break(self) -> int | None:
+        """Индекс первой повреждённой записи, или None. Для отчётов и аудита."""
+        prev = GENESIS
+        for i, (e, stored) in enumerate(zip(self._entries, self._hashes)):
+            if e.seq != i or e.hash != stored or e.prev_hash != prev:
+                return i
+            prev = stored
+        return None
 
     # -- отчёты --------------------------------------------------------------
 

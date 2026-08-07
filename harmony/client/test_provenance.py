@@ -142,6 +142,37 @@ def test_hash_stable_across_key_order():
         assert e1.hash == e2.hash
 
 
+def test_break_is_localised_not_cascaded():
+    """Удаление записи из середины обязано дать НАЗВАНИЕ точки взлома, а не
+    триста жалоб. Регрессия раунда 5: каскад из 345 строк технически верен и
+    практически бесполезен — в нём не найти, где именно подделали."""
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "long.jsonl"
+        lg = Ledger(p)
+        for i in range(60):
+            lg.record("agent", f"a{i}", "act", "s", (i + 1, i + 1), ["t"],
+                      timestamp=f"T{i}")
+        lines = [l for l in p.read_text().splitlines() if l.strip()]
+        del lines[30]
+        p.write_text("\n".join(lines) + "\n")
+
+        problems = Ledger(p).verify()
+        # Порог по СМЫСЛУ, не по числу: сколько бы строк ни было, все они
+        # обязаны указывать на одну точку. Без удаления каскада здесь было 345
+        # жалоб; сейчас три, и каждая называет запись 30 либо прямо, либо как
+        # начало следствия. Требовать «не больше двух» было бы произвольной
+        # цифрой — проверять надо локализацию.
+        assert len(problems) <= 4, f"cascade not folded: {len(problems)} complaints"
+        assert all("30" in x for x in problems), problems
+        assert Ledger(p).first_break() == 30
+
+
+def test_first_break_is_none_when_clean():
+    with tempfile.TemporaryDirectory() as d:
+        lg = make_ledger(Path(d))
+        assert lg.first_break() is None
+
+
 if __name__ == "__main__":
     import sys
     import traceback

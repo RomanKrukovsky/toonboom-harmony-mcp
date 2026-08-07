@@ -43,6 +43,23 @@ def test_healthy_episode_passes():
         assert r.ok, r.problems
 
 
+def test_ffmpeg_reported_once_for_both_tools():
+    """ffmpeg и ffprobe идут одним пакетом. Две проблемы на одну беду означают,
+    что оператор не понимает, что именно чинить — а различение бед и есть смысл
+    кода ошибки. Регрессия раунда 2."""
+    import shutil as sh
+    with tempfile.TemporaryDirectory() as d:
+        ep = ep_with(Path(d))
+        real = sh.which
+        sh.which = lambda name: None if name in ("ffmpeg", "ffprobe") else real(name)
+        try:
+            probs = [p for p in preflight(ep).problems if p["code"] == "NO_FFMPEG"]
+        finally:
+            sh.which = real
+        assert len(probs) == 1, f"NO_FFMPEG reported {len(probs)} times"
+        assert "ffmpeg" in probs[0]["message"] and "ffprobe" in probs[0]["message"]
+
+
 def test_missing_parts_json_caught():
     with tempfile.TemporaryDirectory() as d:
         ep = ep_with(Path(d))
@@ -77,6 +94,27 @@ def test_bad_frame_count_caught():
     with tempfile.TemporaryDirectory() as d:
         ep = ep_with(Path(d), frames=0)
         assert "BAD_FRAMES" in codes(ep)
+
+
+def test_every_problem_carries_a_remedy():
+    """Ошибка без указания действия для оператора бесполезна. Регрессия
+    раунда 6: BAD_FRAMES был единственным без remedy, и гейт нашёл его
+    механической проверкой всех проблем, а не чтением кода."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        cases = [
+            ep_with(tmp, frames=0),
+            Episode("t", [], tmp / "out"),
+        ]
+        bad = ep_with(tmp)
+        bad.shots[0].parts_json = str(tmp / "nope.json")
+        cases.append(bad)
+        missing = []
+        for ep in cases:
+            for p in preflight(ep).problems:
+                if not p.get("remedy"):
+                    missing.append(p["code"])
+        assert not missing, f"problems without a remedy: {sorted(set(missing))}"
 
 
 def test_disk_space_estimated_from_episode_volume():
