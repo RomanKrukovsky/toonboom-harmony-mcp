@@ -133,6 +133,17 @@ master: /path/out/master.mp4 — 0.773s (expected 0.75s, drift +0.023s), streams
 **Отчёт лежит на диске:** `<outDir>/report.json`. Утром смотреть его, а не
 закрытый терминал.
 
+**Запустили на уже готовой серии.** Конвейер скажет прямо и не станет
+притворяться, что что-то посчитал:
+
+```
+nothing to do: all 12 shot(s) are already rendered and up to date
+nothing rendered this run — the episode was already complete
+```
+
+В `report.json` это `rendered_now: 0` при `frames_rendered: 12` — первое про
+этот прогон, второе про серию.
+
 **Случайно запустили дважды.** Второй запуск откажется и скажет, кто держит серию:
 
 ```
@@ -180,6 +191,11 @@ caffeinate -i python3 episode.py /path/episode.json > /tmp/night.log 2>&1
 
 `caffeinate -i` не даёт машине уснуть — уснувший ноутбук останавливает прогон
 (он возобновится, но утром вы получите половину серии).
+
+Следить за прогоном можно `tail -f /tmp/night.log`: строка появляется в момент
+события, а не в конце. Первая строка после `start:` — «working on ...» — значит
+шоты взяты в работу; первый `ok` приходит через время счёта одного шота (секунды
+на демо, минуты на настоящем).
 
 Утром: `report.json`, затем `grep FAIL /tmp/night.log`.
 

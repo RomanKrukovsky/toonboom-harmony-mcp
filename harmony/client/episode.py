@@ -677,6 +677,7 @@ def _run_locked(ep: Episode, workers: int,
     emit = on_event or (lambda e: None)
     emit({"event": "start", "shots": len(ep.shots), "todo": len(todo),
           "resumed": len(skipped), "workers": workers,
+          "first_up": [x.name for x in todo[:workers]],
           "frames_todo": sum(s.frames for s in todo)})
 
     results: dict[str, dict] = {n: journal[n] for n in skipped if n in journal}
@@ -780,12 +781,21 @@ def _run_locked(ep: Episode, workers: int,
     ok = [r for r in results.values() if r.get("status") == "ok"]
     failed = [r for r in results.values() if r.get("status") != "ok"]
     frames = sum(r.get("frames", 0) for r in ok)
+    # Кадры, ПОСЧИТАННЫЕ ЭТИМ прогоном, отдельно от взятых из журнала. Раунд 12:
+    # `frames_rendered` включал возобновлённые шоты, и при нулевом досчёте отчёт
+    # утверждал «rendered 12 frames» со скоростью 1241336 fps (деление на
+    # округлённый до нуля интервал). Утро оператора начинается с report.json,
+    # поэтому врать нельзя ни в терминале, ни в файле.
+    fresh = sum(r.get("frames", 0) for r in ok if r["name"] not in set(skipped))
     report = {
         "episode": ep.name, "out_dir": str(ep.out_dir),
         "shots_total": len(ep.shots), "shots_ok": len(ok), "shots_failed": len(failed),
         "resumed": len(skipped), "workers": workers,
-        "frames_rendered": frames, "seconds": round(elapsed, 2),
-        "frames_per_s": round(frames / elapsed, 2) if elapsed > 0 else 0.0,
+        "frames_rendered": frames, "rendered_now": fresh,
+        "seconds": round(elapsed, 2),
+        # Скорость имеет смысл только при измеримом интервале и реальном счёте.
+        "frames_per_s": (round(fresh / elapsed, 2)
+                         if fresh and elapsed >= 0.05 else 0.0),
         "failed": [{"name": r["name"], "code": r.get("code"),
                     "message": r.get("message")} for r in failed],
         "complete": not failed,
@@ -939,7 +949,7 @@ def main() -> int:
               f"(~{pf.info.get('estimated_gb')} GB needed, "
               f"{pf.info.get('free_gb')} GB free)")
         for p in pf.problems:
-            print(f"  [{p['code']}] {p['message']}")
+            print(f"  [{p['code']}] {p['message']}", flush=True)
             if p.get("remedy"):
                 print(f"      -> {p['remedy']}")
     if not pf.ok:
@@ -954,22 +964,58 @@ def main() -> int:
             print("dry run: nothing rendered")
         return 0
 
+    def say(text: str) -> None:
+        """
+        Строка выходит НЕМЕДЛЕННО. Раунд 12: без flush все строки прогресса
+        буферизовались и вываливались пачкой в конце. В терминале Python
+        буферизует построчно, а в ФАЙЛ — блоками, и `PRODUCTION.md` предлагает
+        ночной прогон как раз в файл: замер дал 10.6 с неизменного лога на 14
+        шотах, то есть ~45 минут пустого `tail -f` на серии 22 минуты. Прогноз
+        `eta`, доставленный после конца работы, — не прогноз.
+        """
+        print(text, flush=True)
+
     def show(e: dict) -> None:
         if a.json:
             return
         ev = e.get("event")
         if ev == "start":
-            print(f"start: {e['todo']} shots to render "
-                  f"({e['resumed']} already done), {e['workers']} workers")
+            if e["todo"] == 0:
+                # Прямая фраза вместо служебного «0 shots to render» среди
+                # прочих строк: человек, запустивший команду дважды, должен
+                # понять, что делать нечего, а не искать это в цифрах.
+                say(f"nothing to do: all {e['resumed']} shot(s) are already "
+                    f"rendered and up to date")
+            else:
+                say(f"start: {e['todo']} shots to render "
+                    f"({e['resumed']} already done), {e['workers']} workers")
+                # Признак жизни ДО первого готового шота. Шот считается
+                # секунды-минуты, и до раунда 12 лог всё это время был пуст —
+                # оператор не мог отличить работу от зависания. Печатается
+                # ожидание, а не факт, поэтому названо «working on».
+                first = ", ".join(n for n in e.get("first_up", [])[:4])
+                if first:
+                    more = ("" if len(e.get("first_up", [])) <= 4
+                            else f" (+{len(e['first_up']) - 4} more)")
+                    say(f"  working on {first}{more} — first result in a few "
+                        f"seconds to a few minutes")
         elif ev in ("shot_done", "shot_failed"):
             tag = "ok  " if ev == "shot_done" else "FAIL"
             eta = f", eta {e['eta_s']}s" if e.get("eta_s") else ""
             extra = f" [{e.get('code')}] {e.get('message')}" if ev == "shot_failed" else ""
-            print(f"  {tag} {e['name']}  {e['done']}/{e['of']}  "
-                  f"{e['frames_per_s']} fps{eta}{extra}")
+            say(f"  {tag} {e['name']}  {e['done']}/{e['of']}  "
+                f"{e['frames_per_s']} fps{eta}{extra}")
         elif ev == "done":
-            print(f"rendered {e['frames_rendered']} frames in {e['seconds']}s "
-                  f"({e['frames_per_s']} fps), {e['shots_failed']} failed")
+            # Ничего не считали — нельзя говорить «rendered N frames»: кадры
+            # взяты из журнала прошлого прогона. И нельзя печатать скорость,
+            # посчитанную делением на нулевой интервал («1241336 fps»).
+            if e.get("rendered_now", e["frames_rendered"]) == 0:
+                say("nothing rendered this run — the episode was already complete")
+            else:
+                rate = (f" ({e['frames_per_s']} fps)"
+                        if e["seconds"] >= 0.05 and e["frames_per_s"] else "")
+                say(f"rendered {e['frames_rendered']} frames in "
+                    f"{e['seconds']}s{rate}, {e['shots_failed']} failed")
 
     # Замок ловится ЗДЕСЬ, а не отдаётся трейсбеком: оператор, запустивший
     # команду дважды, должен увидеть инструкцию, а не стек питона. Раунд 8:
@@ -982,7 +1028,7 @@ def main() -> int:
         if a.json:
             print(json.dumps(msg, ensure_ascii=False, indent=1))
         else:
-            print(f"\nALREADY RUNNING: {e}")
+            print(f"\nALREADY RUNNING: {e}", flush=True)
         return 3
 
     if not a.no_assemble and report["shots_ok"]:

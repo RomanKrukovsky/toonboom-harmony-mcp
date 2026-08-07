@@ -200,6 +200,59 @@ def test_empty_journal_is_a_clean_first_run():
 
 
 # ---------------------------------------------------------------------------
+# Что видит оператор (раунд 12)
+# ---------------------------------------------------------------------------
+
+def test_report_separates_rendered_now_from_resumed():
+    """`frames_rendered` включает возобновлённые шоты — это верно как «сколько
+    кадров в серии». Но при нулевом досчёте отчёт утверждал «rendered 12 frames»
+    со скоростью 1241336 fps: работа, которой не было. Утро оператора начинается
+    с report.json, поэтому врать нельзя ни в терминале, ни в файле."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        first, _ = run(ep)
+        assert first["rendered_now"] == 12, first
+        again, _ = run(ep)                    # нечего считать
+        assert again["frames_rendered"] == 12, again
+        assert again["rendered_now"] == 0, again
+        assert again["frames_per_s"] == 0.0, again
+
+
+def test_speed_not_reported_on_an_unmeasurable_interval():
+    """Скорость из деления на округлённый до нуля интервал — «1241336 fps».
+    Число верное по арифметике, вывод из него сделать нельзя."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(ep)
+        r, _ = run(ep)
+        assert r["seconds"] < 0.05, r["seconds"]
+        assert r["frames_per_s"] == 0.0, r
+
+
+def test_start_event_names_shots_taken_up_first():
+    """Шот считается секунды-минуты; до первого готового лог был пуст, и
+    оператор не мог отличить работу от зависания. Признак жизни печатается
+    сразу, по этому полю."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=4, frames=4)
+        _, events = run(ep)
+        start = next(e for e in events if e["event"] == "start")
+        assert start["first_up"], start
+        assert set(start["first_up"]) <= {s.name for s in ep.shots}, start
+
+
+def test_progress_is_flushed_not_buffered():
+    """В ФАЙЛ Python буферизует блоками, а PRODUCTION.md предлагает ночной
+    прогон в файл: без flush 11 строк прогресса выходили пачкой в конце —
+    10.6 с неизменного лога на 14 шотах, ~45 минут на серии 22 минуты.
+    Прогноз eta, доставленный после конца работы, не прогноз."""
+    import inspect
+    import episode as mod
+    src = inspect.getsource(mod.main)
+    assert "flush=True" in src, "CLI печатает без flush — прогресс не дойдёт в лог"
+
+
+# ---------------------------------------------------------------------------
 # Происхождение кадра (раунд 11)
 # ---------------------------------------------------------------------------
 
