@@ -199,6 +199,38 @@ def test_empty_journal_is_a_clean_first_run():
 
 
 # ---------------------------------------------------------------------------
+# Сборка недосчитанной серии
+# ---------------------------------------------------------------------------
+
+def test_partial_master_names_missing_shots():
+    """Ночь кончилась на 3 шотах из 5, утром надо показать что есть. Мастер
+    обязан собраться И назвать дыру: короткое видео без предупреждения — это
+    серия, про которую никто не знает, что она неполная. Регрессия раунда 10."""
+    import shutil as sh
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=5, frames=4)
+        run(Episode(ep.name, ep.shots[:3], ep.out_dir))
+        # assemble требует ffmpeg; без него проверяем только учёт готовности
+        journal = read_journal(ep)
+        done = [s.name for s in ep.shots if shot_is_done(ep, s, journal.get(s.name))]
+        missing = [s.name for s in ep.shots if s.name not in done]
+        assert done == ["sc001", "sc002", "sc003"], done
+        assert missing == ["sc004", "sc005"], missing
+
+
+def test_length_check_uses_shots_that_went_in():
+    """Сверка с ПОЛНОЙ раскадровкой объявляла бы расхождение при каждой
+    частичной сборке; сверка ни с чем проглотила бы потерянные кадры."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=6, frames=5)
+        run(Episode(ep.name, ep.shots[:4], ep.out_dir))
+        journal = read_journal(ep)
+        done = [s for s in ep.shots if shot_is_done(ep, s, journal.get(s.name))]
+        expect = sum(s.seconds for s in done)
+        assert abs(expect - 4 * 5 / 24) < 1e-9, expect
+
+
+# ---------------------------------------------------------------------------
 # Отпечаток описания шота
 # ---------------------------------------------------------------------------
 

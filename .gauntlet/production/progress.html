@@ -46,15 +46,15 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">9 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">10 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>9</b><span>rounds</span></div>
-<div class="stat"><b>5</b><span>ours won</span></div>
-<div class="stat"><b>2</b><span>win streak</span></div>
+<div class="stat"><b>10</b><span>rounds</span></div>
+<div class="stat"><b>6</b><span>ours won</span></div>
+<div class="stat"><b>3</b><span>win streak</span></div>
 <div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
@@ -291,6 +291,31 @@ Blender 5.1.1 · документация: PRODUCTION.md
 …</pre>
 <div class="body"><div class="row"><span class="rnd">09</span><span class="badge b-win">OURS WINS</span><span class="badge">resume</span><span class="badge">возобновление после аварии</span></div>
 <div class="gap"><em>gap sent back</em>возобновление опирается на журнал + счёт файлов, но НЕ на содержимое описания шота — если между падением и перезапуском поменять каналы анимации или набор рисунков, не меняя числа кадров, старый рендер будет принят за готовый, и серия выйдет по вчерашней правке</div>
+</div></div>
+<div class="card">
+<pre># resume — сколько работы спасает падение
+
+машина: 14 ядер · Blender 5.1.1 · серия 8 шотов × 8 кадров
+
+| упало после | пересчитано | идеал (N−k) | лишнего | итог |
+|---|---|---|---|---|
+| 2 шотов | **6** | 6 | 0 | 8/8 ок |
+| 4 шотов | **4** | 4 | 0 | 8/8 ок |
+| 6 шотов | **2** | 2 | 0 | 8/8 ок |
+
+## Цена возобновления
+
+- журнал на 40 шотов читается за **0.1 мс**
+- прогон, где всё уже готово: 1.2 мс, пересчитано 0 шотов
+- **замерено на 314 шотах** (объём серии 22 мин): журнал читается за **0.4 мс**, прогон без работы 6.7 мс, пересчитано 0
+
+## Цена падения по ВРЕМЕНИ (линза throughput)
+
+- непрерывный прогон 8 шотов: **7.52 с**
+- с падением после 4 шотов: ~3.76 с до падения + 4.01 с возобновлен
+…</pre>
+<div class="body"><div class="row"><span class="rnd">10</span><span class="badge b-win">OURS WINS</span><span class="badge">assembly</span><span class="badge">возобновление после аварии</span></div>
+<div class="gap"><em>gap sent back</em>мастер из недосчитанной серии собирается и называет пропущенные шоты в возвращаемом словаре, но CLI печатает только длительность и потоки — оператор, запустивший сборку утром, видит «master: 1.523s» и не видит, что в серии дыра из двух шотов</div>
 </div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>

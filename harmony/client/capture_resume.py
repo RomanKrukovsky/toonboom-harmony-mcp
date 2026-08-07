@@ -248,6 +248,56 @@ def changed_episode(shots: int = 6, frames: int = 6) -> dict:
             "inserted_only": events2[0]["todo"] == 1}
 
 
+def assemble_after_crash(shots: int = 8, frames: int = 6) -> dict:
+    """
+    Линза assembly на этой части: можно ли собрать мастер из НЕДОСЧИТАННОЙ серии.
+
+    Ситуация настоящая и частая: ночь кончилась, посчитано 6 шотов из 8, утром
+    нужно показать то, что есть. Три вопроса:
+
+      1. собирается ли мастер вообще, или падает;
+      2. называет ли он пропущенные шоты, или молча отдаёт короткое видео;
+      3. сходится ли длительность с тем, что РЕАЛЬНО вошло, а не с суммой всей
+         раскадровки.
+
+    Третий вопрос — главный. Мастер, сверяющий длину с полной раскадровкой,
+    объявит расхождение при каждой частичной сборке; мастер, не сверяющий
+    ничего, отдаст потерянные кадры незамеченными.
+    """
+    out = WORK / "asm_partial"
+    shutil.rmtree(out, ignore_errors=True)
+    sys.path.insert(0, str(HERE))
+    from episode import Episode, assemble, demo_episode, run_episode
+
+    ep = demo_episode(out, shots=shots, frames=frames)
+    # Считаем часть серии: только первые, последние два оставляем несделанными.
+    partial = Episode(ep.name, ep.shots[:-2], ep.out_dir)
+    run_episode(partial, workers=3)
+
+    # Собираем мастер по ПОЛНОЙ раскадровке — как сделал бы оператор утром.
+    try:
+        asm = assemble(ep)
+        err = None
+    except Exception as e:                                  # noqa: BLE001
+        asm, err = None, f"{type(e).__name__}: {e}"
+
+    if asm is None:
+        return {"assembled": False, "error": err}
+
+    rendered = shots - 2
+    expect_rendered_s = rendered * frames / 24
+    return {"assembled": True,
+            "segments": asm["segments"],
+            "missing_named": asm["missing_shots"],
+            "missing_count": len(asm["missing_shots"]),
+            "duration": asm["duration"],
+            "expected_reported": asm["expected"],
+            "expected_from_rendered": round(expect_rendered_s, 3),
+            "drift_vs_rendered": round(asm["duration"] - expect_rendered_s, 3),
+            "in_tolerance": asm["in_tolerance"],
+            "order": asm["order"]}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -279,6 +329,8 @@ def main() -> int:
     conc = concurrent_runs()
     print("episode edited between crash and restart (resume lens) ...")
     chg = changed_episode()
+    print("master from a partially rendered episode (assembly lens) ...")
+    part = assemble_after_crash()
 
     L = [
         "# resume — сколько работы спасает падение",
@@ -335,6 +387,17 @@ def main() -> int:
         f"{chg['recompute_after_insert']} "
         f"({'только новый' if chg['inserted_only'] else 'лишнее'})",
         "",
+        "## Мастер из недосчитанной серии (линза assembly)",
+        "",
+        f"- собрался: **{'да' if part.get('assembled') else 'НЕТ: ' + str(part.get('error'))}**",
+        f"- сегментов: {part.get('segments', '—')} из {8} шотов раскадровки",
+        f"- пропущенные названы: **{part.get('missing_named') or 'НЕ НАЗВАНЫ'}**",
+        f"- длительность {part.get('duration', '—')} с против "
+        f"{part.get('expected_from_rendered', '—')} с по вошедшим шотам "
+        f"(расхождение {part.get('drift_vs_rendered', '—')} с)",
+        f"- сверка длины идёт с: "
+        f"{'вошедшими шотами' if part.get('expected_reported') == part.get('expected_from_rendered') else 'ПОЛНОЙ раскадровкой (' + str(part.get('expected_reported')) + ' с)'}",
+        "",
         "## Числа по возобновлению",
         "",
     ]
@@ -355,6 +418,15 @@ def main() -> int:
         problems.append(f"падение стоит +{tax['tax_pct']}% общего времени — "
                         f"возобновление спасает работу, но ночь всё равно "
                         f"растягивается")
+    if not part.get("assembled"):
+        problems.append(f"мастер из недосчитанной серии не собирается: "
+                        f"{part.get('error')} — утром нечего показать")
+    elif not part.get("missing_named"):
+        problems.append("мастер не называет пропущенные шоты — оператор получает "
+                        "короткое видео и не знает, чего в нём нет")
+    elif abs(part.get("drift_vs_rendered", 99)) > 0.1:
+        problems.append(f"длительность мастера расходится с вошедшими шотами на "
+                        f"{part['drift_vs_rendered']} с — потерянные кадры")
     if chg["lengthened_shot_treated_done"]:
         problems.append("шоту добавили кадров, а возобновление считает его "
                         "готовым по старой длине — серия выйдет с коротким шотом, "
@@ -395,7 +467,8 @@ def main() -> int:
     art.write_text("\n".join(L) + "\n", encoding="utf-8")
     (art.parent / "metrics.json").write_text(json.dumps(
         {"kill_points": points, "resume_cost": cost, "episode_scale": full,
-         "crash_tax": tax, "concurrent": conc, "changed_episode": chg},
+         "crash_tax": tax, "concurrent": conc, "changed_episode": chg,
+         "partial_assembly": part},
         ensure_ascii=False, indent=1),
         encoding="utf-8")
     print(f"done, {len(problems)} problem(s)")

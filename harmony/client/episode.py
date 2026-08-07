@@ -918,6 +918,20 @@ def main() -> int:
                 print(f"master: {asm['master']} — {asm['duration']}s "
                       f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
                       f"streams {asm['streams']}")
+                # Дыра в мастере обязана быть ВИДНА, а не лежать в словаре.
+                # Раунд 10: данные о пропущенных шотах были, до терминала не
+                # доходили, и оператор утром видел «master: 1.523s» над серией
+                # без двух шотов. Тот же класс дефекта, что трейсбек вместо
+                # инструкции — верная информация в непригодной подаче.
+                if asm["missing_shots"]:
+                    print(f"  INCOMPLETE: {len(asm['missing_shots'])} shot(s) "
+                          f"missing from the master: "
+                          f"{', '.join(asm['missing_shots'])}")
+                    print(f"  Re-run the same command to render them, then "
+                          f"assemble again.")
+                if not asm["in_tolerance"]:
+                    print(f"  LENGTH MISMATCH: {asm['drift']:+.3f}s against the "
+                          f"shots that went in — frames were lost or doubled.")
         except Exception as e:                              # noqa: BLE001
             report["assembly_error"] = str(e)
             if not a.json:
@@ -925,6 +939,11 @@ def main() -> int:
 
     if a.json:
         print(json.dumps(report, ensure_ascii=False, indent=1))
+    # Неполный мастер — тоже ненулевой код: скрипт в CI не должен считать
+    # «собралось» успехом, если в серии дыра.
+    asm = report.get("assembly") or {}
+    if asm.get("missing_shots") or not asm.get("in_tolerance", True):
+        return 1
     return 0 if report["complete"] else 1
 
 
