@@ -240,6 +240,82 @@ def test_damage_makes_the_exit_code_nonzero():
     assert "DAMAGED ARTWORK" in src, "оператор не увидит порчу в терминале"
 
 
+def test_segment_reuse_conditions_are_all_checked():
+    """Сборка пересчитывала ВСЕ сегменты каждый раз: 1137 мс на шот при 1080p,
+    357 с на серию 314 шотов, тогда как при досчёте одного шота нужно 0.7 с —
+    5.9 минуты лишней работы на КАЖДЫЙ досчёт. Механизм пропуска готовой работы
+    был у рендера и не был у склейки.
+
+    Проверяются условия, каждое из которых закрывает свой способ отдать неверный
+    мастер: обрубок от прерванной сборки, сегмент от старых кадров (правка
+    тайминга даёт те же имена файлов), перезаписанный звук, смена разрешения
+    (не меняет ни одного имени и по времени не ловится)."""
+    import inspect
+    src = inspect.getsource(E._segment_is_current)
+    assert "st_mtime" in src, "время кадров не сверяется"
+    assert "spec.audio" in src, "время звука не сверяется"
+    assert "fingerprint" in src, "отпечаток описания не сверяется"
+    assert "_count_frames" in src, "целость сегмента не проверяется"
+
+
+def test_frame_count_read_from_header_not_by_decoding():
+    """`-count_frames` декодирует весь сегмент: 373 мс на шот, 117 с на серию —
+    проверка из раунда 14 стоила больше, чем экономила. Заголовок даёт то же за
+    26 мс на десять шотов, и оба интересующих случая различает: у целого файла
+    верное число, у обрубка поле пустое."""
+    import inspect
+    src = inspect.getsource(E._count_frames)
+    # Слово встречается в докстринге как ОТВЕРГНУТЫЙ вариант — смотрим только на
+    # исполняемую часть, иначе тест ловит объяснение вместо кода.
+    code = src[src.index('"""', src.index('"""') + 3) + 3:]
+    assert "-count_frames" not in code, "подсчёт кадров декодированием вернулся"
+    assert "nb_frames" in code, "число кадров не берётся из заголовка"
+
+
+def test_integrity_verdict_uses_frames_not_duration():
+    """`drift +0.023s` целиком от звука (aac округляет вверх): видео мастера
+    ровно 18 кадров = 0.750 с. Пока вердикт считался по длительности, всякий
+    следующий сбой кадров прятался бы в том же дрейфе — как прожил одиннадцать
+    раундов предыдущий."""
+    import inspect
+    src = inspect.getsource(E.assemble)
+    assert "frames_expected" in src, "ожидаемое число кадров не считается"
+    assert "frames_ok" in src, "вердикт не смотрит на кадры"
+
+
+def test_report_written_after_assembly():
+    """report.json писался в run_episode, ДО склейки, и при успехе больше не
+    перезаписывался: длины мастера, пропущенных шотов и порчи кадров в нём не
+    было. PRODUCTION.md при этом велит утром смотреть его, а не терминал."""
+    import inspect
+    src = inspect.getsource(E.main)
+    after = src[src.index('report["assembly"] = asm'):]
+    assert 'report.json' in after[:800], "отчёт не перезаписывается после сборки"
+
+
+def test_successful_run_leaves_assembly_in_the_report_file():
+    """Проверка НА ФАЙЛЕ, а не на исходнике: раунд 15 нашёл, что при успехе
+    report.json не содержал результата сборки, и правка порядка записи легко
+    вернёт это. Оператор, у которого ночь упала, открывает утром именно файл."""
+    import shutil as sh
+    import subprocess
+    import sys
+    if sh.which("ffmpeg") is None:
+        return
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "out"
+        r = subprocess.run([sys.executable, str(Path(E.__file__).parent / "episode.py"),
+                            "--demo", "--shots", "2", "--frames", "4",
+                            "--out", str(out)], capture_output=True, text=True)
+        assert r.returncode == 0, r.stdout[-400:]
+        rep = json.loads((out / "report.json").read_text(encoding="utf-8"))
+        assert "assembly" in rep, f"результата сборки нет в файле: {sorted(rep)}"
+        asm = rep["assembly"]
+        for key in ("master", "frames", "frames_expected", "in_tolerance",
+                    "missing_shots", "short_segments", "reused_segments"):
+            assert key in asm, f"нет {key} в отчёте о сборке"
+
+
 def test_assembly_errors_put_the_reason_first():
     """Сообщения были обрезанным хвостом ffmpeg: «concat failed: 24 fps, 24 tbr,
     12288 tbn Metadata: handler_name : VideoHandler encoder» — 426 символов

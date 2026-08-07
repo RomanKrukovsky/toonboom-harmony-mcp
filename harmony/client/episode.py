@@ -830,13 +830,60 @@ class AssemblyError(RuntimeError):
         super().__init__(text)
 
 
+def _segment_is_current(seg: Path, shot_dir: Path, spec: "ShotSpec",
+                        stamp: Path) -> bool:
+    """
+    Можно ли взять готовый сегмент вместо пересборки.
+
+    Раунд 15: сборка пересчитывала ВСЕ сегменты каждый раз. Замер на 1080p —
+    1137 мс на шот, то есть 357 с на серию из 314 шотов. При досчёте одного шота
+    после аварии это 5.9 минуты лишней работы на каждый прогон, тогда как нужно
+    0.7 с. Ночь, упавшая трижды, платит этот налог трижды.
+
+    Четыре условия, и каждое закрывает свой способ отдать неверный мастер:
+
+      1. сегмент существует и содержит РОВНО столько кадров, сколько в шоте —
+         иначе переиспользуется обрубок от прерванной сборки;
+      2. сегмент новее ВСЕХ кадров шота. Критично: правка тайминга даёт тот же
+         набор имён файлов, и сегмент от вчерашних кадров выглядит исправным;
+      3. сегмент новее файла звука — звук могли перезаписать;
+      4. отпечаток описания совпадает с тем, что был при сборке сегмента.
+         Хранится рядом с сегментом: изменение разрешения или fps не меняет ни
+         одного имени файла и по времени не ловится.
+    """
+    if not seg.is_file():
+        return False
+    if not stamp.is_file() or stamp.read_text(encoding="utf-8").strip() != spec.fingerprint():
+        return False
+    seg_mtime = seg.stat().st_mtime
+    for f in shot_dir.glob("f*.png"):
+        if f.stat().st_mtime > seg_mtime:
+            return False
+    if spec.audio:
+        a = Path(spec.audio)
+        if not a.is_file() or a.stat().st_mtime > seg_mtime:
+            return False
+    return _count_frames(seg) == spec.frames
+
+
 def _count_frames(path: Path) -> int | None:
-    """Сколько кадров РЕАЛЬНО в файле. Не длительность контейнера: её задаёт
-    звук, и потеря кадров по ней не видна (раунд 14)."""
-    r = subprocess.run(["ffprobe", "-v", "error", "-count_frames",
-                        "-select_streams", "v:0", "-show_entries",
-                        "stream=nb_read_frames", "-of", "csv=p=0", str(path)],
-                       capture_output=True, text=True)
+    """
+    Сколько кадров в файле. НЕ длительность контейнера: её задаёт звук, и потеря
+    кадров по ней не видна (раунд 14).
+
+    Берётся из заголовка (`nb_frames`), а не подсчётом (`-count_frames`). Раунд
+    15: подсчёт декодирует весь сегмент — 373 мс на шот при 1080p, то есть 117 с
+    на серию из 314 шотов ТОЛЬКО на проверку. Заголовок даёт то же за 26 мс на
+    десять шотов.
+
+    Заголовку можно верить именно для этой задачи: mp4, записанный ffmpeg-ом до
+    конца, несёт верное число, а у обрубка поле пустое — проверено на файле,
+    урезанном до трети. То есть оба интересующих случая (целый и недописанный)
+    различаются без декодирования.
+    """
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                        "-show_entries", "stream=nb_frames", "-of", "csv=p=0",
+                        str(path)], capture_output=True, text=True)
     try:
         return int(r.stdout.strip())
     except ValueError:
@@ -899,11 +946,17 @@ def assemble(ep: Episode, master: Path | None = None,
     parts: list[Path] = []
     missing: list[str] = []
     short_segments: list[dict] = []
+    reused: list[str] = []
     for s in ep.shots:
         if not shot_is_done(ep, s, journal.get(s.name)):
             missing.append(s.name)
             continue
         seg = ep.out_dir / s.name / "segment.mp4"
+        stamp = ep.out_dir / s.name / "segment.fingerprint"
+        if _segment_is_current(seg, ep.out_dir / s.name, s, stamp):
+            reused.append(s.name)
+            parts.append(seg)
+            continue
         # Звук мог исчезнуть между рендером и сборкой (перемонтировали том,
         # почистили каталог). Проверка здесь даёт причину одной строкой вместо
         # 426 символов лога ffmpeg, где она лежала в середине.
@@ -953,6 +1006,10 @@ def assemble(ep: Episode, master: Path | None = None,
         if got is not None and got != s.frames:
             short_segments.append({"shot": s.name, "frames": got,
                                    "expected": s.frames})
+        else:
+            # Отпечаток кладётся только к ЦЕЛОМУ сегменту: обрубок не должен
+            # переиспользоваться на следующем прогоне.
+            stamp.write_text(s.fingerprint(), encoding="utf-8")
         parts.append(seg)
 
     if not parts:
@@ -979,16 +1036,32 @@ def assemble(ep: Episode, master: Path | None = None,
     durs = [float(l.split("=", 1)[1]) for l in info.splitlines() if l.startswith("duration")]
     expect = sum(s.seconds for s in ep.shots if s.name not in missing)
     actual = durs[0] if durs else 0.0
+
+    # Целостность мастера проверяется КАДРАМИ, а не длительностью контейнера.
+    # Раунд 14: длительность задаёт звук (aac округляет вверх), поэтому потеря
+    # кадра давала ПОЛОЖИТЕЛЬНЫЙ дрейф и читалась как погрешность округления.
+    # Раунд 15: после исправления «drift +0.023s» остался — он весь от звука, и
+    # пока итог считался по нему, всякий следующий сбой кадров прятался бы там
+    # же. Кадры — величина, которая отвечает на вопрос «серия цела».
+    frames_expect = sum(s.frames for s in ep.shots if s.name not in missing)
+    frames_actual = _count_frames(master)
+    frames_ok = frames_actual is None or frames_actual == frames_expect
     return {
         "master": str(master), "segments": len(parts),
         "streams": kinds, "duration": round(actual, 3),
         "expected": round(expect, 3), "drift": round(actual - expect, 3),
-        "in_tolerance": abs(actual - expect) <= tolerance_s,
+        # Дрейф по длительности остаётся в отчёте как справка, но вердикт о
+        # целостности даёт сверка кадров.
+        "frames": frames_actual, "frames_expected": frames_expect,
+        "in_tolerance": frames_ok and abs(actual - expect) <= tolerance_s + 0.05,
         "missing_shots": missing,
         # Шоты, у которых кадров в сегменте меньше, чем в шоте: битый или
         # пропавший PNG. Названы поимённо — «мастер короче» без указания шота
         # не даёт оператору куда смотреть.
         "short_segments": short_segments,
+        # Шоты, чей сегмент взят готовым. При досчёте одного шота после аварии
+        # пересборка остальных — 5.9 минуты лишней работы на серии 314 шотов.
+        "reused_segments": reused,
         "order": [s.name for s in ep.shots if s.name not in missing],
     }
 
@@ -1138,6 +1211,13 @@ def main() -> int:
         try:
             asm = assemble(ep)
             report["assembly"] = asm
+            # Отчёт перезаписывается ПОСЛЕ сборки. Раунд 15: report.json писался
+            # только в run_episode, до склейки, и результат сборки в него не
+            # попадал вообще — при успехе. Оператор утром открывал файл и не
+            # находил ни длины мастера, ни пропущенных шотов, ни порчи кадров,
+            # хотя в терминале всё это было напечатано.
+            (ep.out_dir / "report.json").write_text(
+                json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
             if not a.json:
                 print(f"master: {asm['master']} — {asm['duration']}s "
                       f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
@@ -1147,6 +1227,9 @@ def main() -> int:
                 # доходили, и оператор утром видел «master: 1.523s» над серией
                 # без двух шотов. Тот же класс дефекта, что трейсбек вместо
                 # инструкции — верная информация в непригодной подаче.
+                if asm.get("reused_segments"):
+                    print(f"  reused {len(asm['reused_segments'])} segment(s) "
+                          f"unchanged since the last assembly", flush=True)
                 if asm.get("short_segments"):
                     print(f"  DAMAGED ARTWORK: {len(asm['short_segments'])} "
                           f"shot(s) lost frames during assembly:", flush=True)
