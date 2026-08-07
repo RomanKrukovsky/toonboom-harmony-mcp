@@ -1,0 +1,98 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Gauntlet — production</title></head><body><style>
+:root{--bg:#fbfbfa;--fg:#1b1a17;--dim:#6b6862;--line:#e3e1dc;--card:#fff;
+--win:#1f7a4d;--lose:#a5502a;--tie:#6b6862;--accent:#c8622a}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--fg:#eeece7;--dim:#98948c;
+--line:#2c2b28;--card:#1c1b19;--win:#4ec78a;--lose:#e08a5a;--tie:#98948c;--accent:#e08a5a}}
+:root[data-theme=dark]{--bg:#141413;--fg:#eeece7;--dim:#98948c;--line:#2c2b28;--card:#1c1b19;
+--win:#4ec78a;--lose:#e08a5a;--tie:#98948c;--accent:#e08a5a}
+:root[data-theme=light]{--bg:#fbfbfa;--fg:#1b1a17;--dim:#6b6862;--line:#e3e1dc;--card:#fff;
+--win:#1f7a4d;--lose:#a5502a;--tie:#6b6862;--accent:#c8622a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 ui-sans-serif,-apple-system,
+"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 22px 72px}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--dim);font-size:13px;margin:0 0 26px}
+.meta{border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:0 0 30px}
+.meta p{margin:0 0 6px}.meta .lbl{color:var(--dim);font-size:11px;text-transform:uppercase;
+letter-spacing:.08em;display:block}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 34px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:96px}
+.stat b{display:block;font-size:21px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);
+margin:34px 0 12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+display:flex;flex-direction:column}
+.card.ref{border-color:var(--accent)}
+.card img{width:100%;height:auto;display:block;background:#0000000d}
+.card pre{margin:0;padding:12px;font-size:11.5px;line-height:1.45;white-space:pre-wrap;
+word-break:break-word;max-height:200px;overflow:auto;color:var(--dim)}
+.body{padding:11px 13px 13px;display:flex;flex-direction:column;gap:6px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rnd{font-variant-numeric:tabular-nums;font-weight:600}
+.badge{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;
+border-radius:999px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.b-win{color:var(--win);border-color:currentColor}
+.b-lose{color:var(--lose);border-color:currentColor}
+.b-tie{color:var(--tie)}
+.gap{font-size:13px;color:var(--fg)}
+.gap em{color:var(--dim);font-style:normal;font-size:11px;text-transform:uppercase;
+letter-spacing:.06em;display:block;margin-bottom:1px}
+ul.gaps{margin:0;padding-left:18px}ul.gaps li{margin-bottom:5px}
+.empty{color:var(--dim);font-size:13px;border:1px dashed var(--line);border-radius:8px;padding:16px}
+footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+<div class="wrap">
+<h1>Gauntlet run — production</h1>
+<p class="sub">1 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<div class="meta">
+<p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
+<p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
+</div>
+<div class="stats">
+<div class="stat"><b>1</b><span>rounds</span></div>
+<div class="stat"><b>0</b><span>ours won</span></div>
+<div class="stat"><b>0</b><span>win streak</span></div>
+<div class="stat"><b>1</b><span>lenses used</span></div>
+</div>
+<h2>The bar</h2>
+<div class="grid"><div class="card ref">
+<div class="body"><div class="row"><span class="rnd">reference</span><span class="badge">production_targets.md</span></div></div>
+</div></div>
+<h2>Rounds</h2>
+<div class="grid">
+<div class="card">
+<pre># throughput — прогон серии, числа
+
+машина: 14 ядер · Blender 5.1.1
+замер: 6 шотов × 12 кадров = 72 кадров
+
+| величина | наше | цель (бар) |
+|---|---|---|
+| кадров/с суммарно | **11.96** | ≥ 2.7 |
+| ускорение против 1 потока | **1.8×** | ≥ 8× |
+| воркеров занято | 12 | 12 |
+| серия 22 мин (31680 кадров) | **44 мин** | ≤ 25 мин |
+| стенные часы, параллельно | 6.02 с | — |
+| стенные часы, 1 поток | 10.98 с | — |
+| накладные на шот | ~-0.83 с | → 0 |
+
+## Что известно про разницу
+
+- шотов посчитано: 6/6, провалов 0
+- кадров: 72
+- на шот приходится запуск отдельного процесса Blender; при 12 кадрах в шоте это заметная доля
+НЕ ДОСТАЁТ по ускорению: 4.4× (есть 1.8× из 8×).
+</pre>
+<div class="body"><div class="row"><span class="rnd">01</span><span class="badge b-lose">BAR WINS</span><span class="badge">throughput</span><span class="badge">очередь эпизода</span></div>
+<div class="gap"><em>gap sent back</em>12 воркеров дают лишь 1.8× ускорения вместо 8× — почти всё съедает запуск отдельного процесса Blender на каждый шот (6.02 с на 72 кадра, из них счёт кадров ~1.4 с)</div>
+</div></div>
+</div>
+<h2>Open gaps</h2><ul class='gaps'>
+<li>BLOCKED: батч шотов внутри одного процесса Blender не даёт измеримого выигрыша.</li>
+<li>накладные на шот в capture_episode считаются формулой, дающей отрицательные</li>
+</ul>
+<footer>Gauntlet Loop — sequential, one critic per round, one gap per round. The bar does not have to be reachable; it has to stop us settling.</footer>
+</div></body></html>

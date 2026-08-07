@@ -26,7 +26,9 @@ def parse_args():
     argv = sys.argv
     argv = argv[argv.index("--") + 1:] if "--" in argv else []
     p = argparse.ArgumentParser()
-    p.add_argument("--spec", required=True)
+    p.add_argument("--spec", help="одна спека сцены")
+    p.add_argument("--specs", help="файл со списком спек: считать их ВСЕ в этом "
+                                   "процессе Blender (батч)")
     p.add_argument("--out", required=True)
     p.add_argument("--render", action="store_true")
     p.add_argument("--frames", nargs=2, type=int, default=None)
@@ -242,11 +244,11 @@ def build(spec, out_dir):
     try:
         scene.view_settings.view_transform = "Standard"
     except TypeError:
-        pass
+        pass  # старая сборка без этого преобразования: цвет останется как есть
     try:
         scene.view_settings.look = "None"
     except TypeError:
-        pass
+        pass  # look отсутствует в 3.x — там его и не нужно снимать
 
     # Фон: world с плоским цветом
     world = bpy.data.worlds.new("W")
@@ -370,21 +372,53 @@ def build(spec, out_dir):
     return scene
 
 
+def one(spec, out_dir, render, frames):
+    """Собрать и (опционально) отрендерить одну сцену в этом процессе."""
+    scene = build(spec, out_dir)
+    print("BUILD_OK %s parts=%d channels=%d engine=%s"
+          % (spec["name"], len(spec.get("parts") or []),
+             len(spec.get("channels") or []), scene.render.engine))
+    if render:
+        f0, f1 = frames if frames else (spec["frame_start"], spec["frame_end"])
+        scene.frame_start, scene.frame_end = f0, f1
+        scene.render.filepath = os.path.join(out_dir, "f")
+        bpy.ops.render.render(animation=True)
+        print("RENDER_OK %s %d..%d" % (spec["name"], f0, f1))
+
+
 def main():
     a = parse_args()
+
+    # Батч: несколько шотов в ОДНОМ процессе Blender.
+    #
+    # Замер, ради которого это написано: пустой запуск Blender стоит ~0.67 с, и
+    # на 12 шотов это 8 из 15 секунд прогона. Батч на уровне питона (несколько
+    # шотов в одном процессе-воркере) этих секунд НЕ убирал, потому что
+    # build_scene всё равно стартовал Blender подпроцессом на каждый шот —
+    # проверено, стало медленнее на 13%. Экономит только батч здесь, внутри
+    # самого Blender: процесс запускается один раз на группу.
+    #
+    # Между шотами сцена стирается начисто (wipe_scene в build), иначе объекты
+    # предыдущего шота остаются в новом — дефект, который не даёт ошибки, а даёт
+    # чужого персонажа в кадре.
+    if a.specs:
+        with open(a.specs, "r", encoding="utf-8") as f:
+            jobs = json.load(f)
+        for job in jobs:
+            with open(job["spec"], "r", encoding="utf-8") as sf:
+                spec = json.load(sf)
+            try:
+                one(spec, job["out"], a.render,
+                    tuple(job["frames"]) if job.get("frames") else None)
+            except Exception as e:                        # noqa: BLE001
+                # Один плохой шот не должен уносить остальные в батче.
+                print("SHOT_FAILED %s %s: %s"
+                      % (spec.get("name", "?"), type(e).__name__, e))
+        return
+
     with open(a.spec, "r", encoding="utf-8") as f:
         spec = json.load(f)
-    scene = build(spec, a.out)
-    print("BUILD_OK parts=%d channels=%d engine=%s"
-          % (len(spec["parts"]), len(spec["channels"]), scene.render.engine))
-
-    if a.render:
-        f0, f1 = (a.frames if a.frames
-                  else (spec["frame_start"], spec["frame_end"]))
-        scene.frame_start, scene.frame_end = f0, f1
-        scene.render.filepath = os.path.join(a.out, "f")
-        bpy.ops.render.render(animation=True)
-        print("RENDER_OK %d..%d" % (f0, f1))
+    one(spec, a.out, a.render, a.frames)
 
 
 main()

@@ -37,6 +37,7 @@ Blender. Снаружи мы его не импортируем (это и не�
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field
@@ -189,6 +190,60 @@ def build_scene(spec: BSceneSpec, out_dir: Path,
         "log_tail": (r.stdout or "")[-1500:],
         "stderr_tail": (r.stderr or "")[-800:],
     }
+
+
+def build_scenes(jobs: list[tuple[BSceneSpec, Path, tuple[int, int] | None]],
+                 builder: Path | None = None, render: bool = True,
+                 timeout_s: float = 3600.0) -> list[dict]:
+    """
+    Собрать НЕСКОЛЬКО сцен за один запуск Blender.
+
+    Ради чего: пустой запуск Blender стоит ~0.67 с. На 12 шотов это 8 секунд из
+    15 — больше половины прогона. Батч на уровне питона эти секунды не убирал
+    (проверено: стало медленнее), потому что каждая сборка всё равно стартовала
+    Blender заново. Здесь процесс запускается один раз на всю группу.
+
+    Отчёты возвращаются по шоту, чтобы провал одного было видно отдельно.
+    """
+    if not jobs:
+        return []
+    builder = builder or (Path(__file__).parent / "blender" / "build_scene.py")
+    if not builder.exists():
+        raise FileNotFoundError(f"builder script missing: {builder}")
+
+    manifest: list[dict] = []
+    for spec, out_dir, frames in jobs:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        sp = out_dir / "scene_spec.json"
+        sp.write_text(spec.to_json(), encoding="utf-8")
+        manifest.append({"spec": str(sp), "out": str(out_dir),
+                         "frames": list(frames) if frames else None,
+                         "name": spec.name})
+
+    list_path = jobs[0][1].parent / f"batch_{os.getpid()}_{id(jobs)}.json"
+    list_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    args = [str(BLENDER), "-b", "--python", str(builder), "--",
+            "--specs", str(list_path), "--out", str(jobs[0][1])]
+    if render:
+        args.append("--render")
+    r = subprocess.run(args, capture_output=True, text=True, timeout=timeout_s)
+    log = (r.stdout or "")
+    list_path.unlink(missing_ok=True)
+
+    out = []
+    for spec, out_dir, _ in jobs:
+        pngs = sorted(out_dir.glob("f*.png"))
+        failed = f"SHOT_FAILED {spec.name} " in log
+        out.append({
+            "name": spec.name,
+            "returncode": 1 if (failed or not pngs) else 0,
+            "blend": str(out_dir / f"{spec.name}.blend"),
+            "frames_rendered": len(pngs),
+            "log_tail": log[-800:],
+            "stderr_tail": (r.stderr or "")[-400:],
+        })
+    return out
 
 
 def encode(out_dir: Path, mp4: Path, fps: int) -> Path:

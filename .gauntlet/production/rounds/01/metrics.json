@@ -1,0 +1,36 @@
+{
+ "parallel": {
+  "episode": "demo",
+  "out_dir": "/tmp/capture_episode/par",
+  "shots_total": 6,
+  "shots_ok": 6,
+  "shots_failed": 0,
+  "resumed": 0,
+  "workers": 12,
+  "frames_rendered": 72,
+  "seconds": 6.02,
+  "frames_per_s": 11.96,
+  "failed": [],
+  "complete": true,
+  "wall_s": 6.02
+ },
+ "sequential": {
+  "episode": "demo",
+  "out_dir": "/tmp/capture_episode/seq",
+  "shots_total": 6,
+  "shots_ok": 6,
+  "shots_failed": 0,
+  "resumed": 0,
+  "workers": 1,
+  "frames_rendered": 72,
+  "seconds": 10.98,
+  "frames_per_s": 6.56,
+  "failed": [],
+  "complete": true,
+  "wall_s": 10.98
+ },
+ "speedup": 1.82,
+ "fps": 11.96,
+ "episode_minutes": 44.1,
+ "cores": 14
+}
