@@ -255,6 +255,57 @@ def test_assemble_returns_the_master_layout_shape():
     assert 'master_assembled' in src, "сборка не пишется в реестр"
 
 
+def test_eta_accounts_for_parallel_waves():
+    """`left / rate` верно для последовательного счёта и врёт для параллельного:
+    на первом готовом шоте посчитан ОДИН, а работали `workers`, и скорость
+    измерялась по одному. Замер на 30 шотах и 12 воркерах: первая eta показывала
+    301 с при фактических 26 с — ошибка 11x. Это первое число, которое видит
+    оператор, и по нему он решает, ждать или идти спать.
+
+    Волновая формула на том же прогоне даёт 34 с (ошибка 1.1x)."""
+    import inspect
+    src = inspect.getsource(E._run_locked)
+    assert "waves_left" in src, "прогноз не считает волны"
+    # Смотрим на исполняемую часть: в комментарии старая формула названа как
+    # отвергнутая, и ловить её там значит ловить объяснение вместо кода.
+    code = "\n".join(l for l in src.splitlines() if not l.strip().startswith("#"))
+    assert "left / rate" not in code, "вернулась последовательная формула"
+    # Замер на масштабе серии обязан быть в коде: первая правка была сделана по
+    # замеру на 30 шотах, а конвейер существует ради 314 — и на 314 старая
+    # формула ошибалась только в первой строке (медиана 0.99x у обеих).
+    assert "314 шотов" in src, "нет замера на масштабе серии"
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=6, frames=4)
+        _, events = run(ep)
+        etas = [e["eta_s"] for e in events
+                if e.get("event") == "shot_done" and e.get("eta_s")]
+        # Прогноз обязан УБЫВАТЬ: растущая оценка означает, что считается не то
+        assert etas == sorted(etas, reverse=True), etas
+
+
+def test_last_shot_has_no_eta():
+    """Прогноз на нулевой остаток — это «0 s», и печатать его значит обещать,
+    что что-то ещё будет."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        _, events = run(ep)
+        last = [e for e in events if e.get("event") == "shot_done"][-1]
+        assert last["eta_s"] is None, last
+
+
+def test_assemble_only_needs_no_rendering():
+    """PRODUCTION.md трижды говорит «assemble again», а сделать это можно было
+    только полным прогоном: повторить preflight и учёт готовности ради одной
+    склейки. Раунд 18."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "assemble_only" in src, "нет ключа «только собрать»"
+    assert "--assemble-only" in src, "ключ не объявлен в CLI"
+    # Подсказка «как досчитать» нужнее здесь, чем в полном прогоне: оператор
+    # явно попросил не считать.
+    assert "WITHOUT --assemble-only" in src, "нет подсказки, как досчитать"
+
+
 def test_hostile_sample_defeats_coincidence():
     """Раунд 17: три пробы дали «0 неверных ответов», потому что серия была
     ровной — при равных длинах пропуск шота сдвигает нумерацию ровно на длину

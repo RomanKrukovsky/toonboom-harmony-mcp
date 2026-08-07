@@ -33,6 +33,7 @@ episode.py — очередь эпизода: от списка шотов до 
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -792,12 +793,42 @@ def _run_locked(ep: Episode, workers: int,
         done_frames += rec.get("frames", 0)
         elapsed = time.monotonic() - t0
         rate = done_frames / elapsed if elapsed > 0 else 0.0
-        left = sum(s.frames for s in todo) - done_frames
+        # Прогноз считается ВОЛНАМИ, а не наблюдённой скоростью. Раунд 18:
+        # `left / rate` верно для последовательного счёта и врёт для
+        # параллельного — на первом готовом шоте посчитан ОДИН, а работали
+        # `workers`, и скорость измерялась по одному. Замер: 30 шотов, 12
+        # воркеров — первая eta показывала 301 с при фактических 26 с (ошибка
+        # 11x). Это первое число, которое видит оператор, и по нему он решает,
+        # ждать или идти спать.
+        #
+        # Волна = столько шотов, сколько воркеров. Время волны = прошедшее время
+        # на число завершённых волн; остаток — целое число волн, а не дробь
+        # кадров.
+        #
+        # Замер обеих формул на одних данных (один прогон, оценки пересчитаны
+        # offline), отношение оценки к фактическому остатку, идеал 1.0:
+        #
+        #   масштаб        первая оценка     медиана по прогону
+        #                  старая  новая     старая  новая
+        #    30 шотов      24.0x    2.5x      2.54x  2.49x
+        #    60 шотов      10.9x    0.9x      1.45x  1.49x
+        #   120 шотов      12.6x    1.1x      1.30x  1.27x
+        #   314 шотов      11.6x    1.0x      0.99x  0.99x   <- серия 22 минуты
+        #
+        # То есть новая формула на порядок точнее в ПЕРВЫХ строках (единственное
+        # место, где старая ошибалась) и не хуже по медиане ни на одном масштабе,
+        # включая настоящий. Проверка на 314 шотах добавлена потому, что первая
+        # правка была сделана по замеру на 30 — а конвейер существует ради 314.
+        shots_left = len(todo) - i
+        waves_done = max(1, math.ceil(i / workers))
+        wave_s = elapsed / waves_done
+        waves_left = math.ceil(shots_left / workers) if shots_left > 0 else 0
+        eta_s = round(waves_left * wave_s, 1) if waves_left else None
         emit({"event": "shot_done" if rec["status"] == "ok" else "shot_failed",
               "name": rec["name"], "status": rec["status"],
               "done": i, "of": len(todo),
               "frames_per_s": round(rate, 2),
-              "eta_s": round(left / rate, 1) if rate > 0 else None,
+              "eta_s": eta_s,
               "code": rec.get("code"), "message": rec.get("message")})
 
     if todo and renderer is not None:
@@ -1192,7 +1223,12 @@ def main() -> int:
     ap.add_argument("--out", default="", help="output directory")
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--dry-run", action="store_true", help="preflight only, render nothing")
-    ap.add_argument("--no-assemble", action="store_true")
+    ap.add_argument("--no-assemble", action="store_true",
+                    help="render only, do not join the master")
+    ap.add_argument("--assemble-only", action="store_true",
+                    help="join the master from frames already on disk, render "
+                         "nothing (PRODUCTION.md says «assemble again» — this "
+                         "is it)")
     ap.add_argument("--json", action="store_true", help="machine-readable report only")
     a = ap.parse_args()
 
@@ -1228,6 +1264,46 @@ def main() -> int:
         else:
             print("dry run: nothing rendered")
         return 0
+
+    # «Собрать снова» без пересчёта. Раунд 18: PRODUCTION.md трижды говорит
+    # «assemble again», а сделать это можно было только полным прогоном — то
+    # есть повторив preflight и учёт готовности ради одной склейки.
+    if a.assemble_only:
+        try:
+            asm = assemble(ep)
+        except AssemblyError as exc:
+            print(f"\nASSEMBLY FAILED: {exc.reason}", flush=True)
+            if exc.remedy:
+                print(f"  -> {exc.remedy}", flush=True)
+            return 1
+        except RuntimeError as exc:
+            print(f"\nASSEMBLY FAILED: {exc}", flush=True)
+            return 1
+        if a.json:
+            print(json.dumps({"assembly": asm}, ensure_ascii=False, indent=1))
+        else:
+            print(f"master: {asm['master']} — {asm['duration']}s "
+                  f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
+                  f"streams {asm['streams']}", flush=True)
+            if asm.get("reused_segments"):
+                print(f"  reused {len(asm['reused_segments'])} segment(s) "
+                      f"unchanged since the last assembly", flush=True)
+            if asm["missing_shots"]:
+                print(f"  INCOMPLETE: {len(asm['missing_shots'])} shot(s) missing "
+                      f"from the master: {', '.join(asm['missing_shots'])}",
+                      flush=True)
+                # Здесь подсказка нужнее, чем в полном прогоне: оператор явно
+                # попросил не считать, и должен узнать, как досчитать.
+                print(f"  Run the same command WITHOUT --assemble-only to render "
+                      f"them, then assemble again.", flush=True)
+            if asm.get("short_segments"):
+                print(f"  DAMAGED ARTWORK: {len(asm['short_segments'])} shot(s) "
+                      f"lost frames:", flush=True)
+                for sh in asm["short_segments"]:
+                    print(f"    {sh['shot']}: {sh['frames']} of {sh['expected']} "
+                          f"frames — a PNG is missing or unreadable", flush=True)
+        return 1 if (asm["missing_shots"] or asm.get("short_segments")
+                     or not asm["in_tolerance"]) else 0
 
     def say(text: str) -> None:
         """
