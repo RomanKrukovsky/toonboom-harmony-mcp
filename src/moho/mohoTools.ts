@@ -32,5 +32,16 @@ export function buildMohoTools(): TypedTool<z.ZodTypeAny>[] {
   // по вызову. Приведение локально и намеренно: реального McpServer здесь нет.
   registerTools(collector as never, client);
 
+  // Предупреждение о пропущенных легаси-алиасах — в stderr: stdout занят
+  // каналом JSON-RPC, любая посторонняя запись туда ломает протокол.
+  const skipped = collector.skipped();
+  if (skipped.length > 0) {
+    console.error(
+      `[moho] Пропущено легаси-алиасов: ${skipped.length} (${skipped.join(', ')}). ` +
+        'В едином сервере они не поддерживаются — используйте имена moho.*. ' +
+        'Снимите MOHO_MCP_ENABLE_LEGACY_ALIASES, чтобы убрать это предупреждение.'
+    );
+  }
+
   return collector.tools();
 }

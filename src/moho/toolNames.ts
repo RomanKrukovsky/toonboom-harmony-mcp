@@ -98,11 +98,59 @@ export const MOHO_TOOL_NAMES: Readonly<Record<string, string>> = Object.freeze({
   system_sloSnapshot: 'moho.system.slo_snapshot',
 });
 
-/** Новое имя по старому. Бросает, если имя незнакомо — молчаливый пропуск скрыл бы забытый тул. */
+/**
+ * Легаси-алиасы старого репозитория, НЕ поддерживаемые в едином сервере.
+ *
+ * `tools.ts` регистрирует их при MOHO_MCP_ENABLE_LEGACY_ALIASES=true — это была
+ * обратная совместимость с ещё более старыми именами внутри отдельного
+ * репозитория Moho. В едином сервере это была бы ТРЕТЬЯ конвенция имён поверх
+ * `harmony.*` и `moho.*`, причём для тулов, которые уже переименованы один раз.
+ *
+ * Список нужен, чтобы отличить «забытый тул» (настоящая ошибка карты) от
+ * «осознанно не поддерживаем» и дать по каждому случаю разный ответ.
+ */
+const UNSUPPORTED_LEGACY_ALIASES: ReadonlySet<string> = new Set([
+  'moho_doc_info',
+  'moho_list_layers',
+  'moho_layer_props',
+  'moho_set_bone_transform',
+  'moho_set_layer_transform',
+  'moho_set_keyframe',
+  'moho_set_frame',
+  'moho_batch_execute',
+  'moho_diagnose_system',
+  'moho_get_capabilities',
+]);
+
+/** Является ли имя легаси-алиасом, осознанно не поддерживаемым в едином сервере. */
+export function isUnsupportedLegacyAlias(oldName: string): boolean {
+  return UNSUPPORTED_LEGACY_ALIASES.has(oldName);
+}
+
+/**
+ * Новое имя по старому.
+ *
+ * Бросает на незнакомом имени: молчаливый пропуск скрыл бы забытый тул — он
+ * просто не попал бы в список, и никто бы не заметил.
+ *
+ * Поиск идёт через `Object.hasOwn`, а НЕ через проверку значения на
+ * правдивость. Обычный доступ по ключу видит цепочку прототипов, поэтому
+ * `renamed('toString')` возвращал нативную функцию `Object.prototype.toString`
+ * вместо броска: `if (!next)` не отсекает истинную функцию. Сейчас таких имён
+ * в карте нет, но защита стоит на входе, а не на совпадении с текущими данными.
+ */
 export function renamed(oldName: string): string {
-  const next = MOHO_TOOL_NAMES[oldName];
-  if (!next) throw new Error(`Имя Moho-тула отсутствует в карте переименования: ${oldName}`);
-  return next;
+  if (UNSUPPORTED_LEGACY_ALIASES.has(oldName)) {
+    throw new Error(
+      `Легаси-алиас Moho «${oldName}» не поддерживается в едином сервере. ` +
+        'Он вводил третью конвенцию имён поверх harmony.* и moho.*. ' +
+        'Снимите MOHO_MCP_ENABLE_LEGACY_ALIASES и используйте имена moho.*.'
+    );
+  }
+  if (!Object.hasOwn(MOHO_TOOL_NAMES, oldName)) {
+    throw new Error(`Имя Moho-тула отсутствует в карте переименования: ${oldName}`);
+  }
+  return MOHO_TOOL_NAMES[oldName];
 }
 
 /** Все новые имена. Используется тестом на префикс и полноту. */

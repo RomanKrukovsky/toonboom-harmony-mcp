@@ -32,7 +32,7 @@
 
 import type { z } from 'zod';
 import type { TypedTool } from '../tools/defineTool.js';
-import { renamed } from './toolNames.js';
+import { isUnsupportedLegacyAlias, renamed } from './toolNames.js';
 
 /** Форма ответа, которую строят `successContent` / `errorContent` в tools.ts. */
 interface McpContentResult {
@@ -120,6 +120,7 @@ export function adaptHandlerResult(raw: unknown): unknown {
 export class MohoToolCollector {
   private readonly collected: TypedTool<z.ZodTypeAny>[] = [];
   private readonly seen = new Set<string>();
+  private readonly skippedLegacyAliases: string[] = [];
 
   /**
    * @param schemaFactory Собирает Zod-объект из «сырых» полей схемы. Передаётся
@@ -134,6 +135,18 @@ export class MohoToolCollector {
     shape: Record<string, z.ZodTypeAny>,
     handler: (args: Record<string, unknown>) => Promise<unknown> | unknown
   ): void {
+    // Легаси-алиасы старого репозитория пропускаются, а не роняют сервер.
+    // `tools.ts` регистрирует их при MOHO_MCP_ENABLE_LEGACY_ALIASES=true, и
+    // бросок здесь означал бы, что включение флага делает сервер вообще
+    // незапускаемым: человек получал бы падение старта вместо 59 рабочих
+    // тулов. Пропуск с предупреждением честнее — тулы работают под именами
+    // moho.*, а про алиасы сказано прямо. Предупреждение идёт в stderr:
+    // stdout занят каналом JSON-RPC.
+    if (isUnsupportedLegacyAlias(name)) {
+      this.skippedLegacyAliases.push(name);
+      return;
+    }
+
     const publicName = renamed(name);
 
     // Дубликат имени означает, что карта переименования свела два разных тула
@@ -154,5 +167,10 @@ export class MohoToolCollector {
   /** Собранные тулы в порядке регистрации. */
   tools(): TypedTool<z.ZodTypeAny>[] {
     return this.collected;
+  }
+
+  /** Пропущенные легаси-алиасы. Пусто, если MOHO_MCP_ENABLE_LEGACY_ALIASES не включён. */
+  skipped(): string[] {
+    return [...this.skippedLegacyAliases];
   }
 }
