@@ -8,8 +8,12 @@
     "build": "rimraf dist && tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
+    "start:moho": "ANIM_HOST=moho node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "dev:moho": "ANIM_HOST=moho ts-node src/index.ts",
     "test": "jest",
+    "test:moho": "jest tests/moho",
+    "install:moho-plugin": "bash scripts/install_moho_plugin.sh",
     "reconstruction:core": ".venv-reconstruction/bin/harmony-reconstruction-core serve",
     "test:python": ".venv-reconstruction/bin/pytest services/reconstruction-core/tests",
     "test:harmony-integration": "npm run build && node scripts/run_harmony_reconstruction_integration.mjs",
@@ -36,17 +40,17 @@
     "test:gates": "jest tests/capabilityRegistryGate.test.ts tests/evidenceIntegrity.test.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "better-sqlite3": "^13.0.3",
     "canonicalize": "^3.0.0",
     "dotenv": "^16.4.5",
     "fast-json-stable-stringify": "^2.1.0",
-    "sqlite3": "^5.1.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.9",
-    "@types/sqlite3": "^3.1.11",
     "jest": "^29.7.0",
     "rimraf": "^5.0.7",
     "ts-jest": "^29.1.5",

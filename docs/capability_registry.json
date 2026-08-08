@@ -1,8 +1,8 @@
 {
   "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-27",
-  "auditedBy": "sprint-0-truth-restoration",
+  "generatedAt": "2026-08-09",
+  "auditedBy": "sprint-0-truth-restoration + moho-integration-audit",
   "verificationLevels": [
     "not_implemented",
     "unaudited",
@@ -20,6 +20,7 @@
     "unaudited": "Code exists but was not verified in this session. Do not cite as evidence.",
     "contract_verified": "Schema/type contract validated only.",
     "offline_verified": "Deterministic behaviour proven by the test suite; no model or Harmony.",
+    "simulator_verified": "Proven end-to-end against a simulated host (e.g. a fake IPC daemon answering like the real plugin), but never against the real application.",
     "real_model_verified": "Executed against real model weights producing real artifacts.",
     "real_harmony_smoke_verified": "One successful operation against a licensed Harmony with evidence.",
     "shot_verified": "A complete shot was produced, rendered, reviewed and approved."
@@ -421,9 +422,367 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Extend the guard to node:http/https agents so non-fetch clients cannot reach external hosts either."
+    },
+    {
+      "capabilityId": "moho.ipc_transport",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "src/moho/moho-client.ts",
+        "src/moho/protocol.ts",
+        "src/moho/protocol-version.ts",
+        "src/moho/config.ts",
+        "src/moho/keep-alive.ts",
+        "moho-plugin/MohoMCP_Server.lua",
+        "moho-plugin/MohoMCP_Poller.lua",
+        "moho-plugin/moho_mcp/server.lua",
+        "moho-plugin/moho_mcp/protocol.lua"
+      ],
+      "publicTools": [],
+      "backendType": "file_based_json_rpc_ipc",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "tests/moho/protocol.test.ts",
+        "tests/moho/config.test.ts"
+      ],
+      "knownFailures": [
+        "Verified on mocks and a temporary filesystem only. The JSON-RPC framing, error codes and config defaults are asserted by tests/moho/protocol.test.ts and tests/moho/config.test.ts, which never touch a running Moho.",
+        "tests/moho/moho-client.test.ts and tests/moho/adversarial_ipc.test.ts do not currently compile in this repository: both still import from 'vitest' and resolve sibling modules as '../moho-client.js' rather than '../../src/moho/moho-client.js'. Client lifecycle, timeout cleanup, queue overflow, dead-letter quarantine, duplicate-id rejection and cursor recovery are therefore UNVERIFIED HERE, whatever the source repository reported.",
+        "The live IPC round trip reported in the upstream moho-mcp-server REAL_MOHO_TEST_REPORT.md (Moho Pro 14.0, avg 18.6ms over 5 calls) was executed against commit 87ddabbb610a5970f4cc52369a0aba3e3aac8b14 of that separate repository, not against this integration. No evidence bundle for it exists under docs/evidence/ here, so it cannot raise this level.",
+        "Crash recovery, pending-request replay after GUI restart and health.json polling are marked NOT EXECUTED even upstream."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Repair the module specifiers and test-runner imports in tests/moho/moho-client.test.ts and tests/moho/adversarial_ipc.test.ts so the transport and adversarial suites actually execute under jest in this repository; then perform one live document.getInfo round trip against a running Moho Pro with the plugin installed and commit the raw request/response pair plus hashes as docs/evidence/moho-live-ipc/."
+    },
+    {
+      "capabilityId": "moho.tool_surface_contract",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "src/moho/toolNames.ts",
+        "src/moho/registry.ts",
+        "src/moho/mohoTools.ts",
+        "src/hostProfile.ts"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_zod_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "tests/moho/schemas.test.ts"
+      ],
+      "knownFailures": [
+        "Verified on mocks only. tests/moho/schemas.test.ts asserts that every Zod schema maps to a whitelisted Lua method and that argument caps hold; no Moho process is involved.",
+        "Schema coverage is a contract claim, not a behavioural one: a schema can accept a payload that the Lua handler then rejects. Nothing here proves the plugin honours these shapes.",
+        "tests/moho/tools.test.ts does not compile in this repository (imports 'vitest', resolves '../tools.js' and '../moho-client.js'). The assertion that all 59 canonical tool names register is therefore NOT currently executing.",
+        "No test asserts the ANIM_HOST routing invariant, that ANIM_HOST=moho exposes only moho.* and ANIM_HOST=harmony only harmony.*. src/hostProfile.ts is exercised by no test file in tests/.",
+        "The critical rename invariant (MCP tool name != Lua method name) is documented in src/moho/toolNames.ts but is not asserted by any executing test, so a rename that also rewrote the safeSend() method strings would pass CI and silently break a live plugin."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Repair tests/moho/tools.test.ts so the 59-tool registration assertion runs under jest, and add a test that boots the dispatcher under both ANIM_HOST values asserting mutually exclusive prefixes plus that every MOHO_TOOL_NAMES value maps back to an unchanged Lua method string."
+    },
+    {
+      "capabilityId": "moho.document_and_layer_read",
+      "productionStage": "execution",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "moho-plugin/moho_mcp/tools/document.lua",
+        "moho-plugin/moho_mcp/tools/layer.lua"
+      ],
+      "publicTools": [
+        "moho.document.get_info",
+        "moho.document.get_layers",
+        "moho.layer.get_properties",
+        "moho.layer.get_children",
+        "moho.layer.get_bones"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Schema/type contract only. The Zod input shapes and the TypeScript build are validated; no assertion exists in this repository that a real Moho returns the documented fields.",
+        "The upstream CAPABILITY_MATRIX.md marks every one of these tools 'simulated' with 'Real Moho Test: Not Executed'. document.getInfo and document.getLayers were the only two operations ever confirmed live, and that was in the separate moho-mcp-server repository with no committed evidence bundle.",
+        "The mock in tests/moho/tools.test.ts resolves every sendRequest to { ok: true }, so even when that suite is repaired it proves registration and not field-level correctness of any read.",
+        "Return-shape parsing is unvalidated: nothing checks that a missing or renamed Moho API field (doc:Fps() on a document with no timeline) degrades rather than surfacing undefined to the model."
+      ],
+      "blockingReason": "No executing test in this repository covers these read paths, and no live-Moho evidence bundle exists under docs/evidence/. Level cannot exceed contract_verified.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Run moho.document.get_info and moho.document.get_layers against a live Moho Pro with a known fixture .moho file and commit the raw responses, asserting measured width/height/fps/layer count against that fixture as docs/evidence/moho-live-read/."
+    },
+    {
+      "capabilityId": "moho.document_and_layer_mutation",
+      "productionStage": "execution",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "moho-plugin/moho_mcp/tools/document.lua",
+        "moho-plugin/moho_mcp/tools/layer.lua"
+      ],
+      "publicTools": [
+        "moho.document.set_frame",
+        "moho.document.create_layer",
+        "moho.document.save",
+        "moho.layer.set_transform",
+        "moho.layer.set_visibility",
+        "moho.layer.set_opacity",
+        "moho.layer.set_name",
+        "moho.layer.select",
+        "moho.layer.reorder",
+        "moho.layer.set_blend_mode",
+        "moho.layer.set_mask",
+        "moho.layer.create_group",
+        "moho.layer.create_switch",
+        "moho.layer.delete"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Schema/type contract only, verified on mocks. No write has ever been executed against a real Moho document: the upstream matrix records 'Real Moho Test: Not Executed' for every mutating tool.",
+        "Native undo is claimed upstream via moho:Undo() but was never exercised, so rollback after a failed write is unproven.",
+        "moho.layer.delete is destructive and requires a previewHash. That requirement is asserted by tests/moho/schemas.test.ts, but the safety engine's own plan round-trip test currently FAILS (see moho.destructive_operation_safety), so the confirmation path is not trustworthy.",
+        "No readback-after-write assertion exists anywhere: nothing proves that set_opacity followed by get_properties returns the value that was written."
+      ],
+      "blockingReason": "No write has been executed against a real Moho, and no test in this repository asserts a write followed by a readback. Mutating a user's document on the strength of mock-only verification is exactly the overclaim this registry exists to prevent.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Against a live Moho and a throwaway fixture document, execute set_opacity / set_name / set_transform, read the value back through the corresponding get_properties call, then undo and confirm restoration; commit the before/after/undo triples as docs/evidence/moho-live-mutation/."
+    },
+    {
+      "capabilityId": "moho.bone_and_animation",
+      "productionStage": "animation",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "moho-plugin/moho_mcp/tools/bone.lua",
+        "moho-plugin/moho_mcp/tools/animation.lua"
+      ],
+      "publicTools": [
+        "moho.bone.get_properties",
+        "moho.bone.set_transform",
+        "moho.bone.select",
+        "moho.bone.create",
+        "moho.bone.set_constraints",
+        "moho.bone.set_target",
+        "moho.bone.set_parent",
+        "moho.animation.get_keyframes",
+        "moho.animation.get_frame_state",
+        "moho.animation.set_keyframe",
+        "moho.animation.set_multi_keyframe",
+        "moho.animation.delete_keyframe",
+        "moho.animation.set_interpolation",
+        "moho.animation.get_point_anim"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Schema/type contract only, verified on mocks. No bone or keyframe operation has been executed in a real Moho; upstream records 'Not Executed' for all fourteen tools.",
+        "tests/moho/schemas.test.ts proves only argument-level rules: the interpolation-mode enum is complete and set_multi_keyframe caps at 200 keyframes. It says nothing about whether a written keyframe lands on the intended frame or channel.",
+        "moho.animation.delete_keyframe is destructive and depends on the previewHash confirmation path, which has a currently failing test (see moho.destructive_operation_safety).",
+        "Interpolation semantics are entirely unvalidated: no test or live run compares an interpolated curve against Moho's own evaluation, so a mismatched interpolation constant would go unnoticed.",
+        "Rig-level correctness (parenting cycles, IK target resolution, constraint interaction) has no coverage of any kind."
+      ],
+      "blockingReason": "No live execution and no behavioural test. Animation writes are the highest-consequence surface here — a silently wrong frame or channel corrupts a shot — so no level above contract_verified is defensible.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "In a live Moho, set a keyframe at a known frame on a known channel, read it back with get_keyframes, and confirm frame index, value and interpolation mode round-trip exactly; repeat for a bone transform and commit as docs/evidence/moho-live-animation/."
+    },
+    {
+      "capabilityId": "moho.mesh_authoring",
+      "productionStage": "assets",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "moho-plugin/moho_mcp/tools/mesh.lua"
+      ],
+      "publicTools": [
+        "moho.mesh.get_points",
+        "moho.mesh.get_shapes",
+        "moho.mesh.create_point",
+        "moho.mesh.create_bezier",
+        "moho.mesh.weld",
+        "moho.mesh.set_fill",
+        "moho.mesh.set_stroke",
+        "moho.mesh.set_gradient",
+        "moho.mesh.set_curvature"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Schema/type contract only, verified on mocks. Upstream marks mesh tools 'simulated' with no real execution.",
+        "tests/moho/schemas.test.ts covers only payload admissibility: create_point accepts a minimal payload and optional bezier handles, create_bezier requires at least two points. No geometry is ever produced or measured.",
+        "No fidelity measurement exists: nothing compares a created bezier against its intended control points, so a handle-convention mismatch between this bridge and Moho's own representation would be invisible.",
+        "moho.mesh.weld mutates topology irreversibly in practice and has neither a live run nor a readback assertion."
+      ],
+      "blockingReason": "No live execution and no geometric measurement. Mesh authoring claims require comparing produced geometry against intent, which has never been done.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Create a known bezier in a live Moho, read it back with get_points, and measure deviation between the requested and stored control points and curvature; commit the comparison as docs/evidence/moho-live-mesh/."
+    },
+    {
+      "capabilityId": "moho.batch_execution",
+      "productionStage": "execution",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "src/moho/security/mohoSafetyEngine.ts",
+        "moho-plugin/moho_mcp/tools/batch.lua"
+      ],
+      "publicTools": [
+        "moho.batch.execute"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Schema/type contract only. The batch size cap (maxBatchSize, default 50) is asserted by tests/moho/schemas.test.ts; atomicity is not asserted anywhere that executes.",
+        "tests/moho/simulated_moho_e2e.test.ts, the only end-to-end exercise of batching against a simulated IPC daemon, does NOT compile in this repository (imports 'vitest', resolves '../moho-client.js' and '../config.js'). Its 12-step scenario is currently not running, so no simulator_verified claim is available.",
+        "Nested-batch safety validation is covered by tests/moho/safety_engine.test.ts, which also does not compile here.",
+        "Atomicity is the entire value of this tool and is unproven at every level: nothing demonstrates that a failure at operation N leaves operations 1..N-1 rolled back rather than half-applied."
+      ],
+      "blockingReason": "The batch end-to-end and safety suites do not currently execute in this repository, and atomic rollback has never been demonstrated against any host, simulated or real.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Repair tests/moho/simulated_moho_e2e.test.ts and tests/moho/safety_engine.test.ts to run under jest, then prove partial-failure rollback: submit a batch whose third operation is guaranteed to fail and assert via readback that the first two were reverted."
+    },
+    {
+      "capabilityId": "moho.workflow_macros",
+      "productionStage": "orchestration",
+      "implementationFiles": [
+        "src/moho/tools.ts",
+        "src/moho/schemas.ts",
+        "moho-plugin/moho_mcp/tools/workflow.lua"
+      ],
+      "publicTools": [
+        "moho.workflow.apply_lipsync",
+        "moho.workflow.create_smart_bone",
+        "moho.workflow.duplicate_layer_tree",
+        "moho.workflow.batch_render",
+        "moho.workflow.project_diagnostics",
+        "moho.workflow.create_character_rig"
+      ],
+      "backendType": "moho_lua_plugin_ipc",
+      "verificationLevel": "unaudited",
+      "evidencePaths": [],
+      "knownFailures": [
+        "The upstream CAPABILITY_MATRIX.md classifies workflow_createCharacterRig, workflow_setupSmartBone and workflow_applyLipSync as 'experimental': 'High-level workflow planning tool without proven atomic Lua API chain', with 'Lua Handler File: None' and 'Real Moho API Methods Used: None'.",
+        "That upstream table is now partly stale in this checkout: moho-plugin/moho_mcp/tools/workflow.lua does define handlers and validator.lua whitelists all six methods. The bridge forwards them via safeSend. Whether those Lua chains actually work is untested either way, which is precisely why this sits at unaudited rather than contract_verified.",
+        "Only one workflow-level assertion executes anywhere: tests/moho/schemas.test.ts confirms apply_lipsync rejects an unknown phoneme. No test covers rig construction, smart-bone setup, layer-tree duplication or render orchestration.",
+        "moho.workflow.batch_render is destructive, requires a previewHash, writes files to disk and is additionally gated by the screenshot flag via checkScreenshotPermission(); none of that composed behaviour is tested.",
+        "Multi-step macros fail in the most expensive way: a partially built rig looks plausible and is discovered wrong only downstream."
+      ],
+      "blockingReason": "Upstream marks these experimental with no proven atomic Lua chain; this checkout contains Lua handlers whose correctness has never been audited or executed. Neither the optimistic reading (handlers exist) nor the pessimistic one (planning only) has been verified, so the honest level is unaudited.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Audit moho-plugin/moho_mcp/tools/workflow.lua against the Moho Lua API to confirm each macro's call chain, then execute create_character_rig in a live Moho and assert via get_bones that the produced skeleton matches the requested profile; commit as docs/evidence/moho-live-workflow/."
+    },
+    {
+      "capabilityId": "moho.destructive_operation_safety",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "src/moho/security/mohoSafetyEngine.ts",
+        "src/moho/config.ts",
+        "moho-plugin/moho_mcp/validator.lua"
+      ],
+      "publicTools": [],
+      "backendType": "typescript_local",
+      "verificationLevel": "unaudited",
+      "evidencePaths": [],
+      "knownFailures": [
+        "A safety test currently FAILS in this repository. `npx jest tests/moho/schemas.test.ts` reports 15 passed, 1 failed: 'safety engine > plan round-trip: create then validate within TTL'. validatePreviewConfirmation() rejects a hash it just issued, raising MohoValidationError because the approved params {\"channel\":\"x\",\"frame\":1,\"layerId\":1} do not match the requested {}.",
+        "Either the engine's parameter binding is stricter than the round-trip contract or the converted test calls it wrongly. Until that is resolved, the previewHash confirmation gate protecting every destructive Moho tool (layer.delete, animation.deleteKeyframe, workflow.batchRender) cannot be described as working.",
+        "tests/moho/safety_engine.test.ts, which covers method whitelisting, destructive-method detection, plan TTL, nested batch validation and path sandboxing, does NOT compile here: it imports 'vitest' and resolves '../security/mohoSafetyEngine.js' instead of '../../src/moho/security/mohoSafetyEngine.js'. The bulk of the safety coverage is therefore not running.",
+        "The Lua-side whitelist in moho-plugin/moho_mcp/validator.lua is a second, independent enforcement point with no automated coverage at all; TypeScript and Lua whitelists could drift apart silently.",
+        "Path sandboxing is asserted only in the negative direction that survives (rejects when no allowed dirs are configured); no positive test proves a traversal attempt against a configured allowlist is blocked."
+      ],
+      "blockingReason": "The destructive-operation confirmation path has a failing test in this repository and its primary suite does not compile. A safety mechanism that is not demonstrably working must not be recorded as verified, because every destructive Moho capability depends on it.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Resolve the failing 'plan round-trip' assertion by determining whether MohoSafetyEngine.validatePreviewConfirmation or the test is wrong, repair tests/moho/safety_engine.test.ts to execute under jest, and add a positive path-traversal rejection test plus an assertion that the TypeScript and validator.lua whitelists are identical."
+    },
+    {
+      "capabilityId": "moho.ui_automation_and_capture",
+      "productionStage": "execution",
+      "implementationFiles": [
+        "src/moho/platform-input.ts",
+        "src/moho/platform-capture.ts",
+        "src/moho/darwin-input.ts",
+        "src/moho/win32-input.ts",
+        "src/moho/darwin-capture.ts",
+        "src/moho/window-capture.ts",
+        "src/moho/config.ts",
+        "src/moho/tools.ts"
+      ],
+      "publicTools": [
+        "moho.input.mouse_click",
+        "moho.input.mouse_drag",
+        "moho.input.send_keys",
+        "moho.document.screenshot",
+        "moho.document.screenshot_window",
+        "moho.document.render"
+      ],
+      "backendType": "os_input_and_screen_capture",
+      "verificationLevel": "unaudited",
+      "evidencePaths": [],
+      "knownFailures": [
+        "DISABLED BY DEFAULT — these tools do not work unless the operator opts in. moho.input.* is gated on MOHO_MCP_ENABLE_UI_AUTOMATION, which defaults to false in src/moho/config.ts; platform-input.ts refuses at config.moho.enableUiAutomation and tools.ts additionally checks config.uiAutomation.enabled. moho.document.screenshot, screenshot_window and render are gated on MOHO_MCP_ENABLE_SCREENSHOTS, also default false, via checkScreenshotPermission(). With default environment every one of these six tools returns a refusal, not a result.",
+        "Only the refusal side is verified. tests/moho/config.test.ts ('uiAutomation section > exists with conservative defaults') passes and confirms the flags default off; nothing exercises the enabled path.",
+        "No OS-level input event or screen capture has ever been executed and verified, on either platform. Upstream marks all of these 'simulated' with 'Real Moho Test: Not Executed'.",
+        "Windows is entirely unverified: src/moho/win32-input.ts has never been run: this integration was only ever exercised on macOS Apple Silicon.",
+        "Blind input automation is the most dangerous surface in the bridge. Clicks and keystrokes carry no native undo (upstream 'Native Undo: No') and land wherever the pointer resolves, so a stale coordinate can mutate an unrelated document. The declared mitigations (foreground enforcement, Moho-window bounding, 10/s rate limit, Ctrl+Alt+Shift+X emergency stop) are configuration values in config.ts with no test proving any of them is enforced.",
+        "Screenshot output is unvalidated: nothing asserts a produced PNG decodes. This repository already contains 71 fabricated placeholder MP4s, so an untested capture path must not be assumed to yield real media."
+      ],
+      "blockingReason": "Off by default (MOHO_MCP_ENABLE_UI_AUTOMATION and MOHO_MCP_ENABLE_SCREENSHOTS both false), and the enabled path has never been executed or tested on either macOS or Windows. Only the refusal behaviour is verified. The safety rails are unenforced configuration.",
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "With MOHO_MCP_ENABLE_SCREENSHOTS=true, capture the Moho window and assert the PNG decodes to expected dimensions. Separately, with MOHO_MCP_ENABLE_UI_AUTOMATION=true, prove each declared rail actually holds: a click outside the Moho window is refused, the rate limit throttles, and the emergency stop halts a drag; commit as docs/evidence/moho-ui-automation/. Windows requires its own run."
+    },
+    {
+      "capabilityId": "moho.system_observability",
+      "productionStage": "infrastructure",
+      "implementationFiles": [
+        "src/moho/observability/slo.ts",
+        "src/moho/observability/logger.ts",
+        "src/moho/observability/errors.ts",
+        "src/moho/observability/redaction.ts",
+        "src/moho/resources.ts",
+        "src/moho/tools.ts"
+      ],
+      "publicTools": [
+        "moho.system.get_capabilities",
+        "moho.system.diagnose",
+        "moho.system.slo_snapshot",
+        "moho.document.diagnose"
+      ],
+      "backendType": "typescript_local",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "tests/moho/observability.test.ts"
+      ],
+      "knownFailures": [
+        "Verified offline only, and only for the local primitives: tests/moho/observability.test.ts asserts quantile maths, counter ring-buffer capping, Prometheus text rendering, retryable-error classification, correlation-id length, stderr/file sinks and secret redaction. All 18 assertions pass.",
+        "The reporting tools themselves are untested. moho.system.diagnose and moho.document.diagnose reach into IPC or the plugin; no executing test covers their output, and tests/moho/tools.test.ts (which would at least prove they register) does not compile here. moho.workflow.project_diagnostics is deliberately NOT listed here: it is a workflow macro and is recorded under moho.workflow_macros at unaudited.",
+        "Redaction is key-name based. A secret placed in an unrecognised field, or embedded in a free-text message, is logged verbatim.",
+        "SLO figures reflect only bridge-side timing. With no live Moho ever measured in this repository, the latency they report has never been compared against real plugin round-trip time."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-09",
+      "nextRequiredProof": "Repair tests/moho/tools.test.ts so the diagnostic tools' registration is asserted, add a test that moho.system.get_capabilities truthfully reports screenshotsEnabled and uiAutomationEnabled under both flag settings, and compare a recorded SLO latency against a live plugin round trip."
     }
   ],
   "fixtureNotes": [
+    {
+      "path": "tests/moho/*.test.ts",
+      "finding": "As of 2026-08-09 only 4 of 9 Moho suites execute under jest in this repository: config.test.ts (12 passed), protocol.test.ts, observability.test.ts (18 passed) and schemas.test.ts (15 passed, 1 FAILED). The remaining five — tools.test.ts, safety_engine.test.ts, moho-client.test.ts, adversarial_ipc.test.ts, simulated_moho_e2e.test.ts — fail to compile because they still import from 'vitest' and resolve sibling modules as '../tools.js' rather than '../../src/moho/tools.js'.",
+      "impact": "Any Moho capability whose evidence lives in a non-compiling suite is recorded at contract_verified or unaudited, not offline_verified. The single failing assertion is in the destructive-operation confirmation path, so moho.destructive_operation_safety is unaudited despite the code being present."
+    },
+    {
+      "path": "../moho-mcp-server/REAL_MOHO_TEST_REPORT.md",
+      "finding": "The only live Moho verification on record (Moho Pro 14.0, macOS Apple Silicon, document.getInfo + document.getLayers, avg 18.6ms over 5 round trips) was executed in the separate moho-mcp-server repository at commit 87ddabbb610a5970f4cc52369a0aba3e3aac8b14. Its raw request/response JSON was never copied into this repository as an evidence bundle, and per the integration contract that repository is now an archive with the upstream link severed.",
+      "impact": "No Moho capability in this registry may cite live-Moho verification. docs/evidence/ contains no moho-* bundle. Every Moho entry is capped at offline_verified and only where a compiling, passing test exists here."
+    },
+    {
+      "path": "../moho-mcp-server/CAPABILITY_MATRIX.md",
+      "finding": "The upstream matrix marks all 59 Moho tools 'simulated' (verified via Zod schemas, unit tests and simulated IPC fixtures) with 'Real Moho Test: Not Executed', and three workflow tools 'experimental' (planning only, 'Lua Handler File: None'). That workflow row is partly stale in this checkout: moho-plugin/moho_mcp/tools/workflow.lua now defines handlers and validator.lua whitelists all six workflow methods.",
+      "impact": "moho.workflow_macros sits at unaudited rather than contract_verified: the pessimistic upstream claim (no Lua chain) and the optimistic local reading (handlers exist) are both unverified, and choosing the optimistic one without an audit would be the exact overclaim this registry prevents."
+    },
     {
       "path": "fixtures/character.png",
       "finding": "This is a 512x512 photograph of an astronaut (STS-93 mission patch visible), i.e. the standard scikit-image 'astronaut' sample, not an animation character. ML claims described as verified on a 'character' were verified on a stock photograph.",

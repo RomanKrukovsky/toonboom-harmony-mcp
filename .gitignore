@@ -51,3 +51,7 @@ fixtures/video/*
 *.mp4
 harmony/client/testrig/out_*.png
 harmony/client/out_*.png
+.gauntlet/
+
+# Временная сборка для живых проверок (см. scripts/verify_moho_live.mjs)
+.probe-dist/

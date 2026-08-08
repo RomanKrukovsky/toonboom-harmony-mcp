@@ -76,8 +76,16 @@ import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.j
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
+import { activeHost, HOST_ENV_VAR } from './hostProfile.js';
+// Импортируется статически намеренно: registry.ts тянет только toolNames.ts
+// (карту имён без зависимостей) и НЕ тянет IPC-клиент или конфиг Moho,
+// поэтому ленивость Moho-моста сохраняется. Проверено запуском: сломанный
+// mohoTools.js не мешает старту в режиме harmony.
+import { MohoToolError } from './moho/registry.js';
+import type { TypedTool } from './tools/defineTool.js';
+import type { z } from 'zod';
 
-const allTools = [
+const harmonyTools = [
   ...harmonyActionRecorderTools,
   ...vectorizationTools,
   ...studioPackageTools,
@@ -142,6 +150,28 @@ const allTools = [
   ...systemHealthTools
 ];
 
+/**
+ * Набор тулов активного хоста.
+ *
+ * Сервер обслуживает два пакета анимации, но НИКОГДА оба сразу: 561 тул
+ * Harmony и 59 тулов Moho вместе дают 620 описаний, которые уходят в контекст
+ * модели при каждом запуске и ухудшают выбор тула. Человек работает либо в
+ * Moho, либо в Harmony, поэтому активный хост фиксируется на старте
+ * переменной ANIM_HOST (см. src/hostProfile.ts).
+ *
+ * Moho-мост подключается ЛЕНИВО, динамическим import внутри ветки: его модули
+ * создают IPC-клиент и читают собственный конфиг, и при ANIM_HOST=harmony
+ * этого не должно происходить вовсе. Поэтому функция асинхронная — статический
+ * импорт затащил бы Moho в каждый запуск Harmony-сервера.
+ */
+async function resolveActiveTools(): Promise<TypedTool<z.ZodTypeAny>[]> {
+  const host = activeHost();
+  if (host === 'harmony') return harmonyTools as unknown as TypedTool<z.ZodTypeAny>[];
+
+  const { buildMohoTools } = await import('./moho/mohoTools.js');
+  return buildMohoTools();
+}
+
 function zodFieldToJsonSchema(schema: any): any {
   const description = schema.description;
   const typeName = schema?._def?.typeName;
@@ -196,6 +226,12 @@ function zodFieldToJsonSchema(schema: any): any {
 class HarmonyMcpServer {
   private server: Server;
 
+  /**
+   * Тулы активного хоста. Заполняется в run() до подключения транспорта:
+   * набор Moho грузится динамическим import, а конструктор синхронный.
+   */
+  private tools: TypedTool<z.ZodTypeAny>[] = [];
+
   constructor() {
     this.server = new Server(
       {
@@ -218,7 +254,7 @@ class HarmonyMcpServer {
     // 1. Получение списка доступных инструментов (Tools)
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
-        tools: allTools.map(t => ({
+        tools: this.tools.map(t => ({
           name: t.name,
           description: t.description,
           inputSchema: zodFieldToJsonSchema(t.inputSchema)
@@ -228,7 +264,7 @@ class HarmonyMcpServer {
 
     // 2. Вызов конкретного инструмента (Call Tool)
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const tool = allTools.find(t => t.name === request.params.name);
+      const tool = this.tools.find(t => t.name === request.params.name);
       if (!tool) {
         return {
           content: [{ type: 'text', text: `Инструмент не найден: ${request.params.name}` }],
@@ -260,12 +296,17 @@ class HarmonyMcpServer {
           ]
         };
       } catch (error: any) {
-        const isHarmonyErr = error instanceof HarmonyError;
+        // Код и детали умеют нести оба типа ошибок: HarmonyError и MohoToolError
+        // (последний восстанавливается из ответа Moho-тула, см. src/moho/registry.ts).
+        // Проверять только HarmonyError означало бы терять код ошибки Moho —
+        // клиент получал бы UNKNOWN_ERROR вместо, например, таймаута IPC, и по
+        // ответу нельзя было бы отличить «Moho не отвечает» от настоящего сбоя.
+        const typed = error instanceof HarmonyError || error instanceof MohoToolError;
         const errObj = {
           error: true,
-          code: isHarmonyErr ? error.code : 'UNKNOWN_ERROR',
+          code: typed ? error.code : 'UNKNOWN_ERROR',
           message: error.message || 'Произошла непредвиденная ошибка.',
-          details: isHarmonyErr ? error.details : undefined
+          details: typed ? error.details : undefined
         };
 
         return {
@@ -337,9 +378,20 @@ class HarmonyMcpServer {
   }
 
   async run() {
+    // Набор тулов выбирается ДО подключения транспорта: клиент запрашивает
+    // список сразу после рукопожатия, и пустой список означал бы сервер без
+    // единого тула.
+    this.tools = await resolveActiveTools();
+
+    const host = activeHost();
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('MCP-сервер Toon Boom Harmony запущен по каналу stdio');
+
+    // Логи только в stderr: stdout занят каналом JSON-RPC, любая посторонняя
+    // запись туда ломает протокол.
+    console.error(
+      `MCP-сервер запущен по каналу stdio: хост ${host} (${HOST_ENV_VAR}), тулов ${this.tools.length}`
+    );
   }
 }
 
