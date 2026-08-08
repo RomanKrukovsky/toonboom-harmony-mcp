@@ -46,15 +46,15 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">20 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">21 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>20</b><span>rounds</span></div>
+<div class="stat"><b>21</b><span>rounds</span></div>
 <div class="stat"><b>13</b><span>ours won</span></div>
-<div class="stat"><b>2</b><span>win streak</span></div>
+<div class="stat"><b>0</b><span>win streak</span></div>
 <div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
@@ -591,6 +591,35 @@ Blender 5.1.1, commit 894b067.
 …</pre>
 <div class="body"><div class="row"><span class="rnd">20</span><span class="badge b-win">OURS WINS</span><span class="badge">resilience</span><span class="badge">отчёт и прогресс для оператора</span></div>
 <div class="gap"><em>gap sent back</em>восстановленный отчёт печатается только при СЛЕДУЮЩЕМ запуске той же команды — оператор, который утром просто открывает каталог (или чей следующий запуск идёт с другим `--out`, или кто вообще решает не продолжать), по-прежнему находит `journal.jsonl` и не знает, что рядом есть восстановимый итог</div>
+</div></div>
+<div class="card">
+<pre># Раунд 21 — отчёт и прогресс для оператора — линза: resume
+
+Вопрос линзы: **после kill -9 прогон продолжается с места остановки. Что
+пересчитывается лишнего? Смотреть на замер «сколько работы пропало».**
+
+На этой части вопрос другой: что отчёт ГОВОРИТ про досчёт. Blender 5.1.1,
+commit 706882d.
+
+## Отчёт не помнил аварию
+
+Прогон 8 шотов, kill -9 после трёх, затем досчёт. Итоговый отчёт:
+
+```
+  ПОСЛЕ ПАДЕНИЯ: partial=True, ok 3/8, не начато 5
+  ПОСЛЕ ДОСЧЁТА: partial=None, ok 8/8, resumed=3, rendered_now=30
+  seconds=13.53
+```
+
+Три вопроса, на которые ответа не было:
+
+| вопрос | ответ |
+|---|---|
+| сколько времени ушло ВСЕГО (оба прогона) | **нет в отчёте** |
+| какие прогоны участвовали | **н
+…</pre>
+<div class="body"><div class="row"><span class="rnd">21</span><span class="badge b-lose">BAR WINS</span><span class="badge">resume</span><span class="badge">отчёт и прогресс для оператора</span></div>
+<div class="gap"><em>gap sent back</em>неуникальная метка прогона нашлась случайно — регрессия начала падать от порядка запуска, и только это привело к дефекту; целенаправленной проверки «различает ли метка два быстрых прогона» не было ни в раунде 11, где механизм объявлен закрытым, ни здесь до самого падения теста</div>
 </div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>

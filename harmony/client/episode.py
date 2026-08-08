@@ -422,6 +422,42 @@ def recover_report(out_dir: Path) -> dict | None:
     }
 
 
+def master_is_stale(out_dir: Path) -> bool:
+    """
+    Мастер старше шотов — то есть собран до того, как шоты пересчитали.
+
+    Раунд 22: третья граница. Шот досчитали с `--no-assemble`, отчёт сохранил
+    `assembly` от прошлой сборки и продолжал описывать вчерашний мастер. Ни
+    preflight, ни сверка кадров этого не видят: файлы на месте, кадры целы —
+    просто мастер собран не из этих шотов.
+
+    Сравниваются времена: журнал шотов против самого мастера. Журнал дописывается
+    на каждый посчитанный шот, поэтому его время — время последнего счёта.
+    """
+    master = out_dir / MASTER
+    journal = out_dir / JOURNAL
+    if not master.is_file() or not journal.is_file():
+        return False
+    return journal.stat().st_mtime > master.stat().st_mtime
+
+
+def _deliverable_ready(asm: dict, failed: list[dict]) -> bool:
+    """
+    Можно ли отдавать серию. ОДНО определение на весь конвейер.
+
+    Раунд 22: ответом служило `complete`, которое отвечает только за счёт — при
+    `--no-assemble` оно было true при отсутствующем мастере, и скрипт в CI,
+    читающий это поле, выложил бы серию, которой нет. Проверяется файл на диске,
+    а не возвращённый словарь: после упавшей сборки словарь от прошлой попытки
+    описывал мастер, которого там уже не было.
+    """
+    return bool(
+        asm and Path(asm.get("master", "")).is_file()
+        and not asm.get("missing_shots") and not asm.get("short_segments")
+        and asm.get("in_tolerance") and "video" in (asm.get("streams") or [])
+        and not failed)
+
+
 def _group_failures(failed: list[dict]) -> dict:
     """Упавшие шоты по ПРИЧИНЕ: одна беда обычно валит много шотов."""
     out: dict = {}
@@ -1087,8 +1123,22 @@ def _run_locked(ep: Episode, workers: int,
         "runs": [{"run": h.get("run"), "started_at": h.get("started_at"),
                   "todo": h.get("todo"), "resumed": h.get("resumed")}
                  for h in history],
+        # `complete` отвечает только за СЧЁТ: все шоты посчитаны, ни один не упал.
+        # Готовность серии — отдельный вопрос, потому что мастера может не быть
+        # (--no-assemble) или он мог не собраться. Раунд 22: отчёт говорил
+        # complete=true при отсутствующем мастере, и скрипт в CI, читающий это
+        # поле, выкладывал серию, которой нет.
         "complete": not failed,
+        "deliverable_ready": False,     # ставится ниже, когда мастер проверен
     }
+    # Мастер мог остаться от прошлой сборки, а шоты — пересчитаться. Раунд 22:
+    # отчёт в этом случае описывал вчерашний мастер и молчал об этом. Проверка
+    # стоит ЗДЕСЬ, до склейки: если сборка сейчас запустится, она перезапишет и
+    # мастер, и эти поля.
+    if master_is_stale(ep.out_dir):
+        report["master_stale"] = True
+        report["assembly_note"] = ("the master on disk is older than the shots — "
+                                   "assemble again")
     write_report(ep.out_dir, report)
     emit({"event": "done", **report})
     return report
@@ -1465,6 +1515,25 @@ def main() -> int:
             if p.get("remedy"):
                 print(f"      -> {p['remedy']}")
     if not pf.ok:
+        # Отчёт от прошлого прогона в этот момент УСТАРЕЛ: preflight отказался
+        # работать, значит состояние каталога изменилось. Раунд 22: отчёт
+        # продолжал утверждать deliverable_ready=true и указывать на мастер,
+        # которого на диске уже не было (на его месте оказался каталог). CI,
+        # читающий это поле, выложил бы отсутствующую серию.
+        stale = ep.out_dir / "report.json"
+        if stale.is_file():
+            try:
+                old = json.loads(stale.read_text(encoding="utf-8"))
+                old["deliverable_ready"] = False
+                old["stale"] = True
+                old["preflight_problems"] = [x["code"] for x in pf.problems]
+                write_report(ep.out_dir, old)
+            except (json.JSONDecodeError, OSError) as exc:
+                # Не молчать: раунд 17 потерял полчаса на `pass`, который съел
+                # NameError. Пометить отчёт нечем — скажем об этом прямо, но
+                # прогон не роняем: preflight и так возвращает 2.
+                print(f"  (could not mark the old report as stale: "
+                      f"{type(exc).__name__})", flush=True)
         if a.json:
             print(json.dumps({"preflight": pf.as_dict()}, ensure_ascii=False, indent=1))
         return 2
@@ -1501,6 +1570,12 @@ def main() -> int:
             (ep.out_dir / "report.recovered.json").write_text(
                 json.dumps(recovered, ensure_ascii=False, indent=1), encoding="utf-8")
 
+    # Мастер старше шотов: собран не из того, что сейчас на диске. Говорится ДО
+    # прогона, потому что оператор может именно за этим и пришёл.
+    if master_is_stale(ep.out_dir) and not a.json:
+        print(f"\nthe master on disk is older than the shots — "
+              f"assemble again (--assemble-only is enough)", flush=True)
+
     if a.assemble_only:
         try:
             asm = assemble(ep)
@@ -1518,6 +1593,9 @@ def main() -> int:
             print(f"master: {asm['master']} — {asm['duration']}s "
                   f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
                   f"streams {asm['streams']}", flush=True)
+            if not _deliverable_ready(asm, []):
+                print(f"  NOT READY TO SHIP: the master is not a complete "
+                      f"episode yet — see the lines below", flush=True)
             if asm.get("reused_segments"):
                 print(f"  reused {len(asm['reused_segments'])} segment(s) "
                       f"unchanged since the last assembly", flush=True)
@@ -1535,6 +1613,26 @@ def main() -> int:
                 for sh in asm["short_segments"]:
                     print(f"    {sh['shot']}: {sh['frames']} of {sh['expected']} "
                           f"frames — a PNG is missing or unreadable", flush=True)
+        # Отчёт на диск и из этого пути. Раунд 22: --assemble-only (раунд 18) не
+        # писал report.json вообще, поэтому его результат нигде не оставался — а
+        # PRODUCTION.md велит утром смотреть именно файл. И помета «мастер старше
+        # шотов» не снималась после успешной сборки, потому что снимать её было
+        # некому.
+        prev = ep.out_dir / "report.json"
+        report = {}
+        if prev.is_file():
+            try:
+                report = json.loads(prev.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                report = {}
+        report["assembly"] = {k: v for k, v in asm.items()
+                              if k not in ("layout", "order")}
+        report["assembly"]["shots_in_master"] = len(asm.get("order") or [])
+        report["deliverable_ready"] = _deliverable_ready(asm, report.get("failed") or [])
+        report.pop("master_stale", None)
+        report.pop("assembly_note", None)
+        report["assembled_at"] = time.time()
+        write_report(ep.out_dir, report)
         return 1 if (asm["missing_shots"] or asm.get("short_segments")
                      or not asm["in_tolerance"]) else 0
 
@@ -1641,6 +1739,11 @@ def main() -> int:
             report["assembly"] = {k: v for k, v in asm.items()
                                   if k not in ("layout", "order")}
             report["assembly"]["shots_in_master"] = len(asm.get("order") or [])
+            # Готовность серии проверяется по ФАЙЛУ на диске, а не по возвращённому
+            # словарю. Раунд 22: после упавшей сборки в отчёте оставался assembly от
+            # прошлой удачной попытки, и он описывал мастер, которого на диске уже
+            # не было (на его месте оказался каталог).
+            report["deliverable_ready"] = _deliverable_ready(asm, report["failed"])
             # Отчёт перезаписывается ПОСЛЕ сборки. Раунд 15: report.json писался
             # только в run_episode, до склейки, и результат сборки в него не
             # попадал вообще — при успехе. Оператор утром открывал файл и не
@@ -1656,6 +1759,12 @@ def main() -> int:
                 # доходили, и оператор утром видел «master: 1.523s» над серией
                 # без двух шотов. Тот же класс дефекта, что трейсбек вместо
                 # инструкции — верная информация в непригодной подаче.
+                # Главный вопрос оператора — можно ли отдавать серию. До раунда
+                # 22 ответом служило `complete`, которое отвечает только за счёт:
+                # при --no-assemble оно было true при отсутствующем мастере.
+                if not report.get("deliverable_ready"):
+                    print(f"  NOT READY TO SHIP: the master is not a complete "
+                          f"episode yet — see the lines below", flush=True)
                 if asm.get("reused_segments"):
                     print(f"  reused {len(asm['reused_segments'])} segment(s) "
                           f"unchanged since the last assembly", flush=True)
@@ -1681,6 +1790,10 @@ def main() -> int:
             # Причина и действие — оператору; лог ffmpeg — в отчёт на диск, для
             # того, кто полезет разбираться. Печатать 1200 символов лога в
             # терминал значит утопить в нём причину (раунд 14).
+            # Описание мастера от ПРОШЛОЙ сборки устарело в момент падения этой:
+            # отчёт не должен указывать на файл, которого может уже не быть.
+            report.pop("assembly", None)
+            report["deliverable_ready"] = False
             report["assembly_error"] = getattr(e, "reason", str(e))
             report["assembly_remedy"] = getattr(e, "remedy", "")
             report["assembly_log"] = getattr(e, "log", "")

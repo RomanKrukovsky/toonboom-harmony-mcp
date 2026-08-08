@@ -158,6 +158,21 @@ def test_tampered_ledger_is_caught():
         assert broken, "подделка не поймана"
 
 
+def test_deliverable_ready_on_an_empty_assembly():
+    """Пустой ввод: сборки не было — серия не готова, а не «готова по умолчанию»."""
+    assert E._deliverable_ready({}, []) is False
+    assert E._deliverable_ready(None, []) is False
+
+
+def test_complete_does_not_imply_shippable():
+    """Границы для флагов: посчитано ещё не значит собрано."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = ep_of(Path(d), n=2)
+        rep = run_episode(ep, renderer=fake)      # renderer=fake, сборки нет
+        assert rep["complete"] is True, rep
+        assert rep["deliverable_ready"] is False, rep
+
+
 if __name__ == "__main__":
     import sys
     import traceback

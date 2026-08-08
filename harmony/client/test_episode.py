@@ -255,6 +255,93 @@ def test_assemble_returns_the_master_layout_shape():
     assert 'master_assembled' in src, "сборка не пишется в реестр"
 
 
+def test_complete_and_shippable_are_different_questions():
+    """`complete` отвечает только за СЧЁТ: все шоты посчитаны, ни один не упал.
+    При --no-assemble оно было true при ОТСУТСТВУЮЩЕМ мастере, и скрипт в CI,
+    читающий это поле, выложил бы серию, которой нет. Раунд 22."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "deliverable_ready" in src, "готовность серии не считается"
+    assert "NOT READY TO SHIP" in src, "оператор не узнает, что отдавать нельзя"
+    # Готовность проверяется ФАЙЛОМ, а не словарём: после упавшей сборки словарь
+    # от прошлой попытки описывал мастер, которого на диске уже не было.
+    ready = inspect.getsource(E._deliverable_ready)
+    assert "is_file()" in ready, "готовность верит словарю, а не диску"
+
+
+def test_deliverable_ready_says_no_on_every_broken_case():
+    """Границы (правило раунда 21): каждый случай, при котором серию отдавать
+    нельзя, обязан давать False — иначе поле бесполезно именно там, где нужно."""
+    good = {"master": __file__, "missing_shots": [], "short_segments": [],
+            "in_tolerance": True, "streams": ["video", "audio"]}
+    assert E._deliverable_ready(good, []) is True, "здоровая серия не проходит"
+    cases = {
+        "мастера нет на диске": {**good, "master": "/nope/master.mp4"},
+        "шот не вошёл": {**good, "missing_shots": ["sc002"]},
+        "порча кадров": {**good, "short_segments": [{"shot": "sc002"}]},
+        "длина не сходится": {**good, "in_tolerance": False},
+        "нет видеопотока": {**good, "streams": ["audio"]},
+        "пустая сборка": {},
+    }
+    for name, asm in cases.items():
+        assert E._deliverable_ready(asm, []) is False, f"пропущено: {name}"
+    assert E._deliverable_ready(good, [{"name": "sc002"}]) is False, "упавший шот пропущен"
+
+
+def test_master_older_than_shots_is_flagged():
+    """Третья граница раунда 22: шот досчитали без сборки, и отчёт продолжал
+    описывать вчерашний мастер. Ни preflight, ни сверка кадров этого не видят —
+    файлы на месте, кадры целы, просто мастер собран не из этих шотов."""
+    import shutil as sh
+    if sh.which("ffmpeg") is None:
+        return
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        run(ep)
+        master = ep.out_dir / "master.mp4"
+        master.write_bytes(b"pretend master")        # мастер «есть»
+        assert E.master_is_stale(ep.out_dir) is False, "свежий мастер объявлен старым"
+        time.sleep(0.02)
+        append_journal(ep, {"name": "sc002", "status": "ok", "frames": 4,
+                            "seconds": 0.01, "dir": str(ep.out_dir / "sc002"),
+                            "audio": None, "fingerprint": ep.shots[1].fingerprint(),
+                            "run": "x", "finished_at": time.time()})
+        assert E.master_is_stale(ep.out_dir) is True, "пересчёт шота не замечен"
+
+
+def test_stale_master_check_survives_missing_files():
+    """Границы: нет мастера или нет журнала — не «устарел», а «нечего сравнивать»."""
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        assert E.master_is_stale(out) is False
+        (out / "journal.jsonl").write_text("{}\n", encoding="utf-8")
+        assert E.master_is_stale(out) is False
+
+
+def test_assemble_only_writes_the_report():
+    """--assemble-only (раунд 18) не писал report.json вообще, поэтому его
+    результат нигде не оставался — а PRODUCTION.md велит утром смотреть файл. И
+    помету «мастер старше шотов» после успешной сборки снимать было некому."""
+    import inspect
+    src = inspect.getsource(E.main)
+    tail = src[src.index("if a.assemble_only:"):]
+    body = tail[:tail.index("def say(") if "def say(" in tail else 2500]
+    assert "write_report" in body, "путь --assemble-only не пишет отчёт"
+    assert 'pop("master_stale"' in body, "помета устаревания не снимается"
+
+
+def test_stale_report_marked_when_preflight_refuses():
+    """Отчёт от прошлого прогона устаревает в момент, когда preflight
+    отказывается работать: состояние каталога изменилось, а отчёт продолжал
+    утверждать deliverable_ready=true и указывать на мастер, которого нет."""
+    import inspect
+    src = inspect.getsource(E.main)
+    i_pf = src.index("if not pf.ok:")
+    tail = src[i_pf:i_pf + 900]
+    assert '"stale"' in tail, "устаревший отчёт не помечается"
+    assert "preflight_problems" in tail, "причина устаревания не названа"
+
+
 def test_report_remembers_the_crash():
     """Итоговый отчёт показывал время ПОСЛЕДНЕГО прогона. Серия 314 шотов, упавшая
     на 200-м (30 минут) и досчитанная за 16, читалась как «16 минут» — оператор
@@ -699,12 +786,17 @@ def test_report_written_after_assembly():
     # её (раскладка перестала попадать в отчёт) и тест упал на изменении, которое
     # ничего не сломало. Проверяется ФАКТ — запись отчёта стоит после сборки, —
     # а гарантия на файле лежит в отдельном тесте ниже.
+    # Расстояние в символах оказалось хрупкой метрикой: раунд 22 вставил между
+    # ними ветку --assemble-only, и тест упал на изменении, которое ничего не
+    # сломало (второй раз на том же тесте — раунд 19 был первым). Проверяется
+    # ПОРЯДОК: после каждого присваивания assembly есть запись отчёта.
     import inspect
     src = inspect.getsource(E.main)
-    i_asm = src.index('report["assembly"]')
-    i_write = src.index('report.json', i_asm)
-    assert i_write > i_asm, "отчёт не перезаписывается после сборки"
-    assert i_write - i_asm < 1200, "запись слишком далеко от сборки — проверь порядок"
+    spots = [i for i in range(len(src)) if src.startswith('report["assembly"]', i)]
+    assert spots, "отчёт не получает результат сборки"
+    for i in spots:
+        assert "write_report" in src[i:], "после сборки отчёт не пишется"
+    # И гарантия на ФАЙЛЕ лежит в отдельном тесте ниже — она и есть настоящая.
 
 
 def test_successful_run_leaves_assembly_in_the_report_file():

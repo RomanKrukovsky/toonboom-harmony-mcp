@@ -1,0 +1,77 @@
+{
+ "doc_commands": [
+  {
+   "cmd": "python3 episode.py --demo --shots 3 --dry-run",
+   "exit": 0,
+   "seconds": 0.3,
+   "stdout_tail": [
+    "episode: demo — 3 shots, 36 frames, 1.5s",
+    "preflight: ok (~0.0 GB needed, 33.47 GB free)",
+    "dry run: nothing rendered"
+   ],
+   "stderr_tail": []
+  },
+  {
+   "cmd": "python3 episode.py --demo --shots 3 --frames 12 --out /tmp/capture_report/first",
+   "exit": 0,
+   "seconds": 3.7,
+   "stdout_tail": [
+    "  ok   sc003  3/3  11.04 fps",
+    "rendered 36 frames in 3.27s (11.0 fps), 0 failed",
+    "master: /tmp/capture_report/first/master.mp4 — 1.5s (expected 1.5s, drift +0.000s), streams ['video', 'audio']"
+   ],
+   "stderr_tail": []
+  }
+ ],
+ "progress": {
+  "declares_total": true,
+  "declares_workers": true,
+  "reports_position": true,
+  "reports_rate": true,
+  "reports_eta": true,
+  "final_summary": true,
+  "events": 6
+ },
+ "errors": {
+  "problems": [
+   {
+    "case": "no_parts",
+    "code": "NO_PARTS",
+    "has_remedy": true,
+    "message_len": 62
+   },
+   {
+    "case": "empty",
+    "code": "EMPTY_EPISODE",
+    "has_remedy": true,
+    "message_len": 24
+   },
+   {
+    "case": "bad_frames",
+    "code": "NO_PARTS",
+    "has_remedy": true,
+    "message_len": 62
+   },
+   {
+    "case": "bad_frames",
+    "code": "BAD_FRAMES",
+    "has_remedy": true,
+    "message_len": 35
+   },
+   {
+    "case": "no_space",
+    "code": "NO_PARTS",
+    "has_remedy": true,
+    "message_len": 62
+   },
+   {
+    "case": "no_space",
+    "code": "NO_SPACE",
+    "has_remedy": true,
+    "message_len": 36
+   }
+  ],
+  "all_have_remedy": true,
+  "without_remedy": []
+ }
+}
