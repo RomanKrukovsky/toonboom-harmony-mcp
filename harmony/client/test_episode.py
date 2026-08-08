@@ -288,6 +288,115 @@ def test_deliverable_ready_says_no_on_every_broken_case():
     assert E._deliverable_ready(good, [{"name": "sc002"}]) is False, "упавший шот пропущен"
 
 
+def test_broken_provenance_blocks_shipping():
+    """Раунд 6 назвал реестр «тем, что делает конструкцию юридически
+    существующей», раунд 11 подключил, раунд 17 научил отвечать по кадру мастера.
+    А `deliverable_ready` был true при УДАЛЁННОМ реестре и при ПОДДЕЛАННОЙ
+    цепочке — конвейер разрешал отдавать серию ровно тогда, когда доказать
+    происхождение кадров нельзя. Раунд 23."""
+    good = {"master": __file__, "missing_shots": [], "short_segments": [],
+            "in_tolerance": True, "streams": ["video", "audio"]}
+    assert E._deliverable_ready(good, [], {"ok": True}) is True
+    for prov in ({"ok": False, "reason": "no_ledger"},
+                 {"ok": False, "reason": "chain_broken"},
+                 {"ok": False, "reason": "incomplete"},
+                 {"ok": False, "reason": "unreadable"}):
+        assert E._deliverable_ready(good, [], prov) is False, prov
+
+
+def test_check_provenance_names_every_broken_state():
+    """Каждое состояние реестра обязано называться своей причиной: «нет»,
+    «сломан», «неполон» — разные беды и разные действия оператора."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        # нет реестра
+        r = E.check_provenance(out)
+        assert r["ok"] is False and r["reason"] == "no_ledger", r
+        assert r["message"], "нет объяснения"
+        # цел, но неполон — 1 шот из 3
+        lg = Ledger(out / "provenance.jsonl")
+        lg.record("tool", "mcpb/episode", "shot_rendered", "e", (1, 4), ["sc001", "p.json"])
+        r = E.check_provenance(out, ["sc001", "sc002", "sc003"])
+        assert r["ok"] is False and r["reason"] == "incomplete", r
+        assert r["untracked_shots"] == 2, r
+        # тот же реестр без заявленного числа шотов — полон
+        assert E.check_provenance(out)["ok"] is True
+
+
+def test_provenance_completeness_does_not_guess_shot_names():
+    """Первая версия считала шот отслеженным по `name.startswith("sc")` — потому
+    что так названы демо-шоты. На серии, где шоты зовут `ep07_010`, `open`,
+    `credits`, такая проверка либо всегда ругается, либо никогда: то же
+    допущение, на котором раунд 17 поймал нумерацию кадров. Имена берутся из
+    РАСКАДРОВКИ. Разрыв раунда 23."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        lg = Ledger(out / "provenance.jsonl")
+        names = ["open", "ep07_010", "ep07_020", "credits"]
+        for n in names[:2]:
+            lg.record("tool", "mcpb/episode", "shot_rendered", "e07", (1, 96),
+                      [n, "parts.json"])
+        r = E.check_provenance(out, names)
+        assert r["ok"] is False and r["reason"] == "incomplete", r
+        # Имена, а не только счёт: «2 не отслежены» не говорит, какие
+        assert r["untracked"] == ["credits", "ep07_020"], r
+        assert "credits" in r["message"], r["message"]
+        for n in names[2:]:
+            lg.record("tool", "mcpb/episode", "shot_rendered", "e07", (1, 96),
+                      [n, "parts.json"])
+        assert E.check_provenance(out, names)["ok"] is True
+
+
+def test_provenance_check_receives_names_not_a_count():
+    """Число говорит «сколько», но не «какие» — а оператору нужно имя."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "check_provenance(ep.out_dir, [s.name for s in ep.shots])" in src, \
+        "в проверку передаётся не список имён"
+
+
+def test_tampered_chain_reports_the_break_point():
+    """«Сломана» без указания где — половина ответа: раунд 5 уже наступал на это
+    (345 жалоб вместо одной)."""
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        lg = Ledger(out / "provenance.jsonl")
+        for i in range(4):
+            lg.record("agent", "claude", "shot_rendered", "e", (i + 1, i + 1),
+                      [f"sc{i:03d}"])
+        pth = out / "provenance.jsonl"
+        lines = pth.read_text(encoding="utf-8").splitlines()
+        rec = json.loads(lines[1]); rec["origin"] = "human"
+        lines[1] = json.dumps(rec, sort_keys=True, separators=(",", ":"))
+        pth.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        r = E.check_provenance(out)
+        assert r["ok"] is False and r["reason"] == "chain_broken", r
+        assert r["first_break"] == 1, r
+        assert "broken" in r["message"], r
+
+
+def test_cli_says_frames_cannot_be_traced():
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "PROVENANCE:" in src, "состояние реестра не печатается"
+    assert "cannot be traced" in src, "нет объяснения, чем это грозит"
+    # На ОБОИХ путях — полный прогон и --assemble-only
+    assert src.count("PROVENANCE:") >= 2, "один из путей молчит про реестр"
+
+
+def test_prov_defined_before_it_is_used():
+    """Тот же дефект, что в раунде 17: использование раньше определения. Тогда
+    он стоил получаса, потому что `except: pass` съел NameError."""
+    import inspect
+    src = inspect.getsource(E.main)
+    i_def = src.index("prov = check_provenance")
+    i_use = src.index("_deliverable_ready(asm, [], prov)")
+    assert i_def < i_use, "prov используется раньше, чем определён"
+
+
 def test_master_older_than_shots_is_flagged():
     """Третья граница раунда 22: шот досчитали без сборки, и отчёт продолжал
     описывать вчерашний мастер. Ни preflight, ни сверка кадров этого не видят —

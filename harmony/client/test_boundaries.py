@@ -173,6 +173,51 @@ def test_complete_does_not_imply_shippable():
         assert rep["deliverable_ready"] is False, rep
 
 
+def test_check_provenance_on_an_empty_directory():
+    """Пустой ввод: реестра нет — говорим внятно, а не падаем."""
+    with tempfile.TemporaryDirectory() as d:
+        r = E.check_provenance(Path(d))
+        assert r["ok"] is False and r["reason"] == "no_ledger", r
+        assert r["message"], r
+
+
+def test_check_provenance_on_a_garbage_file():
+    """Реестр есть, но это мусор — один обрубок не должен выглядеть как порядок."""
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        (out / "provenance.jsonl").write_text("не json совсем\n", encoding="utf-8")
+        r = E.check_provenance(out)
+        # Обрубки отбрасываются (раунд 11), поэтому реестр читается как ПУСТОЙ;
+        # при заявленном числе шотов это «неполон», и это верный ответ.
+        assert r["ok"] is True or r["reason"] in ("incomplete", "unreadable"), r
+        assert E.check_provenance(out, ["sc001", "sc002", "sc003"])["ok"] is False
+
+
+def test_provenance_check_works_on_any_naming_scheme():
+    """Границы для допущений: проверка не должна зависеть от того, как назвали
+    шоты. Раунд 23 — префикс «sc» был зашит в проверку полноты."""
+    from provenance import Ledger
+    for names in (["sc001", "sc002"], ["open", "credits"], ["a", "b"],
+                  ["ep07_010", "ep07_020"]):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            lg = Ledger(out / "provenance.jsonl")
+            lg.record("tool", "t", "shot_rendered", "e", (1, 4), [names[0], "p.json"])
+            r = E.check_provenance(out, names)
+            assert r["ok"] is False, f"{names}: пропажа не замечена"
+            assert r["untracked"] == [names[1]], f"{names}: {r.get('untracked')}"
+
+
+def test_provenance_of_one_entry_is_not_zero():
+    from provenance import Ledger
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        lg = Ledger(out / "provenance.jsonl")
+        lg.record("tool", "t", "shot_rendered", "e", (1, 4), ["sc001"])
+        r = E.check_provenance(out, ["sc001"])
+        assert r["ok"] is True and r["shots_tracked"] == 1, r
+
+
 if __name__ == "__main__":
     import sys
     import traceback

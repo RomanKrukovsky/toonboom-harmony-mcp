@@ -441,7 +441,70 @@ def master_is_stale(out_dir: Path) -> bool:
     return journal.stat().st_mtime > master.stat().st_mtime
 
 
-def _deliverable_ready(asm: dict, failed: list[dict]) -> bool:
+def check_provenance(out_dir: Path,
+                     shot_names: Sequence[str] | None = None) -> dict:
+    """
+    Состояние реестра происхождения: цел, полон, читаем.
+
+    Раунд 23: `deliverable_ready` был true при УДАЛЁННОМ реестре и при
+    ПОДДЕЛАННОЙ цепочке — то есть конвейер разрешал отдавать серию ровно в том
+    случае, когда доказать происхождение кадров нельзя. Раунд 6 назвал реестр
+    «тем, что делает конструкцию юридически существующей»; серия без него не
+    готовая серия, а юридический риск.
+
+    Возвращает `ok`, число записей, первую точку разрыва и — если переданы имена
+    шотов — какие именно не отслежены.
+
+    Имена берутся из РАСКАДРОВКИ, а не угадываются по префиксу. Раунд 23: первая
+    версия считала шот отслеженным по `name.startswith("sc")`, потому что так
+    названы демо-шоты. На серии, где шоты зовут `ep07_010`, `open`, `credits`,
+    такая проверка либо всегда ругается, либо никогда — то же допущение, на
+    котором раунд 17 поймал нумерацию кадров.
+    """
+    # Только ИМЕНА, без варианта «число шотов». Число говорит «сколько», но не
+    # «какие», а разница именно в этом: оператору нужно имя, чтобы пойти и
+    # починить. Ветку с числом убрал сразу — иначе следующий вызов передаст
+    # `len(ep.shots)`, и допущение вернётся другим путём.
+    names = set(shot_names or ())
+    expected = len(names)
+    p = out_dir / "provenance.jsonl"
+    if not p.is_file():
+        return {"ok": False, "reason": "no_ledger", "entries": 0,
+                "message": "provenance.jsonl is missing — frames cannot be traced"}
+    try:
+        from provenance import Ledger
+        lg = Ledger(p)
+    except Exception as exc:                          # реестр нечитаем целиком
+        return {"ok": False, "reason": "unreadable", "entries": 0,
+                "message": f"provenance.jsonl cannot be read: {type(exc).__name__}"}
+    broken = lg.verify()
+    if broken:
+        return {"ok": False, "reason": "chain_broken", "entries": len(lg._entries),
+                "first_break": lg.first_break(),
+                "message": f"the provenance chain is broken: {broken[0]}"}
+    # Все цели записей о рендере шотов: имя шота лежит здесь вместе с именем
+    # файла рисунков, поэтому пересечение со списком раскадровки и есть ответ.
+    targets = {t for e in lg._entries if e.action == "shot_rendered" for t in e.targets}
+    tracked = (targets & names) if names else targets
+    out = {"ok": True, "entries": len(lg._entries), "truncated": lg.truncated,
+           "shots_tracked": len(tracked)}
+    if expected and len(tracked) < expected:
+        missing = sorted(names - targets) if names else []
+        out["ok"] = False
+        out["reason"] = "incomplete"
+        out["untracked_shots"] = expected - len(tracked)
+        # Имена, а не только счёт: «2 шота не отслежены» не говорит, какие.
+        out["untracked"] = missing
+        listed = ", ".join(missing[:4]) + ("" if len(missing) <= 4
+                                           else f" (+{len(missing) - 4} more)")
+        out["message"] = (f"{expected - len(tracked)} of {expected} shot(s) have "
+                          f"no provenance entry"
+                          + (f": {listed}" if missing else ""))
+    return out
+
+
+def _deliverable_ready(asm: dict, failed: list[dict],
+                       prov: dict | None = None) -> bool:
     """
     Можно ли отдавать серию. ОДНО определение на весь конвейер.
 
@@ -451,11 +514,14 @@ def _deliverable_ready(asm: dict, failed: list[dict]) -> bool:
     а не возвращённый словарь: после упавшей сборки словарь от прошлой попытки
     описывал мастер, которого там уже не было.
     """
+    # Прослеживаемость входит в готовность: серия, происхождение кадров которой
+    # не доказать, не готова к выдаче (раунд 23).
     return bool(
         asm and Path(asm.get("master", "")).is_file()
         and not asm.get("missing_shots") and not asm.get("short_segments")
         and asm.get("in_tolerance") and "video" in (asm.get("streams") or [])
-        and not failed)
+        and not failed
+        and (prov is None or prov.get("ok")))
 
 
 def _group_failures(failed: list[dict]) -> dict:
@@ -1587,15 +1653,21 @@ def main() -> int:
         except RuntimeError as exc:
             print(f"\nASSEMBLY FAILED: {exc}", flush=True)
             return 1
+        prov = check_provenance(ep.out_dir, [s.name for s in ep.shots])
         if a.json:
             print(json.dumps({"assembly": asm}, ensure_ascii=False, indent=1))
         else:
             print(f"master: {asm['master']} — {asm['duration']}s "
                   f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
                   f"streams {asm['streams']}", flush=True)
-            if not _deliverable_ready(asm, []):
+            if not _deliverable_ready(asm, [], prov):
                 print(f"  NOT READY TO SHIP: the master is not a complete "
                       f"episode yet — see the lines below", flush=True)
+            if not prov.get("ok"):
+                print(f"  PROVENANCE: {prov.get('message', 'unknown state')}",
+                      flush=True)
+                print(f"    -> frames in this master cannot be traced; the "
+                      f"episode should not be shipped as is", flush=True)
             if asm.get("reused_segments"):
                 print(f"  reused {len(asm['reused_segments'])} segment(s) "
                       f"unchanged since the last assembly", flush=True)
@@ -1628,13 +1700,17 @@ def main() -> int:
         report["assembly"] = {k: v for k, v in asm.items()
                               if k not in ("layout", "order")}
         report["assembly"]["shots_in_master"] = len(asm.get("order") or [])
-        report["deliverable_ready"] = _deliverable_ready(asm, report.get("failed") or [])
+        report["provenance"] = prov
+        report["renderer"] = _renderer_id()
+        report["deliverable_ready"] = _deliverable_ready(
+            asm, report.get("failed") or [], prov)
         report.pop("master_stale", None)
         report.pop("assembly_note", None)
         report["assembled_at"] = time.time()
         write_report(ep.out_dir, report)
         return 1 if (asm["missing_shots"] or asm.get("short_segments")
-                     or not asm["in_tolerance"]) else 0
+                     or not asm["in_tolerance"]
+                     or not prov.get("ok")) else 0
 
     def say(text: str) -> None:
         """
@@ -1743,7 +1819,12 @@ def main() -> int:
             # словарю. Раунд 22: после упавшей сборки в отчёте оставался assembly от
             # прошлой удачной попытки, и он описывал мастер, которого на диске уже
             # не было (на его месте оказался каталог).
-            report["deliverable_ready"] = _deliverable_ready(asm, report["failed"])
+            prov = check_provenance(ep.out_dir, [s.name for s in ep.shots])
+            report["provenance"] = prov
+            report["renderer"] = _renderer_id()
+            report["assembled_at"] = time.time()
+            report["deliverable_ready"] = _deliverable_ready(
+                asm, report["failed"], prov)
             # Отчёт перезаписывается ПОСЛЕ сборки. Раунд 15: report.json писался
             # только в run_episode, до склейки, и результат сборки в него не
             # попадал вообще — при успехе. Оператор утром открывал файл и не
@@ -1765,6 +1846,12 @@ def main() -> int:
                 if not report.get("deliverable_ready"):
                     print(f"  NOT READY TO SHIP: the master is not a complete "
                           f"episode yet — see the lines below", flush=True)
+                pv = report.get("provenance") or {}
+                if not pv.get("ok"):
+                    print(f"  PROVENANCE: {pv.get('message', 'unknown state')}",
+                          flush=True)
+                    print(f"    -> frames in this master cannot be traced; the "
+                          f"episode should not be shipped as is", flush=True)
                 if asm.get("reused_segments"):
                     print(f"  reused {len(asm['reused_segments'])} segment(s) "
                           f"unchanged since the last assembly", flush=True)
@@ -1814,7 +1901,8 @@ def main() -> int:
     # «собралось» успехом, если в серии дыра.
     asm = report.get("assembly") or {}
     if (asm.get("missing_shots") or asm.get("short_segments")
-            or not asm.get("in_tolerance", True)):
+            or not asm.get("in_tolerance", True)
+            or not (report.get("provenance") or {"ok": True}).get("ok")):
         return 1
     return 0 if report["complete"] else 1
 
