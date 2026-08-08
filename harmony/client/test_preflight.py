@@ -117,6 +117,38 @@ def test_every_problem_carries_a_remedy():
         assert not missing, f"problems without a remedy: {sorted(set(missing))}"
 
 
+def test_unwritable_output_caught_before_rendering():
+    """Каталог только для чтения давал PermissionError трейсбеком — ПОСЛЕ счёта.
+    Тот же класс, что трейсбек вместо инструкции в раунде 8: беда, которую видно
+    за секунду, обнаруживалась через час. Раунд 20."""
+    import os
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        ep = ep_with(tmp)
+        ep.out_dir.mkdir(parents=True, exist_ok=True)
+        os.chmod(ep.out_dir, 0o500)
+        try:
+            probs = {p["code"]: p for p in preflight(ep).problems}
+        finally:
+            os.chmod(ep.out_dir, 0o755)
+        assert "OUT_NOT_WRITABLE" in probs, sorted(probs)
+        assert probs["OUT_NOT_WRITABLE"]["remedy"]
+
+
+def test_service_name_taken_by_a_directory_caught():
+    """Папка с именем report.json давала IsADirectoryError на строке записи —
+    после того, как серия посчиталась."""
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        ep = ep_with(tmp)
+        ep.out_dir.mkdir(parents=True, exist_ok=True)
+        (ep.out_dir / "report.json").mkdir()
+        probs = {p["code"]: p for p in preflight(ep).problems}
+        assert "NAME_TAKEN" in probs, sorted(probs)
+        assert "report.json" in probs["NAME_TAKEN"]["message"]
+        assert probs["NAME_TAKEN"]["remedy"]
+
+
 def test_disk_space_estimated_from_episode_volume():
     """Требование места считается из объёма серии, а не берётся константой:
     31 680 кадров при 720p — это десятки гигабайт."""

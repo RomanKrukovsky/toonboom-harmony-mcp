@@ -255,6 +255,111 @@ def test_assemble_returns_the_master_layout_shape():
     assert 'master_assembled' in src, "сборка не пишется в реестр"
 
 
+def test_report_exists_mid_run_marked_partial():
+    """Восстановление из журнала (раунд 20) требовало от оператора ещё одного
+    шага — повторного запуска — именно тогда, когда он в беде: ночь упала, он
+    пришёл смотреть, что было. Отчёт теперь обновляется НА КАЖДОМ шоте с
+    partial: true, и файл, который документация велит смотреть, существует в
+    любой момент прогона. Цена: 0.74 мс на запись, 0.23 с на серию 314 шотов =
+    0.009% прогона."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=4, frames=4)
+        seen = []
+        def watch(e):
+            if e.get("event") == "shot_done":
+                rp = ep.out_dir / "report.json"
+                seen.append(json.loads(rp.read_text(encoding="utf-8"))
+                            if rp.is_file() else None)
+        run(ep, on_event=watch)
+        assert all(x is not None for x in seen), "отчёта нет посреди прогона"
+        assert seen[0]["partial"] is True, seen[0]
+        assert seen[0]["shots_ok"] == 1, seen[0]
+        assert len(seen[0]["not_started"]) == 3, seen[0]
+        # Итоговый отчёт НЕ помечен partial: иначе завершённый прогон читается
+        # как оборванный.
+        final = json.loads((ep.out_dir / "report.json").read_text(encoding="utf-8"))
+        assert not final.get("partial"), final
+        assert final["complete"] is True, final
+
+
+def test_report_write_is_atomic():
+    """Падение посреди записи оставляло полуфайл: rename на POSIX атомарен,
+    прямая запись — нет. И `.part` не должен оставаться после успеха."""
+    import inspect
+    src = inspect.getsource(E.write_report)
+    assert ".part" in src and "replace(" in src, src
+    with tempfile.TemporaryDirectory() as d:
+        E.write_report(Path(d), {"x": 1})
+        assert (Path(d) / "report.json").is_file()
+        assert not (Path(d) / "report.json.part").exists()
+
+
+def test_run_claim_written_before_counting():
+    """После kill -9 report.json не существовал вовсе — он пишется в конце. Утром
+    оператор находил journal.jsonl (машинный формат без итога) и закрытый
+    терминал. Данные для ответа в журнале были, кроме одного: сколько шотов В
+    СЕРИИ — журнал знает только сделанные. Раунд 20."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=4, frames=4)
+        run(ep)
+        claim = json.loads((ep.out_dir / "run.json").read_text(encoding="utf-8"))
+        assert claim["shots_total"] == 4, claim
+        assert claim["frames_total"] == 16, claim
+        assert len(claim["shots"]) == 4, claim
+        assert claim["run"] and claim["pid"], claim
+
+
+def test_report_recovered_from_journal_and_claim():
+    """Отчёт восстановим из того, что уцелело: заявка говорит, что прогон
+    собирался сделать, журнал — что успел. Помечается recovered, чтобы не
+    выглядеть как отчёт завершённого прогона."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=5, frames=4)
+        # Прогон «упал» после трёх шотов: считаем три, отчёт не пишем
+        run(Episode(ep.name, ep.shots[:3], ep.out_dir))
+        (ep.out_dir / "report.json").unlink(missing_ok=True)
+        # Заявка от полного прогона — как её кладёт настоящий старт
+        (ep.out_dir / "run.json").write_text(json.dumps({
+            "episode": ep.name, "run": "1-2", "renderer": "Blender 5.1.1",
+            "shots_total": 5, "frames_total": 20,
+            "shots": [{"name": s.name, "frames": s.frames} for s in ep.shots],
+        }), encoding="utf-8")
+        rec = E.recover_report(ep.out_dir)
+        assert rec["recovered"] is True
+        assert rec["shots_ok"] == 3, rec
+        assert rec["shots_total"] == 5, rec
+        assert rec["not_started"] == ["sc004", "sc005"], rec
+        assert rec["complete"] is False
+
+
+def test_recovery_survives_a_truncated_journal():
+    """Обрубок от падения посреди записи не должен ронять восстановление —
+    иначе авария лишает оператора и последнего источника."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=3, frames=4)
+        run(ep)
+        jp = ep.out_dir / "journal.jsonl"
+        jp.write_text(jp.read_text() + '{"name": "sc00', encoding="utf-8")
+        (ep.out_dir / "report.json").unlink(missing_ok=True)
+        rec = E.recover_report(ep.out_dir)
+        assert rec["shots_ok"] == 3, rec
+
+
+def test_recovery_returns_none_on_an_empty_directory():
+    with tempfile.TemporaryDirectory() as d:
+        assert E.recover_report(Path(d)) is None
+
+
+def test_cli_reports_an_unfinished_previous_run():
+    """Оператор не знает про recover_report — восстановленный итог печатается
+    при следующем запуске той же команды, единственном месте, где он его
+    прочтёт."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "previous run did not finish" in src, "итог падения не печатается"
+    assert "report.recovered.json" in src, "восстановленный отчёт не кладётся на диск"
+
+
 def test_report_size_does_not_grow_with_the_episode():
     """На серии 314 шотов report.json был 1920 строк, из них 1884 — раскладка
     кадров и порядок шотов. Оператор открывает файл утром, чтобы узнать три

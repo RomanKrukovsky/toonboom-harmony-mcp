@@ -211,6 +211,31 @@ def preflight(ep: Episode, need_free_gb: float | None = None) -> PreflightResult
                           f"episode JSON — it is the shot length in frames "
                           f"(4 seconds at 24 fps = 96)."})
 
+    # Каталог вывода: писать в него можно, и служебные имена не заняты папками.
+    # Раунд 20: каталог только для чтения давал `PermissionError` трейсбеком, а
+    # папка с именем `report.json` — `IsADirectoryError`, и оба вылезали ПОСЛЕ
+    # счёта. Тот же класс, что трейсбек вместо инструкции в раунде 8.
+    try:
+        ep.out_dir.mkdir(parents=True, exist_ok=True)
+        probe = ep.out_dir / ".preflight"
+        probe.write_text("x", encoding="utf-8")
+        probe.unlink()
+    except OSError as exc:
+        problems.append({
+            "code": "OUT_NOT_WRITABLE",
+            "message": f"cannot write to the output directory: {ep.out_dir} "
+                       f"({type(exc).__name__})",
+            "remedy": "Fix the permissions on that directory, or pass --out with a "
+                      "path you can write to."})
+    for name in ("report.json", "journal.jsonl", "run.json", "master.mp4"):
+        q = ep.out_dir / name
+        if q.exists() and not q.is_file():
+            problems.append({
+                "code": "NAME_TAKEN",
+                "message": f"{name} exists in the output directory but is not a file",
+                "remedy": f"Remove {q} — the pipeline needs that name for its own "
+                          f"{'report' if name.endswith('json') else 'output'}."})
+
     # Формат серии: шоты РАЗНОГО размера склеиваются в один контейнер, и concat
     # с `-c copy` менять размер не умеет — он берёт заголовок первого сегмента и
     # дописывает остальные как есть. Раунд 16: шот 320x180 внутри мастера
@@ -275,6 +300,101 @@ def journal_path(ep: Episode) -> Path:
 
 
 _RENDERER_ID: str | None = None
+
+
+def _snapshot(ep: Episode, results: dict, skipped: list, workers: int,
+              elapsed: float) -> dict:
+    """Промежуточный отчёт: тот же вид, что итоговый, но `partial: true`."""
+    ok = [r for r in results.values() if r.get("status") == "ok"]
+    bad = [r for r in results.values() if r.get("status") != "ok"]
+    fresh = sum(r.get("frames", 0) for r in ok if r["name"] not in set(skipped))
+    return {
+        "partial": True,
+        "episode": ep.name, "out_dir": str(ep.out_dir),
+        "shots_total": len(ep.shots), "shots_ok": len(ok), "shots_failed": len(bad),
+        "resumed": len(skipped), "workers": workers,
+        "frames_rendered": sum(r.get("frames", 0) for r in ok),
+        "rendered_now": fresh, "seconds": round(elapsed, 2),
+        "frames_per_s": round(fresh / elapsed, 2) if fresh and elapsed >= 0.05 else 0.0,
+        "failed": [{"name": r["name"], "code": r.get("code"),
+                    "message": r.get("message")} for r in bad],
+        "not_started": sorted({s.name for s in ep.shots} - set(results)),
+        "complete": False,
+    }
+
+
+def write_report(out_dir: Path, report: dict) -> None:
+    """
+    Отчёт на диск АТОМАРНО: сначала `.part`, потом rename.
+
+    Раунд 20: отчёт писался одним `write_text` в конце прогона. Два следствия.
+    Первое — падение посреди записи оставляло полуфайл (rename на POSIX атомарен,
+    прямая запись — нет). Второе, важнее: файл, который `PRODUCTION.md` велит
+    смотреть утром, не существовал ровно в том случае, ради которого написан.
+
+    Теперь он обновляется на каждом завершённом шоте с `partial: true`, и
+    восстановление из журнала остаётся РЕЗЕРВНЫМ путём, а не единственным.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tmp = out_dir / "report.json.part"
+    tmp.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    tmp.replace(out_dir / "report.json")
+
+
+def recover_report(out_dir: Path) -> dict | None:
+    """
+    Отчёт, восстановленный из журнала и заявки прогона.
+
+    Раунд 20: после kill -9 report.json не существовал — он пишется в конце. Утром
+    оператор находил journal.jsonl (машинный формат без итога) и закрытый терминал,
+    то есть на вопрос «что успело посчитаться» ответа не было, хотя данные лежали
+    рядом.
+
+    Возвращает None, если восстанавливать нечего (нет ни заявки, ни журнала).
+    Помечает себя `recovered: true` — отчёт, собранный после падения, не должен
+    выглядеть как отчёт завершённого прогона.
+    """
+    run_path, jpath = out_dir / "run.json", out_dir / "journal.jsonl"
+    if not run_path.is_file() and not jpath.is_file():
+        return None
+    claim = {}
+    if run_path.is_file():
+        try:
+            claim = json.loads(run_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            claim = {}
+    done: dict[str, dict] = {}
+    if jpath.is_file():
+        for line in jpath.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue          # обрубок от падения посреди записи
+            if rec.get("name"):
+                done[rec["name"]] = rec
+    ok = [r for r in done.values() if r.get("status") == "ok"]
+    bad = [r for r in done.values() if r.get("status") != "ok"]
+    planned = claim.get("shots") or []
+    names = {s["name"] for s in planned}
+    return {
+        "recovered": True,
+        "episode": claim.get("episode"), "out_dir": str(out_dir),
+        "run": claim.get("run"), "renderer": claim.get("renderer"),
+        "started_at": claim.get("started_at"),
+        "shots_total": claim.get("shots_total", len(done)),
+        "shots_ok": len(ok), "shots_failed": len(bad),
+        "frames_rendered": sum(r.get("frames", 0) for r in ok),
+        "frames_total": claim.get("frames_total"),
+        "failed": [{"name": r["name"], "code": r.get("code"),
+                    "message": r.get("message")} for r in bad],
+        # Что прогон собирался сделать и не успел — единственное, чего журнал не
+        # знает сам: он содержит только сделанное.
+        "not_started": sorted(names - set(done)) if planned else None,
+        "complete": bool(planned) and not bad and len(done) == len(planned),
+    }
 
 
 def _group_failures(failed: list[dict]) -> dict:
@@ -720,6 +840,20 @@ def _run_locked(ep: Episode, workers: int,
 
     t0 = time.monotonic()
     emit = on_event or (lambda e: None)
+    # Заявка прогона: что он собирался сделать. Раунд 20: после kill -9
+    # report.json не существовал вовсе — он пишется в конце, — и утром оператор
+    # находил только journal.jsonl, машинный формат без итога. Данные для ответа
+    # в журнале были, кроме одного: сколько шотов В СЕРИИ (журнал знает лишь
+    # сделанные). Заявка кладётся ДО счёта и делает отчёт восстановимым.
+    (ep.out_dir / "run.json").write_text(json.dumps({
+        "episode": ep.name, "run": run_id, "started_at": time.time(),
+        "pid": os.getpid(), "workers": workers,
+        "shots_total": len(ep.shots), "frames_total": ep.total_frames,
+        "shots": [{"name": s.name, "frames": s.frames} for s in ep.shots],
+        "resumed": len(skipped), "todo": len(todo),
+        "renderer": _renderer_id(),
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
+
     emit({"event": "start", "shots": len(ep.shots), "todo": len(todo),
           "resumed": len(skipped), "workers": workers,
           "first_up": [x.name for x in todo[:workers]],
@@ -799,6 +933,14 @@ def _run_locked(ep: Episode, workers: int,
             record_provenance(rec, spec)
         results[rec["name"]] = rec
         done_frames += rec.get("frames", 0)
+        # Отчёт обновляется НА КАЖДОМ шоте, помеченный partial. Раунд 20: файл,
+        # который документация велит смотреть утром, писался в конце — и после
+        # kill -9 его не было. Восстановление из журнала работает, но требует от
+        # оператора ещё одного шага именно тогда, когда он в беде. Атомарная
+        # запись (.part + rename) стоит около миллисекунды на шот против
+        # ~35 секунд счёта, то есть цена не измеряется.
+        write_report(ep.out_dir, _snapshot(ep, results, skipped, workers,
+                                           time.monotonic() - t0))
         elapsed = time.monotonic() - t0
         rate = done_frames / elapsed if elapsed > 0 else 0.0
         # Прогноз считается ВОЛНАМИ, а не наблюдённой скоростью. Раунд 18:
@@ -885,8 +1027,7 @@ def _run_locked(ep: Episode, workers: int,
                     "message": r.get("message")} for r in failed],
         "complete": not failed,
     }
-    (ep.out_dir / "report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    write_report(ep.out_dir, report)
     emit({"event": "done", **report})
     return report
 
@@ -1276,6 +1417,28 @@ def main() -> int:
     # «Собрать снова» без пересчёта. Раунд 18: PRODUCTION.md трижды говорит
     # «assemble again», а сделать это можно было только полным прогоном — то
     # есть повторив preflight и учёт готовности ради одной склейки.
+    # Прошлый прогон упал, не дописав отчёт. Раунд 20: утром оставались только
+    # journal.jsonl и закрытый терминал. Восстановленный итог печатается ЗДЕСЬ,
+    # потому что оператор всё равно запускает ту же команду — и это единственное
+    # место, где он его прочтёт, не зная про recover_report.
+    if not (ep.out_dir / "report.json").is_file():
+        recovered = recover_report(ep.out_dir)
+        if recovered and recovered.get("run"):
+            n_start = len(recovered.get("not_started") or [])
+            print(f"\nprevious run did not finish (run {recovered['run']}, "
+                  f"{recovered['renderer']}):", flush=True)
+            print(f"  {recovered['shots_ok']} of {recovered['shots_total']} shot(s) "
+                  f"rendered, {recovered['frames_rendered']} of "
+                  f"{recovered['frames_total']} frames"
+                  + (f", {n_start} never started" if n_start else ""), flush=True)
+            if recovered["failed"]:
+                for (code, msg), names in _group_failures(recovered["failed"]).items():
+                    print(f"  [{code}] {msg} — {len(names)} shot(s)", flush=True)
+            print(f"  full recovered report: {ep.out_dir / 'report.recovered.json'}",
+                  flush=True)
+            (ep.out_dir / "report.recovered.json").write_text(
+                json.dumps(recovered, ensure_ascii=False, indent=1), encoding="utf-8")
+
     if a.assemble_only:
         try:
             asm = assemble(ep)
@@ -1413,8 +1576,7 @@ def main() -> int:
             # попадал вообще — при успехе. Оператор утром открывал файл и не
             # находил ни длины мастера, ни пропущенных шотов, ни порчи кадров,
             # хотя в терминале всё это было напечатано.
-            (ep.out_dir / "report.json").write_text(
-                json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+            write_report(ep.out_dir, report)
             if not a.json:
                 print(f"master: {asm['master']} — {asm['duration']}s "
                       f"(expected {asm['expected']}s, drift {asm['drift']:+.3f}s), "
@@ -1460,8 +1622,7 @@ def main() -> int:
                     print(f"  (ffmpeg log saved to report.json)", flush=True)
             # Отчёт с ошибкой обязан лечь на диск: утро оператора начинается с
             # него, а не с закрытого терминала.
-            (ep.out_dir / "report.json").write_text(
-                json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+            write_report(ep.out_dir, report)
             return 1
 
     if a.json:

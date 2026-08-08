@@ -46,15 +46,15 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">17 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">19 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>17</b><span>rounds</span></div>
-<div class="stat"><b>11</b><span>ours won</span></div>
-<div class="stat"><b>5</b><span>win streak</span></div>
+<div class="stat"><b>19</b><span>rounds</span></div>
+<div class="stat"><b>12</b><span>ours won</span></div>
+<div class="stat"><b>1</b><span>win streak</span></div>
 <div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
@@ -512,11 +512,67 @@ Blender 5.1.1, commit 4ec5d3b. Спрашивал про кадры **готов
 <div class="body"><div class="row"><span class="rnd">17</span><span class="badge b-win">OURS WINS</span><span class="badge">traceability</span><span class="badge">сборка мастера</span></div>
 <div class="gap"><em>gap sent back</em>первые три пробы дали «0 неверных ответов» и почти закрыли раунд — потому что в прогон передавался УРЕЗАННЫЙ список шотов, и обе нумерации совпадали случайно; дефект открылся только на четвёртой попытке, когда прогон увидел полную раскадровку и шот упал внутри неё</div>
 </div></div>
+<div class="card">
+<pre># Раунд 18 — сборка мастера — линза: operability
+
+Вопрос линзы: **человек, не писавший этот код, собирает мастер по документации.
+Смотреть на то, что он видит в терминале.**
+
+Blender 5.1.1, commit 4822036. Замыкающий раунд второго оборота линз.
+
+## «Assemble again» было невозможно выполнить
+
+`PRODUCTION.md` трижды говорит оператору «assemble again» / «соберите мастер из
+того, что есть»:
+
+```
+  Re-run the same command to render them, then assemble again.
+  -&gt; restore the file, ... then assemble again
+```
+
+В справке такого ключа нет:
+
+```
+  --dry-run          preflight only, render nothing
+  --no-assemble
+  --json             machine-readable report only
+```
+
+Есть только «не собирать». Чтобы с
+…</pre>
+<div class="body"><div class="row"><span class="rnd">18</span><span class="badge b-lose">BAR WINS</span><span class="badge">operability</span><span class="badge">сборка мастера</span></div>
+<div class="gap"><em>gap sent back</em>волновая формула прогноза проверена только на одном масштабе (30 шотов, 12 воркеров) — на серии 314 шотов, где ошибка старой формулы была 1.0×, новая не измерена вовсе, то есть замена сделана без доказательства, что она не портит тот случай, ради которого конвейер существует</div>
+</div></div>
+<div class="card">
+<pre># Раунд 19 — отчёт и прогресс для оператора — линза: throughput
+
+Вопрос линзы: **сколько это стоит по времени и держится ли на объёме серии.**
+
+Учёт стоит времени дважды: машине — на запись, человеку — на чтение. Замерил оба.
+Blender 5.1.1, commit 894b067.
+
+## Машине учёт почти ничего не стоит
+
+| | 10 шотов | 50 | 314 |
+|---|---|---|---|
+| журнал: запись | 0.15 мс/шот | 0.07 | 0.07 |
+| журнал: чтение целиком | 0.0001 с | 0.0001 | 0.0005 с (73 КБ) |
+| реестр: `verify()` всей цепочки | 0.000 с | 0.000 | 0.002 с |
+| реестр: один запрос по кадру | 0.0001 с | 0.0002 | 0.0012 с |
+
+На серии 22 минуты весь учёт — **0.65 с из ~2700 с прогона, 0.024%**.
+
+Нашёл при этом квадратичность: `Ledger(...)` со
+…</pre>
+<div class="body"><div class="row"><span class="rnd">19</span><span class="badge b-win">OURS WINS</span><span class="badge">throughput</span><span class="badge">отчёт и прогресс для оператора</span></div>
+<div class="gap"><em>gap sent back</em>сводка по причинам падений проверена только на синтетическом списке, собранном руками — через настоящий CLI она не прогонялась ни разу, потому что попытка сломать рисунки провалилась (`demo_episode` пересоздаёт их), и я не стал доводить пробу до конца</div>
+</div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>
 <li>BLOCKED: батч шотов внутри одного процесса Blender не даёт измеримого выигрыша.</li>
 <li>накладные на шот в capture_episode считаются формулой, дающей отрицательные</li>
 <li>ЗАКРЫТ ЗАМЕРОМ, а не кодом. Разрыв был сформулирован как «314 лишних проходов</li>
+<li>BLOCKED (осознанно отложено): Ledger создаётся заново на каждую запись** —</li>
 </ul>
 <footer>Gauntlet Loop — sequential, one critic per round, one gap per round. The bar does not have to be reachable; it has to stop us settling.</footer>
 </div></body></html>
