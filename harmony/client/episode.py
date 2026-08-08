@@ -277,6 +277,14 @@ def journal_path(ep: Episode) -> Path:
 _RENDERER_ID: str | None = None
 
 
+def _group_failures(failed: list[dict]) -> dict:
+    """Упавшие шоты по ПРИЧИНЕ: одна беда обычно валит много шотов."""
+    out: dict = {}
+    for f in failed:
+        out.setdefault((f.get("code") or "?", f.get("message") or ""), []).append(f["name"])
+    return out
+
+
 def _renderer_id() -> str:
     """
     Чем рендерилось. Нужно именно на возобновлении: между падением и досчётом
@@ -1357,6 +1365,22 @@ def main() -> int:
                         if e["seconds"] >= 0.05 and e["frames_per_s"] else "")
                 say(f"rendered {e['frames_rendered']} frames in "
                     f"{e['seconds']}s{rate}, {e['shots_failed']} failed")
+            # Сводка по ПРИЧИНАМ, а не по шотам. Раунд 19: одна беда (у
+            # художника в рисунке нет альфа-канала) валит десятки шотов, и в
+            # выводе появлялось столько же одинаковых строк. Тот же класс, что
+            # 345 жалоб вместо одной в раунде 5: число верное, вывод из него
+            # сделать нельзя. Полный список остаётся в report.json.
+            if e.get("failed"):
+                from collections import Counter
+                by_cause = Counter((f.get("code"), f.get("message"))
+                                   for f in e["failed"])
+                say(f"  {len(e['failed'])} shot(s) failed, "
+                    f"{len(by_cause)} distinct cause(s):")
+                for (code, msg), names in _group_failures(e["failed"]).items():
+                    shown = ", ".join(names[:4])
+                    more = "" if len(names) <= 4 else f" (+{len(names) - 4} more)"
+                    say(f"    [{code}] {msg}")
+                    say(f"      {len(names)} shot(s): {shown}{more}")
 
     # Замок ловится ЗДЕСЬ, а не отдаётся трейсбеком: оператор, запустивший
     # команду дважды, должен увидеть инструкцию, а не стек питона. Раунд 8:
@@ -1375,7 +1399,15 @@ def main() -> int:
     if not a.no_assemble and report["shots_ok"]:
         try:
             asm = assemble(ep)
-            report["assembly"] = asm
+            # Раскладка кадров и порядок шотов — машинные данные: на серии 314
+            # шотов это 1884 строки из 1920, то есть 98% отчёта, который человек
+            # открывает утром чтобы узнать три вещи. Оба уже лежат в
+            # provenance.jsonl записью master_assembled, откуда по ним отвечает
+            # master_frame_report. Раунд 19: в report.json остаётся счёт, а не
+            # дубль данных.
+            report["assembly"] = {k: v for k, v in asm.items()
+                                  if k not in ("layout", "order")}
+            report["assembly"]["shots_in_master"] = len(asm.get("order") or [])
             # Отчёт перезаписывается ПОСЛЕ сборки. Раунд 15: report.json писался
             # только в run_episode, до склейки, и результат сборки в него не
             # попадал вообще — при успехе. Оператор утром открывал файл и не

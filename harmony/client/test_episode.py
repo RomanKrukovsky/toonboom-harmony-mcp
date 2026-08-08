@@ -255,6 +255,99 @@ def test_assemble_returns_the_master_layout_shape():
     assert 'master_assembled' in src, "сборка не пишется в реестр"
 
 
+def test_report_size_does_not_grow_with_the_episode():
+    """На серии 314 шотов report.json был 1920 строк, из них 1884 — раскладка
+    кадров и порядок шотов. Оператор открывает файл утром, чтобы узнать три
+    вещи, и читает две тысячи строк машинных данных. Оба поля уже лежат в
+    provenance.jsonl записью master_assembled, откуда по ним отвечает
+    master_frame_report — в отчёте они были дублем. Раунд 19."""
+    import inspect
+    src = inspect.getsource(E.main)
+    assert '"layout", "order"' in src, "раскладка снова попадает в отчёт"
+    assert "shots_in_master" in src, "нет счёта вошедших шотов вместо списка"
+
+
+def test_failures_grouped_by_cause():
+    """Одна беда — у художника в рисунке нет альфа-канала — валит десятки шотов,
+    и в выводе появлялось столько же одинаковых строк. Тот же класс, что 345
+    жалоб вместо одной в раунде 5: число верное, вывод из него сделать нельзя."""
+    failed = [{"name": f"sc{i:03d}", "code": "BAD_ARTWORK",
+               "message": "alpha channel missing"} for i in range(1, 61)]
+    failed.append({"name": "sc099", "code": "BLENDER_CRASH", "message": "segfault"})
+    g = E._group_failures(failed)
+    assert len(g) == 2, f"причины не сгруппированы: {len(g)}"
+    assert len(g[("BAD_ARTWORK", "alpha channel missing")]) == 60
+    assert len(g[("BLENDER_CRASH", "segfault")]) == 1
+
+
+def test_cli_prints_the_failure_summary():
+    """Раунд 19: сводка была проверена только на синтетическом списке — то есть
+    доказано, что группировка СЧИТАЕТ верно, и не доказано, что строки доходят до
+    терминала. Раунд 12 показал, что это отдельный вопрос и ответ бывает «нет».
+
+    Проверяется настоящий путь: renderer валит часть шотов, вывод CLI ловится
+    целиком. Ожидается свёрнутая сводка в терминале и ПОЛНЫЙ список в файле —
+    свёртка для человека, полнота для машины."""
+    import shutil as sh
+    import subprocess
+    import sys
+    if sh.which("ffmpeg") is None:
+        return
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "out"
+        driver = Path(d) / "drv.py"
+        driver.write_text(
+            "import sys\n"
+            f"sys.path.insert(0, {str(Path(E.__file__).parent)!r})\n"
+            "import episode as E\n"
+            "_real = E.render_one_shot\n"
+            "def flaky(p):\n"
+            "    n = int(p['name'][2:])\n"
+            "    if n == 5:\n"
+            "        return {'name': p['name'], 'status': 'failed',\n"
+            "                'code': 'BLENDER_CRASH', 'message': 'segfault',\n"
+            "                'frames': 0, 'seconds': 0.0, 'dir': p['shot_dir'],\n"
+            "                'audio': None}\n"
+            "    if n % 2 == 0:\n"
+            "        return {'name': p['name'], 'status': 'failed',\n"
+            "                'code': 'BAD_ARTWORK', 'message': 'alpha missing',\n"
+            "                'frames': 0, 'seconds': 0.0, 'dir': p['shot_dir'],\n"
+            "                'audio': None}\n"
+            "    return _real(p)\n"
+            # Охрана обязательна: пул процессов импортирует драйвер заново, и
+            # без неё каждый воркер запускает ВТОРОЙ прогон — тот упирается в
+            # замок и печатает ALREADY RUNNING вместо работы.
+            "if __name__ == '__main__':\n"
+            "    E.render_one_shot = flaky\n"
+            f"    sys.argv = ['episode.py', '--demo', '--shots', '6', '--frames', '2',\n"
+            f"                '--out', {str(out)!r}]\n"
+            "    raise SystemExit(E.main())\n", encoding="utf-8")
+        r = subprocess.run([sys.executable, str(driver)], capture_output=True, text=True)
+        text = r.stdout
+        assert "distinct cause(s)" in text, f"сводки нет в выводе:\n{text[-600:]}"
+        assert "BAD_ARTWORK" in text and "BLENDER_CRASH" in text, \
+            f"редкая причина потерялась:\n{text[-600:]}"
+        # Свёрнуто: в СВОДКЕ причина названа один раз. Построчные FAIL при этом
+        # остаются — они идут по мере падения и нужны, чтобы видеть ход прогона;
+        # свёртка живёт в итоге, где оператор читает результат.
+        summary = text[text.index("distinct cause(s)"):]
+        assert summary.count("[BAD_ARTWORK]") == 1, summary
+        assert summary.count("[BLENDER_CRASH]") == 1, summary
+        assert "shot(s):" in summary, summary
+        rep = json.loads((out / "report.json").read_text(encoding="utf-8"))
+        assert len(rep["failed"]) == rep["shots_failed"] >= 3, rep["shots_failed"]
+        codes = {f["code"] for f in rep["failed"]}
+        assert codes == {"BAD_ARTWORK", "BLENDER_CRASH"}, codes
+
+
+def test_grouping_survives_missing_code_and_message():
+    """Падение без кода и без сообщения не должно ронять сводку — иначе одна
+    странная запись лишает оператора всего разбора."""
+    g = E._group_failures([{"name": "sc001"}, {"name": "sc002", "code": "X"}])
+    assert len(g) == 2, g
+    assert all(isinstance(k, tuple) and len(k) == 2 for k in g), g
+
+
 def test_eta_accounts_for_parallel_waves():
     """`left / rate` верно для последовательного счёта и врёт для параллельного:
     на первом готовом шоте посчитан ОДИН, а работали `workers`, и скорость
@@ -440,10 +533,16 @@ def test_report_written_after_assembly():
     """report.json писался в run_episode, ДО склейки, и при успехе больше не
     перезаписывался: длины мастера, пропущенных шотов и порчи кадров в нём не
     было. PRODUCTION.md при этом велит утром смотреть его, а не терминал."""
+    # Привязка к точной строке присваивания оказалась хрупкой: раунд 19 изменил
+    # её (раскладка перестала попадать в отчёт) и тест упал на изменении, которое
+    # ничего не сломало. Проверяется ФАКТ — запись отчёта стоит после сборки, —
+    # а гарантия на файле лежит в отдельном тесте ниже.
     import inspect
     src = inspect.getsource(E.main)
-    after = src[src.index('report["assembly"] = asm'):]
-    assert 'report.json' in after[:800], "отчёт не перезаписывается после сборки"
+    i_asm = src.index('report["assembly"]')
+    i_write = src.index('report.json', i_asm)
+    assert i_write > i_asm, "отчёт не перезаписывается после сборки"
+    assert i_write - i_asm < 1200, "запись слишком далеко от сборки — проверь порядок"
 
 
 def test_successful_run_leaves_assembly_in_the_report_file():
