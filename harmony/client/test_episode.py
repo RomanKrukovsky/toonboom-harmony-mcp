@@ -255,6 +255,63 @@ def test_assemble_returns_the_master_layout_shape():
     assert 'master_assembled' in src, "сборка не пишется в реестр"
 
 
+def test_report_remembers_the_crash():
+    """Итоговый отчёт показывал время ПОСЛЕДНЕГО прогона. Серия 314 шотов, упавшая
+    на 200-м (30 минут) и досчитанная за 16, читалась как «16 минут» — оператор
+    планирует следующую ночь по цифре, втрое меньшей фактической. Раунд 21."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=5, frames=4)
+        run(Episode(ep.name, ep.shots[:2], ep.out_dir))     # «упал» после двух
+        time.sleep(0.05)
+        rep, _ = run(ep)                                     # досчёт
+        assert rep["attempts"] == 2, rep["attempts"]
+        assert rep["crashed_before"] == 1, rep["crashed_before"]
+        assert rep["wall_seconds_total"] >= rep["seconds"], rep
+        assert len(rep["runs"]) == 2, rep["runs"]
+        assert rep["runs"][0]["run"] != rep["runs"][1]["run"], rep["runs"]
+
+
+def test_run_id_is_unique_per_run():
+    """Метка была «секунды + PID»: досчёт сразу после падения идёт в ту же
+    секунду, а в тестах и CI — из того же процесса, и метки совпадали. То есть
+    обещание раунда 11 («серия после аварии склеена из шотов РАЗНЫХ прогонов, и
+    метка их различает») при быстром перезапуске не выполнялось. Раунд 21."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(Episode(ep.name, ep.shots[:1], ep.out_dir))
+        run(ep)                                   # без sleep — та же секунда
+        ids = [h["run"] for h in E.run_history(ep.out_dir)]
+        assert len(ids) == len(set(ids)) == 2, ids
+        # И в журнале шотов метки тоже разные
+        by_run = {r.get("run") for r in read_journal(ep).values()}
+        assert len(by_run) == 2, by_run
+
+
+def test_run_history_survives_a_truncated_line():
+    """Падение посреди дописки в runs.jsonl не должно лишать истории."""
+    with tempfile.TemporaryDirectory() as d:
+        ep = make_ep(Path(d), n=2, frames=4)
+        run(ep)
+        rp = ep.out_dir / "runs.jsonl"
+        rp.write_text(rp.read_text() + '{"run": "1-', encoding="utf-8")
+        assert len(E.run_history(ep.out_dir)) == 1
+
+
+def test_single_run_reports_one_attempt():
+    """Обратная сторона: прогон без аварии не должен выглядеть как повторный."""
+    with tempfile.TemporaryDirectory() as d:
+        rep, _ = run(make_ep(Path(d), n=3, frames=4))
+        assert rep["attempts"] == 1, rep
+        assert rep["crashed_before"] == 0, rep
+
+
+def test_cli_says_the_episode_took_several_attempts():
+    import inspect
+    src = inspect.getsource(E.main)
+    assert "attempt(s)" in src, "цена серии за несколько попыток не печатается"
+    assert "wall_seconds_total" in src, "полное время не печатается"
+
+
 def test_report_exists_mid_run_marked_partial():
     """Восстановление из журнала (раунд 20) требовало от оператора ещё одного
     шага — повторного запуска — именно тогда, когда он в беде: ночь упала, он

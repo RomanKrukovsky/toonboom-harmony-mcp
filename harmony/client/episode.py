@@ -35,6 +35,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import secrets
 import shutil
 import subprocess
 import time
@@ -300,6 +301,30 @@ def journal_path(ep: Episode) -> Path:
 
 
 _RENDERER_ID: str | None = None
+
+
+def run_history(out_dir: Path) -> list[dict]:
+    """
+    Все прогоны, работавшие над этой серией, по порядку.
+
+    Раунд 21: `run.json` перетирается каждым запуском, поэтому после досчёта
+    заявка упавшего прогона исчезала, и отчёт показывал время только последнего.
+    Обрубок последней строки отбрасывается — падение посреди дописки не должно
+    лишать истории.
+    """
+    p = out_dir / "runs.jsonl"
+    if not p.is_file():
+        return []
+    out = []
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            out.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return out
 
 
 def _snapshot(ep: Episode, results: dict, skipped: list, workers: int,
@@ -833,7 +858,17 @@ def _run_locked(ep: Episode, workers: int,
                 client_dir: str, renderer, batch: bool) -> dict:
     # Метка прогона: шоты, посчитанные до аварии и после, различаются по ней.
     # Без неё мастер после досчёта — смесь из неизвестно чего.
-    run_id = f"{int(time.time())}-{os.getpid()}"
+    # Метка прогона. Секунды + PID недостаточно: досчёт сразу после падения идёт
+    # в ту же секунду, а в тестах и в CI — из того же процесса, и метки
+    # совпадали. Раунд 21 нашёл это на живом досчёте: обещание раунда 11
+    # («серия после аварии склеена из шотов РАЗНЫХ прогонов, и метка их
+    # различает») при быстром перезапуске не выполнялось.
+    #
+    # Миллисекунды плюс четыре случайных знака: два прогона в одну миллисекунду
+    # из одного процесса — уже не сценарий, а совпадение с вероятностью 1/65536,
+    # и оно ничего не ломает, кроме различимости в отчёте.
+    run_id = (f"{int(time.time() * 1000)}-{os.getpid()}-"
+              f"{secrets.token_hex(2)}")
     journal = read_journal(ep)
     todo = [s for s in ep.shots if not shot_is_done(ep, s, journal.get(s.name))]
     skipped = [s.name for s in ep.shots if s.name not in {t.name for t in todo}]
@@ -845,14 +880,24 @@ def _run_locked(ep: Episode, workers: int,
     # находил только journal.jsonl, машинный формат без итога. Данные для ответа
     # в журнале были, кроме одного: сколько шотов В СЕРИИ (журнал знает лишь
     # сделанные). Заявка кладётся ДО счёта и делает отчёт восстановимым.
-    (ep.out_dir / "run.json").write_text(json.dumps({
+    claim = {
         "episode": ep.name, "run": run_id, "started_at": time.time(),
         "pid": os.getpid(), "workers": workers,
         "shots_total": len(ep.shots), "frames_total": ep.total_frames,
         "shots": [{"name": s.name, "frames": s.frames} for s in ep.shots],
         "resumed": len(skipped), "todo": len(todo),
         "renderer": _renderer_id(),
-    }, ensure_ascii=False, indent=1), encoding="utf-8")
+    }
+    (ep.out_dir / "run.json").write_text(
+        json.dumps(claim, ensure_ascii=False, indent=1), encoding="utf-8")
+    # Журнал прогонов: run.json перетирается каждым запуском, и после досчёта
+    # заявка упавшего прогона исчезала. Раунд 21: серия, упавшая на 200-м шоте из
+    # 314 и досчитанная за 16 минут, показывала «seconds: 16 минут» — оператор
+    # планировал следующую ночь по цифре, втрое меньшей фактической (46 минут).
+    with (ep.out_dir / "runs.jsonl").open("a", encoding="utf-8") as f:
+        f.write(json.dumps(claim, ensure_ascii=False) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
 
     emit({"event": "start", "shots": len(ep.shots), "todo": len(todo),
           "resumed": len(skipped), "workers": workers,
@@ -1005,6 +1050,12 @@ def _run_locked(ep: Episode, workers: int,
                 settle(fut.result(), i)
 
     elapsed = time.monotonic() - t0
+    # История: этот прогон уже дописан в runs.jsonl, поэтому попытка первая ->
+    # len(history) == 1. Полное стенное время — от старта САМОГО РАННЕГО прогона.
+    history = run_history(ep.out_dir)
+    first_start = min((h.get("started_at") or time.time()) for h in history) \
+        if history else time.time()
+    wall_total = max(elapsed, time.time() - first_start)
     ok = [r for r in results.values() if r.get("status") == "ok"]
     failed = [r for r in results.values() if r.get("status") != "ok"]
     frames = sum(r.get("frames", 0) for r in ok)
@@ -1025,6 +1076,17 @@ def _run_locked(ep: Episode, workers: int,
                          if fresh and elapsed >= 0.05 else 0.0),
         "failed": [{"name": r["name"], "code": r.get("code"),
                     "message": r.get("message")} for r in failed],
+        # Сколько попыток стоила серия и сколько времени ушло ВСЕГО. Без этого
+        # отчёт после досчёта показывал время последнего прогона и читался как
+        # «серия посчиталась за 16 минут», хотя первый прогон работал ещё 30 и
+        # упал — оператор планирует ночь по этой цифре (раунд 21).
+        "run": run_id,
+        "attempts": len(history),
+        "crashed_before": max(0, len(history) - 1),
+        "wall_seconds_total": round(wall_total, 2),
+        "runs": [{"run": h.get("run"), "started_at": h.get("started_at"),
+                  "todo": h.get("todo"), "resumed": h.get("resumed")}
+                 for h in history],
         "complete": not failed,
     }
     write_report(ep.out_dir, report)
@@ -1533,6 +1595,14 @@ def main() -> int:
             # выводе появлялось столько же одинаковых строк. Тот же класс, что
             # 345 жалоб вместо одной в раунде 5: число верное, вывод из него
             # сделать нельзя. Полный список остаётся в report.json.
+            # Серия, собранная за несколько попыток, стоила больше, чем показывает
+            # время последнего прогона. Раунд 21: 314 шотов, упало на 200-м —
+            # отчёт говорил «16 минут», фактически 46, и по этой цифре оператор
+            # планирует следующую ночь.
+            if e.get("crashed_before"):
+                say(f"  this episode took {e['attempts']} attempt(s): "
+                    f"{e['wall_seconds_total']}s of wall time in total "
+                    f"({e['seconds']}s in this run)")
             if e.get("failed"):
                 from collections import Counter
                 by_cause = Counter((f.get("code"), f.get("message"))
