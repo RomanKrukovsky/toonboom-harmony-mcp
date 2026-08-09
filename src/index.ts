@@ -76,6 +76,7 @@ import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.j
 import { resources } from './resources.js';
 import type { McpResource } from './resources.js';
 import { prompts } from './prompts.js';
+import type { McpPrompt } from './prompts.js';
 import { HarmonyError } from './security.js';
 import { activeHost, HOST_ENV_VAR } from './hostProfile.js';
 // Импортируется статически намеренно: registry.ts тянет только toolNames.ts
@@ -190,6 +191,23 @@ async function resolveActiveResources(): Promise<McpResource[]> {
   return mohoResources;
 }
 
+/**
+ * Промпты активного хоста.
+ *
+ * Промпт — это готовый сценарий работы, и он ссылается на конкретные тулы. В
+ * режиме moho промпты Harmony бесполезны и вредны: они зовут тулы, которых в
+ * этом режиме нет, поэтому модель начинает работу и упирается в отказ на
+ * середине. Раньше так и было — 15 промптов про Harmony отдавались в режиме
+ * moho.
+ */
+async function resolveActivePrompts(): Promise<McpPrompt[]> {
+  const host = activeHost();
+  if (host === 'harmony') return prompts;
+
+  const { mohoPrompts } = await import('./moho/prompts.js');
+  return mohoPrompts;
+}
+
 function zodFieldToJsonSchema(schema: any): any {
   const description = schema.description;
   const typeName = schema?._def?.typeName;
@@ -252,6 +270,9 @@ class HarmonyMcpServer {
 
   /** Ресурсы активного хоста. Заполняется в run() вместе с набором тулов. */
   private resources: McpResource[] = [];
+
+  /** Промпты активного хоста. Заполняется в run() вместе с набором тулов. */
+  private prompts: McpPrompt[] = [];
 
   constructor() {
     this.server = new Server(
@@ -376,7 +397,7 @@ class HarmonyMcpServer {
     // 5. Получение списка шаблонов подсказок (Prompts)
     this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
       return {
-        prompts: prompts.map(p => ({
+        prompts: this.prompts.map(p => ({
           name: p.name,
           description: p.description,
           arguments: p.arguments
@@ -386,7 +407,7 @@ class HarmonyMcpServer {
 
     // 6. Получение текста конкретной подсказки
     this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      const prompt = prompts.find(p => p.name === request.params.name);
+      const prompt = this.prompts.find(p => p.name === request.params.name);
       if (!prompt) {
         throw new Error(`Шаблон подсказки не найден: ${request.params.name}`);
       }
@@ -404,6 +425,7 @@ class HarmonyMcpServer {
     // единого тула.
     this.tools = await resolveActiveTools();
     this.resources = await resolveActiveResources();
+    this.prompts = await resolveActivePrompts();
 
     const host = activeHost();
     const transport = new StdioServerTransport();
@@ -413,7 +435,8 @@ class HarmonyMcpServer {
     // запись туда ломает протокол.
     console.error(
       `MCP-сервер запущен по каналу stdio: хост ${host} (${HOST_ENV_VAR}), ` +
-        `тулов ${this.tools.length}, ресурсов ${this.resources.length}`
+        `тулов ${this.tools.length}, ресурсов ${this.resources.length}, ` +
+        `промптов ${this.prompts.length}`
     );
   }
 }

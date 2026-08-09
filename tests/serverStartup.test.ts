@@ -35,6 +35,8 @@ interface ServerProbe {
   toolNames: string[] | null;
   /** Resource URIs as the client would see them, or null when resources/list never answered. */
   resourceUris: string[] | null;
+  /** Prompt names as the client would see them, or null when prompts/list never answered. */
+  promptNames: string[] | null;
   /** stdout lines that were not valid JSON — any of these corrupts the protocol. */
   junkLines: string[];
   stderr: string;
@@ -93,6 +95,21 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
     return null;
   };
 
+  const parsePromptList = (): string[] | null => {
+    for (const line of stdout.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const message = JSON.parse(line);
+        if (message.id === 4 && message.result?.prompts) {
+          return message.result.prompts.map((p: { name: string }) => p.name);
+        }
+      } catch {
+        // Non-JSON line: collected separately as protocol junk.
+      }
+    }
+    return null;
+  };
+
   const parseResourceList = (): string[] | null => {
     for (const line of stdout.split('\n')) {
       if (!line.trim()) continue;
@@ -123,6 +140,7 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
   let acknowledged = false;
   let toolNames: string[] | null = null;
   let resourceUris: string[] | null = null;
+  let promptNames: string[] | null = null;
   let exitCode: number | null = null;
   let settled = false;
 
@@ -140,10 +158,12 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
       send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
       send({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
       send({ jsonrpc: '2.0', id: 3, method: 'resources/list', params: {} });
+      send({ jsonrpc: '2.0', id: 4, method: 'prompts/list', params: {} });
     }
     toolNames = parseToolList();
     resourceUris = parseResourceList();
-    if (toolNames && resourceUris) break;
+    promptNames = parsePromptList();
+    if (toolNames && resourceUris && promptNames) break;
   }
 
   if (!settled) {
@@ -163,7 +183,7 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
       }
     });
 
-  return { toolNames, resourceUris, junkLines, stderr, exitCode };
+  return { toolNames, resourceUris, promptNames, junkLines, stderr, exitCode };
 }
 
 const describeIfBuilt = HAS_BUILD ? describe : describe.skip;
@@ -247,6 +267,27 @@ describeIfBuilt('live server startup', () => {
     expect(uris.length).toBeGreaterThan(0);
     expect(uris.every(u => u.startsWith('harmony://'))).toBe(true);
     expect(uris.filter(u => u.startsWith('moho://'))).toEqual([]);
+  });
+
+  it('промпты не смешиваются между хостами', async () => {
+    // Промпт — это сценарий, ссылающийся на конкретные тулы. Отдать в режиме
+    // moho промпт про Harmony значит послать модель звать тулы, которых нет:
+    // она начнёт работу и упрётся в отказ на середине. Ровно это и было — 15
+    // промптов Harmony отдавались в режиме moho.
+    const [harmony, moho] = await Promise.all([probeServer('harmony'), probeServer('moho')]);
+
+    expect(harmony.promptNames).not.toBeNull();
+    expect(moho.promptNames).not.toBeNull();
+    expect(harmony.promptNames!.length).toBeGreaterThan(0);
+    expect(moho.promptNames!.length).toBeGreaterThan(0);
+
+    // Наборы не пересекаются ни одним именем.
+    const harmonySet = new Set(harmony.promptNames!);
+    expect(moho.promptNames!.filter(n => harmonySet.has(n))).toEqual([]);
+
+    // И каждый набор про своё приложение.
+    expect(moho.promptNames!.every(n => n.startsWith('moho_'))).toBe(true);
+    expect(harmony.promptNames!.filter(n => n.startsWith('moho_'))).toEqual([]);
   });
 
   it('опечатка в ANIM_HOST останавливает запуск', async () => {
