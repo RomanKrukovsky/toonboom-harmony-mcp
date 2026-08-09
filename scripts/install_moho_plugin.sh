@@ -140,7 +140,24 @@ if (( DRY_RUN )); then
     for rel in "${REQUIRED_FILES[@]}"; do
         echo "  moho-plugin/${rel}  ->  ${SUB_DEST}/${rel}"
     done
+    # Both menu destinations are listed on purpose. An earlier version of this
+    # preview showed only SUB_DEST, so the plugin appeared to be installed once
+    # while two copies landed on disk. Anyone auditing the install then found an
+    # unexplained second tree and had to guess whether it was stale.
+    for rel in "${REQUIRED_FILES[@]}"; do
+        echo "  moho-plugin/${rel}  ->  ${MENU_DEST}/${rel}"
+    done
     echo "  moho-plugin/MohoMCP_Poller.lua  ->  ${TOOL_DEST}/MohoMCP_Poller.lua"
+    echo
+    echo "Note: menu files are installed TWICE, into both:"
+    echo "  ${MENU_DEST}"
+    echo "  ${SUB_DEST}"
+    echo "Moho versions differ in whether the Scripts menu scans menu/ or a"
+    echo "subfolder of it, and there is no reliable way to detect which. Both"
+    echo "copies are written and refreshed on every run, so they cannot drift"
+    echo "apart. Each copy resolves its own modules from its own directory."
+    echo "The Scripts menu may therefore list MohoMCP Server twice — either"
+    echo "entry works."
     echo
     echo "No changes made."
     exit 0
