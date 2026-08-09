@@ -275,9 +275,13 @@ class HarmonyMcpServer {
   private prompts: McpPrompt[] = [];
 
   constructor() {
+    // Имя включает активный хост: клиент показывает его человеку, и обобщённое
+    // «anim-mcp» не подсказало бы, какой пакет обслуживается сейчас. Хост
+    // фиксируется на старте, поэтому имя можно вычислить в конструкторе.
+    // Прежнее имя было «toonboom-harmony-mcp» — в режиме Moho оно прямо врало.
     this.server = new Server(
       {
-        name: 'toonboom-harmony-mcp',
+        name: `anim-mcp (${activeHost()})`,
         version: '1.0.0'
       },
       {
@@ -441,8 +445,28 @@ class HarmonyMcpServer {
   }
 }
 
-const server = new HarmonyMcpServer();
-server.run().catch((error) => {
-  console.error('Критическая ошибка запуска MCP-сервера:', error);
-  process.exit(1);
-});
+/**
+ * Запуск сервера.
+ *
+ * Конструктор обёрнут в try вместе с run(): имя сервера включает активный хост,
+ * поэтому `activeHost()` вызывается уже в конструкторе и при опечатке в
+ * ANIM_HOST бросает оттуда. Без обёртки такой отказ выглядел бы как сырой
+ * стектрейс вместо внятной строки — сообщение то же, но человеку пришлось бы
+ * выуживать его из вывода Node.
+ */
+function main(): void {
+  let server: HarmonyMcpServer;
+  try {
+    server = new HarmonyMcpServer();
+  } catch (error) {
+    console.error('Критическая ошибка запуска MCP-сервера:', error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
+
+  server.run().catch((error) => {
+    console.error('Критическая ошибка запуска MCP-сервера:', error);
+    process.exit(1);
+  });
+}
+
+main();

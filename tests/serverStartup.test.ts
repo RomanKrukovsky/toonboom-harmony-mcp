@@ -37,6 +37,8 @@ interface ServerProbe {
   resourceUris: string[] | null;
   /** Prompt names as the client would see them, or null when prompts/list never answered. */
   promptNames: string[] | null;
+  /** Server name from the initialize response — what the client displays. */
+  serverName: string | null;
   /** stdout lines that were not valid JSON — any of these corrupts the protocol. */
   junkLines: string[];
   stderr: string;
@@ -87,6 +89,21 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
         const message = JSON.parse(line);
         if (message.id === 2 && message.result?.tools) {
           return message.result.tools.map((t: { name: string }) => t.name);
+        }
+      } catch {
+        // Non-JSON line: collected separately as protocol junk.
+      }
+    }
+    return null;
+  };
+
+  const parseServerName = (): string | null => {
+    for (const line of stdout.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const message = JSON.parse(line);
+        if (message.id === 1 && message.result?.serverInfo?.name) {
+          return message.result.serverInfo.name as string;
         }
       } catch {
         // Non-JSON line: collected separately as protocol junk.
@@ -183,7 +200,7 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
       }
     });
 
-  return { toolNames, resourceUris, promptNames, junkLines, stderr, exitCode };
+  return { toolNames, resourceUris, promptNames, serverName: parseServerName(), junkLines, stderr, exitCode };
 }
 
 const describeIfBuilt = HAS_BUILD ? describe : describe.skip;
@@ -306,5 +323,26 @@ describeIfBuilt('live server startup', () => {
 
     expect(probe.stderr).toMatch(/хост moho/);
     expect(probe.stderr).toMatch(/тулов 59/);
+  });
+
+  it('имя сервера называет активный хост', async () => {
+    // Клиент показывает это имя человеку. Прежнее «toonboom-harmony-mcp» в
+    // режиме Moho прямо врало, а обобщённое «anim-mcp» не подсказывало бы,
+    // какой пакет обслуживается сейчас.
+    for (const host of ['harmony', 'moho'] as const) {
+      const probe = await probeServer(host);
+      expect(probe.serverName).toBe(`anim-mcp (${host})`);
+    }
+  });
+
+  it('отказ при опечатке читается человеком, а не как стектрейс', async () => {
+    // Имя сервера содержит хост, поэтому activeHost() зовётся уже в
+    // конструкторе. Без обёртки в try отказ выводился сырым стектрейсом Node:
+    // текст тот же, но человеку приходилось выуживать его из вывода.
+    const probe = await probeServer('mohoo');
+
+    expect(probe.stderr).toMatch(/Критическая ошибка запуска MCP-сервера/);
+    expect(probe.stderr).not.toMatch(/at parseHost/);
+    expect(probe.exitCode).toBe(1);
   });
 });

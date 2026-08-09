@@ -2,9 +2,9 @@
   <img src="docs/images/harmony_mcp_interface.png" alt="Toon Boom Harmony MCP Server" width="900"/>
 </p>
 
-# Toon Boom Harmony MCP Server
+# anim-mcp — MCP-сервер для Toon Boom Harmony и Moho
 
-MCP-сервер (Model Context Protocol) промышленного уровня для автоматизации работы с Toon Boom Harmony и Harmony Server.
+MCP-сервер (Model Context Protocol) для автоматизации работы с Toon Boom Harmony (включая Harmony Server) и Moho Pro. Активный пакет выбирается переменной `ANIM_HOST` при запуске.
 
 ## Честный статус проекта
 

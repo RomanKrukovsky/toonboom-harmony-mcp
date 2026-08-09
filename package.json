@@ -1,5 +1,5 @@
 {
-  "name": "toonboom-harmony-mcp",
+  "name": "anim-mcp",
   "version": "1.0.0",
   "type": "module",
   "description": "Production-grade Model Context Protocol (MCP) server for Toon Boom Harmony",
