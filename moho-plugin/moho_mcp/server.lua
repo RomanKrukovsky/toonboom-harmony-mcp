@@ -59,23 +59,70 @@ end
 -- Filesystem helpers (no shell invocation — pure Lua I/O for atomicity)
 -- ----------------------------------------------------------------------------
 
-local function listDir(dirPath)
-    local out = {}
-    local fd = io.popen(string.format(
-        SEP == "\\" and 'cmd.exe /c dir /b "%s" 2>NUL' or '/bin/ls -1 "%s" 2>/dev/null',
-        dirPath
-    ))
-    if not fd then return out end
-    for line in fd:lines() do
-        out[#out + 1] = line
-    end
-    fd:close()
-    return out
-end
+-- ----------------------------------------------------------------------------
+-- Shell access inside Moho
+--
+-- ROOT CAUSE OF A TOTAL COMMUNICATION FAILURE, found by probing the real app.
+-- Moho's embedded Lua ships WITHOUT io.popen: calling it returns
+--   false, "'popen' not supported"
+-- Every directory listing here used io.popen, so listDir() always returned an
+-- EMPTY table. The plugin could not see a single request file, no matter how
+-- long it polled — the spool filled up and the bridge timed out every time.
+-- The failure looked exactly like "polling is not running", which is why it
+-- was mistaken for a missing menu click for so long.
+--
+-- os.execute IS available (verified: returns true and the command runs), and
+-- io.open works on real files. So listings go through a temp index file:
+-- run `ls` with its output redirected, then read that file back. Slower than a
+-- pipe by one file write, and invisible next to the ~250ms poll interval.
+--
+-- Verified inside Moho by CLI probe: `os.execute ls` -> true, index file
+-- contained the actual spool entries including the pending request.
+-- ----------------------------------------------------------------------------
 
 -- Path-safety gate: no shell metacharacters.
 local function isSafePath(p)
     return type(p) == "string" and p:match("^[%w%_%-%./\\: ]+$") ~= nil
+end
+
+--- Run a shell command without io.popen. Returns true when it was dispatched.
+-- Failures are non-fatal by design: the caller degrades to an empty listing
+-- rather than raising inside Moho's UI thread, where a raised error kills the
+-- poll loop silently and takes the whole bridge down with it.
+local function runShell(cmd)
+    local ok, res = pcall(os.execute, cmd)
+    return ok and res ~= false
+end
+
+--- Temp path for a directory index. Kept next to the OS temp dir, not the
+-- spool: the spool is scanned for req_/resp_ files, and a stray index file
+-- there would be parsed as a malformed request.
+local function indexPath(tag)
+    local base = SEP == "\\" and (os.getenv("TEMP") or "C:\\Windows\\Temp") or "/tmp"
+    return base .. SEP .. "mohomcp_ls_" .. tostring(tag) .. ".txt"
+end
+
+local function listDir(dirPath)
+    local out = {}
+    if not isSafePath(dirPath) then return out end
+
+    local idx = indexPath("dir")
+    local cmd
+    if SEP == "\\" then
+        cmd = 'cmd.exe /c dir /b "' .. dirPath .. '" > "' .. idx .. '" 2>NUL'
+    else
+        cmd = '/bin/ls -1 "' .. dirPath .. '" > "' .. idx .. '" 2>/dev/null'
+    end
+    if not runShell(cmd) then return out end
+
+    local fd = io.open(idx, "r")
+    if not fd then return out end
+    for line in fd:lines() do
+        if line ~= "" then out[#out + 1] = line end
+    end
+    fd:close()
+    os.remove(idx)
+    return out
 end
 
 local function mkdirp(dirPath)
@@ -87,8 +134,7 @@ local function mkdirp(dirPath)
     else
         cmd = '/bin/mkdir -p "' .. cleanPath .. '" 2>/dev/null'
     end
-    local fd = io.popen(cmd)
-    if fd then fd:close() end
+    runShell(cmd)
 end
 
 local function fileExists(path)
@@ -142,10 +188,14 @@ local function getFileModTime(path)
     else
         cmd = 'stat -f "%m" "' .. path .. '" 2>/dev/null || stat -c "%Y" "' .. path .. '" 2>/dev/null'
     end
-    local fd = io.popen(cmd)
+    -- Same io.popen constraint as listDir: redirect to a temp file and read it.
+    local idx = indexPath("stat")
+    if not runShell(cmd .. ' > "' .. idx .. '" 2>/dev/null') then return nil end
+    local fd = io.open(idx, "r")
     if not fd then return nil end
     local result = fd:read("*a")
     fd:close()
+    os.remove(idx)
     result = result:match("^%s*(.-)%s*$")
     return tonumber(result)
 end
