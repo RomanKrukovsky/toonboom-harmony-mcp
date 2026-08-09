@@ -47,6 +47,41 @@ async function enableFileLogging(): Promise<void> {
 }
 
 /**
+ * Снимает блокировку клиента при завершении процесса.
+ *
+ * ЗАЧЕМ. `client_lock.json` даёт единственному потребителю право читать
+ * ответы из общей папки. Файл создавался, но НЕ удалялся: `disconnect()` в
+ * клиенте никто не вызывал, а обработчиков выхода не было. В результате папка
+ * копила блокировку с PID мёртвого процесса, и следующий запуск падал с
+ * «удерживается другим живым процессом» — процессом, которого нет. Спасал
+ * только срок жизни блокировки, то есть ожидание вместо работы.
+ *
+ * Обработчики ставятся один раз на процесс: повторная сборка набора тулов не
+ * должна плодить слушателей (Node предупреждает после десятого).
+ *
+ * `exit` обязателен: только в нём успевает выполниться синхронное удаление.
+ * Сигналы обрабатываются отдельно, потому что при обработчике на SIGINT/SIGTERM
+ * Node больше не завершает процесс сам — приходится завершать вручную, иначе
+ * Ctrl+C перестанет закрывать сервер.
+ */
+let exitHandlersInstalled = false;
+
+function installLockRelease(client: MohoClient): void {
+  if (exitHandlersInstalled) return;
+  exitHandlersInstalled = true;
+
+  process.on('exit', () => client.releaseClientLockSync());
+
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.on(signal, () => {
+      client.releaseClientLockSync();
+      // Стандартный код завершения по сигналу: 128 + номер сигнала.
+      process.exit(signal === 'SIGINT' ? 130 : 143);
+    });
+  }
+}
+
+/**
  * Собирает набор Moho-тулов.
  *
  * `z.object` передаётся фабрикой, чтобы схемы строились тем же экземпляром
@@ -56,6 +91,8 @@ async function enableFileLogging(): Promise<void> {
 export function buildMohoTools(): TypedTool<z.ZodTypeAny>[] {
   const collector = new MohoToolCollector(shape => z.object(shape));
   const client = new MohoClient();
+
+  installLockRelease(client);
 
   // Подключение файлового стока асинхронно, а сборка тулов — нет. Ждать здесь
   // нельзя, не сделав функцию async и не сломав её вызов из диспетчера;

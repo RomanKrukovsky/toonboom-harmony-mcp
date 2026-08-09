@@ -313,6 +313,36 @@ export class MohoClient {
     stopKeepAlive();
   }
 
+  /**
+   * Release the client lock synchronously, for process-exit handlers.
+   *
+   * WHY THIS EXISTS SEPARATELY FROM disconnect(). Two reasons, both observed
+   * rather than theorised:
+   *
+   *   1. Nothing called disconnect(). The lock outlived every run, so the
+   *      spool accumulated a lock naming a dead PID. A later run could only
+   *      start after the TTL expired and the stale lock was stolen — until
+   *      then it failed with RESOURCE_LOCKED, blaming "another live process"
+   *      that did not exist.
+   *
+   *   2. disconnect() unlinks asynchronously. Inside an 'exit' handler the
+   *      event loop is already closing, so a promise-based unlink never runs.
+   *      The removal has to be synchronous to actually happen.
+   *
+   * Failures are swallowed on purpose: the process is going away, and the
+   * TTL-based steal path already covers a lock that could not be removed.
+   */
+  releaseClientLockSync(): void {
+    this.stopLockHeartbeat();
+    if (!this.connected) return;
+    this.connected = false;
+    try {
+      fs.unlinkSync(path.join(this.ipcDir, "client_lock.json"));
+    } catch {
+      // Already gone, never created, or unwritable — the TTL steal path handles it.
+    }
+  }
+
   isConnected(): boolean {
     return this.connected;
   }
