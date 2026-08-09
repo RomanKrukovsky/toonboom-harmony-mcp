@@ -6,6 +6,15 @@
 
 MCP-сервер (Model Context Protocol) промышленного уровня для автоматизации работы с Toon Boom Harmony и Harmony Server.
 
+## Честный статус проекта
+
+> **Умный офлайн-планировщик и каркас анимационного компилятора, который видит Harmony, но ещё не доказал управление сценой внутри неё.**
+
+Реальная интеграция с Harmony (CLI, Control Center Telnet/Batch, Python API) покрывает часть инструментов; остальные работают в режиме симуляции и честно помечают результат `simulation_success` / `simulated: true`. Полный разбор того, что доказано на реальной Harmony, а что нет:
+- [REALITY_CHECK.md](docs/REALITY_CHECK.md) — статус продукта и границы возможностей
+- [VERIFIED_CURRENT_STATE.md](docs/VERIFIED_CURRENT_STATE.md) — проверенное состояние по подсистемам
+- [VERIFIED_TOOL_MATRIX.md](docs/VERIFIED_TOOL_MATRIX.md) — матрица верификации инструментов
+
 ## Архитектура и рабочий процесс
 
 <p align="center">
@@ -54,6 +63,39 @@ npm run test:python
 ```bash
 npm run start
 ```
+
+## Два хоста: Harmony и Moho
+
+Сервер обслуживает два пакета анимации. Активный выбирается переменной
+`ANIM_HOST` при запуске:
+
+```bash
+npm run start        # 570 тулов harmony.* (по умолчанию)
+npm run start:moho   #  59 тулов moho.*
+```
+
+Скрипт `start:moho` просто задаёт `ANIM_HOST=moho`. На Windows префикс
+переменной перед командой не работает — пропишите `ANIM_HOST=moho` в `.env`
+либо используйте `set ANIM_HOST=moho && npm run start`.
+
+Отдаётся ровно один набор, никогда оба. Причина простая: 629 описаний тулов
+уходят в контекст модели при каждом запуске и ухудшают выбор тула, а человек
+всё равно работает в одном пакете.
+
+Опечатка в `ANIM_HOST` останавливает запуск с явным сообщением — тихий откат к
+Harmony означал бы 570 чужих тулов вместо запрошенных 59 без объяснения.
+
+Установка Lua-плагина в Moho и прогон только Moho-тестов:
+
+```bash
+npm run install:moho-plugin
+npm run test:moho
+```
+
+Про режим Moho: папка обмена, подтверждение разрушающих операций и **что
+именно проверено, а что нет** — в [docs/MOHO.md](docs/MOHO.md). Подключение
+сервера к клиенту — в [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+
 
 Для реконструкции видео сначала запустите отдельный CPU core:
 
@@ -105,7 +147,7 @@ HARMONY_ALLOW_DESTRUCTIVE=false
 ## Документация (на русском языке)
 
 Подробное руководство находится в папке [docs](docs/):
-- [База Знаний Курса по Риггингу (13 Уроков)](playlist_knowledge_base.md)
+- [База Знаний Курса по Риггингу (13 Уроков)](docs/internal/research/playlist_knowledge_base.md)
 - [Инструкции и Workflow Плейлиста для Агента](docs/PLAYLIST_WORKFLOWS.md)
 - [Инструкция по установке](docs/INSTALL.md)
 - [Руководство по конфигурации](docs/CONFIGURATION.md)

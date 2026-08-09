@@ -13,9 +13,38 @@
 
 import { z } from 'zod';
 import type { TypedTool } from '../tools/defineTool.js';
+import { config } from './config.js';
 import { MohoClient } from './moho-client.js';
+import { attachFileSink } from './observability/logger.js';
 import { MohoToolCollector } from './registry.js';
 import { registerTools } from './tools.js';
+
+/**
+ * Подключает файловый сток логов, если задан MOHO_MCP_LOG_FILE.
+ *
+ * ЗАЧЕМ ОТДЕЛЬНАЯ ФУНКЦИЯ. `attachFileSink` существовал в logger.ts, но его
+ * никто не вызывал: переменная MOHO_MCP_LOG_FILE читалась в конфиг и молча
+ * никуда не шла. Человек задавал путь, был уверен, что логи пишутся, а файла
+ * не появлялось — худший вид отказа, потому что он выглядит как успех.
+ *
+ * Функция не бросает: невозможность писать лог не должна мешать работе с
+ * анимацией. Но и не молчит — про отказ сообщается в stderr, потому что
+ * молчание здесь вернуло бы ту же ложь в другом виде.
+ */
+async function enableFileLogging(): Promise<void> {
+  const target = config.moho.logFile;
+  if (!target) return;
+
+  const attached = await attachFileSink(target);
+  if (attached) {
+    console.error(`[moho] Лог пишется в файл: ${target}`);
+  } else {
+    console.error(
+      `[moho] Не удалось открыть файл лога ${target}. Логи остаются только в stderr. ` +
+        'Причина указана в диагностическом сообщении выше.'
+    );
+  }
+}
 
 /**
  * Собирает набор Moho-тулов.
@@ -27,6 +56,11 @@ import { registerTools } from './tools.js';
 export function buildMohoTools(): TypedTool<z.ZodTypeAny>[] {
   const collector = new MohoToolCollector(shape => z.object(shape));
   const client = new MohoClient();
+
+  // Подключение файлового стока асинхронно, а сборка тулов — нет. Ждать здесь
+  // нельзя, не сделав функцию async и не сломав её вызов из диспетчера;
+  // терять ошибку тоже нельзя, поэтому отказ логируется в самом обработчике.
+  void enableFileLogging();
 
   // registerTools ожидает объект с методом .tool(...) — коллектор совместим
   // по вызову. Приведение локально и намеренно: реального McpServer здесь нет.
