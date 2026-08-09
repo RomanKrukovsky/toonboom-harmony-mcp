@@ -72,11 +72,23 @@ function installLockRelease(client: MohoClient): void {
 
   process.on('exit', () => client.releaseClientLockSync());
 
-  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  // SIGHUP включён наравне с SIGINT/SIGTERM: он приходит при закрытии
+  // терминала, из которого запущен сервер. Без обработчика такой выход
+  // оставлял бы блокировку — тот же дефект, что и раньше, просто по другому
+  // сценарию, и найти его было бы сложнее (человек закрыл окно, а следующий
+  // запуск ссылается на мёртвый процесс).
+  const signals = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const;
+  const exitCodes: Record<(typeof signals)[number], number> = {
+    // Стандартный код завершения по сигналу: 128 + номер сигнала.
+    SIGHUP: 129,
+    SIGINT: 130,
+    SIGTERM: 143
+  };
+
+  for (const signal of signals) {
     process.on(signal, () => {
       client.releaseClientLockSync();
-      // Стандартный код завершения по сигналу: 128 + номер сигнала.
-      process.exit(signal === 'SIGINT' ? 130 : 143);
+      process.exit(exitCodes[signal]);
     });
   }
 }

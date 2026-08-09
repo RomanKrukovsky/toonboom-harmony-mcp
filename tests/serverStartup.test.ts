@@ -33,6 +33,8 @@ const HAS_BUILD = fs.existsSync(SERVER_ENTRY);
 interface ServerProbe {
   /** Tool names as the client would see them, or null when tools/list never answered. */
   toolNames: string[] | null;
+  /** Resource URIs as the client would see them, or null when resources/list never answered. */
+  resourceUris: string[] | null;
   /** stdout lines that were not valid JSON — any of these corrupts the protocol. */
   junkLines: string[];
   stderr: string;
@@ -91,6 +93,21 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
     return null;
   };
 
+  const parseResourceList = (): string[] | null => {
+    for (const line of stdout.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const message = JSON.parse(line);
+        if (message.id === 3 && message.result?.resources) {
+          return message.result.resources.map((r: { uri: string }) => r.uri);
+        }
+      } catch {
+        // Non-JSON line: collected separately as protocol junk.
+      }
+    }
+    return null;
+  };
+
   send({
     jsonrpc: '2.0',
     id: 1,
@@ -105,6 +122,7 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
   const deadline = Date.now() + timeoutMs;
   let acknowledged = false;
   let toolNames: string[] | null = null;
+  let resourceUris: string[] | null = null;
   let exitCode: number | null = null;
   let settled = false;
 
@@ -121,9 +139,11 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
       acknowledged = true;
       send({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} });
       send({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
+      send({ jsonrpc: '2.0', id: 3, method: 'resources/list', params: {} });
     }
     toolNames = parseToolList();
-    if (toolNames) break;
+    resourceUris = parseResourceList();
+    if (toolNames && resourceUris) break;
   }
 
   if (!settled) {
@@ -143,7 +163,7 @@ async function probeServer(host: string | undefined, timeoutMs = 20_000): Promis
       }
     });
 
-  return { toolNames, junkLines, stderr, exitCode };
+  return { toolNames, resourceUris, junkLines, stderr, exitCode };
 }
 
 const describeIfBuilt = HAS_BUILD ? describe : describe.skip;
@@ -203,6 +223,30 @@ describeIfBuilt('live server startup', () => {
       const probe = await probeServer(host);
       expect(probe.junkLines).toEqual([]);
     }
+  });
+
+  it('ANIM_HOST=moho отдаёт только ресурсы moho://', async () => {
+    const probe = await probeServer('moho');
+
+    // Ресурсы легко забыть подключить: их отсутствие не ломает ни один вызов
+    // тула, поэтому клиент просто не увидит moho://project/state и никто не
+    // заметит. Именно так и случилось при интеграции — экспорт существовал,
+    // а диспетчер оставался прибит к набору Harmony.
+    expect(probe.resourceUris).not.toBeNull();
+    const uris = probe.resourceUris!;
+    expect(uris.length).toBeGreaterThan(0);
+    expect(uris.every(u => u.startsWith('moho://'))).toBe(true);
+    expect(uris.filter(u => u.startsWith('harmony://'))).toEqual([]);
+  });
+
+  it('ANIM_HOST=harmony отдаёт только ресурсы harmony://', async () => {
+    const probe = await probeServer('harmony');
+
+    expect(probe.resourceUris).not.toBeNull();
+    const uris = probe.resourceUris!;
+    expect(uris.length).toBeGreaterThan(0);
+    expect(uris.every(u => u.startsWith('harmony://'))).toBe(true);
+    expect(uris.filter(u => u.startsWith('moho://'))).toEqual([]);
   });
 
   it('опечатка в ANIM_HOST останавливает запуск', async () => {

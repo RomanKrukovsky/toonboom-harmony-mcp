@@ -74,6 +74,7 @@ import { studioPackageTools } from './tools/studioPackageTools.js';
 import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.js';
 
 import { resources } from './resources.js';
+import type { McpResource } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
 import { activeHost, HOST_ENV_VAR } from './hostProfile.js';
@@ -172,6 +173,23 @@ async function resolveActiveTools(): Promise<TypedTool<z.ZodTypeAny>[]> {
   return buildMohoTools();
 }
 
+/**
+ * Ресурсы активного хоста.
+ *
+ * Ресурсы разделяются по хосту так же, как тулы: `moho://project/state` не
+ * имеет смысла в режиме Harmony, а чтение его потребовало бы живого Moho.
+ * Схемы URI не пересекаются (`harmony://` и `moho://`), поэтому конфликта
+ * имён здесь быть не может — но отдавать клиенту ресурсы неактивного хоста
+ * означало бы обещать данные, которых он не получит.
+ */
+async function resolveActiveResources(): Promise<McpResource[]> {
+  const host = activeHost();
+  if (host === 'harmony') return resources;
+
+  const { mohoResources } = await import('./moho/resources.js');
+  return mohoResources;
+}
+
 function zodFieldToJsonSchema(schema: any): any {
   const description = schema.description;
   const typeName = schema?._def?.typeName;
@@ -231,6 +249,9 @@ class HarmonyMcpServer {
    * набор Moho грузится динамическим import, а конструктор синхронный.
    */
   private tools: TypedTool<z.ZodTypeAny>[] = [];
+
+  /** Ресурсы активного хоста. Заполняется в run() вместе с набором тулов. */
+  private resources: McpResource[] = [];
 
   constructor() {
     this.server = new Server(
@@ -324,7 +345,7 @@ class HarmonyMcpServer {
     // 3. Получение списка доступных ресурсов (Resources)
     this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
       return {
-        resources: resources.map(r => ({
+        resources: this.resources.map(r => ({
           uri: r.uri,
           name: r.name,
           description: r.description,
@@ -335,7 +356,7 @@ class HarmonyMcpServer {
 
     // 4. Чтение содержимого ресурса
     this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-      const resource = resources.find(r => r.uri === request.params.uri);
+      const resource = this.resources.find(r => r.uri === request.params.uri);
       if (!resource) {
         throw new Error(`Ресурс не найден: ${request.params.uri}`);
       }
@@ -382,6 +403,7 @@ class HarmonyMcpServer {
     // список сразу после рукопожатия, и пустой список означал бы сервер без
     // единого тула.
     this.tools = await resolveActiveTools();
+    this.resources = await resolveActiveResources();
 
     const host = activeHost();
     const transport = new StdioServerTransport();
@@ -390,7 +412,8 @@ class HarmonyMcpServer {
     // Логи только в stderr: stdout занят каналом JSON-RPC, любая посторонняя
     // запись туда ломает протокол.
     console.error(
-      `MCP-сервер запущен по каналу stdio: хост ${host} (${HOST_ENV_VAR}), тулов ${this.tools.length}`
+      `MCP-сервер запущен по каналу stdio: хост ${host} (${HOST_ENV_VAR}), ` +
+        `тулов ${this.tools.length}, ресурсов ${this.resources.length}`
     );
   }
 }
