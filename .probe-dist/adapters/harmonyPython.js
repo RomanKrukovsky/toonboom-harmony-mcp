@@ -1,0 +1,215 @@
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { config } from '../config.js';
+import { HarmonyError } from '../security.js';
+export class HarmonyPython {
+    static daemonProcess = null;
+    static pendingPromises = new Map();
+    static stdoutBuffer = '';
+    static daemonStderr = '';
+    static killDaemon() {
+        void this.shutdownDaemon();
+    }
+    static async shutdownDaemon() {
+        const daemon = this.daemonProcess;
+        if (!daemon)
+            return;
+        const closed = new Promise((resolve) => {
+            daemon.once('close', () => resolve());
+        });
+        try {
+            daemon.stdin.end();
+        }
+        catch {
+            // The process may already have closed its input pipe.
+        }
+        if (daemon.exitCode === null && !daemon.killed) {
+            daemon.kill();
+        }
+        await closed;
+    }
+    static getPythonExecutable() {
+        const configured = process.env.PYTHON_BIN;
+        if (configured)
+            return configured;
+        if (process.platform === 'darwin') {
+            const brewPy39 = '/opt/homebrew/bin/python3.9';
+            if (fs.existsSync(brewPy39))
+                return brewPy39;
+        }
+        return process.platform === 'win32' ? 'python' : 'python3';
+    }
+    static getSpawnEnv() {
+        const env = {
+            ...process.env,
+            HARMONY_INSTALL: config.harmonyInstall,
+            HARMONY_PYTHON_PACKAGES: config.harmonyPythonPackages
+        };
+        if (process.platform === 'darwin') {
+            const harmonyLib = config.harmonyBin
+                ? path.resolve(path.dirname(config.harmonyBin), '../lib')
+                : '/Applications/Harmony 25 Premium.app/Contents/tba/macosx/lib';
+            const frameworkPaths = [
+                harmonyLib,
+                '/opt/homebrew/Cellar/python@3.9/3.9.25/Frameworks',
+                '/opt/homebrew/opt/python@3.9/Frameworks',
+                '/opt/homebrew/Frameworks',
+                '/Library/Frameworks'
+            ];
+            const existingFw = env.DYLD_FRAMEWORK_PATH ? env.DYLD_FRAMEWORK_PATH + ':' : '';
+            env.DYLD_FRAMEWORK_PATH = existingFw + frameworkPaths.filter(p => fs.existsSync(p)).join(':');
+            const existingLib = env.DYLD_LIBRARY_PATH ? env.DYLD_LIBRARY_PATH + ':' : '';
+            env.DYLD_LIBRARY_PATH = existingLib + harmonyLib;
+        }
+        return env;
+    }
+    static initDaemon(pythonBin, bridgeScript) {
+        if (this.daemonProcess && !this.daemonProcess.killed) {
+            return;
+        }
+        this.daemonProcess = spawn(pythonBin, [bridgeScript], {
+            env: {
+                ...this.getSpawnEnv(),
+                HARMONY_PERSISTENT_MODE: 'true'
+            }
+        });
+        this.daemonProcess.stdout.on('data', (data) => {
+            this.stdoutBuffer += data.toString();
+            let newlineIdx;
+            while ((newlineIdx = this.stdoutBuffer.indexOf('\n')) !== -1) {
+                const line = this.stdoutBuffer.substring(0, newlineIdx).trim();
+                this.stdoutBuffer = this.stdoutBuffer.substring(newlineIdx + 1);
+                if (line) {
+                    try {
+                        const parsed = JSON.parse(line);
+                        const reqId = parsed.requestId;
+                        if (reqId && this.pendingPromises.has(reqId)) {
+                            const { resolve, reject } = this.pendingPromises.get(reqId);
+                            this.pendingPromises.delete(reqId);
+                            if (parsed.error) {
+                                reject(new HarmonyError(parsed.code || 'PYTHON_API_UNAVAILABLE', parsed.message || 'Произошла ошибка в работе моста Python.', parsed.details));
+                            }
+                            else {
+                                resolve(parsed);
+                            }
+                        }
+                    }
+                    catch (e) {
+                        console.error("Ошибка парсинга JSON из строки демона Python:", line, e);
+                    }
+                }
+            }
+        });
+        this.daemonProcess.stderr.on('data', (data) => {
+            this.daemonStderr += data.toString();
+        });
+        this.daemonProcess.on('close', (code) => {
+            if (code !== 0 && this.daemonStderr.trim()) {
+                console.error(`Фоновый демон Python завершился с кодом ${code}. Stderr: ${this.daemonStderr.trim()}`);
+            }
+            for (const [_, { reject }] of this.pendingPromises.entries()) {
+                reject(new HarmonyError('PYTHON_API_UNAVAILABLE', 'Сбой фонового демона Python. Процесс был неожиданно завершен.'));
+            }
+            this.pendingPromises.clear();
+            this.daemonProcess = null;
+            this.stdoutBuffer = '';
+            this.daemonStderr = '';
+        });
+    }
+    static async runCommand(command, args = {}, timeoutMs = config.scriptTimeoutMs) {
+        const pythonBin = this.getPythonExecutable();
+        let scriptUrl = null;
+        try {
+            scriptUrl = (new Function('return (typeof import !== "undefined" && import.meta) ? import.meta.url : null'))();
+        }
+        catch {
+            scriptUrl = null;
+        }
+        const currentFilename = scriptUrl ? fileURLToPath(scriptUrl) : path.resolve(process.cwd(), 'src/adapters/harmonyPython.ts');
+        const __dirname = path.dirname(currentFilename);
+        const bridgeScript = path.resolve(path.join(__dirname, '../../scripts/python/harmony_bridge.py'));
+        if (!fs.existsSync(bridgeScript)) {
+            throw new HarmonyError('PYTHON_API_UNAVAILABLE', `Скрипт-мост Python не найден по пути "${bridgeScript}".`);
+        }
+        const persistent = process.env.HARMONY_PERSISTENT_MODE !== 'false';
+        if (!persistent) {
+            return this.runSingleCommand(pythonBin, bridgeScript, command, args, timeoutMs);
+        }
+        this.initDaemon(pythonBin, bridgeScript);
+        const daemon = this.daemonProcess;
+        if (!daemon) {
+            throw new HarmonyError('PYTHON_API_UNAVAILABLE', 'Фоновый демон Python не запустился.');
+        }
+        const requestId = Math.random().toString(36).substring(7);
+        const payload = {
+            requestId,
+            command,
+            args,
+            pythonPackages: config.harmonyPythonPackages
+        };
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.pendingPromises.delete(requestId);
+                reject(new HarmonyError('SCRIPT_TIMEOUT', `Запрос к демону Python превысил таймаут в ${timeoutMs}мс`));
+            }, timeoutMs);
+            this.pendingPromises.set(requestId, {
+                resolve: (val) => {
+                    clearTimeout(timeout);
+                    resolve(val);
+                },
+                reject: (err) => {
+                    clearTimeout(timeout);
+                    reject(err);
+                }
+            });
+            daemon.stdin.write(JSON.stringify(payload) + '\n');
+        });
+    }
+    static async runSingleCommand(pythonBin, bridgeScript, command, args = {}, timeoutMs = config.scriptTimeoutMs) {
+        const payload = {
+            command,
+            args,
+            pythonPackages: config.harmonyPythonPackages
+        };
+        return new Promise((resolve, reject) => {
+            const child = spawn(pythonBin, [bridgeScript], {
+                env: this.getSpawnEnv()
+            });
+            let stdout = '';
+            let stderr = '';
+            child.stdin.write(JSON.stringify(payload));
+            child.stdin.end();
+            child.stdout.on('data', (data) => {
+                stdout += data.toString();
+            });
+            child.stderr.on('data', (data) => {
+                stderr += data.toString();
+            });
+            const timeout = setTimeout(() => {
+                child.kill();
+                reject(new HarmonyError('SCRIPT_TIMEOUT', `Выполнение моста Python превысило таймаут в ${timeoutMs}мс`));
+            }, timeoutMs);
+            child.on('close', (code) => {
+                clearTimeout(timeout);
+                if (code !== 0 && !stdout) {
+                    return reject(new HarmonyError('PYTHON_API_UNAVAILABLE', `Процесс Python завершился с кодом ошибки ${code}. Stderr: ${stderr.trim()}`));
+                }
+                try {
+                    const parsed = JSON.parse(stdout.trim());
+                    if (parsed.error) {
+                        return reject(new HarmonyError(parsed.code || 'PYTHON_API_UNAVAILABLE', parsed.message || 'Произошла ошибка в работе моста Python.', parsed.details));
+                    }
+                    resolve(parsed);
+                }
+                catch (e) {
+                    reject(new HarmonyError('PYTHON_API_UNAVAILABLE', `Не удалось разобрать вывод от моста Python: ${stdout.trim() || stderr.trim()}`));
+                }
+            });
+        });
+    }
+    static stopDaemon() {
+        return this.shutdownDaemon();
+    }
+}

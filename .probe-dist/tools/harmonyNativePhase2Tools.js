@@ -1,0 +1,6 @@
+import { z } from 'zod';
+import { HarmonyCommandPlanV4Compiler } from '../adapters/harmonyCommandPlanV4/index.js';
+import { harmonyCommandPlanV4Schema } from '../schemas/harmonyCommandPlanV4.js';
+import { reconstructionManifestSchema } from '../schemas/reconstruction.js';
+const compiler = new HarmonyCommandPlanV4Compiler();
+export const harmonyNativePhase2Tools = [{ name: 'harmony.factory.harmony.compile_v4', description: 'Создать полный HarmonyCommandPlan V4. Без Harmony результат implemented_unverified.', inputSchema: z.object({ manifest: reconstructionManifestSchema }), handler: async (a) => ({ status: 'implemented_unverified', executed: true, verified: false, artifactCreated: false, requiresRealHarmony: true, plan: compiler.compile(a.manifest) }) }, { name: 'harmony.factory.harmony.verify_plan_offline', description: 'Проверить порядок, rollback и idempotency V4 без ложного native success.', inputSchema: z.object({ plan: harmonyCommandPlanV4Schema }), handler: async (a) => compiler.verifyOffline(a.plan) }, { name: 'harmony.factory.harmony.export_runner_bundle', description: 'Собрать переносимый Phase 2 runner bundle с checksums.', inputSchema: z.object({ plan: harmonyCommandPlanV4Schema, manifest: reconstructionManifestSchema, outputDir: z.string() }), handler: async (a) => compiler.exportBundle(a.plan, a.manifest, a.outputDir) }];

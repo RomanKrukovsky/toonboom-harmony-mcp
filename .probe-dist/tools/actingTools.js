@@ -1,0 +1,161 @@
+import { z } from 'zod';
+import { ActingPlanner } from '../adapters/actingPlanner/index.js';
+import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.js';
+import { defineTool } from './defineTool.js';
+async function runRigBridge(command, args) {
+    try {
+        return await HarmonyPython.runCommand(command, args);
+    }
+    catch (err) {
+        if (err instanceof HarmonyError && err.code === 'PYTHON_API_UNAVAILABLE') {
+            return { status: 'unsupported', reason: 'Python API is not available.' };
+        }
+        throw err;
+    }
+}
+/**
+ * actingTools — acting planning layer.
+ */
+export const actingTools = [
+    defineTool({
+        name: 'harmony.acting.analyze_dialogue',
+        description: 'Проанализировать темп/громкость/эмоцию диалога.',
+        inputSchema: z.object({
+            dialogue: z.string()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', analysis: planner.analyzeDialogue(args.dialogue) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_emotional_beats',
+        description: 'Сгенерировать emotional beats для сцены.',
+        inputSchema: z.object({
+            scene: z.any(),
+            character: z.string().optional()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            const beats = planner.generateEmotionalBeats(args.scene, args.character || 'Hero');
+            return { status: 'success', emotionalBeats: beats };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_pose_beats',
+        description: 'Сгенерировать pose beats.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', poseBeats: planner.generatePoseBeats(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_micro_actions',
+        description: 'Сгенерировать список micro actions.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', microActions: planner.generateMicroActions(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_gesture_plan',
+        description: 'Сгенерировать gesture plan.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', gesturePlan: planner.generateGesturePlan(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_eye_blink_plan',
+        description: 'Сгенерировать blink plan.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', blinkPlan: planner.generateBlinkPlan(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_head_motion_plan',
+        description: 'Сгенерировать head motion plan.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', headMotionPlan: planner.generateHeadMotionPlan(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.generate_body_language_plan',
+        description: 'Сгенерировать body language plan.',
+        inputSchema: z.object({
+            scene: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            return { status: 'success', bodyLanguagePlan: planner.generateBodyLanguagePlan(args.scene) };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.apply_rough_acting',
+        description: 'Собрать rough acting plan из всех подпланов.',
+        inputSchema: z.object({
+            scene: z.any(),
+            character: z.string()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            const plan = planner.buildActingPlan(args.character, args.scene, {});
+            return { status: 'success', actingPlan: plan };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.validate_acting_readability',
+        description: 'Оценить readability acting plan.',
+        inputSchema: z.object({
+            actingPlan: z.any()
+        }),
+        handler: async (args) => {
+            const planner = new ActingPlanner();
+            const score = planner.estimateReadability(args.actingPlan.emotionalArc || []);
+            return { status: score >= 70 ? 'success' : 'partial_success', readabilityScore: score };
+        }
+    }),
+    defineTool({
+        name: 'harmony.acting.apply_to_scene',
+        description: 'Bakes acting plan into keyframes in Harmony via Python API.',
+        inputSchema: z.object({
+            projectPath: z.string().optional(),
+            actingPlan: z.any().describe('ActingPlan from harmony.acting.apply_rough_acting'),
+            dryRun: z.boolean().optional().default(true)
+        }),
+        handler: async (args) => {
+            const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
+            return executeWithDryRun('acting.apply_to_scene', args, args.dryRun, async () => {
+                const res = await runRigBridge('execute_acting_plan', {
+                    projectPath: checkedPath,
+                    plan: args.actingPlan
+                });
+                if (res.status === 'unsupported')
+                    return res;
+                return {
+                    status: 'success',
+                    bridgeResponse: res,
+                    message: res.message
+                };
+            });
+        }
+    })
+];
