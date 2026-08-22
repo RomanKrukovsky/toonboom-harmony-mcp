@@ -8,11 +8,12 @@ import {
 import { verifyPathAccess, HarmonyError } from "../security.js";
 import fs from "fs";
 import path from "path";
+import { defineTool } from './defineTool.js';
 
 const client = new ReconstructionClient();
 
 export const retargetingTools = [
-  {
+  defineTool({
     name: "harmony.rig.generate_retargeting_config",
     description: "Создать шаблон профиля рига и маппинга скелета для ретаргетинга.",
     inputSchema: z.object({
@@ -48,9 +49,9 @@ export const retargetingTools = [
         mappings: defaultMappings,
       };
     },
-  },
+  }),
 
-  {
+  defineTool({
     name: "harmony.rig.apply_retargeting",
     description: "Перенести движения (landmarks) на кости рига, сгенерировать RetargetingManifest и HarmonyCommandPlan.",
     inputSchema: z.object({
@@ -68,7 +69,7 @@ export const retargetingTools = [
       beta: z.number().optional().default(0.3),
       outputPath: z.string().optional(),
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       // 1. Вызываем FastAPI эндпоинт анализа
       const manifest = await client.retargetAnalyze({
         landmarks: args.landmarks,
@@ -118,9 +119,9 @@ export const retargetingTools = [
         note: "Ретаргетинг успешно выполнен автономно. План команд готов к импорту.",
       };
     },
-  },
+  }),
 
-  {
+  defineTool({
     name: "harmony.rig.get_retargeting_preview",
     description: "Сгенерировать SVG-кадры визуального превью скелета рига поверх точек источника.",
     inputSchema: z.object({
@@ -144,5 +145,5 @@ export const retargetingTools = [
         note: "SVG-превью успешно сгенерировано для всех кадров.",
       };
     },
-  },
+  }),
 ];

@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { ShowBibleLoader } from '../services/showBibleLoader/index.js';
 import { ShotManifestCompiler } from '../services/shotManifestCompiler/index.js';
 import { performancePirSchema } from '../schemas/performancePir.js';
-import type { ShotManifest } from '../schemas/shotManifest.js';
+import { shotManifestSchema } from '../schemas/shotManifest.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * harmony.factory.compile_shot
@@ -20,7 +21,7 @@ const loader = new ShowBibleLoader();
 const compiler = new ShotManifestCompiler();
 
 export const factoryCompilerTools = [
-  {
+  defineTool({
     name: 'harmony.factory.compile_shot',
     description:
       'Компилировать ShotManifest в PerformancePIR с проверкой против ShowBible. ' +
@@ -28,9 +29,12 @@ export const factoryCompilerTools = [
       'LLM-режиссёр может принимать решения только внутри ShowBible.',
     inputSchema: z.object({
       showBiblePath: z.string().describe('Путь к show_bible.json (остальные 5 документов грузятся по ссылкам).'),
-      shotManifest: z.record(z.any()).describe('Объект shot_manifest.json.')
+      // Раньше здесь был z.record(z.any()): контракт «жёсткий отказ на неизвестный
+      // shot size / camera move / emotion» не проверялся на границе MCP, и в
+      // компилятор мог попасть произвольный объект.
+      shotManifest: shotManifestSchema.describe('Объект shot_manifest.json.')
     }),
-    handler: async (args: { showBiblePath: string; shotManifest: ShotManifest }) => {
+    handler: async (args) => {
       const loaded = loader.load(args.showBiblePath);
       const controllerMaps = loader.buildControllerMaps(loaded);
       const { performance, violations, warnings } = compiler.compile(
@@ -84,5 +88,5 @@ export const factoryCompilerTools = [
         message: `Shot "${args.shotManifest.shotId}" compiled to PerformancePIR "${performance.performanceId}".`
       };
     }
-  }
+  })
 ];

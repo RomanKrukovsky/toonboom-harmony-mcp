@@ -1,14 +1,19 @@
-import sqlite3 from 'sqlite3';
+import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { config } from '../config.js';
 
+export interface RunResult {
+  lastID: number;
+  changes: number;
+}
+
 export class SqliteTracker {
-  private db: sqlite3.Database;
+  private db: Database.Database;
 
   constructor() {
     const dbPath = path.join(config.allowedRoots[0] || '.', 'harmony_workflow.db');
-    this.db = new sqlite3.Database(dbPath);
+    this.db = new Database(dbPath);
   }
 
   async initialize(): Promise<void> {
@@ -107,32 +112,19 @@ export class SqliteTracker {
     }
   }
 
-  // Обертки с промисами для методов sqlite3
-  run(sql: string, params: any[] = []): Promise<sqlite3.RunResult> {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function (this: sqlite3.RunResult, err) {
-        if (err) reject(err);
-        else resolve(this);
-      });
-    });
+  // Обертки сохраняют async-сигнатуры прежнего API (sqlite3), но исполняются
+  // синхронно через better-sqlite3 — вызывающий код не меняется.
+  async run(sql: string, params: any[] = []): Promise<RunResult> {
+    const info = this.db.prepare(sql).run(...params);
+    return { lastID: Number(info.lastInsertRowid), changes: info.changes };
   }
 
-  all<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows as T[]);
-      });
-    });
+  async all<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+    return this.db.prepare(sql).all(...params) as T[];
   }
 
-  get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, row) => {
-        if (err) reject(err);
-        else resolve(row as T | undefined);
-      });
-    });
+  async get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
+    return this.db.prepare(sql).get(...params) as T | undefined;
   }
 
   // Методы управления рабочим процессом

@@ -46,15 +46,15 @@ footer{color:var(--dim);font-size:11.5px;margin-top:44px;border-top:1px solid va
 </style>
 <div class="wrap">
 <h1>Gauntlet run — production</h1>
-<p class="sub">22 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
+<p class="sub">23 rounds · regenerate with <code>progress.py .gauntlet/production</code></p>
 <div class="meta">
 <p><span class="lbl">Goal</span>Довести анимационный конвейер до состояния, в котором студия может выпускать серии</p>
 <p><span class="lbl">The bar</span>Ночная сборка серии на телевизионном конвейере — объём одного 22-минутного эпизода (≈300 шотов, ≈31 700 кадров при 24 fps) ставится в очередь ОДНОЙ командой, считается параллельно по всем ядрам, возобновляется без потерь после kill -9, склеивается в один мастер со звуком, и на любой кадр можно ответить, кто его сделал. Проверяется числами и настоящим тестом «убей и продолжи».</p>
 </div>
 <div class="stats">
-<div class="stat"><b>22</b><span>rounds</span></div>
+<div class="stat"><b>23</b><span>rounds</span></div>
 <div class="stat"><b>14</b><span>ours won</span></div>
-<div class="stat"><b>1</b><span>win streak</span></div>
+<div class="stat"><b>0</b><span>win streak</span></div>
 <div class="stat"><b>6</b><span>lenses used</span></div>
 </div>
 <h2>The bar</h2>
@@ -646,6 +646,30 @@ commit 706882d.
 …</pre>
 <div class="body"><div class="row"><span class="rnd">22</span><span class="badge b-win">OURS WINS</span><span class="badge">assembly</span><span class="badge">отчёт и прогресс для оператора</span></div>
 <div class="gap"><em>gap sent back</em>третья граница из четырёх выписанных — «шот пересчитан после сборки» — проверена и оставлена без вывода: отчёт в этом случае сохраняет `assembly` от старой сборки, но `deliverable_ready` не пересчитывается, потому что сборка не запускалась, и признака устаревания у него нет</div>
+</div></div>
+<div class="card">
+<pre># Раунд 23 — отчёт и прогресс для оператора — линза: traceability
+
+Вопрос линзы: **на случайный кадр серии отвечается «какой шот, кто рисовал»?
+Цепочка хэшей цела?**
+
+На этой части — знает ли об этом отчёт. Границы выписаны до проверки (правило
+раунда 21). Blender 5.1.1, commit bc90179.
+
+## Серия с подделанным реестром объявлялась готовой к выдаче
+
+```
+  реестр УДАЛЁН:      deliverable_ready=True, признака отсутствия НЕТ
+  цепочка ПОДДЕЛАНА:  verify() находит 1 проблему
+                      отчёт говорит: ничего
+                      deliverable_ready=True, код выхода 0
+```
+
+Раунд 6 назвал реестр «тем, что делает конструкцию юридически существующей».
+Раунд 11 подключил его к конвейеру. Раун
+…</pre>
+<div class="body"><div class="row"><span class="rnd">23</span><span class="badge b-lose">BAR WINS</span><span class="badge">traceability</span><span class="badge">отчёт и прогресс для оператора</span></div>
+<div class="gap"><em>gap sent back</em>`check_provenance` считает шот отслеженным по префиксу имени (`t.startswith(&quot;sc&quot;)`) — на серии, где шоты названы иначе (`ep07_010`, `open`, `credits`), проверка полноты молча вернёт «ноль отслеженных» или, наоборот, пропустит пропажу, и это ровно тот класс дефекта, который раунд 17 нашёл на нумерации кадров</div>
 </div></div>
 </div>
 <h2>Open gaps</h2><ul class='gaps'>

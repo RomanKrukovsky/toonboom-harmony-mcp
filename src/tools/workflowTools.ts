@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { tracker } from '../adapters/sqliteTracker.js';
 import { executeWithDryRun } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 export const workflowTools = [
-  {
+  defineTool({
     name: 'harmony.workflow.create_production',
     description: 'Инициализация нового рабочего пространства производства в трекере.',
     inputSchema: z.object({
@@ -11,7 +12,7 @@ export const workflowTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_production', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createProduction(args.name, args.description);
@@ -21,8 +22,8 @@ export const workflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.create_episode',
     description: 'Добавление нового эпизода к проекту производства.',
     inputSchema: z.object({
@@ -31,7 +32,7 @@ export const workflowTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_episode', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createEpisode(args.productionId, args.name, args.description);
@@ -41,8 +42,8 @@ export const workflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.create_sequence',
     description: 'Добавление новой сцены/сиквенса (sequence) к указанному эпизоду.',
     inputSchema: z.object({
@@ -51,7 +52,7 @@ export const workflowTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_sequence', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createSequence(args.episodeId, args.name, args.description);
@@ -61,8 +62,8 @@ export const workflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.create_shot',
     description: 'Добавление кадра (shot) к сиквенсу с привязками к окружениям/проектам Harmony.',
     inputSchema: z.object({
@@ -75,7 +76,7 @@ export const workflowTools = [
       harmonyVersion: z.number().optional().describe('Связанная версия сцены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_shot', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createShot(args.sequenceId, args.name, args.description);
@@ -98,8 +99,8 @@ export const workflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.assign_status',
     description: 'Изменение статуса кадра или подзадачи в трекере.',
     inputSchema: z.object({
@@ -108,7 +109,7 @@ export const workflowTools = [
       status: z.string().describe('Новое значение статуса (например: In Progress, Completed, Approved).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('assign_status', args, args.dryRun, async () => {
         await tracker.initialize();
         if (args.entityType === 'shot') {
@@ -122,8 +123,8 @@ export const workflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.get_status_report',
     description: 'Получение сводного структурированного отчета по статусам всех задач и кадров.',
     inputSchema: z.object({}),
@@ -135,8 +136,8 @@ export const workflowTools = [
         report
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.workflow.generate_production_report',
     description: 'Генерация полного иерархического отчета производства (проекты -> эпизоды -> сиквенсы -> кадры).',
     inputSchema: z.object({}),
@@ -148,5 +149,5 @@ export const workflowTools = [
         productions: report
       };
     }
-  }
+  })
 ];

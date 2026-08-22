@@ -7,6 +7,7 @@ import { DeformerGenerator } from '../adapters/deformerGenerator.js';
 import { characterDrawingPIRSchema } from '../schemas/vectorizationPIR.js';
 import * as schemas from '../schemas/rig.js';
 import { projectPathSchema } from '../schemas/common.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runRigBridge(command: string, args: any): Promise<any> {
@@ -30,11 +31,11 @@ async function runRigBridge(command: string, args: any): Promise<any> {
 
 export const rigTools = [
   // Слой Rigging (harmony.rig.*)
-  {
+  defineTool({
     name: 'harmony.rig.create_character_structure',
     description: 'Создание базовой плоской структуры узлов рисования для нового персонажа.',
     inputSchema: schemas.createCharacterStructureSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_character_structure', args, args.dryRun, async () => {
         // Создаем слои рисования для каждой части тела
@@ -64,24 +65,24 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.import_layered_character',
     description: 'Импорт PSD шаблона персонажа с разложением по слоям.',
     inputSchema: schemas.importLayeredCharacterSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedPsd = verifyPathAccess(args.psdPath);
       return executeWithDryRun('import_layered_character', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_layered_character" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_cutout_hierarchy',
     description: 'Создание стандартной перекладочной иерархии (Peg-связей, Separate mode, Z-offsets) для персонажа.',
     inputSchema: schemas.createCutoutHierarchySchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_cutout_hierarchy', args, args.dryRun, async () => {
         const dummyPir = characterDrawingPIRSchema.parse({
@@ -132,8 +133,8 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.build_character_from_pir',
     description: 'Автоматическое разложение векторизованного CharacterDrawingPIR и сборка Cutout Rig со стандартами Separate Pegs, Drawing Lock, Micro Z-Offsets, Auto-patch и Backdrops.',
     inputSchema: z.object({
@@ -183,15 +184,17 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_pegs',
     description: 'Автоматическое создание управляющих Peg-нод для выбранных слоев с поддержкой пресета Pivot Matching (Уроки #4, #5).',
     inputSchema: schemas.createPegsSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_pegs', args, args.dryRun, async () => {
-        const targetNodes = args.nodePaths || args.targetNodes || args.layers || ['Character_Drawing'];
+        // nodePaths обязателен по схеме, поэтому прежние алиасы
+        // (targetNodes / layers) и дефолт были недостижимым кодом.
+        const targetNodes = args.nodePaths;
         const createdPegs: string[] = [];
         for (const targetNode of targetNodes) {
           const cleanName = targetNode.replace(/^(Top\/)+/, '');
@@ -217,8 +220,8 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_deformers',
     description: 'Пакетное добавление деформаторов (Bone, Curve, Envelope) для собранного рига.',
     inputSchema: z.object({
@@ -226,7 +229,7 @@ export const rigTools = [
       assemblyPlan: z.record(z.unknown()).optional(),
       dryRun: z.boolean().optional().default(true)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       // Mock plan if none provided
       const dummyPir = characterDrawingPIRSchema.parse({
         characterId: args.characterName || 'Character_Cutout',
@@ -260,12 +263,12 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_master_controller_plan',
     description: 'Генерация Master Controller (Grid/Slider) для рига.',
     inputSchema: schemas.createMasterControllerPlanSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       // Create a specific 2D Grid MC plan
       const mcPlan = {
         planId: `mc_plan_${Date.now()}`,
@@ -274,9 +277,11 @@ export const rigTools = [
           mcId: `mc_${args.controllerName}`,
           name: args.controllerName,
           widgetType: 'Grid',
-          controlledNodes: [],
-          gridWidth: 3,
-          gridHeight: 3
+          // Ранее эти три поля игнорировали вход: узлы терялись,
+          // а размер сетки был жёстко зашит в 3x3.
+          controlledNodes: args.controlledNodePaths,
+          gridWidth: args.gridWidth,
+          gridHeight: args.gridHeight
         }],
         deformers: []
       };
@@ -293,12 +298,12 @@ export const rigTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_head_turn_plan',
     description: 'Генерация плана фазовки поворота головы.',
     inputSchema: schemas.createHeadTurnPlanSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       return {
         status: 'success',
         characterName: args.characterName,
@@ -310,12 +315,12 @@ export const rigTools = [
         ]
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_body_turn_plan',
     description: 'Генерация плана фазовки поворота туловища персонажа.',
     inputSchema: schemas.createBodyTurnPlanSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       return {
         status: 'success',
         characterName: args.characterName,
@@ -325,12 +330,12 @@ export const rigTools = [
         ]
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_mouth_chart',
     description: 'Создание структуры рта со стандартным набором фонем (A, B, C, D, E, F, G, X) и подстановками рисунков (Урок #13).',
     inputSchema: schemas.createMouthChartSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runRigBridge('create_node', {
         projectPath: checkedPath,
@@ -339,52 +344,52 @@ export const rigTools = [
         nodeName: 'Mouth'
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_eye_system',
     description: 'Сборка иерархии нод глаз с пресетом Eye Cutter Mask (инвертированная маска зрачка под белок, Урок #10) и поддержкой 4 веков (Урок #17).',
     inputSchema: schemas.createEyeSystemSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_eye_system', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_eye_system" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_constraint',
     description: 'Создание и наложение ноды ограничения (TwoPointConstraint) для сохранения объемов суставов при растяжении и сжатии (Уроки #19, #21).',
     inputSchema: schemas.createConstraintSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_constraint', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_constraint" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_brow_system',
     description: 'Сборка структуры бровей с деформаторами и пегами управления.',
     inputSchema: schemas.createBrowSystemSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_brow_system', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_brow_system" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_hand_swaps',
     description: 'Создание набора подстановок кистей рук персонажа.',
     inputSchema: schemas.createHandSwapsSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_hand_swaps', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_hand_swaps" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_pose_library',
     description: 'Создание директории библиотеки стандартных поз (.tpl) для персонажа.',
     inputSchema: schemas.createPoseLibrarySchema,
@@ -396,20 +401,20 @@ export const rigTools = [
         message: 'Папка библиотеки поз успешно проинициализирована.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.apply_pose',
     description: 'Применение шаблона позы из библиотеки к ригу персонажа в сцене.',
     inputSchema: schemas.applyPoseSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedPose = verifyPathAccess(args.poseTemplatePath);
       return executeWithDryRun('apply_pose', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "apply_pose" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.validate',
     description: 'Валидация рига на битые связи, отсутствующие опорные точки, ошибки в иерархии, двойную трансформацию (double transformation), Drawing Keyframe Pollution, неправильные режимы Composite и отрицательный масштаб на пегах с деформерами.',
     inputSchema: schemas.validateRigSchema,
@@ -518,8 +523,8 @@ export const rigTools = [
         auditDetails: audit
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.validate_deformers',
     description: 'Проверка целостности и корректности иерархии деформаторов: порядок Peg→Deformer→Drawing, наличие Kinematic Output, конфликтующие деформационные цепи на одном элементе, отрицательный масштаб на пегах с деформерами.',
     inputSchema: schemas.validateDeformersSchema,
@@ -588,8 +593,8 @@ export const rigTools = [
         hierarchyRule: 'Peg (top) → Deformer → Drawing (bottom). Child Pegs must connect through Kinematic Output, not directly to deformed Drawing.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.validate_naming',
     description: 'Проверка именования узлов рига по студийному пайплайну.',
     inputSchema: schemas.validateNamingSchema,
@@ -614,37 +619,37 @@ export const rigTools = [
         };
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.export_template',
     description: 'Экспорт готового рига во внешний файл-шаблон библиотеки .tpl.',
     inputSchema: schemas.exportTemplateSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedDest = verifyPathAccess(args.templateDestinationPath);
       return executeWithDryRun('export_rig_template', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_rig_template" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_test_animation',
     description: 'Создание тестового движения на таймлайне для проверки гибкости рига.',
     inputSchema: schemas.createTestAnimationSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_test_animation', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_test_animation" требует подключённого Python API Harmony.');
       });
     }
-  },
+  }),
 
   // Слой 360 Rigging (harmony.rig360.*)
-  {
+  defineTool({
     name: 'harmony.rig360.analyze_character_turnaround',
     description: 'Анализ файлов ракурсов разворота и составление плана сборки 360-рига.',
     inputSchema: schemas.analyzeCharacterTurnaroundSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       return {
         status: 'success',
         characterName: args.characterName,
@@ -655,79 +660,79 @@ export const rigTools = [
         ]
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_head_360_structure',
     description: 'Создание структуры узлов и Pegs для 360 разворота головы.',
     inputSchema: schemas.createHead360StructureSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_head_360', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_head_360_structure" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_body_360_structure',
     description: 'Создание структуры узлов и Pegs для 360 разворота тела.',
     inputSchema: schemas.createBody360StructureSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_body_360', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_body_360_structure" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.map_drawings_to_angles',
     description: 'Привязка конкретных подстановок рисунков к определенным углам разворота с авто-созданием уникальных цепей деформации (Create New Deformation Chain, Урок #12).',
     inputSchema: schemas.mapDrawingsToAnglesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('map_drawings_to_angles', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "map_drawings_to_angles" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_angle_controls',
     description: 'Сборка контроллеров угла разворота (слайдеров на основе Master Controller).',
     inputSchema: schemas.createAngleControlsSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_angle_controls', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_angle_controls" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_face_controls',
     description: 'Создание 2D контроллеров направления взгляда и мимики лица.',
     inputSchema: schemas.createFaceControlsSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_face_controls', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_face_controls" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_smooth_turn_plan',
     description: 'Генерация плана анимации и интерполяции для сглаживания фаз поворота.',
     inputSchema: schemas.createSmoothTurnPlanSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       return {
         status: 'success',
         characterName: args.characterName,
         plan: 'Интерполяция Peg-смещений между ракурсами: Front -> Front 3/4 -> Side.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.validate_angle_coverage',
     description: 'Проверка того, что все 8 основных углов поворота имеют корректные подстановки.',
     inputSchema: schemas.validateAngleCoverageSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       return {
         status: 'success',
         characterName: args.characterName,
@@ -736,57 +741,57 @@ export const rigTools = [
         valid: false
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.create_turn_test',
     description: 'Создание тестового полного разворота на 360 градусов на таймлайне.',
     inputSchema: schemas.createTurnTestSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_turn_test', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_turn_test" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig360.export_360_rig_template',
     description: 'Экспорт готового 360-рига в шаблон библиотеки .tpl.',
     inputSchema: schemas.export360RigTemplateSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedDest = verifyPathAccess(args.templateDestinationPath);
       return executeWithDryRun('export_360_rig_template', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_360_rig_template" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.create_autopatch_joint',
     description: 'Автоматическое создание бесшовного сустава Auto-Patch между двумя сегментами конечности (плечо-предплечье, бедро-голень).',
     inputSchema: schemas.createAutopatchJointSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_autopatch_joint', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_autopatch_joint" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.attach_kinematic_accessory',
     description: 'Автоматическая привязка аксессуара (часы, браслет, пуговица) к деформируемому слою через ноду Kinematic Output.',
     inputSchema: schemas.attachKinematicAccessorySchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('attach_kinematic_accessory', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "attach_kinematic_accessory" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.zero_out_peg',
     description: 'Сброс координат пивота выбранной Peg-ноды к исходному локальному нулю (Zero-Out).',
     inputSchema: schemas.zeroOutPegSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('zero_out_peg', args, args.dryRun, () => {
         return runRigBridge('zero_out_peg', {
@@ -795,8 +800,8 @@ export const rigTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.find_duplicate_deformer_chains',
     description: 'Поиск конфликтующих деформационных цепей на одном элементе (Drawing node). Несколько деформеров на одном элементе могут ломать друг друга (Reddit: rig_deformer_bug, problems_with_rigs).',
     inputSchema: z.object({
@@ -838,8 +843,8 @@ export const rigTools = [
           : 'No conflicting deformer chains detected.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.rig.validate_deformer_pivots',
     description: 'Проверка расхождения координат пивотов деформера и родительского Peg. Рассинхрон вызывает улетание элементов при подключении к главному Peg (Reddit: simple_rig_help).',
     inputSchema: z.object({
@@ -901,5 +906,5 @@ export const rigTools = [
           : 'Deformer and Peg pivots are aligned.'
       };
     }
-  }
+  })
 ];

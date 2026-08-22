@@ -8,9 +8,10 @@ process.env.HARMONY_ALLOW_DESTRUCTIVE = 'true';
 
 import { config } from '../src/config.js';
 import { vectorizationTools } from '../src/tools/vectorizationTools.js';
+import { requireTool } from './helpers/toolInvocation.js';
 
 describe('Vectorization MCP Tools Tests', () => {
-  const getTool = (name: string) => vectorizationTools.find((t) => t.name === name)!;
+  const getTool = (name: string) => requireTool(vectorizationTools, name);
   const testImgPath = path.resolve(process.cwd(), 'output', 'test_sample.png');
 
   beforeAll(() => {

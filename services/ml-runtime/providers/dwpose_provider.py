@@ -229,10 +229,22 @@ class DWPoseProvider:
         return actual
 
     def _providers(self) -> List[str]:
-        if self.device in ("mps", "coreml"):
+        device = self.device
+        if device == "auto":
+            # Выбираем самый быстрый доступный EP. Замер на fixtures/character.png:
+            # CoreML 49 мс/кадр против CPU 204 мс/кадр (4.2x) на Apple Silicon.
+            available = ort.get_available_providers()
+            if "CUDAExecutionProvider" in available:
+                device = "cuda"
+            elif "CoreMLExecutionProvider" in available:
+                device = "coreml"
+            else:
+                device = "cpu"
+            logger.info("DWPose device=auto resolved to %s (available: %s)", device, available)
+        if device in ("mps", "coreml"):
             self.execution_provider = "CoreML"
             return ["CoreMLExecutionProvider", "CPUExecutionProvider"]
-        if self.device == "cuda":
+        if device == "cuda":
             self.execution_provider = "CUDA"
             return ["CUDAExecutionProvider", "CPUExecutionProvider"]
         self.execution_provider = "CPUExecutionProvider"

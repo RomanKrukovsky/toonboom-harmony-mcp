@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import sqlite3 from 'sqlite3';
+import Database from 'better-sqlite3';
 import { config } from '../../config.js';
 import { HarmonyError, verifyPathAccess } from '../../security.js';
 
@@ -19,8 +19,8 @@ export class FactoryAuth {
 }
 
 export class FactoryFoundationStore {
-  readonly root:string; private db:sqlite3.Database;
-  constructor(root=path.join(config.allowedRoots[0],'output','factory')){this.root=verifyPathAccess(root);fs.mkdirSync(this.root,{recursive:true});this.db=new sqlite3.Database(path.join(this.root,'factory.db'));}
+  readonly root:string; private db:Database.Database;
+  constructor(root=path.join(config.allowedRoots[0],'output','factory')){this.root=verifyPathAccess(root);fs.mkdirSync(this.root,{recursive:true});this.db=new Database(path.join(this.root,'factory.db'));}
   async initialize(){await this.exec(`CREATE TABLE IF NOT EXISTS factory_jobs(id TEXT PRIMARY KEY,type TEXT,status TEXT,progress REAL,input_json TEXT,result_json TEXT,error_json TEXT,created_at TEXT,updated_at TEXT,cancel_requested INTEGER DEFAULT 0);CREATE TABLE IF NOT EXISTS factory_steps(id TEXT PRIMARY KEY,job_id TEXT,name TEXT,status TEXT,attempt INTEGER DEFAULT 0,depends_on TEXT,checkpoint_json TEXT,updated_at TEXT);CREATE TABLE IF NOT EXISTS factory_registry(id TEXT PRIMARY KEY,kind TEXT,name TEXT,revision TEXT,checksum TEXT,status TEXT,metadata_json TEXT,created_at TEXT);CREATE TABLE IF NOT EXISTS factory_artifacts(id TEXT PRIMARY KEY,sha256 TEXT UNIQUE,size INTEGER,media_type TEXT,source_path TEXT,stored_path TEXT,created_at TEXT);CREATE TABLE IF NOT EXISTS factory_metrics(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,value REAL,labels_json TEXT,created_at TEXT);`);}
   async createJob(type:string,input:any,steps:string[]){await this.initialize();const id=`job_${crypto.randomUUID()}`,now=new Date().toISOString();await this.run('INSERT INTO factory_jobs VALUES(?,?,?,?,?,?,?,?,?,0)',[id,type,'queued',0,JSON.stringify(input),null,null,now,now]);for(let i=0;i<steps.length;i++)await this.run('INSERT INTO factory_steps VALUES(?,?,?,?,?,?,?,?)',[`${id}_${i+1}`,id,steps[i],'pending',0,i?steps[i-1]:null,null,now]);return this.getJob(id);}
   async setJob(id:string,status:string,progress:number,result?:any,error?:any){await this.run('UPDATE factory_jobs SET status=?,progress=?,result_json=?,error_json=?,updated_at=? WHERE id=?',[status,progress,result?JSON.stringify(result):null,error?JSON.stringify(error):null,new Date().toISOString(),id]);}
@@ -31,6 +31,10 @@ export class FactoryFoundationStore {
   async listRegistry(kind?:string){await this.initialize();const rows:any[]=kind?await this.all('SELECT * FROM factory_registry WHERE kind=?',[kind]):await this.all('SELECT * FROM factory_registry',[]);return rows.map(r=>({...r,metadata:parse(r.metadata_json)}));}
   async ingest(source:string,mediaType='application/octet-stream'){await this.initialize();const real=verifyPathAccess(source);if(!fs.statSync(real).isFile())throw new Error('Artifact source is not a file');const sha=await hashFile(real),dir=path.join(this.root,'objects',sha.slice(0,2)),stored=path.join(dir,sha);fs.mkdirSync(dir,{recursive:true});if(!fs.existsSync(stored))fs.copyFileSync(real,stored);const size=fs.statSync(stored).size,id=`artifact_${sha.slice(0,20)}`;await this.run('INSERT OR IGNORE INTO factory_artifacts VALUES(?,?,?,?,?,?,?)',[id,sha,size,mediaType,real,stored,new Date().toISOString()]);return{id,sha256:sha,size,mediaType,sourcePath:real,storedPath:stored,verified:fs.statSync(stored).size===size};}
   async metric(name:string,value:number,labels:any={}){await this.initialize();await this.run('INSERT INTO factory_metrics(name,value,labels_json,created_at) VALUES(?,?,?,?)',[name,value,JSON.stringify(labels),new Date().toISOString()]);}
-  private exec(sql:string){return new Promise<void>((ok,bad)=>this.db.exec(sql,e=>e?bad(e):ok()));} private run(sql:string,p:any[]){return new Promise<void>((ok,bad)=>this.db.run(sql,p,e=>e?bad(e):ok()));} private get(sql:string,p:any[]){return new Promise<any>((ok,bad)=>this.db.get(sql,p,(e,r)=>e?bad(e):ok(r)));} private all(sql:string,p:any[]){return new Promise<any[]>((ok,bad)=>this.db.all(sql,p,(e,r)=>e?bad(e):ok(r)));}
+  // Синхронный better-sqlite3 за прежними async-сигнатурами — вызывающий код не меняется.
+  private async exec(sql:string):Promise<void>{this.db.exec(sql);}
+  private async run(sql:string,p:any[]):Promise<void>{this.db.prepare(sql).run(...p);}
+  private async get(sql:string,p:any[]):Promise<any>{return this.db.prepare(sql).get(...p);}
+  private async all(sql:string,p:any[]):Promise<any[]>{return this.db.prepare(sql).all(...p);}
 }
 function parse(v:any){if(!v)return null;try{return JSON.parse(v);}catch{return v;}} async function hashFile(file:string){const h=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))h.update(chunk as Buffer);return h.digest('hex');}

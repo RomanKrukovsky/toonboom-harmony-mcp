@@ -1,5 +1,6 @@
 import type { EpisodePlan, Shot } from '../../schemas/episodePlan.js';
 import type { actingPlanSchema } from '../../schemas/actingPlan.js';
+import { DeterministicRng } from '../scriptDirector/index.js';
 
 /**
  * ActingPlanner — generates rough acting beats per character per scene.
@@ -88,9 +89,24 @@ export class ActingPlanner {
     ];
   }
 
+  /**
+   * Blink timing across the shot.
+   *
+   * Uses a seeded RNG so the same scene always yields the same plan. With raw
+   * Math.random() two runs on identical input produced different blink frames,
+   * which makes a plan unreproducible and diffs meaningless — the exact bug
+   * DeterministicRng was introduced to prevent.
+   */
   generateBlinkPlan(scene: any): any[] {
     const blinks = [];
-    for (let f = 12; f < scene.durationFrames; f += 30 + Math.floor(Math.random() * 20)) {
+    // Seed from stable scene identity, so the cadence varies between scenes but
+    // is stable for any given one.
+    const seedSource = String(scene?.sceneId ?? scene?.sceneName ?? 'scene');
+    let seed = 0;
+    for (const char of seedSource) seed = (seed * 31 + char.charCodeAt(0)) >>> 0;
+    const rng = new DeterministicRng(seed ^ (scene?.durationFrames ?? 0));
+
+    for (let f = 12; f < scene.durationFrames; f += 30 + Math.floor(rng.next() * 20)) {
       blinks.push({ frame: f, type: 'single' as const });
     }
     return blinks;

@@ -6,35 +6,36 @@ import { EpisodeAssembler } from '../adapters/episodeAssembler/index.js';
 import { scenePlanSchema } from '../schemas/scenePlan.js';
 import { tracker } from '../adapters/sqliteTracker.js';
 import { config } from '../config.js';
-
-interface ToolDef {
-  name: string;
-  description: string;
-  inputSchema: z.ZodObject<any>;
-  handler: (args: any) => Promise<any>;
-}
+import { verifyPathAccess } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * onePromptTools — the main entry points for the Moonshot mode.
+ *
+ * Each entry uses defineTool() so `args` is inferred from its own inputSchema;
+ * a local ToolDef[] annotation would erase that back to `any`.
  */
-export const onePromptTools: ToolDef[] = [
-  {
+export const onePromptTools = [
+  defineTool({
     name: 'harmony.oneprompt.analyze',
     description: 'Проанализировать один большой промпт и вернуть структурированную production intelligence.',
     inputSchema: z.object({
       prompt: z.string().min(1).describe('Творческий промпт серии/эпизода.'),
       targetDurationMinutes: z.number().optional(),
       fps: z.number().optional(),
-      resolution: z.object({ width: z.number(), height: z.number() }).optional()
+      resolution: z.object({ width: z.number(), height: z.number() }).optional(),
+      // Ранее handler читал args.mode, которого не было в схеме:
+      // переданный режим молча отбрасывался валидацией.
+      mode: z.enum(['real', 'simulation', 'hybrid', 'moonshot']).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new OnePromptEngine();
       const result = engine.analyzePrompt(args);
       return { status: 'success', analysis: result, mode: args.mode ?? config.engineMode };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_production_package',
     description: 'Создать полный production package из одного промпта.',
     inputSchema: z.object({
@@ -45,7 +46,7 @@ export const onePromptTools: ToolDef[] = [
       outputDir: z.string().optional().describe('Куда сохранить package.'),
       mode: z.enum(['real','simulation','hybrid','moonshot']).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new OnePromptEngine();
       const pkg = await engine.generateProductionPackage({
         prompt: args.prompt,
@@ -59,7 +60,7 @@ export const onePromptTools: ToolDef[] = [
       let finalPackage = pkg.finalPackage;
       if (args.outputDir) {
         const { FinalPackager } = await import('../adapters/finalPackage/index.js');
-        finalPackage = new FinalPackager().assemble(pkg, args.outputDir);
+        finalPackage = new FinalPackager().assemble(pkg, verifyPathAccess(args.outputDir));
       }
 
       await tracker.initialize().catch(() => {});
@@ -80,32 +81,32 @@ export const onePromptTools: ToolDef[] = [
         whatWasReal: pkg.whatWasReal
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_series_bible',
     description: 'Сгенерировать series_bible.json из промпта.',
     inputSchema: z.object({
       prompt: z.string().min(1),
       targetDurationMinutes: z.number().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { SeriesPlanner } = await import('../adapters/seriesPlanner/index.js');
       const engine = new OnePromptEngine();
       const analysis = engine.analyzePrompt(args);
       const bible = new SeriesPlanner().createBible(analysis, args);
       return { status: 'success', seriesBible: bible };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_script',
     description: 'Сгенерировать script.json из промпта и episode plan.',
     inputSchema: z.object({
       prompt: z.string().min(1),
       episodePlan: z.any().describe('episode_plan.json объект.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { ScriptPlanner } = await import('../adapters/scriptPlanner/index.js');
       const engine = new OnePromptEngine();
       const analysis = engine.analyzePrompt(args);
@@ -113,9 +114,9 @@ export const onePromptTools: ToolDef[] = [
       const script = planner.generateScript(args.episodePlan, analysis);
       return { status: 'success', script };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_episode_plan',
     description: 'Сгенерировать episode_plan.json из промпта.',
     inputSchema: z.object({
@@ -124,7 +125,7 @@ export const onePromptTools: ToolDef[] = [
       fps: z.number().optional(),
       resolution: z.object({ width: z.number(), height: z.number() }).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { EpisodePlanner } = await import('../adapters/episodePlanner/index.js');
       const { SeriesPlanner } = await import('../adapters/seriesPlanner/index.js');
       const engine = new OnePromptEngine();
@@ -133,36 +134,36 @@ export const onePromptTools: ToolDef[] = [
       const episode = new EpisodePlanner().createEpisodePlan(analysis, args);
       return { status: 'success', analysis, seriesBible: bible, episodePlan: episode };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_shot_list',
     description: 'Сгенерировать shot list для существующего episode plan.',
     inputSchema: z.object({
       episodePlan: z.any().describe('episode_plan.json объект.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { ShotPlanner } = await import('../adapters/shotPlanner/index.js');
       const shots = new ShotPlanner().generateShots(args.episodePlan);
       return { status: 'success', shotCount: shots.length, shots };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_character_specs',
     description: 'Сгенерировать character_design_specs.json из анализа.',
     inputSchema: z.object({
       analysis: z.any().describe('Результат harmony.oneprompt.analyze.'),
       seriesBible: z.any().describe('series_bible.json объект.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { CharacterDesigner } = await import('../adapters/characterDesigner/index.js');
       const specs = new CharacterDesigner().generateSpecs(args.analysis.candidateCharacters, args.seriesBible);
       return { status: 'success', count: specs.length, characterSpecs: specs };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_asset_requirements',
     description: 'Собрать полный список asset requirements из персонажей, сцен и rig.',
     inputSchema: z.object({
@@ -170,28 +171,28 @@ export const onePromptTools: ToolDef[] = [
       episodePlan: z.any(),
       rig360Specs: z.array(z.any())
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { AssetGenerator } = await import('../adapters/assetGenerator/index.js');
       const reqs = new AssetGenerator().generateRequirements(args.characterSpecs, args.episodePlan, args.rig360Specs);
       return { status: 'success', count: reqs.length, assetRequirements: reqs };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_rig360_specs',
     description: 'Сгенерировать rig360 specs и placeholder rig plan для персонажей.',
     inputSchema: z.object({
       characterSpecs: z.array(z.any())
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const { Rig360Synthesizer } = await import('../adapters/rig360Synthesizer/index.js');
       const synth = new Rig360Synthesizer();
       const specs = args.characterSpecs.map((c: any) => synth.generateSpec(c));
       return { status: 'success', count: specs.length, rig360Specs: specs };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.generate_scene_plans',
     description: 'Сконвертировать episode plan + camera/FX планы в scene_plan.json для Autopilot.',
     inputSchema: z.object({
@@ -200,7 +201,7 @@ export const onePromptTools: ToolDef[] = [
       cameraPlans: z.array(z.any()).optional(),
       fxPlans: z.array(z.any()).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const assembler = new EpisodeAssembler();
       const plans = assembler.assembleScenePlans(args.episodePlan, args.characterSpecs, args.cameraPlans || [], args.fxPlans || []);
       const validations = plans.map(p => scenePlanSchema.safeParse(p));
@@ -212,9 +213,9 @@ export const onePromptTools: ToolDef[] = [
         scenePlans: plans
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.run_to_preview_episode',
     description: 'Главный moonshot tool: prompt → production package → scene plans → preview renders (simulation/hybrid).',
     inputSchema: z.object({
@@ -228,7 +229,7 @@ export const onePromptTools: ToolDef[] = [
       targetScore: z.number().optional(),
       executeInHarmony: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const mode = args.mode ?? config.engineMode;
       const engine = new OnePromptEngine();
       const pkg = await engine.generateProductionPackage({
@@ -245,7 +246,9 @@ export const onePromptTools: ToolDef[] = [
         ? pkg.scenePlans
         : assembler.assembleScenePlans(pkg.episodePlan, pkg.characterSpecs, pkg.cameraPlans, pkg.fxPlans, pkg.actingPlans, pkg.lipsyncPlans, pkg.backgroundPlans);
 
-      const outRoot = args.outputDir || path.join(process.cwd(), 'output', `moonshot_${Date.now()}`);
+      const outRoot = args.outputDir
+        ? verifyPathAccess(args.outputDir)
+        : path.join(process.cwd(), 'output', `moonshot_${Date.now()}`);
       const scenesDir = path.join(outRoot, 'scene_plans');
       const previewsDir = path.join(outRoot, 'previews');
       if (!fs.existsSync(scenesDir)) fs.mkdirSync(scenesDir, { recursive: true });
@@ -261,8 +264,15 @@ export const onePromptTools: ToolDef[] = [
       // In hybrid / real / moonshot mode, attempt to invoke Harmony Autopilot for each scene plan.
       // moonshot runs Autopilot in dry-run so it still exercises the full path without requiring Harmony.
       const { autopilotTools } = await import('./autopilotTools.js');
-      const runScenePlan = autopilotTools.find((t: any) => t.name === 'harmony.autopilot.run_scene_plan');
-      const renderPreview = autopilotTools.find((t: any) => t.name === 'harmony.autopilot.render_preview');
+      // Cross-tool invocation: each tool in the array carries its own inferred
+      // arg type, so `.find()` widens to an intersection of every schema. These
+      // handlers are called dynamically with a runtime-built payload, so the
+      // lookup is typed loosely on purpose.
+      const findTool = (name: string): { handler: (args: any) => Promise<any> } | undefined =>
+        (autopilotTools as readonly { name: string; handler: (args: any) => Promise<any> }[])
+          .find(t => t.name === name);
+      const runScenePlan = findTool('harmony.autopilot.run_scene_plan');
+      const renderPreview = findTool('harmony.autopilot.render_preview');
 
       const autopilotResults: any[] = [];
       let autopilotAttempted = false;
@@ -411,9 +421,9 @@ export const onePromptTools: ToolDef[] = [
         realExecutionResults: realExecutionResults.length > 0 ? realExecutionResults : undefined
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.oneprompt.run_to_final_package',
     description: 'Запустить полный pipeline до final_package (review + fixes + human checkpoint + lock).',
     inputSchema: z.object({
@@ -425,8 +435,11 @@ export const onePromptTools: ToolDef[] = [
       mode: z.enum(['real','simulation','hybrid','moonshot']).optional(),
       humanApproved: z.boolean().optional().describe('Set true to confirm human creative approval and lock the package.')
     }),
-    handler: async (args: any): Promise<any> => {
-      const previewTool = onePromptTools.find((t: ToolDef) => t.name === 'harmony.oneprompt.run_to_preview_episode');
+    handler: async (args): Promise<any> => {
+      // Self-referential lookup: the array's element type is an intersection of
+      // every tool schema, so this delegation is typed loosely on purpose.
+      const previewTool = (onePromptTools as readonly { name: string; handler: (a: any) => Promise<any> }[])
+        .find(t => t.name === 'harmony.oneprompt.run_to_preview_episode');
       const result: any = await previewTool!.handler(args);
 
       // Human approval checkpoint
@@ -446,7 +459,7 @@ export const onePromptTools: ToolDef[] = [
       }
 
       // Lock the package
-      const outRoot = result.outputDir;
+      const outRoot = verifyPathAccess(result.outputDir);
       const lockData = {
         lockedAt: new Date().toISOString(),
         approvedBy: approved ? 'human' : 'auto',
@@ -464,5 +477,5 @@ export const onePromptTools: ToolDef[] = [
       result.humanCheckpoint = { required: false, approvedBy: lockData.approvedBy };
       return result;
     }
-  }
+  })
 ];

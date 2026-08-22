@@ -4,6 +4,7 @@ import path from 'path';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { verifyPathAccess, enforceDestructiveSafety, executeWithDryRun, HarmonyError } from '../security.js';
 import { config } from '../config.js';
+import { defineTool } from './defineTool.js';
 
 async function runDiagnosticsInternal(tempDir?: string) {
   const { execFile } = await import('child_process');
@@ -95,7 +96,7 @@ async function runDiagnosticsInternal(tempDir?: string) {
 }
 
 export const sceneTools = [
-  {
+  defineTool({
     name: 'harmony.scene.open_project',
     description: 'Открытие локального файла проекта сцены Harmony (.xstage).',
     inputSchema: z.object({
@@ -105,8 +106,8 @@ export const sceneTools = [
       const checkedPath = verifyPathAccess(args.projectPath);
       return HarmonyPython.runCommand('open_project', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.inspect',
     description: 'Получение детальной информации по открытому проекту (разрешение, частота кадров, длина сцены).',
     inputSchema: z.object({
@@ -116,8 +117,8 @@ export const sceneTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return HarmonyPython.runCommand('inspect_project', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.list_nodes',
     description: 'Получение списка всех узлов (нод) в графе сцены.',
     inputSchema: z.object({
@@ -127,8 +128,8 @@ export const sceneTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return HarmonyPython.runCommand('list_nodes', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.search_nodes',
     description: 'Поиск нод в графе сцены по маске имени.',
     inputSchema: z.object({
@@ -142,8 +143,8 @@ export const sceneTools = [
       const matches = nodes.filter((n: string) => n.toLowerCase().includes(args.query.toLowerCase()));
       return { status: 'success', matches };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.get_node',
     description: 'Запрос подробной информации об узле и его атрибутах по пути к нему.',
     inputSchema: z.object({
@@ -154,8 +155,8 @@ export const sceneTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return HarmonyPython.runCommand('get_node_attrs', { projectPath: checkedPath, nodePath: args.nodePath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.create_node',
     description: 'Создание нового узла (ноды) в графе.',
     inputSchema: z.object({
@@ -165,7 +166,7 @@ export const sceneTools = [
       nodeName: z.string().describe('Имя нового узла.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_node', args, args.dryRun, () => {
         return HarmonyPython.runCommand('create_node', {
@@ -176,8 +177,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.delete_node',
     description: 'Удаление узла из графа сцены. (Требует подтверждения безопасности).',
     inputSchema: z.object({
@@ -187,7 +188,7 @@ export const sceneTools = [
       confirmationText: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       enforceDestructiveSafety('delete_node', args);
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('delete_node', args, args.dryRun, () => {
@@ -197,8 +198,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.connect_nodes',
     description: 'Подключение портов (входов/выходов) между двумя узлами.',
     inputSchema: z.object({
@@ -209,7 +210,7 @@ export const sceneTools = [
       destPort: z.number().optional().default(0).describe('Индекс входного порта приемника (по умолчанию 0).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('connect_nodes', args, args.dryRun, () => {
         return HarmonyPython.runCommand('connect_nodes', {
@@ -221,8 +222,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.disconnect_nodes',
     description: 'Отключение связей с конкретным входным портом узла.',
     inputSchema: z.object({
@@ -231,7 +232,7 @@ export const sceneTools = [
       destPort: z.number().optional().default(0).describe('Индекс входного порта для отключения (по умолчанию 0).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('disconnect_nodes', args, args.dryRun, () => {
         return HarmonyPython.runCommand('disconnect_nodes', {
@@ -241,8 +242,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.get_attribute',
     description: 'Получение значения атрибута конкретной ноды.',
     inputSchema: z.object({
@@ -250,7 +251,7 @@ export const sceneTools = [
       nodePath: z.string().describe('Путь к ноде.'),
       attributeName: z.string().describe('Имя атрибута.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const res = await HarmonyPython.runCommand('get_node_attrs', { projectPath: checkedPath, nodePath: args.nodePath });
       const val = (res.attributes || {})[args.attributeName];
@@ -261,8 +262,8 @@ export const sceneTools = [
         value: val
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.set_attribute',
     description: 'Изменение значения атрибута конкретной ноды.',
     inputSchema: z.object({
@@ -272,7 +273,7 @@ export const sceneTools = [
       value: z.any().describe('Значение для установки.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_attribute', args, args.dryRun, () => {
         return HarmonyPython.runCommand('set_node_attr', {
@@ -283,8 +284,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.set_keyframe',
     description: 'Установка ключевого кадра (keyframe) со значением для атрибута на таймлайне.',
     inputSchema: z.object({
@@ -295,7 +296,7 @@ export const sceneTools = [
       value: z.any().describe('Значение ключа.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_keyframe', args, args.dryRun, () => {
         return HarmonyPython.runCommand('set_node_attr', {
@@ -307,8 +308,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.list_palettes',
     description: 'Получение списка палитр цвета, привязанных к сцене.',
     inputSchema: z.object({
@@ -318,8 +319,8 @@ export const sceneTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return HarmonyPython.runCommand('list_palettes', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.import_asset',
     description: 'Импорт файла ресурса (аудио/изображение) непосредственно в сцену.',
     inputSchema: z.object({
@@ -327,7 +328,7 @@ export const sceneTools = [
       assetPath: z.string().describe('Абсолютный путь к файлу импортируемого ресурса.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAssetPath = verifyPathAccess(args.assetPath);
       return executeWithDryRun('import_asset', args, args.dryRun, () => {
@@ -337,22 +338,22 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.save',
     description: 'Сохранение изменений в открытой сцене.',
     inputSchema: z.object({
       projectPath: z.string().optional().describe('Путь к файлу .xstage.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('save_scene', args, args.dryRun, () => {
         return HarmonyPython.runCommand('save_project', { projectPath: checkedPath });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.export_preview',
     description: 'Рендеринг и экспорт кадра предпросмотра (layout frame) из сцены.',
     inputSchema: z.object({
@@ -361,7 +362,7 @@ export const sceneTools = [
       outputPath: z.string().describe('Абсолютный путь назначения для рендереного кадра.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedOut = verifyPathAccess(args.outputPath);
       return executeWithDryRun('export_preview', args, args.dryRun, () => {
@@ -372,8 +373,8 @@ export const sceneTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.execute_plan',
     description: 'Выполнить scene_plan.json в Toon Boom Harmony (создать сцену, настроить метаданные, импортировать ассеты и т.д.).',
     inputSchema: z.object({
@@ -383,7 +384,7 @@ export const sceneTools = [
       outputDir: z.string().optional().describe('Корневая папка outputDir.'),
       mode: z.enum(['real', 'hybrid', 'simulation']).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       let plan: any;
       if (args.scenePlan) {
         plan = args.scenePlan;
@@ -441,14 +442,14 @@ export const sceneTools = [
         error: res.error
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.real_smoke_test',
     description: 'Запуск сквозного дымового теста рендеринга видимой сцены в Toon Boom Harmony (создание проекта, импорт ассетов, рендеринг, валидация файла).',
     inputSchema: z.object({
       outputDir: z.string().optional().describe('Корневая папка для теста.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const outDir = args.outputDir || path.join(process.cwd(), 'output', `smoke_test_${Date.now()}`);
       const pkgDir = path.join(outDir, 'episode_package');
       if (!fs.existsSync(pkgDir)) fs.mkdirSync(pkgDir, { recursive: true });
@@ -573,15 +574,15 @@ export const sceneTools = [
 
       return report;
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.diagnostics.real_harmony_environment',
     description: 'Диагностика окружения Toon Boom Harmony (проверка путей, бинарников, Python API, возможности создания и рендеринга проектов).',
     inputSchema: z.object({
       tempDir: z.string().optional().describe('Временная директория для проверки создания/рендеринга.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return runDiagnosticsInternal(args.tempDir);
     }
-  }
+  })
 ];

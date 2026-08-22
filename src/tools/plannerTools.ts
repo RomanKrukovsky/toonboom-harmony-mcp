@@ -9,6 +9,7 @@ import { executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.j
 import { FastXmlAuditor } from '../adapters/scenePlan/xmlAuditor.js';
 import { config } from '../config.js';
 import { PromptParser } from '../adapters/promptParser.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * Planner tools — bridge between production-plan sources (Kitsu, shot list,
@@ -21,7 +22,7 @@ import { PromptParser } from '../adapters/promptParser.js';
  *  - time-savings report
  */
 export const plannerTools = [
-  {
+  defineTool({
     name: 'harmony.planner.validate_plan',
     description:
       'Validate a scene_plan.json object against the locked, versioned schema. ' +
@@ -29,7 +30,7 @@ export const plannerTools = [
     inputSchema: z.object({
       plan: z.any().describe('The scene_plan.json object (parsed).')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       try {
         assertScenePlanVersion(args.plan);
       } catch (e: any) {
@@ -62,9 +63,9 @@ export const plannerTools = [
         }
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.planner.load_plan_from_file',
     description:
       'Load and validate a scene_plan.json file from disk. Resolves against HARMONY_ALLOWED_ROOTS.',
@@ -93,9 +94,9 @@ export const plannerTools = [
         stepCount: execPlan.steps.length
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.planner.kitsu_ingest',
     description:
       'Ingest shots for an episode from a Kitsu REST API and emit scene_plan.json objects. ' +
@@ -108,7 +109,7 @@ export const plannerTools = [
       production: z.string().describe('Kitsu project name.'),
       episode: z.string().describe('Kitsu episode name.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const kitsu = new KitsuIngest({
         baseUrl: args.baseUrl,
         token: args.token,
@@ -131,9 +132,9 @@ export const plannerTools = [
         throw safe;
       }
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.planner.kitsu_writeback',
     description:
       'After Autopilot executes a scene plan, write the resulting status back to Kitsu tasks. ' +
@@ -147,7 +148,7 @@ export const plannerTools = [
       confirm: z.boolean(),
       confirmationText: z.string()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       if (!args.confirm || args.confirmationText !== 'I understand this will modify the Kitsu production tracker') {
         return {
           status: 'unsupported',
@@ -172,9 +173,9 @@ export const plannerTools = [
       }
       return { status: 'success', shotTaskId: args.shotTaskId, newStatus: args.status };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.planner.import_shot_list',
     description:
       'Import a CSV or JSON shot list and produce scene_plan.json stubs for each shot. ' +
@@ -187,7 +188,7 @@ export const plannerTools = [
       fps: z.number().default(24),
       defaultResolution: z.object({ width: z.number(), height: z.number() }).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const resolved = path.resolve(args.filePath);
       const raw = fs.readFileSync(resolved, 'utf8');
       let rows: any[];
@@ -234,9 +235,9 @@ export const plannerTools = [
         errors
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.planner.time_savings_report',
     description:
       'Generate a marketing-ready time-savings report: how long the assembled scene would take ' +
@@ -247,7 +248,7 @@ export const plannerTools = [
       autopilotMinutes: z.number().describe('Actual Autopilot execution time, minutes.'),
       artistHourlyRateUSD: z.number().optional().default(45)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const minutesSaved = Math.max(0, args.manualMinutes - args.autopilotMinutes);
       const hoursSaved = minutesSaved / 60;
       const financialSavingsUSD = Math.round(hoursSaved * args.artistHourlyRateUSD);
@@ -273,8 +274,8 @@ export const plannerTools = [
         marketingLine: `Autopilot assembled "${args.sceneName}" in ${args.autopilotMinutes} min vs ~${args.manualMinutes} min manual — saving ${minutesSaved} min (∼$${financialSavingsUSD}).`
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.planner.export_review_package',
     description:
       'Создает единый пакет ревью для клиента: упаковывает рендеры, статический отчет аудита и метаданные в архив или папку.',
@@ -320,12 +321,12 @@ export const plannerTools = [
         manifest
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: generate_from_prompt
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.planner.generate_from_prompt',
     description:
       'Генерирует валидный scene_plan.json из свободного текстового описания сцены. ' +
@@ -346,7 +347,7 @@ export const plannerTools = [
       validatePlan: z.boolean().optional().default(true).describe('Автоматически валидировать сгенерированный план'),
       saveToPath: z.string().optional().describe('Если указан — сохранить scene_plan.json по этому пути')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       // Разбираем промпт → ParsedScene
       const parsed = PromptParser.parse({
         prompt: args.prompt,
@@ -412,7 +413,7 @@ export const plannerTools = [
         ]
       };
     }
-  }
+  })
 ];
 
 

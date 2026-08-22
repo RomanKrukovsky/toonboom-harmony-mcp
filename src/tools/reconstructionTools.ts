@@ -5,6 +5,7 @@ import { HarmonySceneCompiler } from '../adapters/harmonySceneCompiler.js';
 import { ReconstructionClient } from '../adapters/reconstructionClient.js';
 import { reconstructionManifestSchema, reconstructionRequestSchema } from '../schemas/reconstruction.js';
 import { enforceDestructiveSafety, HarmonyError, verifyPathAccess } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 const client = new ReconstructionClient();
 const compiler = new HarmonySceneCompiler();
@@ -29,26 +30,26 @@ const analysisSchema = reconstructionRequestSchema.pick({
 });
 
 export const reconstructionTools = [
-  {
+  defineTool({
     name: 'harmony.reconstruct.health',
     description: 'Проверка Python core, FFmpeg и доступных режимов реконструкции.',
     inputSchema: z.object({}),
     handler: async () => client.health()
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.analyze_video',
     description: 'Проверяет видео, извлекает метаданные и оценивает дубликаты без изменения Harmony.',
     inputSchema: analysisSchema,
-    handler: async (args: any) => client.analyze({
+    handler: async (args) => client.analyze({
       ...args,
       videoPath: checkedVideo(args.videoPath)
     })
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.video_to_editable_scene',
     description: 'MP4 → уникальные векторные drawings → палитра → exposures → нативная сцена Harmony. По умолчанию dry-run.',
     inputSchema: reconstructionRequestSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const videoPath = checkedVideo(args.videoPath);
       if (args.mode !== 'frame_by_frame_vector') {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', `Режим ${args.mode} пока не готов. Рабочий вертикальный путь: frame_by_frame_vector.`);
@@ -108,20 +109,20 @@ export const reconstructionTools = [
         throw err;
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.get_job',
     description: 'Структурированный статус задания реконструкции.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => client.getJob(jobId)
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.cancel_job',
     description: 'Корректная отмена задания реконструкции.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => client.cancelJob(jobId)
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.apply_manifest',
     description: 'Применяет заранее рассчитанный и строго валидированный манифест к копии сцены Harmony.',
     inputSchema: z.object({
@@ -132,7 +133,7 @@ export const reconstructionTools = [
       confirm: z.boolean().optional(),
       confirmationText: z.string().optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const manifestPath = verifyPathAccess(args.manifestPath);
       const raw = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
       const manifest = reconstructionManifestSchema.parse(raw);
@@ -168,10 +169,10 @@ export const reconstructionTools = [
         throw err;
       }
     }
-  },
+  }),
   
   // V2 ADDENDUM MCP TOOLS (Task 4, 8, 9)
-  {
+  defineTool({
     name: 'harmony.reconstruct.get_problem_frames',
     description: 'Возвращает список проблемных кадров с низкой уверенностью векторизации, скачками контуров и т.д.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
@@ -186,8 +187,8 @@ export const reconstructionTools = [
         problemFrames: manifest.diagnostics.problemFrames || []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.get_problem_frame',
     description: 'Возвращает подробную информацию по конкретному проблемному кадру, включая метрики и пути превью.',
     inputSchema: z.object({
@@ -206,8 +207,8 @@ export const reconstructionTools = [
       }
       return { jobId, problemFrame: pf };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.refine_range',
     description: 'Локальный пересчет векторизации для выбранного интервала кадров с защитой locked элементов.',
     inputSchema: z.object({
@@ -216,15 +217,15 @@ export const reconstructionTools = [
       endFrame: z.number().int().positive(),
       maxPointsPerShape: z.number().int().min(4).max(1000).optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return client.refineRange(args.jobId, {
         startFrame: args.startFrame,
         endFrame: args.endFrame,
         maxPointsPerShape: args.maxPointsPerShape
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.lock_elements',
     description: 'Блокирует элемент и его рисунки (locks), защищая их от перезаписи при автоматическом refine.',
     inputSchema: z.object({
@@ -234,8 +235,8 @@ export const reconstructionTools = [
     handler: async ({ jobId, elementId }: { jobId: string; elementId: string }) => {
       return client.lockElements(jobId, elementId, true);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.unlock_elements',
     description: 'Разблокирует элемент, разрешая его автоматический пересчет.',
     inputSchema: z.object({
@@ -245,16 +246,16 @@ export const reconstructionTools = [
     handler: async ({ jobId, elementId }: { jobId: string; elementId: string }) => {
       return client.lockElements(jobId, elementId, false);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.list_versions',
     description: 'Возвращает историю версий манифеста и планов команд для данной джобы.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.listVersions(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.rollback_version',
     description: 'Откатывает манифест и план команд к выбранной версии из истории.',
     inputSchema: z.object({
@@ -264,24 +265,24 @@ export const reconstructionTools = [
     handler: async ({ jobId, version }: { jobId: string; version: number }) => {
       return client.rollbackVersion(jobId, version);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.propose_variants',
     description: 'Генерирует три варианта (гипотезы) реконструкции для указанной джобы.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.proposeVariants(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.list_variants',
     description: 'Список сгенерированных вариантов реконструкции.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.listVariants(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.get_variant',
     description: 'Возвращает детальное описание конкретной гипотезы по ее ID.',
     inputSchema: z.object({
@@ -291,16 +292,16 @@ export const reconstructionTools = [
     handler: async ({ jobId, variantId }: { jobId: string; variantId: string }) => {
       return client.getVariant(jobId, variantId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.compare_variants',
     description: 'Сравнивает сгенерированные гипотезы по визуальным и сложностным метрикам.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.compareVariants(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.select_variant',
     description: 'Выбирает вариант гипотезы целиком или для диапазона кадров с интеграцией в манифест.',
     inputSchema: z.object({
@@ -311,7 +312,7 @@ export const reconstructionTools = [
       reason: z.string().optional(),
       user: z.string().optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return client.selectVariant(args.jobId, args.variantId, {
         startFrame: args.startFrame,
         endFrame: args.endFrame,
@@ -319,8 +320,8 @@ export const reconstructionTools = [
         user: args.user
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.discard_variant',
     description: 'Удаляет неиспользуемую гипотезу, очищая связанные файлы.',
     inputSchema: z.object({
@@ -330,45 +331,45 @@ export const reconstructionTools = [
     handler: async ({ jobId, variantId }: { jobId: string; variantId: string }) => {
       return client.discardVariant(jobId, variantId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.rollback_variant_selection',
     description: 'Откатывает последний выбор гипотезы к предыдущей версии.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.rollbackVariantSelection(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.analyze_motion_factorization',
     description: 'Анализирует возможность факторизации движения рисунков в Peg Transform Track.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.analyzeMotionFactorization(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.preview_transform_reconstruction',
     description: 'Генерирует растровые превью кадров с примененной Peg Transform факторизацией.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.previewTransform(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.apply_transform_representation',
     description: 'Применяет Peg Transform факторизацию к манифесту и создает новую версию.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.applyTransform(jobId);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.reconstruct.reject_transform_representation',
     description: 'Отклоняет факторизацию движения, сохраняя покадровый векторный вид.',
     inputSchema: z.object({ jobId: z.string().min(8) }).strict(),
     handler: async ({ jobId }: { jobId: string }) => {
       return client.rejectTransform(jobId);
     }
-  }
+  })
 ];

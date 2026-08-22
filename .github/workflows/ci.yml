@@ -55,7 +55,8 @@ jobs:
         run: |
           pip install -r services/reconstruction-core/requirements.lock
           pip install -r services/ml-runtime/requirements.lock
-          pip install -e 'services/ml-core[test]'
+          pip install -r services/ml-core/requirements.lock
+          pip install -e services/ml-core --no-deps
       
       - name: Run Python tests
         run: |

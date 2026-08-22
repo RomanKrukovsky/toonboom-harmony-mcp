@@ -69,10 +69,18 @@ export class HarmonyCli {
         { timeout: config.scriptTimeoutMs * 4 },
         (error, stdout, stderr) => {
           if (error) {
-            // Если векторизация через HarmonyPremium CLI не поддерживается напрямую, возвращаем код ошибки или успех в симуляции
+            // An unsupported CLI flag is a real failure, not a success. This used
+            // to `resolve("Симуляция векторизации завершена")`, so an unusable
+            // Harmony build reported vectorised drawings that never existed.
             if (error.message.includes('invalid option') || error.message.includes('unknown option')) {
-              // Graceful fallback/mock, если векторизатор вызывается иначе
-              return resolve(`Симуляция векторизации завершена. Рисунки: ${drawingPaths.length}.`);
+              return reject(
+                new HarmonyError(
+                  'UNSUPPORTED_BY_VERSION',
+                  `Установленная Harmony не поддерживает пакетную векторизацию через CLI ` +
+                  `(-batch -vectorize отклонён). Векторизация возможна через ` +
+                  `reconstruction-core или интерфейс Harmony. Детали: ${error.message}`
+                )
+              );
             }
             return reject(
               new HarmonyError(

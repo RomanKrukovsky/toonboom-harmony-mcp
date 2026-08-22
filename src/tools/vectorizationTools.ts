@@ -7,6 +7,7 @@ import { characterDrawingPIRSchema, CharacterDrawingPIR } from '../schemas/vecto
 import { NativeDrawingCompiler, NativeCompileMode } from '../adapters/nativeDrawingCompiler.js';
 import { VectorizationEvidenceBundle } from '../adapters/vectorizationEvidence.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { defineTool } from './defineTool.js';
 
 // Cache for active previews and confirmation tokens
 const activePreviews = new Map<string, {
@@ -30,7 +31,7 @@ const commonVectorizationParams = {
 };
 
 export const vectorizationTools = [
-  {
+  defineTool({
     name: 'harmony.vectorization.analyze_image',
     description: 'Non-destructively analyzes a character image to estimate line complexity, resolution, and optimal vectorization parameters.',
     inputSchema: z.object({
@@ -63,12 +64,12 @@ export const vectorizationTools = [
         warnings: []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.preview',
     description: 'Generates a non-destructive DrawingStrokePIR preview, stroke overlay metrics, and confirmation token.',
     inputSchema: z.object(commonVectorizationParams),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const canonicalPath = verifyPathAccess(args.inputPath);
       
       let pir: CharacterDrawingPIR;
@@ -173,12 +174,12 @@ export const vectorizationTools = [
         drawingStrokePIR: pir
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.vectorize_character',
     description: 'Runs end-to-end vectorization on character artwork to produce a complete CharacterDrawingPIR.',
     inputSchema: z.object(commonVectorizationParams),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const canonicalPath = verifyPathAccess(args.inputPath);
       
       const pir = characterDrawingPIRSchema.parse({
@@ -246,8 +247,8 @@ export const vectorizationTools = [
         deterministicHash: pir.deterministicHash || plan.planHash
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.apply_native_drawing',
     description: 'Applies native vector drawing plan to Harmony scene (destructive operation requiring confirmation token and scene state hash).',
     inputSchema: z.object({
@@ -331,8 +332,8 @@ export const vectorizationTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.validate_drawing',
     description: 'Validates structural integrity and readback of created native drawing strokes in Harmony.',
     inputSchema: z.object({
@@ -350,8 +351,8 @@ export const vectorizationTools = [
         readbackVerified: true
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.compare_render',
     description: 'Renders the vectorized drawing frame and compares it visually and structurally against the source line-art.',
     inputSchema: z.object({
@@ -376,8 +377,8 @@ export const vectorizationTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorization.rollback',
     description: 'Reverts applied vector drawing changes using recorded rollback strategy.',
     inputSchema: z.object({
@@ -395,5 +396,5 @@ export const vectorizationTools = [
         sceneRestored: true
       };
     }
-  }
+  })
 ];

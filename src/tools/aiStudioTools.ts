@@ -35,9 +35,10 @@ import { HarmonyManifestV3Compiler } from '../adapters/harmonyManifestV3/index.j
 import { HarmonyCommandPlanV3Generator } from '../adapters/harmonyCommandPlanV3Generator/index.js';
 import { PortableIntegrationPackageGenerator } from '../adapters/portableIntegrationPackage/index.js';
 import { ArtistCorrectionEngine } from '../adapters/artistCorrectionEngine/index.js';
-import { artistCorrectionSchema, trainingSampleSchema, pairwisePreferenceSchema, datasetExportSchema } from '../schemas/artistCorrection.js';
+import { artistCorrectionSchema, trainingSampleSchema, pairwisePreferenceSchema, datasetExportSchema, correctionTypeSchema } from '../schemas/artistCorrection.js';
 import { harmonyManifestV3Schema } from '../schemas/harmonyManifestV3.js';
 import { commandPlanV3Schema } from '../schemas/harmonyCommandPlanV3.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * AI Animation Studio — MCP tools (Master Prompt §20, §21).
@@ -175,7 +176,7 @@ const keyPoseGenerator = new KeyPoseGenerator();
 const motionSynthesizer = new MotionSynthesizer();
 
 export const aiStudioTools = [
-  {
+  defineTool({
     name: 'harmony.ai_studio.analyze_scene',
     description:
       'Scene Understanding Engine (Iteration 1). Принимает текст сцены, реплики, персонажей ' +
@@ -183,7 +184,7 @@ export const aiStudioTools = [
       'curve, attention targets, continuity, assumptions и uncertainties. Rule-based baseline, ' +
       'без LLM. Возвращает валидный SceneUnderstanding (Zod) и опционально пишет HTML-отчёт.',
     inputSchema: analyzeSceneSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const scene = engine.analyze({
         script: args.script,
         sceneName: args.sceneName,
@@ -230,8 +231,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.generate_director_variants',
     description:
       'AI Director (Iteration 1). Принимает ранее вычисленное SceneUnderstanding (или набор ' +
@@ -240,7 +241,7 @@ export const aiStudioTools = [
       'Каждый вариант = shot decomposition + blocking + camera + attention + edit decisions. ' +
       'Rule-based, без LLM. Возвращает DirectorVariantSet (Zod-валидный) и опционально HTML.',
     inputSchema: generateVariantsSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       let scene = args.sceneUnderstanding;
       if (!scene) {
         if (!args.script || !args.characters || args.characters.length === 0) {
@@ -289,39 +290,39 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.analyze_voice',
     description: 'Voice-to-Performance CPU baseline (Iteration 2). Разбирает WAV и текст: слова, приблизительные фонемы, паузы, энергию, pitch, темп, дыхание и акценты. Эмоциональные пики всегда помечены как предположение.',
     inputSchema: analyzeVoiceSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const audioPath = args.audioPath ? verifyPathAccess(args.audioPath) : undefined;
       const analysis = voiceAnalyzer.analyze({ ...args, audioPath });
       return { status:'success', schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION, analysis, honestLimitations:{ alignmentIsApproximate:true, emotionIsProxy:true, phonemesAreGraphemeGroups:true } };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.generate_performances',
     description: 'AI Actor baseline (Iteration 2). Создаёт разные варианты поз, взгляда, жестов, моргания, дыхания, переноса веса, реакций и holds из SceneUnderstanding и анализа голоса.',
     inputSchema: generatePerformancesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const scene=sceneUnderstandingSchema.parse(args.sceneUnderstanding), voice=voiceAnalysisSchema.parse(args.voiceAnalysis);
       const set=performanceGenerator.generateVariants(scene,voice,args.characterId,args.count,args.styles);
       let reportPath:string|undefined; if(args.reportDir){const dir=verifyPathAccess(args.reportDir);reportPath=voiceReportBuilder.buildToFile(set,path.join(dir,`${scene.sceneId}_${args.characterId}_performance.html`));}
       return {status:'success',schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION,availableStyles:ALL_PERFORMANCE_STYLES,variantCount:set.variants.length,variantSet:set,reportPath,honestLimitations:{plansAreNotFinalAnimation:true,emotionIsProxy:true,harmonyApplied:false}};
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.mix_performance',
     description: 'Смешивает общую игру из одного варианта, тайминг жестов из второго и позы из третьего.',
     inputSchema: mixPerformanceSchema,
     handler: async (args:any) => ({status:'success',schemaVersion:VOICE_PERFORMANCE_SCHEMA_VERSION,performance:performanceGenerator.mix(args.acting,args.gestureTiming,args.finalPose)})
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.build_digital_actor',
     description: 'Digital Actor baseline (Iteration 3). Импортирует персонажа из PSD, SVG, PNG layers, Harmony template, Harmony scene или reconstruction manifest. Проверяет полноту ассета, вычисляет pivots и строит Zod-валидный DigitalActor.',
     inputSchema: buildDigitalActorSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const sourcePath = verifyPathAccess(args.sourcePath);
       const outputDir = args.outputDir ? verifyPathAccess(args.outputDir) : undefined;
       const registry = new DigitalActorRegistry(outputDir);
@@ -355,12 +356,12 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.generate_key_poses',
     description: 'Key Pose Generator baseline (Iteration 4). Планирует позы (key, breakdown, extreme, anticipation, overshoot, settle, hold) для Digital Actor на основе сценария и плана игры.',
     inputSchema: generateKeyPosesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const registry = new DigitalActorRegistry(args.outputDir ? verifyPathAccess(args.outputDir) : undefined);
       const actor = registry.getActor(args.actorId);
       const poseSet = keyPoseGenerator.generate(args.sceneUnderstanding, args.performancePlan, actor);
@@ -376,12 +377,12 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.synthesize_motion',
     description: 'Motion Synthesizer baseline (Iteration 4). Интерполирует движения частей тела между позами, строит траектории и тайминги, производит keyframe reduction с заданной погрешностью.',
     inputSchema: synthesizeMotionSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const registry = new DigitalActorRegistry(args.outputDir ? verifyPathAccess(args.outputDir) : undefined);
       const actor = registry.getActor(args.actorId);
       const motionPlan = motionSynthesizer.synthesize(args.sceneUnderstanding, args.keyPoseSet, actor, args.tolerance);
@@ -397,17 +398,31 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.decompose_character_parts',
     description: 'Character Part Decomposition (Iteration 5). Разбивает персонажа на устойчивые части (head, torso, arms, legs и т.д.), строит occlusion graph, определяет motion clusters и проблемные диапазоны.',
     inputSchema: z.object({
       characterId: z.string().min(1),
       frameCount: z.number().int().positive(),
       fps: z.number().positive().optional(),
-      bodyType: z.enum(['humanoid', 'quadruped', 'creature', 'object', 'unknown']).optional()
+      bodyType: z.enum(['humanoid', 'quadruped', 'creature', 'object', 'unknown']).optional(),
+      // CharacterPartDecomposer уже умеет использовать frameRegions, но схема была
+      // .strict() и не объявляла это поле — то есть передать реальные регионы было
+      // невозможно, а partsAreEstimated всегда возвращался true.
+      frameRegions: z.array(z.object({
+        frame: z.number().int().nonnegative(),
+        regions: z.array(z.object({
+          label: z.string(),
+          x: z.number(),
+          y: z.number(),
+          width: z.number(),
+          height: z.number(),
+          confidence: z.number().optional()
+        }))
+      })).optional().describe('Готовые регионы частей по кадрам (например, из ML-сегментации).')
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const decomposer = new CharacterPartDecomposer();
       const result = decomposer.decompose(args);
       return {
@@ -422,8 +437,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.route_representations',
     description: 'Representation Router V3 (Iteration 5). Для каждой части персонажа выбирает оптимальное представление (Peg, Curve Deformer, Envelope, Bone, Drawing Substitution, frame-by-frame) на основе motion analysis, silhouette change, occlusion и studio profile.',
     inputSchema: z.object({
@@ -438,7 +453,7 @@ export const aiStudioTools = [
       }).optional(),
       artistLocks: z.record(z.enum(['peg_transform', 'curve_deformer', 'envelope_deformer', 'bone_deformer', 'drawing_substitution', 'frame_by_frame_vector', 'raster_texture_layer', 'reference_only'])).optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const router = new RepresentationRouterV3();
       const plan = router.route(args);
       return {
@@ -453,8 +468,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.generate_camera_plan',
     description: 'Camera & Layout Director (Iteration 6). Генерирует shot plan, blocking, camera keys и continuity checks на основе SceneUnderstanding.',
     inputSchema: z.object({
@@ -462,7 +477,7 @@ export const aiStudioTools = [
       fps: z.number().positive().optional(),
       style: z.enum(['restrained', 'dynamic', 'dramatic', 'comedic']).optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const director = new CameraLayoutDirector();
       const plan = director.generate(args);
       return {
@@ -477,8 +492,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.critique_variant',
     description: 'Animation Critic (Iteration 7). Запускает technical и artistic checks на variant, возвращает critic report с scores и recommendations.',
     inputSchema: z.object({
@@ -493,7 +508,7 @@ export const aiStudioTools = [
       voiceAnalysis: voiceAnalysisSchema.optional(),
       performancePlan: performancePlanSchema.optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const critic = new AnimationCritic();
       const report = critic.critique(args);
       return {
@@ -514,8 +529,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.run_variant_tournament',
     description: 'Variant Tournament (Iteration 7). Запускает multi-round tournament для выбора лучшего variant из нескольких. Включает technical gate, artistic ranking, refinement и final selection.',
     inputSchema: z.object({
@@ -546,7 +561,7 @@ export const aiStudioTools = [
         maxPreviewResolution: z.string().optional()
       }).strict()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const tournament = new VariantTournament();
       const result = tournament.run(args);
       return {
@@ -569,8 +584,8 @@ export const aiStudioTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.generate_editable_scene',
     description: 'Generate Editable Scene (Master Prompt §20, Iteration 8). Главный MCP-инструмент: компилирует Harmony Manifest V3 из всех AI Studio outputs, генерирует whitelist-only Command Plan V3, создаёт portable integration package. Не применяет к Harmony напрямую — возвращает package для external integration.',
     inputSchema: z.object({
@@ -586,7 +601,7 @@ export const aiStudioTools = [
       outputDir: z.string().optional(),
       packageName: z.string().optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       try {
         // Compile Harmony Manifest V3
         const manifestCompiler = new HarmonyManifestV3Compiler();
@@ -644,8 +659,8 @@ export const aiStudioTools = [
         throw new HarmonyError('SCRIPT_FAILED', `Failed to generate editable scene: ${error.message}`);
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.apply_manifest_to_harmony',
     description: 'Apply Harmony Manifest V3 and Command Plan V3 to a real Harmony instance. Requires Harmony with external scripting enabled. Returns native audit with vector type verification, palette linkage, exposure timing match, and editable vector geometry confirmation.',
     inputSchema: z.object({
@@ -699,7 +714,7 @@ export const aiStudioTools = [
       projectPath: z.string().optional(),
       dryRun: z.boolean().optional().default(false)
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       try {
         const verifiedOutputDir = args.outputDir ? verifyPathAccess(args.outputDir) : undefined;
         const verifiedProjectPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
@@ -738,8 +753,8 @@ export const aiStudioTools = [
         throw new HarmonyError('HARMONY_EXECUTION_FAILED', `Failed to apply manifest to Harmony: ${error.message}`);
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.record_artist_correction',
     description: 'Record an artist correction with delta, scope, and optional critic reports. Creates a training sample for learning from corrections (Master Prompt §15, §16).',
     inputSchema: z.object({
@@ -749,7 +764,10 @@ export const aiStudioTools = [
       delta: z.record(z.any()),
       comment: z.string().optional(),
       scope: z.enum(['key_poses', 'timing', 'camera', 'layer_structure', 'palette', 'representation', 'full_scene']).default('key_poses'),
-      type: z.string().default('rotation'),
+      // Раньше здесь был z.string(): artistCorrectionSchema принимает только
+      // значения correctionTypeSchema и падал на .strict()-parse при любом
+      // другом значении.
+      type: correctionTypeSchema.default('rotation'),
       accepted: z.boolean().default(true),
       affectedParts: z.array(z.string()).default([]),
       affectedFrames: z.array(z.number().int()).default([]),
@@ -758,9 +776,13 @@ export const aiStudioTools = [
       criticReportBefore: z.any().optional(),
       criticReportAfter: z.any().optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new ArtistCorrectionEngine();
-      const correction = engine.recordCorrection(args);
+      // criticReport* принадлежат training sample, а не ArtistCorrection:
+      // artistCorrectionSchema объявлен .strict(), поэтому передача их напрямую
+      // приводила к ошибке валидации.
+      const { criticReportBefore, criticReportAfter, ...correctionInput } = args;
+      const correction = engine.recordCorrection(correctionInput);
       return {
         status: 'success',
         correctionId: correction.correctionId,
@@ -768,8 +790,8 @@ export const aiStudioTools = [
         message: 'Artist correction recorded and training sample created'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.record_pairwise_preference',
     description: 'Record a pairwise preference between two variants for taste model training (Master Prompt §14).',
     inputSchema: z.object({
@@ -783,17 +805,32 @@ export const aiStudioTools = [
       confidence: z.number().min(0).max(1).default(1),
       userId: z.string().optional()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new ArtistCorrectionEngine();
-      const preference = engine.recordPreference(args);
+      // Имена полей инструмента (variantA/variantB/preferredVariant/reasons/userId)
+      // отличаются от схемы хранения (versionA/versionB/preferredVersion/criteria/
+      // artistId). Раньше args передавался напрямую в recordPreference, и
+      // pairwisePreferenceSchema.parse() падал на .strict() при любом вызове.
+      const preference = engine.recordPreference({
+        sceneId: args.sceneId,
+        versionA: args.variantA,
+        versionB: args.variantB,
+        preferredVersion: args.preferredVariant,
+        criteria: args.reasons,
+        confidence: args.confidence,
+        artistId: args.userId,
+        reason: args.conflictWithTechnicalMetrics
+          ? `score=${args.score}; конфликт с техническими метриками`
+          : `score=${args.score}`
+      });
       return {
         status: 'success',
         preferenceId: preference.preferenceId,
         preference
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.detect_changes',
     description: 'Detect changes between two scene versions (SceneSnapshotPIR) and return a structured RetakeManifest (Phase 7).',
     inputSchema: z.object({
@@ -809,15 +846,15 @@ export const aiStudioTools = [
         changeCount: manifest.nodeDataChanges.length + manifest.nodes.added.length + manifest.nodes.removed.length
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.preview_propagation',
     description: 'Preview how a correction would propagate to a target manifest (Master Prompt §15).',
     inputSchema: z.object({
       correction: artistCorrectionSchema,
       targetManifest: z.any()
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new ArtistCorrectionEngine();
       const propagated = engine.previewPropagation(args.correction, args.targetManifest);
       return {
@@ -825,15 +862,15 @@ export const aiStudioTools = [
         propagatedManifest: propagated
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.lock_correction',
     description: 'Lock (accept) or unlock (reject) an artist correction (Master Prompt §15).',
     inputSchema: z.object({
       correctionId: z.string().min(1),
       action: z.enum(['lock', 'unlock', 'revert'])
     }).strict(),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new ArtistCorrectionEngine();
       let result: any = null;
       if (args.action === 'lock') {
@@ -850,12 +887,12 @@ export const aiStudioTools = [
         result
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.export_training_dataset',
     description: 'Export training dataset (corrections + preferences) for model training (Master Prompt §16).',
     inputSchema: datasetExportSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const engine = new ArtistCorrectionEngine();
       const result = engine.exportDataset(args);
       return {
@@ -865,8 +902,8 @@ export const aiStudioTools = [
         count: result.count
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ai_studio.get_correction_stats',
     description: 'Get statistics about recorded corrections and training data (Master Prompt §15).',
     inputSchema: z.object({}).strict(),
@@ -878,5 +915,5 @@ export const aiStudioTools = [
         stats
       };
     }
-  }
+  })
 ];

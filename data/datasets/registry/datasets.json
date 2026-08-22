@@ -1,0 +1,26 @@
+{
+  "cartoon_set_sample": {
+    "datasetId": "cartoon_set_sample",
+    "name": "Cartoon Set Sample",
+    "installed": true,
+    "sizeMb": 12.5,
+    "license": "CC-BY-4.0",
+    "provenance": "Google Cartoon Set"
+  },
+  "davis_sample": {
+    "datasetId": "davis_sample",
+    "name": "DAVIS Small Subset",
+    "installed": true,
+    "sizeMb": 45.2,
+    "license": "BSD-3-Clause",
+    "provenance": "DAVIS 2017 Challenge"
+  },
+  "tap_vid_sample": {
+    "datasetId": "tap_vid_sample",
+    "name": "TAP-Vid Small Subset",
+    "installed": true,
+    "sizeMb": 8.1,
+    "license": "Apache-2.0",
+    "provenance": "DeepMind TAP-Vid Benchmark"
+  }
+}

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { projectPathSchema } from '../schemas/common.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runPaletteBridge(command: string, args: any): Promise<any> {
@@ -24,7 +25,7 @@ async function runPaletteBridge(command: string, args: any): Promise<any> {
 }
 
 export const paletteTools = [
-  {
+  defineTool({
     name: 'harmony.palette.list',
     description: 'Получение списка палитр цвета, привязанных к сцене.',
     inputSchema: z.object({
@@ -34,8 +35,8 @@ export const paletteTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runPaletteBridge('list_palettes', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.create',
     description: 'Создание нового файла палитры цвета.',
     inputSchema: z.object({
@@ -43,14 +44,14 @@ export const paletteTools = [
       paletteName: z.string().describe('Название новой палитры.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_palette', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_palette" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.backup',
     description: 'Резервное копирование файла палитры (.plt) во внешнюю директорию.',
     inputSchema: z.object({
@@ -58,15 +59,15 @@ export const paletteTools = [
       backupDirectoryPath: z.string().describe('Абсолютный путь к папке сохранения резервной копии.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPlt = verifyPathAccess(args.paletteFilePath);
       const checkedBackup = verifyPathAccess(args.backupDirectoryPath);
       return executeWithDryRun('backup_palette', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "backup_palette" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.import',
     description: 'Импорт/Восстановление файла палитры (.plt) в проект сцены.',
     inputSchema: z.object({
@@ -74,15 +75,15 @@ export const paletteTools = [
       targetPaletteLibraryPath: z.string().describe('Целевая директория палитр сцены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedSrc = verifyPathAccess(args.sourcePaletteFilePath);
       const checkedTarget = verifyPathAccess(args.targetPaletteLibraryPath);
       return executeWithDryRun('import_palette', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_palette" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.export',
     description: 'Экспорт файла палитры во внешнее хранилище ресурсов.',
     inputSchema: z.object({
@@ -90,15 +91,15 @@ export const paletteTools = [
       exportDestinationPath: z.string(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPlt = verifyPathAccess(args.paletteFilePath);
       const checkedDest = verifyPathAccess(args.exportDestinationPath);
       return executeWithDryRun('export_palette', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_palette" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.list_colours',
     description: 'Запрос списка всех цветов и их ID/RGBA значений внутри указанной палитры.',
     inputSchema: z.object({
@@ -109,8 +110,8 @@ export const paletteTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runPaletteBridge('list_palettes', { projectPath: checkedPath, paletteName: args.paletteName });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.create_colour',
     description: 'Добавление нового образца цвета (colour swatch) в палитру.',
     inputSchema: z.object({
@@ -120,14 +121,14 @@ export const paletteTools = [
       rgba: z.array(z.number()).length(4).describe('RGBA цвет как массив [r, g, b, a] от 0 до 255.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_colour', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_colour" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.rename_colour',
     description: 'Переименование существующего цвета в палитре.',
     inputSchema: z.object({
@@ -137,14 +138,14 @@ export const paletteTools = [
       newColourName: z.string(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('rename_colour', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "rename_colour" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.replace_colour',
     description: 'Замена одного цвета другим для объектов сцены (перекраска/swap).',
     inputSchema: z.object({
@@ -154,14 +155,14 @@ export const paletteTools = [
       newRgba: z.array(z.number()).length(4),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('replace_colour', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "replace_colour" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.find_unused_colours',
     description: 'Поиск цветов в палитре, которые не назначены ни одному элементу рисования.',
     inputSchema: z.object({
@@ -174,8 +175,8 @@ export const paletteTools = [
       if (res.status === 'unsupported') return res;
       return res;
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.validate_scene_palettes',
     description: 'Аудит и сверка целостности привязок всех палитр в сцене (поиск отсутствующих палитр).',
     inputSchema: z.object({
@@ -192,15 +193,15 @@ export const paletteTools = [
         palettesCount: (res.palettes || []).length
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.palette.merge_duplicates',
     description: 'Поиск и автоматическое слияние дублирующихся по названию цветов во всех палитрах сцены.',
     inputSchema: z.object({
       projectPath: projectPathSchema,
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('merge_duplicate_colours', args, args.dryRun, () => {
         return runPaletteBridge('merge_duplicate_colours', {
@@ -208,5 +209,5 @@ export const paletteTools = [
         });
       });
     }
-  }
+  })
 ];

@@ -15,6 +15,7 @@ import { SceneStateProvider } from '../services/sceneStateCapture/index.js';
 import { FixtureSceneStateProvider } from '../services/sceneStateCapture/fixtureProvider.js';
 import { HarmonyBridgeSceneStateProvider } from '../services/sceneStateCapture/harmonyBridgeProvider.js';
 import { rawEventSignalSchema } from '../schemas/harmonyActionDataset.js';
+import { defineTool } from './defineTool.js';
 
 const providerModeSchema = z
   .enum(['auto', 'harmony_python_bridge', 'fixture'])
@@ -48,7 +49,7 @@ export function buildProvider(
 }
 
 export const harmonyActionRecorderTools = [
-  {
+  defineTool({
     name: 'harmony.capture.start',
     description:
       'Starts a Harmony Action Recorder session: captures the "before" scene state, creates an immutable evidence directory and begins the append-only event log. Read-only with respect to the scene.',
@@ -101,9 +102,9 @@ export const harmonyActionRecorderTools = [
         notCaptured: result.session.notCaptured
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.record_instruction',
     description:
       'Records the animator task description for a running session. This text is the only source of artistic intent in the exported dataset entry.',
@@ -128,9 +129,9 @@ export const harmonyActionRecorderTools = [
       const instruction = getRecorder().recordInstruction(args);
       return { status: 'success', sessionId: args.sessionId, recordedAt: instruction.recordedAt, instruction };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.snapshot',
     description:
       'Flushes the debounced dirty-entity queue and stores an intermediate normalized scene state for a running session.',
@@ -161,9 +162,9 @@ export const harmonyActionRecorderTools = [
       const snapshot = await recorder.snapshot(args.sessionId, { force: args.force });
       return { status: 'success', sessionId: args.sessionId, eventsIngested: ingested, ...snapshot };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.status',
     description:
       'Reports the true status of a capture session. A session left "recording" by a crashed process is reported and persisted as "interrupted".',
@@ -191,9 +192,9 @@ export const harmonyActionRecorderTools = [
         errors: info.session.errors
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.stop',
     description:
       'Stops a session: waits for the debounce queue to settle, captures the "after" state, computes the deterministic semantic scene patch and the inverse patch, and writes the immutable artifacts.',
@@ -236,9 +237,9 @@ export const harmonyActionRecorderTools = [
         artifacts: result.artifacts
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.approve',
     description:
       'Records an immutable "approved" decision for a stopped session. The scene patch is never modified by this call.',
@@ -259,9 +260,9 @@ export const harmonyActionRecorderTools = [
         sessionStatus: session.status
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.reject',
     description:
       'Records an immutable "rejected" decision for a stopped session. The scene patch is never modified by this call.',
@@ -282,9 +283,9 @@ export const harmonyActionRecorderTools = [
         sessionStatus: session.status
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.export_dataset_entry',
     description:
       'Exports a decided session as a HarmonyActionDatasetEntry: instruction, before/after state references, normalized operations, inverse operations, approval, provenance and usage restrictions.',
@@ -307,9 +308,9 @@ export const harmonyActionRecorderTools = [
         entry
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capture.compare_sessions',
     description:
       'Compares the scene patches of two finished sessions: whether they touched the same scene, whether the patches are identical, and which operations are unique to each.',
@@ -321,7 +322,7 @@ export const harmonyActionRecorderTools = [
       const comparison = getRecorder().compareSessions(args.sessionIdA, args.sessionIdB);
       return { status: 'success', ...comparison };
     }
-  }
+  })
 ];
 
 /** Effective recorder configuration, exposed for diagnostics and tests. */

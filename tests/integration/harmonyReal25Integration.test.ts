@@ -3,9 +3,15 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Real Harmony 25 Integration Tests (10 Audit Benchmarks)', () => {
-  const pythonBin = '/opt/homebrew/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin/python3.9';
-  const harmonyLib = '/Applications/Harmony 25 Premium.app/Contents/tba/macosx/lib';
-  const harmonyPackages = '/Applications/Harmony 25 Premium.app/Contents/tba/macosx/lib/python-packages';
+  // Пути переопределяются через env, дефолты — стандартные macOS-локации
+  // (Homebrew python3.9 + Harmony 25 Premium). На хостах без них тесты уходят в skip.
+  const pythonBin =
+    process.env.HARMONY_TEST_PYTHON_BIN ||
+    '/opt/homebrew/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin/python3.9';
+  const harmonyRoot =
+    process.env.HARMONY_INSTALL || '/Applications/Harmony 25 Premium.app';
+  const harmonyLib = path.join(harmonyRoot, 'Contents/tba/macosx/lib');
+  const harmonyPackages = path.join(harmonyRoot, 'Contents/tba/macosx/lib/python-packages');
   const bridgeScript = path.resolve(process.cwd(), 'scripts/python/harmony_bridge.py');
   const outputDir = path.resolve(process.cwd(), 'output/integration_verification');
 

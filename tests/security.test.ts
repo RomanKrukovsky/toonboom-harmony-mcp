@@ -3,6 +3,18 @@ import { config } from '../src/config.js';
 import path from 'path';
 
 describe('Тестирование безопасности', () => {
+  // config — общий модульный синглтон: сохраняем и восстанавливаем мутируемые
+  // поля, чтобы тесты не зависели от порядка выполнения и не загрязняли
+  // состояние для других файлов в том же jest-воркере.
+  const originalAllowDestructive = config.allowDestructive;
+  afterEach(() => {
+    config.allowDestructive = originalAllowDestructive;
+  });
+
+  // Путь с traversal-выходом из разрешённого корня, вычисленный от cwd —
+  // без захардкоженного домашнего каталога конкретной машины.
+  const traversalPath = path.join(process.cwd(), '..', '..', '..', 'etc', 'passwd');
+
   test('verifyPathAccess должно успешно возвращать разрешенный путь', () => {
     const valid = path.resolve('./package.json');
     expect(verifyPathAccess(valid)).toBe(valid);
@@ -10,7 +22,7 @@ describe('Тестирование безопасности', () => {
 
   test('verifyPathAccess должно выкидывать ошибку при попытке выхода за рамки разрешенного пути', () => {
     expect(() => {
-      verifyPathAccess('/Users/romanmolodyko/Documents/../../etc/passwd');
+      verifyPathAccess(traversalPath);
     }).toThrow(HarmonyError);
 
     try {
@@ -50,7 +62,7 @@ describe('Тестирование безопасности', () => {
 
   test('import_scene_package и export_scene_package должны проверять пути к пакетам на выход за разрешенные директории', () => {
     expect(() => {
-      verifyPathAccess('/Users/romanmolodyko/Documents/../../etc/passwd');
+      verifyPathAccess(traversalPath);
     }).toThrow(HarmonyError);
 
     expect(() => {

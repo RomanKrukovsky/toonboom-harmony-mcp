@@ -47,6 +47,20 @@ export const analysisResultSchema = z.object({
   origin: honestyOriginSchema
 });
 
-export type OnePromptInput = z.infer<typeof onePromptSchema>;
+/**
+ * Output type: what `onePromptSchema.parse()` returns. `fps` and `resolution`
+ * are required here because the schema fills in defaults.
+ */
+export type OnePromptParsed = z.output<typeof onePromptSchema>;
+
+/**
+ * Input type: what a caller may supply. `fps` and `resolution` are optional.
+ *
+ * Planner adapters take this looser shape because individual tool schemas expose
+ * only a subset of these fields (some omit fps/resolution entirely) and every
+ * consumer already defaults defensively (`input.fps ?? 24`). Using the output
+ * type here would force ~20 call sites to invent values they never received.
+ */
+export type OnePromptInput = z.input<typeof onePromptSchema>;
 export type AnalysisResult = z.infer<typeof analysisResultSchema>;
 export type HonestyOrigin = z.infer<typeof honestyOriginSchema>;

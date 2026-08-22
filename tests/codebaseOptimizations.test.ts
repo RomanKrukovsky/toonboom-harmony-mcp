@@ -6,6 +6,7 @@ import { tracker } from '../src/adapters/sqliteTracker.js';
 import { WebhookNotifier } from '../src/adapters/webhookNotifier.js';
 import { plannerTools } from '../src/tools/plannerTools.js';
 import { templateAssembly } from '../src/adapters/templateAssembly/index.js';
+import { findTool } from './helpers/toolInvocation.js';
 
 describe('Harmony MCP Codebase Optimizations', () => {
   
@@ -187,7 +188,7 @@ describe('Harmony MCP Codebase Optimizations', () => {
     });
 
     test('should construct review package with manifest file', async () => {
-      const tool = plannerTools.find(t => t.name === 'harmony.planner.export_review_package');
+      const tool = findTool(plannerTools, 'harmony.planner.export_review_package');
       expect(tool).toBeDefined();
 
       const result = await tool!.handler({

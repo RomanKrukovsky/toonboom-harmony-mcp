@@ -4,6 +4,7 @@ import { ControlCenterTelnet } from '../adapters/controlCenterTelnet.js';
 import { ControlCenterBatch } from '../adapters/controlCenterBatch.js';
 import { enforceDestructiveSafety, executeWithDryRun, HarmonyError, verifyPathAccess } from '../security.js';
 import { config } from '../config.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция-диспетчер: пробует Telnet, при сбое переключается на пакетный режим
 async function executeCcScript(script: string, dryRun?: boolean, operationName?: string): Promise<any> {
@@ -29,7 +30,7 @@ const confirmationSchema = z.object({
 }).optional();
 
 export const controlCenterTools = [
-  {
+  defineTool({
     name: 'harmony.cc.start_script_server_command',
     description: 'Получить инструкции и CLI-команды для запуска сервера удаленных скриптов Control Center.',
     inputSchema: z.object({}),
@@ -44,8 +45,8 @@ export const controlCenterTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.ping',
     description: 'Проверка сетевой связи с базой данных и сервером Control Center.',
     inputSchema: z.object({}),
@@ -66,8 +67,8 @@ export const controlCenterTools = [
         };
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.run_qtscript',
     description: 'Запуск произвольного сценария Qt Script. Требует включения опции HARMONY_ALLOW_RAW_SCRIPTS.',
     inputSchema: z.object({
@@ -83,8 +84,8 @@ export const controlCenterTools = [
       }
       return executeCcScript(args.script, args.dryRun, 'raw_qt_script');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_users',
     description: 'Получение списка зарегистрированных пользователей в базе данных Harmony Server.',
     inputSchema: z.object({}),
@@ -92,8 +93,8 @@ export const controlCenterTools = [
       const script = QtScriptBuilder.buildListUsers();
       return executeCcScript(script, false, 'list_users');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.create_user',
     description: 'Создание нового пользователя базы данных в Harmony Server. (Требует подтверждения безопасности).',
     inputSchema: z.object({
@@ -101,15 +102,17 @@ export const controlCenterTools = [
       role: z.enum(['Operator', 'Artist', 'Supervising Artist', 'Director', 'Administrator']).describe('Роль/Права пользователя.'),
       password: z.string().optional().describe('Пароль учетной записи.'),
       confirm: z.boolean().optional(),
-      confirmationText: z.string().optional()
+      confirmationText: z.string().optional(),
+      dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       enforceDestructiveSafety('create_user', args);
       const script = QtScriptBuilder.buildCreateUser(args.name, args.role, args.password);
-      return executeCcScript(script, false, 'create_user');
+      // Мутирующая операция: dry-run не хардкодится, а следует HARMONY_DRY_RUN_DEFAULT.
+      return executeCcScript(script, args.dryRun, 'create_user');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_environments',
     description: 'Получение списка окружений (environments) в базе данных Harmony Server.',
     inputSchema: z.object({}),
@@ -117,8 +120,8 @@ export const controlCenterTools = [
       const script = QtScriptBuilder.buildListEnvironments();
       return executeCcScript(script, false, 'list_environments');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.create_environment',
     description: 'Создание нового окружения в базе данных Harmony.',
     inputSchema: z.object({
@@ -128,12 +131,12 @@ export const controlCenterTools = [
       user: z.string().optional().default('usabatch').describe('Пользователь-владелец создаваемого окружения.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const script = QtScriptBuilder.buildCreateEnvironment(args.name, args.path, args.server, args.user);
       return executeCcScript(script, args.dryRun, 'create_environment');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_jobs',
     description: 'Получение списка проектов (jobs) внутри указанного окружения.',
     inputSchema: z.object({
@@ -143,8 +146,8 @@ export const controlCenterTools = [
       const script = QtScriptBuilder.buildListJobs(args.environmentName);
       return executeCcScript(script, false, 'list_jobs');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.create_job',
     description: 'Создание нового проекта (job) в указанном окружении.',
     inputSchema: z.object({
@@ -152,12 +155,12 @@ export const controlCenterTools = [
       jobName: z.string().describe('Имя создаваемого проекта.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const script = QtScriptBuilder.buildCreateJob(args.environmentName, args.jobName);
       return executeCcScript(script, args.dryRun, 'create_job');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_scenes',
     description: 'Получение списка сцен в указанном окружении и проекте.',
     inputSchema: z.object({
@@ -168,8 +171,8 @@ export const controlCenterTools = [
       const script = QtScriptBuilder.buildListScenes(args.environmentName, args.jobName);
       return executeCcScript(script, false, 'list_scenes');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.create_scene',
     description: 'Создание новой сцены в указанном окружении и проекте.',
     inputSchema: z.object({
@@ -178,12 +181,12 @@ export const controlCenterTools = [
       sceneName: z.string().describe('Имя сцены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const script = QtScriptBuilder.buildCreateScene(args.environmentName, args.jobName, args.sceneName);
       return executeCcScript(script, args.dryRun, 'create_scene');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.rename_scene',
     description: 'Переименование сцены в базе данных. (Требует подтверждения безопасности).',
     inputSchema: z.object({
@@ -195,13 +198,13 @@ export const controlCenterTools = [
       confirmationText: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       enforceDestructiveSafety('rename_scene', args);
       const script = QtScriptBuilder.buildRenameScene(args.environmentName, args.jobName, args.oldName, args.newName);
       return executeCcScript(script, args.dryRun, 'rename_scene');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_versions',
     description: 'Получение версий для сцены.',
     inputSchema: z.object({
@@ -209,12 +212,12 @@ export const controlCenterTools = [
       jobName: z.string().describe('Имя проекта.'),
       sceneName: z.string().describe('Имя сцены.')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const script = QtScriptBuilder.buildListVersions(args.environmentName, args.jobName, args.sceneName);
       return executeCcScript(script, false, 'list_versions');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.list_locked_scenes',
     description: 'Получение списка заблокированных сцен в базе данных.',
     inputSchema: z.object({}),
@@ -222,8 +225,8 @@ export const controlCenterTools = [
       const script = QtScriptBuilder.buildListLockedScenes();
       return executeCcScript(script, false, 'list_locked_scenes');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.import_scene_package',
     description: 'Импорт архивного пакета сцены (.zip/pkg) в базу данных Harmony.',
     inputSchema: z.object({
@@ -232,13 +235,13 @@ export const controlCenterTools = [
       packagePath: z.string().describe('Абсолютный путь к пакету сцены на диске.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPackagePath = verifyPathAccess(args.packagePath);
       const script = QtScriptBuilder.buildImportScenePackage(args.environmentName, args.jobName, checkedPackagePath);
       return executeCcScript(script, args.dryRun, 'import_scene_package');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.cc.export_scene_package',
     description: 'Экспорт указанной версии сцены во внешний файл-пакет.',
     inputSchema: z.object({
@@ -249,7 +252,7 @@ export const controlCenterTools = [
       packagePath: z.string().describe('Абсолютный путь к файлу назначения для сохранения пакета.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPackagePath = verifyPathAccess(args.packagePath);
       const script = QtScriptBuilder.buildExportScenePackage(
         args.environmentName,
@@ -260,5 +263,5 @@ export const controlCenterTools = [
       );
       return executeCcScript(script, args.dryRun, 'export_scene_package');
     }
-  }
+  })
 ];

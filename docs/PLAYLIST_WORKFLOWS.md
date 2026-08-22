@@ -1,6 +1,6 @@
 # Инструкции и Workflow для Агента: Учебный Курс Toon Boom Harmony
 
-Документ описывает правила и последовательности вызовов MCP-инструментов на основе обучающего курса по риггингу Toon Boom Harmony (см. [playlist_knowledge_base.md](../playlist_knowledge_base.md)).
+Документ описывает правила и последовательности вызовов MCP-инструментов на основе обучающего курса по риггингу Toon Boom Harmony (см. [playlist_knowledge_base.md](internal/research/playlist_knowledge_base.md)).
 
 ---
 

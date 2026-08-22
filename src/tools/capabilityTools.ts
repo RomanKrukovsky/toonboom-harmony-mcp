@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { CapabilityRegistry } from '../services/capabilityRegistry/index.js';
 import { createStandardExecutionResult } from '../schemas/executionResult.js';
+import { defineTool } from './defineTool.js';
 
 export const capabilityTools = [
-  {
+  defineTool({
     name: 'harmony.capabilities.detect',
     description: 'Detect installed Harmony version, available backends (Python, CLI, Control Center), and supported operations.',
     inputSchema: z.object({}),
@@ -16,9 +17,9 @@ export const capabilityTools = [
         details: caps
       });
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capabilities.probe',
     description: 'Probe specific Harmony project path to check project version, session availability, and drawing access.',
     inputSchema: z.object({
@@ -36,9 +37,9 @@ export const capabilityTools = [
         }
       });
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capabilities.verify_operation',
     description: 'Verify capability status for a target operation (verified, experimental, simulated, unsupported).',
     inputSchema: z.object({
@@ -55,9 +56,9 @@ export const capabilityTools = [
         }
       });
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.capabilities.get_matrix',
     description: 'Return full capability matrix of Harmony MCP Server.',
     inputSchema: z.object({}),
@@ -69,5 +70,5 @@ export const capabilityTools = [
         details: { matrix: caps.matrix }
       });
     }
-  }
+  })
 ];

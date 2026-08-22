@@ -13,6 +13,12 @@ export const openRouterResponseSchema = z.object({
   id: z.string(),
   model: z.string(),
   content: z.string(),
+  // Machine-readable degradation flags. Previously the only signal that no LLM
+  // had run was a `:offline_fallback` suffix inside `model` plus a marker string
+  // in `content` — easy for a caller to miss, and the copy claimed the prompt was
+  // "processed deterministically" when nothing processed it at all.
+  llmCallSucceeded: z.boolean().default(true),
+  degradedReason: z.enum(['missing_api_key', 'http_error', 'network_error']).optional(),
   usage: z.object({
     promptTokens: z.number().default(0),
     completionTokens: z.number().default(0),
@@ -51,7 +57,9 @@ export class OpenRouterClient {
         return openRouterResponseSchema.parse({
           id: `offline-${Date.now()}`,
           model: `${modelToUse}:offline_fallback`,
-          content: `[OFFLINE FALLBACK MODE]: Prompt processed deterministically without network call.\nInput prompt summary: ${validated.prompt.slice(0, 100)}...`,
+          llmCallSucceeded: false,
+          degradedReason: 'missing_api_key',
+          content: `[OFFLINE FALLBACK MODE]: no OPENROUTER_API_KEY, so no model was called and no text was generated.\nInput prompt summary: ${validated.prompt.slice(0, 100)}...`,
           usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
         });
       }
@@ -77,7 +85,9 @@ export class OpenRouterClient {
         return openRouterResponseSchema.parse({
           id: `fallback-${Date.now()}`,
           model: `${modelToUse}:offline_fallback`,
-          content: `[OFFLINE FALLBACK MODE]: OpenRouter HTTP ${response.status}. Processed deterministically.\nInput prompt: ${validated.prompt.slice(0, 100)}...`,
+          llmCallSucceeded: false,
+          degradedReason: 'http_error',
+          content: `[OFFLINE FALLBACK MODE]: OpenRouter returned HTTP ${response.status}; no text was generated.\nDetail: ${errText.slice(0, 200)}\nInput prompt: ${validated.prompt.slice(0, 100)}...`,
           usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
         });
       }
@@ -89,6 +99,7 @@ export class OpenRouterClient {
         id: data.id || `or-${Date.now()}`,
         model: data.model || modelToUse,
         content: content,
+        llmCallSucceeded: true,
         usage: {
           promptTokens: data.usage?.prompt_tokens || 0,
           completionTokens: data.usage?.completion_tokens || 0,
@@ -99,7 +110,9 @@ export class OpenRouterClient {
       return openRouterResponseSchema.parse({
         id: `offline-err-${Date.now()}`,
         model: `${modelToUse}:offline_fallback`,
-        content: `[OFFLINE FALLBACK MODE]: ${error instanceof Error ? error.message : String(error)}. Processed deterministically.`,
+        llmCallSucceeded: false,
+        degradedReason: 'network_error',
+        content: `[OFFLINE FALLBACK MODE]: request failed (${error instanceof Error ? error.message : String(error)}); no text was generated.`,
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
       });
     }

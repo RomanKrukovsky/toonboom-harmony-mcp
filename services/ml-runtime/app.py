@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 
-from config import CONFIG
+from config import CONFIG, verify_path_access
 from providers.animeinbet_provider import AnimeInbetProvider
 from providers.dwpose_provider import DWPoseProvider
 from providers.voxcpm_provider import VoxCPMProvider
@@ -165,31 +165,50 @@ voxcpm_provider = VoxCPMProvider()
 
 @app.post("/infer/animeinbet", response_model=InbetweenResponse)
 async def infer_animeinbet(req: InbetweenRequest):
+    # Пути из запроса проходят allowlist до любого файлового I/O.
+    try:
+        frame_a_path = str(verify_path_access(req.frame_a_path))
+        frame_b_path = str(verify_path_access(req.frame_b_path))
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     try:
         result = animeinbet_provider.generate_inbetweens(
-            frame_a_path=req.frame_a_path,
-            frame_b_path=req.frame_b_path,
+            frame_a_path=frame_a_path,
+            frame_b_path=frame_b_path,
             count=req.count
         )
         return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        # Полный traceback остаётся в логах сервера; клиенту внутренние детали не отдаются.
+        logger.exception("animeinbet inference failed")
+        raise HTTPException(status_code=500, detail="animeinbet inference failed; see server logs")
 
 @app.post("/infer/voxcpm", response_model=VoxCPMResponse)
 async def infer_voxcpm(req: VoxCPMRequest):
+    # Пути из запроса проходят allowlist до любого файлового I/O.
+    try:
+        output_wav_path = str(verify_path_access(req.outputWavPath))
+        reference_wav_path = str(verify_path_access(req.referenceWavPath)) if req.referenceWavPath else None
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     try:
         result = voxcpm_provider.generate_tts(
             text=req.text,
-            output_wav_path=req.outputWavPath,
+            output_wav_path=output_wav_path,
             voice_description=req.voiceDescription,
-            reference_wav_path=req.referenceWavPath,
+            reference_wav_path=reference_wav_path,
             instruct=req.instruct,
             guidance_scale=req.guidanceScale,
             num_steps=req.numSteps
         )
         return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        # Полный traceback остаётся в логах сервера; клиенту внутренние детали не отдаются.
+        logger.exception("voxcpm inference failed")
+        raise HTTPException(status_code=500, detail="voxcpm inference failed; see server logs")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Локальный ML-сервис без аутентификации: слушаем только loopback.
+    # Для сетевого доступа задайте ML_RUNTIME_HOST осознанно.
+    import os
+    uvicorn.run(app, host=os.environ.get("ML_RUNTIME_HOST", "127.0.0.1"), port=8000)

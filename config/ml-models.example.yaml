@@ -4,7 +4,9 @@ models:
     runtime: "local"
     repo: "IDEA-Research/DWPose"
     weights_path: "dwpose/dw-ll_ucoco_384.onnx"
-    device: "cpu" # cpu, mps, cuda
+    # auto выбирает самый быстрый доступный ONNX EP (CUDA > CoreML > CPU).
+    # Замер на Apple Silicon: CoreML ~49 мс/кадр против CPU ~204 мс/кадр (4.2x).
+    device: "auto" # auto, cpu, mps/coreml, cuda
   sam2_1:
     enabled: false
     runtime: "local"

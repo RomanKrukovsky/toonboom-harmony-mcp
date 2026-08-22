@@ -1,7 +1,7 @@
 # INDUSTRIAL GAP ANALYSIS: Self-Reported vs. Production Reality
 
 ## Overview
-This document compares self-reported documentation statements (from `README.md`, `CHECKPOINT.md`, `BRUTAL_ENTERPRISE_AUDIT.md`) against verified runtime behavior and source code inspection.
+This document compares self-reported documentation statements (from `README.md`, `docs/internal/CHECKPOINT.md`, `docs/internal/BRUTAL_ENTERPRISE_AUDIT.md`) against verified runtime behavior and source code inspection.
 
 ---
 

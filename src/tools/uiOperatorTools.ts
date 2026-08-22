@@ -3,22 +3,23 @@ import { uiAutomation } from '../adapters/uiAutomation/index.js';
 import { ScreenshotAdapter } from '../adapters/screenshot/index.js';
 import { VisualStateEngine } from '../adapters/visualState/index.js';
 import { executeWithDryRun } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 export const uiOperatorTools = [
-  {
+  defineTool({
     name: 'harmony.ui.screenshot',
     description: 'Сделать снимок экрана и получить base64 изображение.',
     inputSchema: z.object({
       outputPath: z.string().optional().describe('Путь для сохранения файла скриншота.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.screenshot', args, args.dryRun, async () => {
         return ScreenshotAdapter.capture({ outputPath: args.outputPath });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.detect_state',
     description: 'Анализ состояния интерфейса Toon Boom Harmony (активные панели, диалоговые окна).',
     inputSchema: z.object({}),
@@ -26,8 +27,8 @@ export const uiOperatorTools = [
       const state = await VisualStateEngine.detectState();
       return { status: 'success', state };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.locate_element',
     description: 'Найти координаты элемента интерфейса по текстовому или семантическому описанию.',
     inputSchema: z.object({
@@ -36,8 +37,8 @@ export const uiOperatorTools = [
     handler: async (args: { query: string }) => {
       return uiAutomation.locateElement(args.query);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.click',
     description: 'Эмуляция клика мыши по указанным координатам.',
     inputSchema: z.object({
@@ -47,48 +48,48 @@ export const uiOperatorTools = [
       rightClick: z.boolean().optional().describe('Флаг правого клика.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.click', args, args.dryRun, async () => {
         if (args.doubleClick) return uiAutomation.doubleClick(args.x, args.y);
         if (args.rightClick) return uiAutomation.rightClick(args.x, args.y);
         return uiAutomation.click(args.x, args.y);
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.hotkey',
     description: 'Отправка сочетания клавиш (хоткея) в Harmony.',
     inputSchema: z.object({
       keys: z.array(z.string()).describe('Список клавиш в комбинации (например: ["ctrl", "s"]).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.hotkey', args, args.dryRun, async () => {
         return uiAutomation.hotkey(args.keys);
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.type_text',
     description: 'Ввод текста с клавиатуры в активное текстовое поле.',
     inputSchema: z.object({
       text: z.string().describe('Текст для ввода.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.type_text', args, args.dryRun, async () => {
         return uiAutomation.typeText(args.text);
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.open_menu',
     description: 'Открыть пункт меню Harmony (например: "File > Import > Images").',
     inputSchema: z.object({
       menuPath: z.string().describe('Путь к пункту меню, разделенный ">".'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.open_menu', args, args.dryRun, async () => {
         const parts = args.menuPath.split('>').map((s: string) => s.trim());
         // Находим и кликаем последовательно по пунктам меню
@@ -102,15 +103,15 @@ export const uiOperatorTools = [
         return { status: 'success', message: `Меню "${args.menuPath}" успешно открыто.` };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.select_file_in_dialog',
     description: 'Выбор пути к файлу в открытом диалоговом окне импорта/сохранения.',
     inputSchema: z.object({
       filePath: z.string().describe('Абсолютный путь к выбираемому файлу.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.select_file_in_dialog', args, args.dryRun, async () => {
         // Симулируем ввод пути и нажатие Enter в диалоговом окне выбора файла
         const typeRes = await uiAutomation.typeText(args.filePath);
@@ -124,8 +125,8 @@ export const uiOperatorTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.wait_for_dialog',
     description: 'Ожидание появления диалогового окна на экране.',
     inputSchema: z.object({
@@ -135,22 +136,22 @@ export const uiOperatorTools = [
     handler: async (args: { dialogTitle: string; timeoutMs: number }) => {
       return uiAutomation.waitForImageOrText(args.dialogTitle, args.timeoutMs);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.verify_workspace',
     description: 'Проверка правильности раскладки окон и панелей в Harmony для корректной работы автоматизации.',
     inputSchema: z.object({}),
     handler: async () => {
       return VisualStateEngine.verifyWorkspaceLayout();
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.ui.reset_workspace_instruction',
     description: 'Инструкция или хоткей сброса окон Harmony к стандартному виду по умолчанию.',
     inputSchema: z.object({
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('ui.reset_workspace', args, args.dryRun, async () => {
         const keys = ['ctrl', 'alt', 'r'];
         await uiAutomation.hotkey(keys);
@@ -160,5 +161,5 @@ export const uiOperatorTools = [
         };
       });
     }
-  }
+  })
 ];

@@ -18,7 +18,9 @@ import { DEFAULT_360_VIEWS } from '../../schemas/characterSpec.js';
 export class Rig360Synthesizer {
   generateSpec(character: CharacterSpec): Rig360Spec {
     const requiredAssets = this.buildRequiredAssets(character);
-    const missingAssets = this.humanizeMissingAssets(requiredAssets.filter(a => a.status === 'missing'));
+    const stillMissing = requiredAssets.filter(a => a.status === 'missing');
+    const missingAssets = this.humanizeMissingAssets(stillMissing);
+    const missingAssetKeys = stillMissing.map(asset => `${asset.view}_${asset.layer}`).sort();
 
     const masterControllers = this.buildMasterControllers(character);
     const deformers = this.buildDeformers(character);
@@ -35,6 +37,7 @@ export class Rig360Synthesizer {
       placeholderRigCreated: true,
       realRigCreated: false,
       missingAssets,
+      missingAssetKeys,
       providedAssets: [],
       nextBestAction: missingAssets.length > 0
         ? 'Generate or provide layered turnaround assets (front head drawing, side head drawing, mouth chart, hand poses)'
@@ -133,8 +136,10 @@ export class Rig360Synthesizer {
       }
     }
     const missingAssets = this.humanizeMissingAssets(missing);
+    // The exact keys buildFromAssets() looks up, so the caller can satisfy them.
+    const missingAssetKeys = missing.map(asset => `${asset.view}_${asset.layer}`).sort();
 
-    const realRigCreated = missingAssets.length === 0;
+    const realRigCreated = missingAssetKeys.length === 0;
     return {
       characterName: character.name,
       requiredAssets,
@@ -145,10 +150,12 @@ export class Rig360Synthesizer {
       placeholderRigCreated: !realRigCreated,
       realRigCreated,
       missingAssets,
+      missingAssetKeys,
       providedAssets,
       nextBestAction: realRigCreated
         ? 'All required assets provided — import into Harmony and build the full 360 rig'
-        : `Provide ${missingAssets.length} missing asset groups before building a real rig`,
+        : `Provide ${missingAssetKeys.length} assets. Supply them via assetPaths keyed by `
+          + `missingAssetKeys (e.g. "${missingAssetKeys[0] ?? 'front_skull'}"), not by the prose names.`,
       origin: realRigCreated ? 'assembled' : 'placeholder'
     };
   }

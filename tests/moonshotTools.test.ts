@@ -13,6 +13,7 @@ import { episodeAssemblyTools } from '../src/tools/episodeAssemblyTools.js';
 import { LipsyncPlanner } from '../src/adapters/lipsyncPlanner/index.js';
 import { BackgroundPlanner } from '../src/adapters/backgroundPlanner/index.js';
 import { ScriptPlanner } from '../src/adapters/scriptPlanner/index.js';
+import { findTool } from './helpers/toolInvocation.js';
 
 describe('Moonshot tools registration', () => {
   test('onePrompt tools include main entry points', () => {
@@ -24,14 +25,14 @@ describe('Moonshot tools registration', () => {
   });
 
   test('character tools generate spec', async () => {
-    const tool = characterGenerationTools.find((t: any) => t.name === 'harmony.character.generate_spec');
+    const tool = findTool(characterGenerationTools, 'harmony.character.generate_spec');
     const res: any = await tool!.handler({ name: 'Vex', role: 'professor', personality: 'chaotic' });
     expect(res.status).toBe('success');
     expect(res.characterSpec.assetBackend).toBe('missing');
   });
 
   test('rig360 tools produce placeholder', async () => {
-    const tool = rig360GenerationTools.find((t: any) => t.name === 'harmony.rig360.build_placeholder_rig');
+    const tool = findTool(rig360GenerationTools, 'harmony.rig360.build_placeholder_rig');
     const characterSpec = {
       name: 'Vex',
       role: 'professor',
@@ -50,21 +51,21 @@ describe('Moonshot tools registration', () => {
   });
 
   test('acting analyze_dialogue', async () => {
-    const tool = actingTools.find((t: any) => t.name === 'harmony.acting.analyze_dialogue');
+    const tool = findTool(actingTools, 'harmony.acting.analyze_dialogue');
     const res: any = await tool!.handler({ dialogue: 'What?! NO!!!' });
     expect(res.status).toBe('success');
     expect(['normal','fast','slow']).toContain(res.analysis.pace);
   });
 
   test('quality score_scene', async () => {
-    const tool = qualityDirectorTools.find((t: any) => t.name === 'harmony.quality.score_scene');
+    const tool = findTool(qualityDirectorTools, 'harmony.quality.score_scene');
     const res: any = await tool!.handler({ scene: { sceneId: 'SC_001', durationFrames: 120, characters: ['Hero'], location: 'lab', mood: 'rising' } });
     expect(res.status).toBe('success');
     expect(res.score.total).toBeGreaterThanOrEqual(0);
   });
 
   test('series run_episode_pipeline returns honest note', async () => {
-    const tool = seriesTools.find((t: any) => t.name === 'harmony.series.run_episode_pipeline');
+    const tool = findTool(seriesTools, 'harmony.series.run_episode_pipeline');
     const bible = {
       title: 'Test Show',
       logLine: 'Test log line',
@@ -81,7 +82,7 @@ describe('Moonshot tools registration', () => {
   });
 
   test('assembly build_scene_plans returns plans', async () => {
-    const tool = episodeAssemblyTools.find((t: any) => t.name === 'harmony.assembly.build_scene_plans');
+    const tool = findTool(episodeAssemblyTools, 'harmony.assembly.build_scene_plans');
     const episodePlan = {
       episodeTitle: 'Test',
       durationMinutes: 1,
@@ -94,7 +95,7 @@ describe('Moonshot tools registration', () => {
   });
 
   test('rig360 build_from_assets reports missing assets honestly', async () => {
-    const tool = rig360GenerationTools.find((t: any) => t.name === 'harmony.rig360.build_from_assets');
+    const tool = findTool(rig360GenerationTools, 'harmony.rig360.build_from_assets');
     const characterSpec = {
       name: 'Vex',
       requiredViews: ['front'],
@@ -111,7 +112,7 @@ describe('Moonshot tools registration', () => {
   });
 
   test('rig360 build_from_assets can mark real rig when all assets provided', async () => {
-    const tool = rig360GenerationTools.find((t: any) => t.name === 'harmony.rig360.build_from_assets');
+    const tool = findTool(rig360GenerationTools, 'harmony.rig360.build_from_assets');
     const characterSpec = {
       name: 'Vex',
       requiredViews: ['front'],
@@ -121,7 +122,7 @@ describe('Moonshot tools registration', () => {
       layerPlan: { head: ['skull'], body: ['torso'] }
     };
     // Generate placeholder spec to know exact asset keys
-    const placeholderTool = rig360GenerationTools.find((t: any) => t.name === 'harmony.rig360.generate_spec');
+    const placeholderTool = findTool(rig360GenerationTools, 'harmony.rig360.generate_spec');
     const placeholder: any = await placeholderTool!.handler({ characterSpec });
     const assetPaths: Record<string, string> = {};
     for (const asset of placeholder.rig360Spec.requiredAssets) {
@@ -134,7 +135,7 @@ describe('Moonshot tools registration', () => {
   });
 
   test('rig.generate_spec produces simple rig fallback', async () => {
-    const tool = rig360GenerationTools.find((t: any) => t.name === 'harmony.rig.generate_spec');
+    const tool = findTool(rig360GenerationTools, 'harmony.rig.generate_spec');
     const characterSpec = {
       name: 'Vex',
       requiredViews: ['front'],
@@ -209,12 +210,12 @@ describe('Moonshot tools registration', () => {
   });
 
   test('run_to_preview_episode in hybrid mode attempts autopilot dry-run', async () => {
-    const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
+    const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_preview_episode');
     const res: any = await tool!.handler({
       prompt: 'A short test episode about a robot in a lab.',
       targetDurationMinutes: 1,
       mode: 'hybrid',
-      outputDir: '/tmp/harmony_mcp_hybrid_test'
+      outputDir: path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_mcp_hybrid_test')
     });
     expect(res.autopilotAttempted).toBe(true);
     expect(res.autopilotResults.length).toBeGreaterThan(0);
@@ -223,7 +224,7 @@ describe('Moonshot tools registration', () => {
   });
 
   test('run_to_preview_episode produces preview render paths and scene plans', async () => {
-    const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
+    const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_preview_episode');
     const outDir = path.join(process.cwd(), 'output', 'harmony_mcp_preview_paths_test');
     
     // Clean up before test
@@ -274,11 +275,11 @@ describe('Moonshot tools registration', () => {
     });
 
     test('blocks final lock without humanApproved=true', async () => {
-      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_final_package');
+      const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_final_package');
       const res: any = await tool!.handler({
         prompt: 'A short test episode about a robot in a lab.',
         targetDurationMinutes: 1,
-        outputDir: '/tmp/harmony_mcp_final_no_approve',
+        outputDir: path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_mcp_final_no_approve'),
         humanApproved: false
       });
       expect(res.status).toBe('waiting_human_approval');
@@ -287,11 +288,11 @@ describe('Moonshot tools registration', () => {
     });
 
     test('locks package when humanApproved=true', async () => {
-      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_final_package');
+      const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_final_package');
       const res: any = await tool!.handler({
         prompt: 'A short test episode about a robot in a lab.',
         targetDurationMinutes: 1,
-        outputDir: '/tmp/harmony_mcp_final_approved',
+        outputDir: path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_mcp_final_approved'),
         humanApproved: true
       });
       expect(res.locked).toBe(true);
@@ -314,7 +315,7 @@ describe('Moonshot tools registration', () => {
 
     test('harmony.scene.execute_plan without Harmony returns honest error', async () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.execute_plan');
+      const tool = findTool(sceneTools, 'harmony.scene.execute_plan');
       const res: any = await tool!.handler({
         scenePlan: { sceneName: 'SC_TEST', durationFrames: 120, fps: 24 },
         mode: 'real'
@@ -325,12 +326,12 @@ describe('Moonshot tools registration', () => {
     });
 
     test('harmony.scene.execute_plan in simulation mode creates placeholder assets and execution report', async () => {
-      const outDir = '/tmp/harmony_execute_plan_sim_test';
+      const outDir = path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_execute_plan_sim_test');
       if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
       }
 
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.execute_plan');
+      const tool = findTool(sceneTools, 'harmony.scene.execute_plan');
       const res: any = await tool!.handler({
         scenePlan: { sceneName: 'SC_TEST', durationFrames: 120, fps: 24 },
         mode: 'simulation',
@@ -366,12 +367,12 @@ describe('Moonshot tools registration', () => {
     });
 
     test('harmony.scene.execute_plan returns ASSET_MISSING error with fallback suggest if asset file is missing', async () => {
-      const outDir = '/tmp/harmony_execute_plan_missing_asset';
+      const outDir = path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_execute_plan_missing_asset');
       if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
       }
 
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.execute_plan');
+      const tool = findTool(sceneTools, 'harmony.scene.execute_plan');
       const res: any = await tool!.handler({
         scenePlan: {
           sceneName: 'SC_MISSING',
@@ -397,8 +398,8 @@ describe('Moonshot tools registration', () => {
     });
 
     test('harmony.oneprompt.run_to_preview_episode with executeInHarmony: false works as before', async () => {
-      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
-      const outDir = '/tmp/harmony_oneprompt_no_exe_test';
+      const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_preview_episode');
+      const outDir = path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_oneprompt_no_exe_test');
       if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
       }
@@ -418,8 +419,8 @@ describe('Moonshot tools registration', () => {
 
     test('harmony.oneprompt.run_to_preview_episode with executeInHarmony: true does not lie if Harmony is absent', async () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
-      const tool = onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
-      const outDir = '/tmp/harmony_oneprompt_exe_no_harmony_test';
+      const tool = findTool(onePromptTools, 'harmony.oneprompt.run_to_preview_episode');
+      const outDir = path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_oneprompt_exe_no_harmony_test');
       if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
       }
@@ -459,12 +460,12 @@ describe('Moonshot tools registration', () => {
     });
 
     test('harmony.scene.execute_plan does not flag previewRendered: true for simulation preview', async () => {
-      const outDir = '/tmp/harmony_execute_plan_preview_rendered_test';
+      const outDir = path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_execute_plan_preview_rendered_test');
       if (fs.existsSync(outDir)) {
         fs.rmSync(outDir, { recursive: true, force: true });
       }
 
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.execute_plan');
+      const tool = findTool(sceneTools, 'harmony.scene.execute_plan');
       const res: any = await tool!.handler({
         scenePlan: { sceneName: 'SC_PREVIEW_TEST', durationFrames: 120, fps: 24 },
         mode: 'simulation',
@@ -480,9 +481,9 @@ describe('Moonshot tools registration', () => {
 
     test('harmony.scene.real_smoke_test without Harmony returns honest error', async () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.real_smoke_test');
+      const tool = findTool(sceneTools, 'harmony.scene.real_smoke_test');
       const res: any = await tool!.handler({
-        outputDir: '/tmp/harmony_smoke_test_no_harmony'
+        outputDir: path.join(process.cwd(), 'output', 'tmp_tests', 'harmony_smoke_test_no_harmony')
       });
       expect(res.harmonyAvailable).toBe(false);
       expect(res.isRealHarmonyExecution).toBe(false);
@@ -491,7 +492,7 @@ describe('Moonshot tools registration', () => {
 
     test('harmony.scene.execute_plan does not write isRealHarmonyExecution: true if Harmony was not launched', async () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.scene.execute_plan');
+      const tool = findTool(sceneTools, 'harmony.scene.execute_plan');
       const res: any = await tool!.handler({
         scenePlan: { sceneName: 'SC_TEST_REAL', durationFrames: 120, fps: 24 },
         mode: 'real' // request real execution
@@ -504,7 +505,7 @@ describe('Moonshot tools registration', () => {
       config.harmonyBin = ''; // Pretend Harmony is not installed
       const origPkg = config.harmonyPythonPackages;
       config.harmonyPythonPackages = '';
-      const tool = sceneTools.find((t: any) => t.name === 'harmony.diagnostics.real_harmony_environment');
+      const tool = findTool(sceneTools, 'harmony.diagnostics.real_harmony_environment');
       const res: any = await tool!.handler({});
       config.harmonyPythonPackages = origPkg;
       

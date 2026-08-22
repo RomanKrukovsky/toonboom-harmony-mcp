@@ -55,7 +55,16 @@ export const rig360SpecSchema = z.object({
   bodyTurn: z.array(bodyTurnPlanSchema).default([]),
   placeholderRigCreated: z.boolean().default(false),
   realRigCreated: z.boolean().default(false),
+  /** Human-readable groups, e.g. "front mouth chart". For reports. */
   missingAssets: z.array(z.string()).default([]),
+  /**
+   * Machine-readable `view_layer` keys for the same gaps, e.g. "front_skull".
+   *
+   * `buildFromAssets()` looks assetPaths up by this key, but only the humanised
+   * list used to be returned — so a caller could not actually satisfy the list it
+   * was given and realRigCreated stayed false forever.
+   */
+  missingAssetKeys: z.array(z.string()).default([]),
   providedAssets: z.array(z.string()).default([]),
   nextBestAction: z.string().optional(),
   origin: honestyOriginSchema.default('planned')

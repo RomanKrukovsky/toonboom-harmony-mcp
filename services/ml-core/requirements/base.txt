@@ -15,3 +15,8 @@ pyarrow>=12.0.0
 scikit-learn>=1.2.0
 scipy>=1.10.0
 openai-whisper>=20231117
+# Optional Apple Silicon backend. When present, WhisperTranscriptionProvider
+# selects cached MLX weights (e.g. large-v3-turbo) and runs on Metal instead of
+# falling back to a small CPU model. Safe to omit on non-macOS hosts: the
+# provider degrades to openai-whisper automatically.
+mlx-whisper>=0.4.3; sys_platform == "darwin" and platform_machine == "arm64"

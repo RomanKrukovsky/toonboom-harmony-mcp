@@ -2,10 +2,11 @@ import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 import { tracker } from '../adapters/sqliteTracker.js';
-import { executeWithDryRun } from '../security.js';
+import { executeWithDryRun, verifyPathAccess } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 export const commercialWorkflowTools = [
-  {
+  defineTool({
     name: 'harmony.production.import_shot_list',
     description: 'Импортировать список кадров (Shot List) из CSV/JSON для массового планирования серий.',
     inputSchema: z.object({
@@ -13,7 +14,7 @@ export const commercialWorkflowTools = [
       productionId: z.number().describe('ID проекта в локальном трекере.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('production.import_shot_list', args, args.dryRun, async () => {
         await tracker.initialize();
         // В симуляции просто считываем или создаем фейковые записи кадров
@@ -39,17 +40,17 @@ export const commercialWorkflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.generate_scene_plans',
     description: 'Сгенерировать шаблоны scene_plan.json для всех кадров в сиквенсе.',
     inputSchema: z.object({
       outputDirectory: z.string().describe('Директория для сохранения JSON-планов.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('production.generate_scene_plans', args, args.dryRun, async () => {
-        const outDir = path.resolve(args.outputDirectory);
+        const outDir = verifyPathAccess(args.outputDirectory);
         if (!fs.existsSync(outDir)) {
           fs.mkdirSync(outDir, { recursive: true });
         }
@@ -91,17 +92,17 @@ export const commercialWorkflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.run_batch_scene_assembly',
     description: 'Пакетная сборка серии сцен по списку планов.',
     inputSchema: z.object({
       plansDirectory: z.string().describe('Директория с файлами планов scene_plan.json.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('production.run_batch_scene_assembly', args, args.dryRun, async () => {
-        const plansDir = path.resolve(args.plansDirectory);
+        const plansDir = verifyPathAccess(args.plansDirectory);
         if (!fs.existsSync(plansDir)) {
           throw new Error(`Директория с планами не найдена: ${plansDir}`);
         }
@@ -129,21 +130,21 @@ export const commercialWorkflowTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.render_all_previews',
     description: 'Массовый рендеринг превью файлов для всех готовых сцен.',
     inputSchema: z.object({
       outputDirectory: z.string().describe('Папка для сохранения рендеров.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('production.render_all_previews', args, args.dryRun, async () => {
         throw new Error('[UNSUPPORTED_BY_VERSION] Массовый рендеринг превью требует лицензированной Toon Boom Harmony CLI/Render.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.audit_all_scenes',
     description: 'Массовый автоматический аудит целостности для списка готовых сцен.',
     inputSchema: z.object({
@@ -159,21 +160,21 @@ export const commercialWorkflowTools = [
       }));
       return { status: 'success', verification: 'implemented_unverified', audits: results };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.export_client_review_package',
     description: 'Экспорт пакета утверждения для клиента (превью-видео + отчеты по ошибкам).',
     inputSchema: z.object({
       targetZipPath: z.string().describe('Куда сохранить zip-архив.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('production.export_client_review_package', args, args.dryRun, async () => {
         throw new Error('[UNSUPPORTED_BY_VERSION] Формирование ZIP-пакета клиента требует валидных скомпилированных ассетов и отчетов рендеринга.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.generate_time_savings_report',
     description: 'Расчет сэкономленного времени и стоимости производства анимации за счет автопилота.',
     inputSchema: z.object({
@@ -206,5 +207,5 @@ export const commercialWorkflowTools = [
         monetizationValue: `Этот отчет доказывает студии окупаемость Harmony Autopilot MCP за счет экономии $${Math.round(moneySaved)} на каждые ${args.scenesCount} сцен.`
       };
     }
-  }
+  })
 ];

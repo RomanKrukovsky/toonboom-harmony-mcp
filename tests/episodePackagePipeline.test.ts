@@ -2,9 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { OnePromptEngine } from '../src/adapters/onePromptEngine/index.js';
 import { studioPackageTools } from '../src/tools/studioPackageTools.js';
+import { requireTool } from './helpers/toolInvocation.js';
 
 describe('Episode Package Pipeline & Studio MCP Tools', () => {
-  const getTool = (name: string) => studioPackageTools.find(t => t.name === name)!;
+  const getTool = (name: string) => requireTool(studioPackageTools, name);
   const testOutputDir = path.resolve(process.cwd(), 'output/test_studio_package');
 
   beforeAll(() => {
@@ -39,8 +40,8 @@ describe('Episode Package Pipeline & Studio MCP Tools', () => {
     expect(res.checklist.characterChecklist[0].character).toBe('Professor Vex');
   });
 
-  it('runs harmony.production.generate_time_savings_report tool', async () => {
-    const tool = getTool('harmony.production.generate_time_savings_report');
+  it('runs harmony.production.generate_ml_pipeline_savings_report tool', async () => {
+    const tool = getTool('harmony.production.generate_ml_pipeline_savings_report');
     const res = await tool.handler({
       sceneCount: 5,
       characterCount: 2,

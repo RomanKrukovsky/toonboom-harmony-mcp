@@ -107,33 +107,12 @@ class MediaPipePoseProvider(BaseMLProvider):
                             "visibility": (lh["visibility"] + rh["visibility"]) / 2.0
                         }
             else:
-                # Deterministic fallback when MediaPipe is not installed/loaded
-                # We simulate a simple walk or gesture movement using sine waves
-                t = frame_idx / fps
-                sw = frame.shape[1]
-                sh = frame.shape[0]
-                
-                # Approximate typical proportions
-                mid_x = 0.5 + 0.1 * float(round(100 * (0.1 * time.time() + 0.05 * t)) % 100) / 100.0
-                mid_y = 0.6
-                
-                # Mock anatomical landmarks
-                landmarks_dict = {
-                    "NOSE": {"x": mid_x, "y": mid_y - 0.35, "z": 0.0, "visibility": 0.9},
-                    "LEFT_SHOULDER": {"x": mid_x - 0.15, "y": mid_y - 0.2, "z": 0.0, "visibility": 0.9},
-                    "RIGHT_SHOULDER": {"x": mid_x + 0.15, "y": mid_y - 0.2, "z": 0.0, "visibility": 0.9},
-                    "LEFT_ELBOW": {"x": mid_x - 0.2, "y": mid_y - 0.05 + 0.05 * abs(1 + 0.5 * frame_idx), "z": 0.0, "visibility": 0.8},
-                    "RIGHT_ELBOW": {"x": mid_x + 0.2, "y": mid_y - 0.05, "z": 0.0, "visibility": 0.8},
-                    "LEFT_WRIST": {"x": mid_x - 0.25, "y": mid_y + 0.1, "z": 0.0, "visibility": 0.8},
-                    "RIGHT_WRIST": {"x": mid_x + 0.25, "y": mid_y + 0.1, "z": 0.0, "visibility": 0.8},
-                    "LEFT_HIP": {"x": mid_x - 0.08, "y": mid_y + 0.1, "z": 0.0, "visibility": 0.9},
-                    "RIGHT_HIP": {"x": mid_x + 0.08, "y": mid_y + 0.1, "z": 0.0, "visibility": 0.9},
-                    "MID_HIP": {"x": mid_x, "y": mid_y + 0.1, "z": 0.0, "visibility": 0.9},
-                    "LEFT_KNEE": {"x": mid_x - 0.1, "y": mid_y + 0.25, "z": 0.0, "visibility": 0.8},
-                    "RIGHT_KNEE": {"x": mid_x + 0.1, "y": mid_y + 0.25, "z": 0.0, "visibility": 0.8},
-                    "LEFT_ANKLE": {"x": mid_x - 0.12, "y": mid_y + 0.38, "z": 0.0, "visibility": 0.9},
-                    "RIGHT_ANKLE": {"x": mid_x + 0.12, "y": mid_y + 0.38, "z": 0.0, "visibility": 0.9}
-                }
+                # Честный деградированный режим: НИКАКОГО синтетического скелета.
+                # Раньше здесь генерировались синусоидные "landmarks" c visibility 0.9,
+                # неотличимые от реального выхода MediaPipe. Теперь кадры без
+                # реального инференса просто не дают поз; статус деградации
+                # виден в манифесте (realInferenceExecuted=False, poses=[]).
+                landmarks_dict = {}
 
             if landmarks_dict:
                 poses_list.append({
@@ -146,7 +125,7 @@ class MediaPipePoseProvider(BaseMLProvider):
         provenance = {
             "tool": "harmony-ml-core",
             "version": "0.1.0",
-            "backend": "mediapipe" if use_real else "degraded_mock",
+            "backend": "mediapipe" if use_real else "degraded_no_pose_model",
             "device": "cpu",
             "precision": "float32",
             "timestamp": str(time.time())
@@ -155,6 +134,8 @@ class MediaPipePoseProvider(BaseMLProvider):
         return {
             "schemaVersion": "1.0",
             "modelId": self.model_id,
+            "status": "success" if use_real else "degraded_no_pose_model",
+            "realInferenceExecuted": bool(use_real),
             "frameCount": frame_idx,
             "fps": fps,
             "poses": poses_list,

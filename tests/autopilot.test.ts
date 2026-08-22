@@ -1,6 +1,7 @@
 import { ScenePlanAdapter } from '../src/adapters/scenePlan/index.js';
 import { uiAutomation } from '../src/adapters/uiAutomation/index.js';
 import { VisualStateEngine } from '../src/adapters/visualState/index.js';
+import { findTool } from './helpers/toolInvocation.js';
 
 describe('Тестирование Harmony Autopilot', () => {
   beforeEach(() => {
@@ -74,7 +75,7 @@ describe('Тестирование Harmony Autopilot', () => {
 
   test('render_preview должен выбрасывать UNSUPPORTED_BY_VERSION вместо записи mock-данных', async () => {
     const { autopilotTools } = await import('../src/tools/autopilotTools.js');
-    const tool = autopilotTools.find(t => t.name === 'harmony.autopilot.render_preview');
+    const tool = findTool(autopilotTools, 'harmony.autopilot.render_preview');
     expect(tool).toBeDefined();
     
     await expect(tool!.handler({

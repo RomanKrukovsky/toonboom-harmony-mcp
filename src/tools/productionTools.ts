@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { tracker } from '../adapters/sqliteTracker.js';
 import { executeWithDryRun } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 export const productionTools = [
-  {
+  defineTool({
     name: 'harmony.production.create',
     description: 'Инициализация нового рабочего пространства производства (сезона/проекта) в трекере.',
     inputSchema: z.object({
@@ -11,7 +12,7 @@ export const productionTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_production', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createProduction(args.name, args.description);
@@ -21,8 +22,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.create_episode',
     description: 'Добавление нового эпизода к проекту производства.',
     inputSchema: z.object({
@@ -31,7 +32,7 @@ export const productionTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_episode', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createEpisode(args.productionId, args.name, args.description);
@@ -41,8 +42,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.create_sequence',
     description: 'Добавление нового сиквенса (sequence) к указанному эпизоду.',
     inputSchema: z.object({
@@ -51,7 +52,7 @@ export const productionTools = [
       description: z.string().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_sequence', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createSequence(args.episodeId, args.name, args.description);
@@ -61,8 +62,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.create_shot',
     description: 'Добавление кадра (shot) к сиквенсу с привязками к окружениям/проектам Harmony.',
     inputSchema: z.object({
@@ -75,7 +76,7 @@ export const productionTools = [
       harmonyVersion: z.number().optional().describe('Связанная версия сцены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('create_shot', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createShot(args.sequenceId, args.name, args.description);
@@ -98,8 +99,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.assign_task',
     description: 'Создание и назначение подзадачи для кадра.',
     inputSchema: z.object({
@@ -109,7 +110,7 @@ export const productionTools = [
       dueDate: z.string().optional().describe('Срок выполнения (YYYY-MM-DD).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('assign_task', args, args.dryRun, async () => {
         await tracker.initialize();
         const res = await tracker.createTask(args.shotId, args.name, args.assignedUserId, args.dueDate);
@@ -119,8 +120,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.set_status',
     description: 'Изменение статуса кадра или подзадачи в трекере.',
     inputSchema: z.object({
@@ -129,7 +130,7 @@ export const productionTools = [
       status: z.string().describe('Новое значение статуса (например: In Progress, Completed, Approved).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('set_status', args, args.dryRun, async () => {
         await tracker.initialize();
         if (args.entityType === 'shot') {
@@ -143,8 +144,8 @@ export const productionTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.get_status_report',
     description: 'Получение сводного структурированного отчета по статусам всех задач и кадров.',
     inputSchema: z.object({}),
@@ -156,8 +157,8 @@ export const productionTools = [
         report
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.audit_episode',
     description: 'Анализ состояния готовности кадров внутри указанного эпизода.',
     inputSchema: z.object({
@@ -180,8 +181,8 @@ export const productionTools = [
         pendingShots: pending.map(s => ({ id: s.id, name: s.name, status: s.status }))
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.render_plan',
     description: 'Получение списка всех задач рендеринга в очереди.',
     inputSchema: z.object({}),
@@ -193,8 +194,8 @@ export const productionTools = [
         renders
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.production.export_report',
     description: 'Экспорт полного отчета по иерархии производства в JSON.',
     inputSchema: z.object({}),
@@ -206,5 +207,5 @@ export const productionTools = [
         report
       };
     }
-  }
+  })
 ];

@@ -5,9 +5,10 @@ import { config } from '../config.js';
 import { tracker } from '../adapters/sqliteTracker.js';
 import { HarmonyError, verifyPathAccess, executeWithDryRun } from '../security.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
+import { defineTool } from './defineTool.js';
 
 export const renderTools = [
-  {
+  defineTool({
     name: 'harmony.render.queue_scene',
     description: 'Добавление сцены в очередь пакетного рендеринга Harmony Server.',
     inputSchema: z.object({
@@ -19,7 +20,7 @@ export const renderTools = [
       endFrame: z.number().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('queue_render', args, args.dryRun, async () => {
         // Записываем задачу в локальный трекер
         await tracker.initialize();
@@ -37,8 +38,8 @@ export const renderTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.render.render_local',
     description: 'Запуск рендеринга сцены на локальной машине с помощью CLI HarmonyPremium.',
     inputSchema: z.object({
@@ -49,7 +50,7 @@ export const renderTools = [
       resolutionHeight: z.number().optional(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = verifyPathAccess(args.projectPath);
 
       if (!config.harmonyBin) {
@@ -95,8 +96,8 @@ export const renderTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.render.list_queue',
     description: 'Получение текущего списка и статуса всех задач рендеринга.',
     inputSchema: z.object({}),
@@ -113,15 +114,15 @@ export const renderTools = [
         }))
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.render.cancel_job',
     description: 'Отмена конкретной задачи рендеринга в очереди.',
     inputSchema: z.object({
       queueId: z.number().describe('ID задачи рендеринга для отмены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('cancel_render', args, args.dryRun, async () => {
         await tracker.initialize();
         await tracker.run('DELETE FROM tasks WHERE id = ? AND name LIKE "Рендеринг%"', [args.queueId]);
@@ -131,8 +132,8 @@ export const renderTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.render.collect_outputs',
     description: 'Сбор путей к готовым кадрам рендеринга для сцены.',
     inputSchema: z.object({
@@ -156,8 +157,8 @@ export const renderTools = [
         outputs
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorize.queue_drawings',
     description: 'Добавление отсканированных растровых рисунков в очередь автовекторизации.',
     inputSchema: z.object({
@@ -165,7 +166,7 @@ export const renderTools = [
       drawingsPaths: z.array(z.string()).describe('Список путей к растровым файлам для векторизации.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedProj = verifyPathAccess(args.projectPath);
       const checkedDrawings = args.drawingsPaths.map((p: string) => verifyPathAccess(p));
 
@@ -184,8 +185,8 @@ export const renderTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.vectorize.list_queue',
     description: 'Получение статуса очереди автоматической векторизации.',
     inputSchema: z.object({}),
@@ -202,9 +203,9 @@ export const renderTools = [
         }))
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.render.diagnose_heavy_nodes',
     description: 'Поиск нод, потребляющих много памяти (Glow, Blur, Shadow, Envelope Deformer). Эти ноды — частая причина крашей при рендере (Reddit: harmony_crashes_when_using_deformers, render crash on heavy scenes). Рекомендует перевод на Image Sequence.',
     inputSchema: z.object({
@@ -270,5 +271,5 @@ export const renderTools = [
           : null
       };
     }
-  }
+  })
 ];

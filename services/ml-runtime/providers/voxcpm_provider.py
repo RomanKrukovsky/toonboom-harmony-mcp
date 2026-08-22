@@ -18,15 +18,62 @@ class VoxCPMProvider:
         self.device = self.config.get("device", "cpu")
         self.model = None
 
+    def _cached_weights_path(self):
+        """Locate already-downloaded VoxCPM weights in the HuggingFace cache."""
+        hf_home = os.environ.get("HF_HOME") or str(Path.home() / ".cache" / "huggingface")
+        repo_dir = Path(hf_home) / "hub" / f"models--{self.model_id.replace('/', '--')}"
+        if not repo_dir.is_dir():
+            return None
+        snapshots = repo_dir / "snapshots"
+        if not snapshots.is_dir():
+            return None
+        revisions = [d for d in snapshots.iterdir() if d.is_dir()]
+        return max(revisions, key=lambda d: d.stat().st_mtime) if revisions else None
+
     def detect(self) -> dict:
+        # Package availability and weight availability are separate failures and
+        # must not be conflated: reporting "weights_missing" when 4.6 GB of weights
+        # are cached but the package is absent sends diagnosis the wrong way.
+        weights = self._cached_weights_path()
+        weights_present = weights is not None
+
         try:
             import voxcpm
-            return {"status": "installed_verified", "version": getattr(voxcpm, "__version__", "2.0"), "device": self.device}
         except ImportError:
             return {
-                "status": "weights_missing",
-                "message": "voxcpm package not installed. Install with `pip install voxcpm`"
+                "status": "package_missing",
+                "weightsPresent": weights_present,
+                "weightsPath": str(weights) if weights else None,
+                "message": (
+                    "voxcpm package not installed (`pip install voxcpm`). "
+                    + (
+                        f"Model weights ARE already cached at {weights}, so only the "
+                        "package is needed."
+                        if weights_present
+                        else f"Weights for {self.model_id} are also not in the HF cache."
+                    )
+                ),
             }
+
+        if not weights_present:
+            return {
+                "status": "weights_missing",
+                "weightsPresent": False,
+                "version": getattr(voxcpm, "__version__", "2.0"),
+                "device": self.device,
+                "message": (
+                    f"voxcpm is installed but no cached weights for {self.model_id} "
+                    "were found. They will be downloaded on first use."
+                ),
+            }
+
+        return {
+            "status": "installed_verified",
+            "weightsPresent": True,
+            "weightsPath": str(weights),
+            "version": getattr(voxcpm, "__version__", "2.0"),
+            "device": self.device,
+        }
 
     def load_model(self):
         if self.model is not None:

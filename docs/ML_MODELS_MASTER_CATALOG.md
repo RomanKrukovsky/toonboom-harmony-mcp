@@ -125,3 +125,38 @@ This document outlines the verified specifications for all ML models supported b
 │ Harmony Execution Engine      │  (QtScript / TB_Harmony API)
 └───────────────────────────────┘
 ```
+
+---
+
+## Degraded-Mode Honesty Contract (2026-08-05)
+
+Every provider now reports its execution truth in the manifest. A consumer can (and must)
+branch on these fields instead of trusting the payload shape:
+
+| Field | Meaning |
+|---|---|
+| `realInferenceExecuted` | `true` only when the actual model produced the output |
+| `status` | `success` or an explicit degraded code (`degraded_audio_metrics_only`, `degraded_no_pose_model`, `degraded_hash_embedding`, …) |
+| `fallbackUsed` / `fallbackReason` | set when a different backend answered the request (e.g. RTMPose → MediaPipe) |
+| `usableFor` / `notUsableFor` | for hash-embeddings: what the degraded output is still valid for |
+
+Removed fabrications (previously shipped as real output):
+- **WhisperTranscriptionProvider**: fabricated Russian transcript with per-word confidence 0.85 when Whisper was absent → now returns empty transcript + real audio metrics only.
+- **MediaPipePoseProvider**: sine-wave synthetic skeleton with visibility 0.9 when the model was absent → now returns zero poses.
+- **RTMPoseOnnxProvider**: silently answered with MediaPipe output under the RTMPose model id → fallback is now labelled (`fallbackUsed`, `requestedBackend`).
+- **Visual/Text embeddings**: non-deterministic `np.random` vectors labelled as CLIP/sentence-transformers → now deterministic content-hash vectors explicitly marked unusable for semantic similarity.
+
+## Execution Provider Auto-Selection
+
+`device: "auto"` (default in `config/ml-models.example.yaml`) resolves to the fastest
+available ONNX Runtime execution provider: `CUDA > CoreML > CPU`.
+
+Measured on Apple Silicon, `fixtures/character.png`, DWPose + YOLOX round trip:
+
+| EP | mean latency |
+|---|---|
+| CoreML | **49 ms/frame** |
+| CPU | 204 ms/frame |
+
+Identical keypoint quality (mean confidence 0.706 vs 0.704). Video pose pipeline
+(`track_video_pose`) defaults to `device="auto"`.

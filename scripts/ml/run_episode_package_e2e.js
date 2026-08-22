@@ -46,7 +46,7 @@ async function runEpisodePackagePipeline() {
 
   // 3. Generate Time Savings Report
   console.log("\n[3/4] Generating Studio Automation Time Savings Report...");
-  const timeSavingsTool = studioPackageTools.find(t => t.name === 'harmony.production.generate_time_savings_report');
+  const timeSavingsTool = studioPackageTools.find(t => t.name === 'harmony.production.generate_ml_pipeline_savings_report');
   const timeSavingsRes = await timeSavingsTool.handler({
     sceneCount: runResult.scenePlanCount || 5,
     characterCount: 2,

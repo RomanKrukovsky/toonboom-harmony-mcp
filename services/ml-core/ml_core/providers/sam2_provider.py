@@ -10,6 +10,7 @@ class SAM2VideoSegmentationProvider(BaseMLProvider):
     def __init__(self, model_id: str = "sam2.1_hiera_tiny"):
         super().__init__(model_id)
         self.predictor = None
+        self.device = "cpu"
 
     def check_availability(self) -> bool:
         try:
@@ -39,6 +40,9 @@ class SAM2VideoSegmentationProvider(BaseMLProvider):
                 device = "cuda"
 
             self.predictor = build_sam2_video_predictor(config_name, str(checkpoint), device=device)
+            # Record the device on the instance: provenance reads self.device, and
+            # keeping this local made every report claim "cpu" even on MPS/CUDA.
+            self.device = device
             self.loaded = True
             return True
         except Exception:
@@ -125,8 +129,25 @@ class SAM2VideoSegmentationProvider(BaseMLProvider):
         return {
             "schemaVersion": "1.0",
             "modelId": self.model_id,
+            # Every other provider reports these two fields; without them a caller
+            # could not tell real SAM2 masks from MOG2 background-subtraction
+            # contours except by parsing provenance.backend.
+            "status": "success" if use_real else "degraded_opencv_contours",
+            "realInferenceExecuted": bool(use_real),
             "frameCount": frame_idx,
             "fps": fps,
             "frames": frames_list,
-            "provenance": provenance
+            "provenance": provenance,
+            **({} if use_real else {
+                "honestLimitations": {
+                    "detail": (
+                        "SAM2 is unavailable, so masks come from MOG2 background "
+                        "subtraction plus contour extraction. That requires a static "
+                        "camera and a moving subject; on a locked-off character or a "
+                        "panning shot it yields empty or noisy contours. Reported "
+                        "confidence is derived from bbox area, not model certainty."
+                    ),
+                    "notUsableFor": ["part_decomposition", "matte_extraction"],
+                }
+            }),
         }

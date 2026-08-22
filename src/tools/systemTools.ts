@@ -5,9 +5,10 @@ import { config, validatePath } from '../config.js';
 import { HarmonyError, limitOutput } from '../security.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { ReconstructionClient } from '../adapters/reconstructionClient.js';
+import { defineTool } from './defineTool.js';
 
 export const systemTools = [
-  {
+  defineTool({
     name: 'harmony.health_check',
     description: 'Проверка работоспособности системы, путей конфигураций и доступности зависимостей.',
     inputSchema: z.object({}),
@@ -59,8 +60,8 @@ export const systemTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.detect_installation',
     description: 'Автоматический поиск установленных путей Toon Boom Harmony в системе.',
     inputSchema: z.object({}),
@@ -75,8 +76,8 @@ export const systemTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.get_capabilities',
     description: 'Запрос списка поддерживаемых сервером функций (Python API, Control Center, SQLite трекер).',
     inputSchema: z.object({}),
@@ -100,13 +101,13 @@ export const systemTools = [
           configuredUser: config.harmonyCcUser
         },
         localDatabaseTracker: {
-          type: 'sqlite3',
+          type: 'better-sqlite3',
           initialized: true
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.get_config',
     description: 'Получение текущих параметров конфигурации сервера (чувствительные поля будут скрыты).',
     inputSchema: z.object({}),
@@ -131,8 +132,8 @@ export const systemTools = [
         }
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.validate_environment',
     description: 'Проверка существования, прав записи, разрешенных путей и правил окружения Harmony (Default Separate Position, Element Node Creation из Урока #1).',
     inputSchema: z.object({
@@ -192,8 +193,8 @@ export const systemTools = [
         harmonyPreferencesCheck: preferenceRules
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.read_logs',
     description: 'Чтение содержимого файла логов MCP-сервера.',
     inputSchema: z.object({
@@ -213,5 +214,5 @@ export const systemTools = [
         logs: limitOutput(selected)
       };
     }
-  }
+  })
 ];

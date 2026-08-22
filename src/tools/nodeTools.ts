@@ -3,6 +3,7 @@ import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { verifyPathAccess, enforceDestructiveSafety, executeWithDryRun, HarmonyError } from '../security.js';
 import * as schemas from '../schemas/nodes.js';
 import { projectPathSchema } from '../schemas/common.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция для перехвата ошибок PYTHON_API_UNAVAILABLE
 async function runNodeBridge(command: string, args: any): Promise<any> {
@@ -26,7 +27,7 @@ async function runNodeBridge(command: string, args: any): Promise<any> {
 }
 
 export const nodeTools = [
-  {
+  defineTool({
     name: 'harmony.nodes.list',
     description: 'Получение списка всех узлов (нод) в графе сцены.',
     inputSchema: schemas.listNodesSchema,
@@ -34,8 +35,8 @@ export const nodeTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runNodeBridge('list_nodes', { projectPath: checkedPath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.search',
     description: 'Поиск нод по маске имени.',
     inputSchema: schemas.searchNodesSchema,
@@ -43,8 +44,8 @@ export const nodeTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runNodeBridge('search_nodes', { projectPath: checkedPath, query: args.query });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.get',
     description: 'Получение детальной информации о ноде и её атрибутах.',
     inputSchema: schemas.getNodeSchema,
@@ -52,12 +53,12 @@ export const nodeTools = [
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runNodeBridge('get_node_attrs', { projectPath: checkedPath, nodePath: args.nodePath });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.create',
     description: 'Создание новой ноды в графе сцены с авто-настройкой параметров риггинга (Separate Mode, Can Never Enter Drawing Mode).',
     inputSchema: schemas.createNodeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_node', args, args.dryRun, () => {
         return runNodeBridge('create_node', {
@@ -70,12 +71,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.delete',
     description: 'Удаление ноды из графа. (Требует подтверждения безопасности).',
     inputSchema: schemas.deleteNodeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       enforceDestructiveSafety('delete_node', args);
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('delete_node', args, args.dryRun, () => {
@@ -85,12 +86,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.rename',
     description: 'Переименование ноды.',
     inputSchema: schemas.renameNodeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('rename_node', args, args.dryRun, async () => {
         // Переименование в Python API обычно делается установкой атрибута name или вызовом rename
@@ -102,12 +103,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.connect',
     description: 'Подключение портов (входов/выходов) между двумя узлами со смысловым маппингом (matte, image, cutter_matte, cutter_image, pass_through).',
     inputSchema: schemas.connectNodesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       let targetDestPort = args.destPort ?? 0;
       if (args.semanticPort === 'matte' || args.semanticPort === 'cutter_matte') {
@@ -126,12 +127,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.disconnect',
     description: 'Отключение связей с конкретным входным портом узла.',
     inputSchema: schemas.disconnectNodesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('disconnect_nodes', args, args.dryRun, () => {
         return runNodeBridge('disconnect_nodes', {
@@ -141,12 +142,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.get_attr',
     description: 'Получение значения атрибута конкретной ноды.',
     inputSchema: schemas.getNodeAttrSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const res = await runNodeBridge('get_node_attrs', { projectPath: checkedPath, nodePath: args.nodePath });
       if (res.status === 'unsupported') return res;
@@ -158,12 +159,12 @@ export const nodeTools = [
         value: val
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.set_attr',
     description: 'Изменение значения атрибута конкретной ноды.',
     inputSchema: schemas.setNodeAttrSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_attribute', args, args.dryRun, () => {
         return runNodeBridge('set_node_attr', {
@@ -174,12 +175,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.group',
     description: 'Группировка выбранных узлов в родительскую группу.',
     inputSchema: schemas.groupNodesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('group_nodes', args, args.dryRun, async () => {
         // Имитируем создание группы и перенос нод
@@ -190,12 +191,12 @@ export const nodeTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.ungroup',
     description: 'Разгруппировка указанной группы.',
     inputSchema: schemas.ungroupNodesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('ungroup_nodes', args, args.dryRun, async () => {
         return {
@@ -204,8 +205,8 @@ export const nodeTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.find_broken_connections',
     description: 'Поиск поврежденных/несвязанных портов в графе нод.',
     inputSchema: schemas.findBrokenConnectionsSchema,
@@ -218,12 +219,12 @@ export const nodeTools = [
         brokenConnections: res.audit?.broken_connections || []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.clean_unused',
     description: 'Удаление неиспользуемых/несвязанных узлов для оптимизации сцены.',
     inputSchema: schemas.cleanUnusedNodesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('clean_unused_nodes', args, args.dryRun, async () => {
         return {
@@ -232,12 +233,12 @@ export const nodeTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.create_effect_chain',
     description: 'Автоматическое создание и вставка цепочки эффектов/масок (AutoPatch, LayerSelector, Cutter, KinematicOutput) перед целевым узлом на основе паттернов из плейлиста.',
     inputSchema: schemas.createEffectChainSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_effect_chain', args, args.dryRun, async () => {
         let chainDescription = args.effects;
@@ -309,12 +310,12 @@ export const nodeTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.deformers.reset_to_rest_pose',
     description: 'Сброс всех активных кривых деформации (Curve/Envelope) к исходному положению (Rest Pose).',
     inputSchema: schemas.resetToRestPoseSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('reset_deformers_to_rest_pose', args, args.dryRun, () => {
         return runNodeBridge('reset_deformers_to_rest_pose', {
@@ -323,12 +324,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.resolve_cycles',
     description: 'Поиск и автоматический разрыв циклических зависимостей в графе нод для предотвращения зависаний Harmony.',
     inputSchema: schemas.resolveCyclesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('resolve_cycles', args, args.dryRun, () => {
         return runNodeBridge('resolve_cycles', {
@@ -336,23 +337,23 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.scene.release_lock',
     description: 'Безопасное удаление stale lock-файлов (.lock/.lck) из папки проекта, если Toon Boom Harmony закрыт.',
     inputSchema: schemas.releaseLockSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return runNodeBridge('release_lock', {
         projectPath: checkedPath
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.set_write_rgba',
     description: 'Настройка ноды Write на экспорт изображений в формате PNG с альфа-каналом (RGBA).',
     inputSchema: schemas.setWriteRgbaSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_write_rgba', args, args.dryRun, () => {
         return runNodeBridge('set_write_rgba', {
@@ -361,12 +362,12 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.set_composite_passthrough',
     description: 'Настройка режима работы Composite ноды (Pass Through / As Bitmap / As Vector) для исправления Z-depth и масок.',
     inputSchema: schemas.setCompositePassthroughSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_composite_passthrough', args, args.dryRun, () => {
         return runNodeBridge('set_composite_passthrough', {
@@ -376,8 +377,8 @@ export const nodeTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.safe_rename',
     description: 'Безопасное переименование ноды с предупреждением о деформерах. Переименование Drawing-ноды с подключённым деформером ломает внутреннюю связь (Reddit: deformers_and_keyframes_problem). Этот tool проверяет наличие деформеров перед переименованием.',
     inputSchema: z.object({
@@ -387,7 +388,7 @@ export const nodeTools = [
       skipDeformerCheck: z.boolean().optional().default(false).describe('Пропустить проверку деформеров (не рекомендуется).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
 
       let hasDeformer = false;
@@ -445,8 +446,8 @@ export const nodeTools = [
         }));
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.nodes.check_cutter_ports',
     description: 'Проверка правильности подключения портов Cutter-ноды (Matte=порт 0, Image=порт 1). Неправильный порядок портов вызывает инвертированную маску (Reddit: cutter_seems_to_be_inverted, characters_side_profile_masking).',
     inputSchema: z.object({
@@ -504,5 +505,5 @@ export const nodeTools = [
         fixTool: 'harmony.nodes.connect with semanticPort="cutter_matte" or "cutter_image"'
       };
     }
-  }
+  })
 ];

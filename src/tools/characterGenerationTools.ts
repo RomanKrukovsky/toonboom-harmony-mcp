@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { CharacterDesigner } from '../adapters/characterDesigner/index.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * characterGenerationTools — character design layer tools.
  */
 export const characterGenerationTools = [
-  {
+  defineTool({
     name: 'harmony.character.generate_spec',
     description: 'Сгенерировать character_spec.json из описания персонажа.',
     inputSchema: z.object({
@@ -16,7 +17,7 @@ export const characterGenerationTools = [
       bodyType: z.string().optional(),
       includeDesignPrompts: z.boolean().optional().default(true)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const designer = new CharacterDesigner();
       const spec = designer.buildSpecFromArgs(args);
       return {
@@ -26,28 +27,28 @@ export const characterGenerationTools = [
         note: 'Character spec is a production-ready asset brief. Real drawings require an image generation backend or human artist.'
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.character.generate_turnaround_requirements',
     description: 'Сгенерировать требования к turnaround для персонажа.',
     inputSchema: z.object({
       characterSpec: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const designer = new CharacterDesigner();
       const plan = designer.generateTurnaroundPlan(args.characterSpec);
       return { status: 'success', turnaroundPlan: plan };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.character.generate_expression_sheet_requirements',
     description: 'Сгенерировать требования к expression sheet.',
     inputSchema: z.object({
       characterSpec: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const spec = args.characterSpec;
       return {
         status: 'success',
@@ -59,15 +60,15 @@ export const characterGenerationTools = [
         }
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.character.generate_mouth_chart_requirements',
     description: 'Сгенерировать требования к mouth chart для lipsync.',
     inputSchema: z.object({
       characterSpec: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const spec = args.characterSpec;
       return {
         status: 'success',
@@ -79,15 +80,15 @@ export const characterGenerationTools = [
         }
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.character.generate_hand_pose_requirements',
     description: 'Сгенерировать требования к hand poses.',
     inputSchema: z.object({
       characterSpec: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const spec = args.characterSpec;
       return {
         status: 'success',
@@ -99,18 +100,18 @@ export const characterGenerationTools = [
         }
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.character.generate_layered_asset_plan',
     description: 'Сгенерировать полный layered asset plan.',
     inputSchema: z.object({
       characterSpec: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const designer = new CharacterDesigner();
       const layered = designer.generateLayeredAssetPlan(args.characterSpec);
       return { status: 'success', layeredAssetPlan: layered };
     }
-  }
+  })
 ];

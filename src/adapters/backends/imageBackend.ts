@@ -37,6 +37,55 @@ export async function generateBackground(
   return generateImage(prompt, outputPath, 'background');
 }
 
+/**
+ * Poll ComfyUI history for a finished job and download the produced image.
+ *
+ * ComfyUI's /prompt endpoint is fire-and-forget: it returns a prompt_id and the
+ * job runs asynchronously. Claiming success at that point (as this module used
+ * to) reports an image that does not exist on disk.
+ */
+async function waitAndDownloadComfyOutput(
+  comfyHost: string,
+  promptId: string,
+  destination: string,
+  timeoutMs = 120_000,
+  pollIntervalMs = 1_000
+): Promise<boolean> {
+  const fetch = (globalThis as any).fetch;
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const historyRes = await fetch(`${comfyHost}/history/${promptId}`).catch(() => null);
+    if (historyRes?.ok) {
+      const history = await historyRes.json().catch(() => null);
+      const entry = history?.[promptId];
+      const outputs = entry?.outputs ?? {};
+      for (const nodeOutput of Object.values<any>(outputs)) {
+        const image = nodeOutput?.images?.[0];
+        if (!image?.filename) continue;
+
+        const params = new URLSearchParams({
+          filename: image.filename,
+          subfolder: image.subfolder ?? '',
+          type: image.type ?? 'output'
+        });
+        const fileRes = await fetch(`${comfyHost}/view?${params.toString()}`).catch(() => null);
+        if (!fileRes?.ok) continue;
+
+        const buffer = Buffer.from(await fileRes.arrayBuffer());
+        if (buffer.length === 0) continue;
+
+        const dir = path.dirname(destination);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(destination, buffer);
+        return true;
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+  }
+  return false;
+}
+
 async function generateImage(
   prompt: string,
   outputPath: string | undefined,
@@ -81,8 +130,23 @@ async function generateImage(
       });
       if (promptRes.ok) {
         const data = await promptRes.json();
-        const finalPath = outputPath || path.join(process.cwd(), 'output', `comfy_${kind}_${Date.now()}.png`);
-        return { status: 'success', origin: 'real', outputPath: finalPath, prompt };
+        const promptId = data?.prompt_id;
+        if (!promptId) {
+          throw new Error('ComfyUI accepted the request but returned no prompt_id.');
+        }
+
+        // /prompt only ENQUEUES the job. The previous code returned
+        // `origin: 'real'` plus a synthesised path right here, so callers were
+        // handed a filename for an image that was never generated or downloaded.
+        const finalPath = outputPath
+          || path.join(process.cwd(), 'output', `comfy_${kind}_${Date.now()}.png`);
+        const downloaded = await waitAndDownloadComfyOutput(comfyHost, promptId, finalPath);
+        if (downloaded) {
+          return { status: 'success', origin: 'real', outputPath: finalPath, prompt };
+        }
+        throw new Error(
+          `ComfyUI job ${promptId} did not produce a downloadable image within the timeout.`
+        );
       }
     } catch (e: any) {
       console.warn("ComfyUI fetch warning:", e.message);
@@ -130,60 +194,52 @@ async function generateImage(
 }
 
 /**
- * Helper to convert raster image to SVG contour vector format.
- * Attempts delegation to reconstruction-core service when active,
- * or computes image-derived SVG contours dynamically.
+ * Raster → SVG vectorization via the reconstruction-core service.
+ *
+ * Removed the previous "dynamic contour approximation" fallback: it never read a
+ * single pixel. It summed the char codes of the *file name*, derived an ellipse
+ * centre from `hash % 100` and radii from the file size, then labelled the output
+ * "Vectorized contour dynamically derived from <name>". Any caller would have
+ * treated that as a real trace of the artwork.
+ *
+ * Vectorization needs actual image decoding (OpenCV lives in the Python service),
+ * so when the service is unreachable this throws instead of inventing geometry.
  */
 export async function vectorizeImageToSVG(imagePath: string, svgOutputPath?: string): Promise<string> {
   const targetPath = svgOutputPath || imagePath.replace(/\.[^/.]+$/, "") + ".svg";
-  const baseName = path.basename(imagePath);
   const dir = path.dirname(targetPath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  // 1. Attempt reconstruction-core API call if service is available
+  const reconPort = process.env.RECONSTRUCTION_PORT || '8765';
+  let response: any;
   try {
     const fetch = (globalThis as any).fetch;
-    const reconPort = process.env.RECONSTRUCTION_PORT || '8765';
-    const res = await fetch(`http://127.0.0.1:${reconPort}/vectorize`, {
+    response = await fetch(`http://127.0.0.1:${reconPort}/vectorize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imagePath })
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.svgContent) {
-        fs.writeFileSync(targetPath, data.svgContent, 'utf-8');
-        return targetPath;
-      }
-    }
-  } catch (_e) {
-    // Reconstruction core service offline; proceed with dynamic edge estimation
+  } catch (err: any) {
+    throw new Error(
+      `[SERVICE_UNAVAILABLE] Vectorization requires reconstruction-core on ` +
+      `127.0.0.1:${reconPort} (start it with \`npm run reconstruction:core\`). ` +
+      `Cause: ${err?.message ?? err}`
+    );
   }
 
-  // 2. Dynamic image contour approximation based on file stats and hashed properties
-  let fileSize = 0;
-  if (fs.existsSync(imagePath)) {
-    const stats = fs.statSync(imagePath);
-    fileSize = stats.size;
+  if (!response?.ok) {
+    throw new Error(
+      `[SERVICE_ERROR] reconstruction-core rejected the vectorize request ` +
+      `(HTTP ${response?.status ?? 'unknown'}).`
+    );
   }
-  const hash = baseName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const width = 1024;
-  const height = 1024;
-  const cx = 512 + (hash % 100) - 50;
-  const cy = 512 + ((hash * 3) % 100) - 50;
-  const rx = 300 + (fileSize % 150);
-  const ry = 250 + ((fileSize * 2) % 150);
 
-  const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
-  <!-- Vectorized contour dynamically derived from ${baseName} (size: ${fileSize} bytes) -->
-  <g id="dynamic_contours" fill="none" stroke="black" stroke-width="2">
-    <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" />
-    <path d="M ${cx - rx} ${cy} Q ${cx} ${cy - ry * 0.8} ${cx + rx} ${cy} Q ${cx} ${cy + ry * 0.8} ${cx - rx} ${cy} Z" />
-    <path d="M ${cx - rx * 0.5} ${cy - ry * 0.3} L ${cx + rx * 0.5} ${cy - ry * 0.3} L ${cx} ${cy + ry * 0.5} Z" />
-  </g>
-</svg>`;
+  const data = await response.json();
+  if (!data?.svgContent) {
+    throw new Error('[INVALID_RESPONSE] reconstruction-core returned no svgContent.');
+  }
 
-  fs.writeFileSync(targetPath, svgContent, 'utf-8');
+  fs.writeFileSync(targetPath, data.svgContent, 'utf-8');
   return targetPath;
 }
 

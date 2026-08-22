@@ -4,16 +4,10 @@ import path from 'path';
 import crypto from 'crypto';
 import stringify from 'fast-json-stable-stringify';
 import { verifyPathAccess, HarmonyError } from '../security.js';
+import { defineTool } from './defineTool.js';
 
-interface ToolDef {
-  name: string;
-  description: string;
-  inputSchema: z.ZodObject<any>;
-  handler: (args: any) => Promise<any>;
-}
-
-export const studioPackageTools: ToolDef[] = [
-  {
+export const studioPackageTools = [
+  defineTool({
     name: 'harmony.production.build_review_package',
     description: 'Собрать клиентский ревью-пакет серии/эпизода (превью, отчеты качества, матрица лицензий, манифест доставки).',
     inputSchema: z.object({
@@ -85,9 +79,9 @@ export const studioPackageTools: ToolDef[] = [
         reportsCount: reportCount
       };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.production.generate_asset_checklist',
     description: 'Сгенерировать студийный чек-лист готовности ассетов (риги, рты, эмоции, фоны, аудио) для эпизода.',
     inputSchema: z.object({
@@ -95,7 +89,7 @@ export const studioPackageTools: ToolDef[] = [
       characterSpecs: z.array(z.any()).optional().describe('Массив characterSpecs'),
       outputDir: z.string().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const charSpecs = args.characterSpecs || [];
       const episode = args.episodePlan || { scenes: [] };
 
@@ -134,11 +128,14 @@ export const studioPackageTools: ToolDef[] = [
         checklist
       };
     }
-  },
+  }),
 
-  {
-    name: 'harmony.production.generate_time_savings_report',
-    description: 'Рассчитать экономию времени студии (в человеко-часах) при использовании пайплайна автоматизации.',
+  defineTool({
+    // Имя было `harmony.production.generate_time_savings_report`, что затеняло
+    // одноимённый инструмент из commercialWorkflowTools. Переименован: этот вариант
+    // оценивает экономию по ML-пайплайну (keypointing/lip-sync/inbetweening).
+    name: 'harmony.production.generate_ml_pipeline_savings_report',
+    description: 'Рассчитать экономию времени студии (в человеко-часах) при использовании ML-пайплайна автоматизации (keypointing, lip-sync, inbetweening, сборка сцен).',
     inputSchema: z.object({
       sceneCount: z.number().int().positive().default(5),
       characterCount: z.number().int().positive().default(2),
@@ -178,5 +175,5 @@ export const studioPackageTools: ToolDef[] = [
         report
       };
     }
-  }
+  })
 ];

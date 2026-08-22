@@ -4,33 +4,34 @@ import { EpisodePlanner } from '../adapters/episodePlanner/index.js';
 import { ShotPlanner } from '../adapters/shotPlanner/index.js';
 import { CharacterDesigner } from '../adapters/characterDesigner/index.js';
 import { OnePromptEngine } from '../adapters/onePromptEngine/index.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * seriesTools — Autonomous Series Mode entry points (ACTOR §9).
  */
 export const seriesTools = [
-  {
+  defineTool({
     name: 'harmony.series.create_bible',
     description: 'Создать series_bible.json из промпта.',
     inputSchema: z.object({
       prompt: z.string().min(1),
       targetDurationMinutes: z.number().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const analysis = new OnePromptEngine().analyzePrompt(args);
       const bible = new SeriesPlanner().createBible(analysis, args);
       return { status: 'success', seriesBible: bible };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.create_episode_ideas',
     description: 'Сгенерировать идеи эпизодов из bible.',
     inputSchema: z.object({
       seriesBible: z.any(),
       count: z.number().optional().default(6)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const bible = args.seriesBible;
       const count = args.count ?? 6;
       const ideas = [];
@@ -45,9 +46,9 @@ export const seriesTools = [
       }
       return { status: 'success', count: ideas.length, episodeIdeas: ideas };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.create_episode_plan',
     description: 'Создать episode plan для выбранной идеи эпизода.',
     inputSchema: z.object({
@@ -57,7 +58,7 @@ export const seriesTools = [
       fps: z.number().optional(),
       resolution: z.object({ width: z.number(), height: z.number() }).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const analysis = new OnePromptEngine().analyzePrompt({
         prompt: args.seriesBible.logLine,
         targetDurationMinutes: args.durationMinutes ?? 2,
@@ -66,31 +67,34 @@ export const seriesTools = [
       });
       const episode = new EpisodePlanner().createEpisodePlan(analysis, {
         ...args,
+        // seriesBible.logLine is the prompt this episode is planned from; the
+        // spread above carries episodeNumber/fps/resolution but no `prompt`.
+        prompt: args.seriesBible.logLine,
         targetDurationMinutes: args.durationMinutes ?? 2
       });
       return { status: 'success', analysis, episodePlan: episode };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.create_shot_list',
     description: 'Создать shot list для эпизода.',
     inputSchema: z.object({
       episodePlan: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const shots = new ShotPlanner().generateShots(args.episodePlan);
       return { status: 'success', shotCount: shots.length, shots };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.generate_recurring_asset_library',
     description: 'Собрать library повторяющихся ассетов на основе bible.',
     inputSchema: z.object({
       seriesBible: z.any()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const bible = args.seriesBible;
       const library = {
         characters: bible.recurringCharacters.map((c: any) => ({
@@ -110,9 +114,9 @@ export const seriesTools = [
       };
       return { status: 'success', assetLibrary: library };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.run_episode_pipeline',
     description: 'Запустить полный pipeline для одного эпизода серии.',
     inputSchema: z.object({
@@ -122,9 +126,14 @@ export const seriesTools = [
       outputDir: z.string().optional(),
       mode: z.enum(['real','simulation','hybrid','moonshot']).optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const prompt = args.seriesBible.logLine;
-      const previewTool = (await import('./onePromptTools.js')).onePromptTools.find((t: any) => t.name === 'harmony.oneprompt.run_to_preview_episode');
+      // Cross-module delegation: the tool array's element type is an intersection
+      // of every schema, so the handler is typed loosely at the lookup site.
+      const previewTool = ((await import('./onePromptTools.js')).onePromptTools as readonly {
+        name: string;
+        handler: (a: any) => Promise<any>;
+      }[]).find(t => t.name === 'harmony.oneprompt.run_to_preview_episode');
       const result = await previewTool!.handler({
         prompt,
         targetDurationMinutes: args.durationMinutes ?? 2,
@@ -133,22 +142,24 @@ export const seriesTools = [
       });
       return { status: result.status, ...result, note: 'Autonomous Series Mode is a production accelerator, not a replacement for human creative direction.' };
     }
-  },
+  }),
 
-  {
+  defineTool({
     name: 'harmony.series.generate_review_package',
     description: 'Создать review package для серии.',
     inputSchema: z.object({
       episodeResults: z.array(z.any()),
       outputDir: z.string()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const fs = await import('fs');
       const path = await import('path');
-      if (!fs.existsSync(args.outputDir)) fs.mkdirSync(args.outputDir, { recursive: true });
-      const file = path.join(args.outputDir, 'series_review_package.json');
+      const { verifyPathAccess } = await import('../security.js');
+      const outputDir = verifyPathAccess(args.outputDir);
+      if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+      const file = path.join(outputDir, 'series_review_package.json');
       fs.writeFileSync(file, JSON.stringify({ episodes: args.episodeResults, generatedAt: new Date().toISOString() }, null, 2));
       return { status: 'success', file, episodeCount: args.episodeResults.length };
     }
-  }
+  })
 ];

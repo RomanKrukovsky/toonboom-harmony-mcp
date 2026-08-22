@@ -8,6 +8,7 @@ from ..providers.sam2_provider import SAM2VideoSegmentationProvider
 from ..providers.opencv_klt import OpenCVKLTPointTrackingProvider
 from ..providers.whisper_provider import WhisperTranscriptionProvider
 from ..providers.mfa_provider import MFAForcedAlignmentProvider
+from ..providers.acoustic_viseme_provider import AcousticVisemeAlignmentProvider
 
 def run_video_perception_pipeline(
     video_path_str: str,
@@ -74,9 +75,34 @@ def run_video_perception_pipeline(
     speech_res = None
     if "transcription" in tasks or "forced_alignment" in tasks:
         if audio_path:
+            # Prefer real phonemic alignment when MFA is installed; otherwise use
+            # acoustic viseme estimation. Never fabricate phonemes: fake labels do
+            # not match any Preston Blair key and collapse lip-sync to a closed mouth.
             align_prov = MFAForcedAlignmentProvider()
-            align_prov.load_model()
-            speech_res = align_prov.run_inference({"audioPath": str(audio_path)})
+            if align_prov.load_model():
+                try:
+                    speech_res = align_prov.run_inference({"audioPath": str(audio_path)})
+                except (RuntimeError, NotImplementedError) as exc:
+                    warnings.append(f"MFA alignment unavailable, using acoustics: {exc}")
+                    align_prov = None
+            else:
+                align_prov = None
+
+            if speech_res is None:
+                acoustic = AcousticVisemeAlignmentProvider()
+                if acoustic.load_model():
+                    speech_res = acoustic.run_inference(
+                        {"audioPath": str(audio_path), "frameRate": fps or 24.0}
+                    )
+                    warnings.append(
+                        "Phoneme-level alignment unavailable; visemes were estimated "
+                        "acoustically (see honestLimitations in the speech manifest)."
+                    )
+                else:
+                    warnings.append(
+                        "Neither MFA nor acoustic viseme estimation is available "
+                        "(librosa/soundfile missing): no speech manifest produced."
+                    )
         else:
             warnings.append("Audio tasks requested but no audioPath provided.")
 

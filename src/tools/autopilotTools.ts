@@ -9,6 +9,7 @@ import { templateAssembly } from '../adapters/templateAssembly/index.js';
 import { HarmonyError, executeWithDryRun, verifyPathAccess } from '../security.js';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { config } from '../config.js';
+import { defineTool } from './defineTool.js';
 
 interface AutopilotState {
   currentPlan: ExecutionPlan | null;
@@ -29,14 +30,14 @@ const autopilotState: AutopilotState = {
 };
 
 export const autopilotTools = [
-  {
+  defineTool({
     name: 'harmony.autopilot.run_scene_plan',
     description: 'Полный запуск сборки сцены по файлу scene_plan.json.',
     inputSchema: z.object({
       scenePlanPath: z.string().describe('Путь к JSON-файлу плана сборки сцены.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const dryRunFn = async () => {
         const fullPath = path.resolve(args.scenePlanPath);
         let sceneName = 'unknown';
@@ -113,8 +114,8 @@ export const autopilotTools = [
         };
       }, dryRunFn);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.plan_scene',
     description: 'Генерация пошагового плана сборки сцены без его выполнения.',
     inputSchema: z.object({
@@ -130,8 +131,8 @@ export const autopilotTools = [
       const execPlan = ScenePlanAdapter.generateExecutionPlan(planJson);
       return { status: 'success', plan: execPlan };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.execute_step',
     description: 'Принудительное выполнение конкретного шага автопилота.',
     inputSchema: z.object({
@@ -148,8 +149,8 @@ export const autopilotTools = [
       }
       return executeStep(step, args.dryRun);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.verify_step',
     description: 'Проверить результат выполнения шага автопилота.',
     inputSchema: z.object({
@@ -166,8 +167,8 @@ export const autopilotTools = [
       const verifyRes = await verifyStep(step);
       return { stepId: args.stepId, ...verifyRes };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.recover_step',
     description: 'Запустить логику восстановления для упавшего шага.',
     inputSchema: z.object({
@@ -184,8 +185,8 @@ export const autopilotTools = [
       }
       return RecoveryAdapter.attemptRecovery(step.id, step.fallback.strategy, args.error, step.fallback.params);
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.pause',
     description: 'Приостановить выполнение текущего плана автопилота.',
     inputSchema: z.object({}),
@@ -196,14 +197,14 @@ export const autopilotTools = [
       }
       return { status: autopilotState.status, message: 'Автопилот не запущен.' };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.resume',
     description: 'Возобновить выполнение приостановленного плана автопилота.',
     inputSchema: z.object({
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       if (autopilotState.status !== 'paused' && autopilotState.status !== 'waiting_user') {
         return { status: autopilotState.status, message: 'Нет приостановленных задач.' };
       }
@@ -238,8 +239,8 @@ export const autopilotTools = [
 
       return { status: autopilotState.status, logs: autopilotState.logs, results };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.stop',
     description: 'Остановить выполнение текущего плана.',
     inputSchema: z.object({}),
@@ -247,8 +248,8 @@ export const autopilotTools = [
       autopilotState.status = 'stopped';
       return { status: 'stopped', message: 'Выполнение автопилота остановлено.' };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.get_current_state',
     description: 'Запрос текущего статуса автопилота.',
     inputSchema: z.object({}),
@@ -261,16 +262,16 @@ export const autopilotTools = [
         lastError: autopilotState.lastError
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.get_execution_log',
     description: 'Получить лог выполнения текущей сессии автопилота.',
     inputSchema: z.object({}),
     handler: async () => {
       return { status: 'success', logs: autopilotState.logs };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.render_preview',
     description: 'Рендеринг preview файла для контроля качества.',
     inputSchema: z.object({
@@ -291,8 +292,8 @@ export const autopilotTools = [
         }
       );
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.audit_scene_result',
     description: 'Аудит собранной сцены на предмет отсутствия ассетов, пустых слоев.',
     inputSchema: z.object({
@@ -315,8 +316,8 @@ export const autopilotTools = [
         );
       }
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.request_human_confirmation',
     description: 'Запрос подтверждения от пользователя в интерактивном режиме.',
     inputSchema: z.object({
@@ -327,16 +328,16 @@ export const autopilotTools = [
       autopilotState.waitingPrompt = args.prompt;
       return { status: 'waiting_user', prompt: args.prompt };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.wait_for_user_ready',
     description: 'Ждать подтверждения готовности пользователя для продолжения.',
     inputSchema: z.object({}),
     handler: async () => {
       return { status: autopilotState.status, waitingPrompt: autopilotState.waitingPrompt };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.autopilot.mark_manual_step_done',
     description: 'Пометить ручной шаг как завершенный.',
     inputSchema: z.object({
@@ -354,12 +355,12 @@ export const autopilotTools = [
       }
       return { status: 'success', message: `Ручной шаг ${args.stepId} помечен завершенным.` };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: run_full_production — end-to-end с аудитом и фиксом
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.autopilot.run_full_production',
     description:
       'End-to-end production пайплайн: scene_plan → выполнение шагов → self_check → auto_fix → отчёт. ' +
@@ -372,7 +373,7 @@ export const autopilotTools = [
       autoFix: z.boolean().optional().default(true),
       skipAudit: z.boolean().optional().default(false)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('autopilot.run_full_production', args, args.dryRun, async () => {
         let planObj: any;
         if (args.scenePlanPath) {
@@ -452,12 +453,12 @@ export const autopilotTools = [
         return report;
       });
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: self_check — полный аудит сцены
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.autopilot.self_check',
     description:
       'Полный аудит собранной сцены: проверяет наличие всех слоёв, ноды, ключевые кадры, ' +
@@ -469,7 +470,7 @@ export const autopilotTools = [
       checkLevel: z.enum(['quick', 'standard', 'deep']).optional().default('standard')
         .describe('quick=только критические, standard=все, deep=включая рекомендации')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const issues: any[] = [];
       let issueId = 1;
 
@@ -541,12 +542,12 @@ export const autopilotTools = [
           : { message: 'Сцена прошла проверку — готова для работы в Harmony' }
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: auto_fix — автоматическое исправление проблем
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.autopilot.auto_fix',
     description:
       'Автоматически исправляет проблемы из аудита (harmony.autopilot.self_check). ' +
@@ -558,7 +559,7 @@ export const autopilotTools = [
       scenePlanInline: z.any().optional().describe('scene_plan.json для применения фиксов'),
       dryRun: z.boolean().optional().default(false)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       return executeWithDryRun('autopilot.auto_fix', args, args.dryRun, async () => {
         const autoFixed: any[] = [];
         const humanFixRequired: any[] = [];
@@ -646,7 +647,7 @@ export const autopilotTools = [
         };
       });
     }
-  }
+  })
 ];
 
 

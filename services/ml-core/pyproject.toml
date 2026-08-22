@@ -21,6 +21,10 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=8.0.0"]
+# Apple Silicon acceleration for Whisper. With this installed the provider uses
+# cached MLX weights (large-v3-turbo) on Metal; without it, it falls back to
+# openai-whisper on CPU. See requirements/base.txt for the platform marker.
+mlx = ["mlx-whisper>=0.4.3"]
 
 [tool.setuptools.packages.find]
 where = ["."]

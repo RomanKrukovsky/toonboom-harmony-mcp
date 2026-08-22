@@ -14,7 +14,10 @@ describe('Python suite dependency closure', () => {
   it('installs and runs every Python service in CI', () => {
     expect(workflow).toContain('services/reconstruction-core/requirements.lock');
     expect(workflow).toContain('services/ml-runtime/requirements.lock');
-    expect(workflow).toContain('services/ml-core[test]');
+    // ml-core теперь ставится из pinned lock-файла + editable без зависимостей,
+    // как и остальные сервисы (воспроизводимая сборка).
+    expect(workflow).toContain('services/ml-core/requirements.lock');
+    expect(workflow).toContain('pip install -e services/ml-core --no-deps');
     expect(workflow).toContain('pytest services/reconstruction-core/tests');
     expect(workflow).toContain('pytest services/ml-core/tests');
     expect(workflow).toContain('pytest services/ml-runtime/tests');

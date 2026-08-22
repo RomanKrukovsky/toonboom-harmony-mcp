@@ -73,6 +73,45 @@ def _iou(a: Tuple[float, float, float, float], b: Tuple[float, float, float, flo
     return inter / union if union > 0 else 0.0
 
 
+def _box_from_keypoints(
+    points: Optional[np.ndarray],
+    frame_width: int,
+    frame_height: int,
+    padding: float = 0.25,
+) -> Optional[Tuple[float, float, float, float]]:
+    """Derive a person box from the previous frame's keypoints.
+
+    Used when the detector is skipped (`detect_every > 1`): the pose we already
+    computed localises the subject, so a padded bounding box around it is a valid
+    crop region for the next frame without paying for another YOLOX pass.
+
+    Padding matters — a box tight around the last pose would clip limbs that moved
+    outward, so it is expanded by a fraction of its own size and clamped to frame.
+    """
+    if points is None or len(points) == 0:
+        return None
+
+    xs = points[:, 0]
+    ys = points[:, 1]
+    # Guard against degenerate all-zero keypoints.
+    if not np.isfinite(xs).any() or not np.isfinite(ys).any():
+        return None
+
+    x1, x2 = float(np.min(xs)), float(np.max(xs))
+    y1, y2 = float(np.min(ys)), float(np.max(ys))
+    w, h = x2 - x1, y2 - y1
+    if w <= 1.0 or h <= 1.0:
+        return None
+
+    pad_x, pad_y = w * padding, h * padding
+    return (
+        max(0.0, x1 - pad_x),
+        max(0.0, y1 - pad_y),
+        min(float(frame_width), x2 + pad_x),
+        min(float(frame_height), y2 + pad_y),
+    )
+
+
 def _pose_similarity(prev: np.ndarray, curr: np.ndarray, scale: float) -> float:
     """Mean normalized distance between two keypoint sets, converted to a 0..1 similarity."""
     if prev is None or curr is None or scale <= 0:
@@ -212,13 +251,23 @@ def track_video_pose(
     frame_stride: int = 1,
     max_frames: int = MAX_FRAMES_DEFAULT,
     confidence_threshold: float = LOW_CONFIDENCE_THRESHOLD,
-    device: str = "cpu",
+    device: str = "auto",
+    detect_every: int = 1,
 ) -> Dict[str, Any]:
     """
     Run the real pose pipeline over a video and write evidence artifacts.
 
     Returns a result dict. When weights are missing it returns `blocked` with
     realInferenceExecuted=False rather than producing anything.
+
+    `detect_every` controls how often the YOLOX person detector runs. YOLOX-l is a
+    full 640x640 forward pass and is heavier than the pose model itself (206 MB vs
+    128 MB), so re-running it on every frame of a locked-off single-character shot
+    is largely wasted work. With `detect_every=N` the detector runs on every Nth
+    analysed frame and the box is carried between detections, derived from the
+    previous frame's visible keypoints. Defaults to 1 (detect every frame) so
+    existing verified evidence remains reproducible; the reused-box path is
+    recorded per frame via `detectorBoxReused`.
     """
     provider = DWPoseProvider({"enabled": True, "device": device})
     state = provider.detect()
@@ -263,6 +312,7 @@ def track_video_pose(
 
     prev_box: Optional[Tuple[float, float, float, float]] = None
     prev_points: Optional[np.ndarray] = None
+    prev_score: float = 0.0
     identity_switches = 0
     frame_index = -1
     analyzed = 0
@@ -278,7 +328,28 @@ def track_video_pose(
             continue
 
         started = time.perf_counter()
-        people = provider.detect_people(image)
+
+        # Detector scheduling: run YOLOX on the first analysed frame and then every
+        # `detect_every` analysed frames. Between detections the previous frame's
+        # keypoints supply the box, which is far cheaper than a full detector pass.
+        run_detector = (detect_every <= 1) or (analyzed % detect_every == 0) or prev_box is None
+        box_reused = False
+        people: List[Dict[str, Any]] = []
+
+        if run_detector:
+            people = provider.detect_people(image)
+        else:
+            tracked_box = _box_from_keypoints(prev_points, width, height) or prev_box
+            if tracked_box is not None:
+                box_reused = True
+                # Carry forward the previous detector confidence: no new detection
+                # happened, so inventing a score would misreport certainty.
+                people = [{"bbox": list(tracked_box), "score": prev_score}]
+            else:
+                # No usable prior: fall back to a real detection rather than guessing.
+                people = provider.detect_people(image)
+                run_detector = True
+
         frame_warnings: List[str] = []
 
         record = VideoPoseFrame(
@@ -355,6 +426,7 @@ def track_video_pose(
             x1=box[0], y1=box[1], x2=box[2], y2=box[3], score=float(chosen["score"])
         )
         record.detectorConfidence = float(chosen["score"])
+        record.detectorBoxReused = box_reused
         record.selectedPersonId = "person_0"
         record.keypoints = kp_models
         record.visibleKeypointCount = sum(1 for k in kp_models if k.observed and not k.interpolated)
@@ -363,6 +435,7 @@ def track_video_pose(
 
         frames.append(record)
         prev_box, prev_points = box, keypoints_xy
+        prev_score = float(chosen["score"])
 
         overlay = image.copy()
         cv2.rectangle(overlay, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (255, 128, 0), 2)
@@ -497,6 +570,9 @@ def _write_artifacts(
                         "frameIndex": frame.frameIndex,
                         "timestampSeconds": frame.timestampSeconds,
                         "detectorBox": frame.detectorBox.model_dump() if frame.detectorBox else None,
+                        # Evidence must show which frames skipped the detector.
+                        "detectorBoxReused": frame.detectorBoxReused,
+                        "detectorConfidence": frame.detectorConfidence,
                         "visibleKeypointCount": frame.visibleKeypointCount,
                         "inferenceDurationMs": frame.inferenceDurationMs,
                         "warnings": frame.warnings,

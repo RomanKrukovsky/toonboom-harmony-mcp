@@ -1,6 +1,7 @@
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import * as schemas from '../schemas/timeline.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runTimelineBridge(command: string, args: any): Promise<any> {
@@ -23,7 +24,7 @@ async function runTimelineBridge(command: string, args: any): Promise<any> {
 }
 
 export const timelineTools = [
-  {
+  defineTool({
     name: 'harmony.timeline.get',
     description: 'Получение структуры таймлайна, слоев, кадров, ключевых кадров сцены. Включает информацию о Key Exposure для Drawing Substitutions — отсутствие Key Exposure вызывает смену рисунка на всех кадрах сразу (Reddit: drawing_substitutions_disappear).',
     inputSchema: schemas.getTimelineSchema,
@@ -65,12 +66,12 @@ export const timelineTools = [
           : 'All drawing substitutions appear to have proper Key Exposures.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.set_frame_range',
     description: 'Настройка диапазона воспроизведения (длины) таймлайна сцены.',
     inputSchema: schemas.setFrameRangeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_frame_range', args, args.dryRun, () => {
         return runTimelineBridge('set_node_attr', {
@@ -81,12 +82,12 @@ export const timelineTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.set_exposure',
     description: 'Установка экспозиции (подстановки рисунка) для слоя Read на таймлайне.',
     inputSchema: schemas.setExposureSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('set_exposure', args, args.dryRun, () => {
         if (args.exposures && args.exposures.length > 0) {
@@ -105,12 +106,12 @@ export const timelineTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.clear_exposure',
     description: 'Очистка экспозиции на таймлайне для определенного интервала кадров.',
     inputSchema: schemas.clearExposureSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('clear_exposure', args, args.dryRun, () => {
         return runTimelineBridge('set_exposure', {
@@ -122,12 +123,12 @@ export const timelineTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.create_keyframe',
     description: 'Создание ключевого кадра с анимационным значением атрибута.',
     inputSchema: schemas.createKeyframeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_keyframe', args, args.dryRun, () => {
         return runTimelineBridge('set_keyframe', {
@@ -139,94 +140,94 @@ export const timelineTools = [
         });
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.move_keyframe',
     description: 'Перемещение ключевого кадра на таймлайне на другую позицию.',
     inputSchema: schemas.moveKeyframeSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('move_keyframe', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "move_keyframe" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.copy_keyframes',
     description: 'Копирование ключевых кадров из одного диапазона в другой.',
     inputSchema: schemas.copyKeyframesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('copy_keyframes', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "copy_keyframes" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.delete_keyframes',
     description: 'Удаление ключевых кадров в указанном диапазоне.',
     inputSchema: schemas.deleteKeyframesSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('delete_keyframes', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "delete_keyframes" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.create_hold',
     description: 'Создание удержания (hold) экспозиции рисунка.',
     inputSchema: schemas.createHoldSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_hold', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_hold" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.create_blink',
     description: 'Добавление автоматического моргания (blink) для глаз персонажа.',
     inputSchema: schemas.createBlinkSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_blink', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_blink" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.create_camera_move',
     description: 'Быстрое создание ключевых кадров движения камеры (панорамирование/наезд).',
     inputSchema: schemas.createCameraMoveSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('create_camera_move', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_camera_move" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.export_otio',
     description: 'Экспорт структуры таймлайна в OpenTimelineIO (.otio) для NLE монтажа.',
     inputSchema: schemas.exportOtioSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const targetOtio = args.outputPath || (checkedPath ? checkedPath.replace(/\.xstage$/, '.otio') : 'output_timeline.otio');
       return executeWithDryRun('export_otio', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "export_otio" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.timeline.import_otio',
     description: 'Импорт таймлайна OpenTimelineIO (.otio) и разметка экспозиций кадров.',
     inputSchema: schemas.importOtioSchema,
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedOtio = verifyPathAccess(args.otioFilePath);
       return executeWithDryRun('import_otio', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_otio" требует подключённого Python API Harmony.');
       });
     }
-  }
+  })
 ];

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { HarmonyPython } from '../adapters/harmonyPython.js';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { BlockingPlan, CameraPlan } from '../schemas/studio.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * animationBlockingTools.ts — Инструменты для черновой анимации (blocking)
@@ -21,7 +22,7 @@ export const animationBlockingTools = [
   // ──────────────────────────────────────────────────────────────
   // 1. generate_keyframe_plan
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.blocking.generate_keyframe_plan',
     description:
       'Генерирует план ключевых кадров (blocking) для сцены. ' +
@@ -36,7 +37,7 @@ export const animationBlockingTools = [
       holdFrames: z.number().optional().default(3).describe('Количество кадров для hold-позы'),
       overlapFrames: z.number().optional().default(2).describe('Кадры перекрытия между действиями')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       let planObj: any;
       if (args.scenePlanPath) {
         const { default: fs } = await import('fs');
@@ -180,12 +181,12 @@ export const animationBlockingTools = [
         ]
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 2. apply_blocking
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.blocking.apply_blocking',
     description:
       'Применяет blocking_plan.json к открытому проекту Harmony через Python API. ' +
@@ -197,7 +198,7 @@ export const animationBlockingTools = [
       blockingPlanInline: z.any().optional().describe('blocking_plan.json как объект'),
       dryRun: z.boolean().optional().default(false)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
 
       let blockingPlan: BlockingPlan;
@@ -258,12 +259,12 @@ if (node.exists(nodePath)) {
         };
       });
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 3. generate_camera_moves
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.blocking.generate_camera_moves',
     description:
       'Генерирует план движений камеры из описания сцены или camera_plan.json. ' +
@@ -278,7 +279,7 @@ if (node.exists(nodePath)) {
       cinematicStyle: z.enum(['static', 'subtle', 'dynamic', 'cinematic']).optional().default('subtle')
         .describe('static=нет движения, subtle=небольшое движение, dynamic=активная камера, cinematic=кинематографичность')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       let cameraPlan: CameraPlan | undefined;
       let totalFrames = args.totalFrames;
       let fps = args.fps;
@@ -366,12 +367,12 @@ scene.setFrameValue("camera1", ${kf.frame}, "scale.y", ${kf.scaleY});`).join('\n
         nextStep: { tool: 'harmony.blocking.apply_camera_plan', description: 'Применить camera moves к сцене' }
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 4. create_timing_sheet
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.blocking.create_timing_sheet',
     description:
       'Генерирует animatic timing sheet — таблицу тайминга для всей сцены. ' +
@@ -384,7 +385,7 @@ scene.setFrameValue("camera1", ${kf.frame}, "scale.y", ${kf.scaleY});`).join('\n
       fps: z.number().optional().default(24),
       outputFormat: z.enum(['text', 'json', 'markdown']).optional().default('markdown')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const plan = args.scenePlanInline || {};
       const blocking = args.blockingPlanInline || {};
       const lipsync = args.lipsyncPlanInline || {};
@@ -439,12 +440,12 @@ scene.setFrameValue("camera1", ${kf.frame}, "scale.y", ${kf.scaleY});`).join('\n
         markdown: args.outputFormat !== 'json' ? markdown : undefined
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 5. apply_camera_plan
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.blocking.apply_camera_plan',
     description:
       'Применяет camera plan (ключевые кадры камеры) к открытому проекту Harmony. ' +
@@ -455,7 +456,7 @@ scene.setFrameValue("camera1", ${kf.frame}, "scale.y", ${kf.scaleY});`).join('\n
       cameraNodeName: z.string().optional().default('Camera1').describe('Имя ноды камеры в Harmony'),
       dryRun: z.boolean().optional().default(false)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const cameraPlan = args.cameraPlanInline;
       const keyframes = cameraPlan?.cameraKeyframes || cameraPlan?.shots || [];
@@ -492,5 +493,5 @@ if (node.exists(camPeg)) {
         };
       });
     }
-  }
+  })
 ];

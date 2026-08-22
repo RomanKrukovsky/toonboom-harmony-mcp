@@ -13,9 +13,10 @@ async function runRigBridge(command: string, args: any): Promise<any> {
   }
 }
 import { projectPathSchema } from '../schemas/common.js';
+import { defineTool } from './defineTool.js';
 
 export const lipsyncTools = [
-  {
+  defineTool({
     name: 'harmony.lipsync.import_audio',
     description: 'Импорт файла звуковой дорожки в таймлайн сцены.',
     inputSchema: z.object({
@@ -23,7 +24,7 @@ export const lipsyncTools = [
       audioFilePath: z.string().describe('Абсолютный путь к звуковому файлу (.wav/.aiff).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAudio = verifyPathAccess(args.audioFilePath);
       return executeWithDryRun('import_audio', args, args.dryRun, async () => {
@@ -36,8 +37,8 @@ export const lipsyncTools = [
         return res;
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.lipsync.analyze_audio_placeholder',
     description: 'Генерация черновой эвристической разметки фонем (draft timing for human refinement) для аудиофайла.',
     inputSchema: z.object({
@@ -61,8 +62,8 @@ export const lipsyncTools = [
         ]
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.lipsync.import_phoneme_timing',
     description: 'Импорт файла разметки таймингов фонем рта (например, из Papagayo или Rhubarb).',
     inputSchema: z.object({
@@ -71,15 +72,15 @@ export const lipsyncTools = [
       mouthLayerNodePath: z.string().describe('Путь к слою рта (Read ноде).'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedTiming = verifyPathAccess(args.timingFilePath);
       return executeWithDryRun('import_phoneme_timing', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "import_phoneme_timing" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.lipsync.apply_mouth_chart',
     description: 'Применение структуры рта и сопоставление фонем (A, B, C, D, E, F, G, X) кадрам.',
     inputSchema: z.object({
@@ -91,14 +92,14 @@ export const lipsyncTools = [
       })),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       return executeWithDryRun('apply_mouth_chart', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "apply_mouth_chart" требует подключённого Python API Harmony.');
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.lipsync.validate_mouth_shapes',
     description: 'Проверка наличия всех требуемых рисунков подстановок фонем рта в слое.',
     inputSchema: z.object({
@@ -114,8 +115,8 @@ export const lipsyncTools = [
         valid: false
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.lipsync.create_lipsync_test',
     description: 'Создание короткого анимационного теста липсинка со звуком.',
     inputSchema: z.object({
@@ -124,19 +125,19 @@ export const lipsyncTools = [
       audioFilePath: z.string(),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
       const checkedAudio = verifyPathAccess(args.audioFilePath);
       return executeWithDryRun('create_lipsync_test', args, args.dryRun, async () => {
         throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "create_lipsync_test" требует подключённого Python API Harmony.');
       });
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: generate_plan — генерация lipsync плана из текста
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.lipsync.generate_plan',
     description:
       'Генерирует lipsync_plan.json из текста диалогов и тайминга сцены. ' +
@@ -158,7 +159,7 @@ export const lipsyncTools = [
         .describe('Шаблон пути к слою рта (подстановка {character})'),
       saveToPath: z.string().optional().describe('Сохранить lipsync_plan.json по этому пути')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const fps = args.fps;
       const engine = args.engine;
 
@@ -286,12 +287,12 @@ export const lipsyncTools = [
         }
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // NEW: apply_to_scene — применение lipsync к сцене
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.lipsync.apply_to_scene',
     description:
       'Применяет lipsync_plan.json к открытому проекту Harmony. ' +
@@ -305,7 +306,7 @@ export const lipsyncTools = [
         .describe('Шаблон пути к слою рта'),
       dryRun: z.boolean().optional().default(false)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPath = args.projectPath ? verifyPathAccess(args.projectPath) : undefined;
 
       let lipsyncPlan: any;
@@ -339,6 +340,6 @@ export const lipsyncTools = [
         return res;
       });
     }
-  }
+  })
 ];
 

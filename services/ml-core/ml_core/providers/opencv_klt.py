@@ -28,15 +28,6 @@ class OpenCVKLTPointTrackingProvider(BaseMLProvider):
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 1)
 
-        # Pre-load all frames to enable back-tracking or multi-point KLT
-        frames = []
-        while True:
-            ok, frame = cap.read()
-            if not ok:
-                break
-            frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-        cap.release()
-
         # Group query points by start frame
         queries_by_frame = {}
         for pt in query_points:
@@ -53,11 +44,24 @@ class OpenCVKLTPointTrackingProvider(BaseMLProvider):
         # Active trackers: Dict[pointId, {"x": float, "y": float, "last_frame": int}]
         active_points = {}
 
-        for frame_idx in range(1, len(frames) + 1):
-            if progress_callback:
-                progress_callback(frame_idx / len(frames))
+        # Streaming loop with a two-frame sliding window.
+        #
+        # Lucas-Kanade only ever needs the previous and current frame, but this used
+        # to pre-decode the ENTIRE video into a list of grayscale arrays before
+        # tracking started: 1080p x 153 frames is ~300 MB, and a minute-long shot
+        # runs into gigabytes. Now memory is O(1) in the clip length.
+        prev_gray = None
+        frame_idx = 0
 
-            gray_frame = frames[frame_idx - 1]
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            frame_idx += 1
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            if progress_callback and frameCount > 0:
+                progress_callback(min(1.0, frame_idx / frameCount))
 
             # Add new query points starting at this frame
             if frame_idx in queries_by_frame:
@@ -74,23 +78,21 @@ class OpenCVKLTPointTrackingProvider(BaseMLProvider):
                 # Prepare points for cv2.calcOpticalFlowPyrLK
                 point_ids = list(active_points.keys())
                 prev_pts = np.float32([[active_points[pid]["x"], active_points[pid]["y"]] for pid in point_ids]).reshape(-1, 1, 2)
-                
-                # Check if we have a previous frame to track from
-                if frame_idx > 1 and len(frames) >= frame_idx:
-                    prev_gray = frames[frame_idx - 2]
+
+                if prev_gray is not None:
                     next_pts, status, err = cv2.calcOpticalFlowPyrLK(prev_gray, gray_frame, prev_pts, None, **lk_params)
-                    
+
                     for i, pid in enumerate(point_ids):
                         stat = status[i][0]
                         nx, ny = next_pts[i][0]
                         visible = bool(stat == 1 and 0 <= nx <= width and 0 <= ny <= height)
                         confidence = 1.0 if visible else 0.0
-                        
+
                         if visible:
                             active_points[pid]["x"] = nx
                             active_points[pid]["y"] = ny
                             active_points[pid]["last_frame"] = frame_idx
-                        
+
                         points_in_frame.append({
                             "pointId": pid,
                             "x": float(nx / width),
@@ -113,6 +115,9 @@ class OpenCVKLTPointTrackingProvider(BaseMLProvider):
                 "frame": frame_idx,
                 "points": points_in_frame
             })
+            prev_gray = gray_frame
+
+        cap.release()
 
         provenance = {
             "tool": "harmony-ml-core",

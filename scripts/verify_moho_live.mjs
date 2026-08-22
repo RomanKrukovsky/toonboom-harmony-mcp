@@ -204,6 +204,70 @@ const isRequest = (n) => /^req_\d+\.json$/.test(n);
 const isResponse = (n) => /^resp_\d+\.json$/.test(n);
 const isTemp = (n) => n.endsWith(".tmp");
 
+/**
+ * Состояние single-consumer блокировки моста.
+ *
+ * Отдельная проверка, потому что чужой `client_lock.json` даёт ровно тот же
+ * внешний симптом, что мёртвый Moho — `status: DEGRADED` и никакого ответа, —
+ * но причина совершенно другая и к Moho отношения не имеет. Без этой проверки
+ * брошенный процесс другого прогона выглядел бы как «Moho не отвечает», и
+ * вердикт обвинял бы не того. Живой держатель — законная причина отложить
+ * прогон; мёртвый — мусор, который нужно назвать мусором.
+ */
+async function inspectClientLock(ipcDir) {
+  const lockPath = path.join(ipcDir, "client_lock.json");
+  if (!fs.existsSync(lockPath)) return { present: false };
+  let pid = null;
+  let raw = "";
+  try {
+    raw = await fsp.readFile(lockPath, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.pid === "number") pid = parsed.pid;
+  } catch {
+    return { present: true, path: lockPath, pid: null, holderAlive: false, raw, corrupt: true };
+  }
+  let holderAlive = false;
+  if (pid !== null) {
+    try {
+      process.kill(pid, 0); // сигнал 0 — только проверка существования
+      holderAlive = true;
+    } catch (err) {
+      holderAlive = err?.code === "EPERM"; // жив, но чужой пользователь
+    }
+  }
+  return { present: true, path: lockPath, pid, holderAlive, raw, corrupt: false };
+}
+
+/**
+ * Работает ли опрос плагина, судя по его собственным файлам состояния.
+ *
+ * Плагин пишет `health.json` первым делом в каждом `poll()` и удаляет его в
+ * `server.stop()`; `cursor.json` он пишет, наоборот, при остановке. Поэтому
+ * пара «cursor есть, health нет» — не случайность, а подпись остановленного
+ * сервера: `poll()` выходит на первой строке по `if not isRunning`.
+ *
+ * Это отличает «плагин установлен» от «плагин работает» — снаружи неразличимые
+ * состояния, дающие одинаковую тишину в ответ. Без этого совет пользователю был
+ * бы гаданием: перезапускать Moho или нажать «Start» в меню Scripts.
+ */
+async function inspectPluginRuntime(ipcDir) {
+  const read = async (name) => {
+    try {
+      const p = path.join(ipcDir, name);
+      const st = await fsp.lstat(p);
+      return { present: true, mtime: st.mtime.toISOString(), text: await fsp.readFile(p, "utf-8") };
+    } catch {
+      return { present: false };
+    }
+  };
+  const [health, cursor] = await Promise.all([read("health.json"), read("cursor.json")]);
+  let state = "UNKNOWN";
+  if (health.present) state = "POLLING";
+  else if (cursor.present) state = "STOPPED";
+  else state = "NEVER_STARTED";
+  return { state, health, cursor };
+}
+
 /* ------------------------------------------------------------------ */
 /* MCP-клиент по stdio                                                */
 /* ------------------------------------------------------------------ */
@@ -435,6 +499,50 @@ async function main() {
   else if (spoolBefore.entries.length === 0) kv("состояние", "пусто");
   else for (const e of spoolBefore.entries) kv(`  ${e.kind}`, `${e.name} (${e.bytes ?? "-"} б, ${e.mtime})`);
 
+  // Блокировка проверяется ДО запуска: чужой держатель не даст моста
+  // подключиться, и без явного диагноза это выглядело бы как отказ Moho.
+  const lock = await inspectClientLock(ipcDir);
+  if (lock.present) {
+    kv(
+      "client_lock.json",
+      lock.corrupt
+        ? "присутствует, но нечитаем (мост сочтёт его устаревшим и заберёт)"
+        : `держит PID ${lock.pid ?? "?"} — ${lock.holderAlive ? "ПРОЦЕСС ЖИВ" : "процесс мёртв (мусор)"}`,
+    );
+    if (lock.holderAlive) {
+      log();
+      log("  Другой MCP-клиент уже держит spool. Мост не сможет подключиться, и");
+      log("  результат не будет говорить ничего о живом Moho. Прогон прерван,");
+      log("  чтобы не выдать чужую блокировку за отказ Moho.");
+      log();
+      log(`  Отпустите держателя (PID ${lock.pid}) и повторите.`);
+      log();
+      log("ВЕРДИКТ: связь с живым Moho НЕ проверена (spool занят другим клиентом).");
+      return EXIT.HARNESS_FAILED;
+    }
+    if (!lock.holderAlive) {
+      // Мост сам умеет забирать просроченную блокировку, но только после
+      // истечения TTL. До этого он честно отказывается стартовать. Убираем
+      // заведомо мёртвую блокировку, иначе прогон измерял бы этот TTL.
+      await fsp.unlink(lock.path).catch(() => undefined);
+      kv("  действие", "мёртвая блокировка удалена стендом");
+    }
+  } else {
+    kv("client_lock.json", "нет — spool свободен");
+  }
+
+  const runtime = await inspectPluginRuntime(ipcDir);
+  kv(
+    "опрос плагина",
+    runtime.state === "POLLING"
+      ? "РАБОТАЕТ (health.json пишется)"
+      : runtime.state === "STOPPED"
+        ? "ОСТАНОВЛЕН (есть cursor.json, нет health.json — подпись server.stop())"
+        : "НИКОГДА НЕ СТАРТОВАЛ (ни health.json, ни cursor.json)",
+  );
+  if (runtime.health.present) kv("  health.json", `${runtime.health.mtime}`);
+  if (runtime.cursor.present) kv("  cursor.json", `${runtime.cursor.mtime}`);
+
   /* --- 4. Запуск и хендшейк --------------------------------------- */
   section("4. Запуск сервера и MCP-хендшейк");
   const child = spawn(process.execPath, [entry], {
@@ -567,12 +675,50 @@ async function main() {
   section("9. Вердикт");
 
   if (bridgeFailure && toolText === null) {
+    // Даже когда MCP-вызов не дождался ответа, spool уже сказал главное.
+    // Лежащий непрочитанным req_ означает, что мост свою часть выполнил, и
+    // это НЕ его сбой: молчит опрос внутри Moho. Свалить такой исход в
+    // BRIDGE_FAILED значило бы обвинить исправный компонент.
+    // Один и тот же req_ виден и в снимке «во время», и в снимке «после».
+    // Дедуп по имени, иначе один файл выглядел бы как два запроса.
+    const spooled = [
+      ...new Map(
+        [spoolDuring, spoolAfter]
+          .filter((s) => s.exists)
+          .flatMap((s) => s.entries)
+          .filter((e) => isRequest(e.name))
+          .map((e) => [e.name, e]),
+      ).values(),
+    ];
+
     kv("Moho запущен", proc.running ? "ДА" : "НЕТ");
     kv("плагин установлен", plugin.installed ? "ДА" : "НЕТ");
+    kv("вызванный тул", opts.tool);
+
+    if (spooled.length > 0) {
+      kv("исход", "SPOOL_STALLED");
+      kv("запрос в spool", spooled.map((e) => `${e.name} (${e.bytes} б)`).join(", "));
+      log();
+      log(`  MCP-вызов не дождался ответа: ${bridgeFailure}`);
+      log("  Но запрос УШЁЛ в spool и остался непрочитанным. Мост исправен:");
+      log("  он записал req_ и держал его всё время ожидания. Плагин внутри Moho");
+      log("  запрос не прочитал и ответа не вернул. Опрос там работает на событиях");
+      log("  перерисовки окна (~4 Гц) и на простаивающем окне не обрабатывает запросы.");
+      if (runtime.state === "STOPPED" || runtime.state === "NEVER_STARTED") {
+        log();
+        log(`  Файлы состояния плагина подтверждают: опрос ${runtime.state === "STOPPED" ? "ОСТАНОВЛЕН" : "НЕ СТАРТОВАЛ"}.`);
+        log("  Его нужно включить в Moho вручную (меню Scripts -> MohoMCP Server).");
+      }
+      log();
+      log("ВЕРДИКТ: связь с живым Moho НЕ подтверждена — НЕТ.");
+      log("  Ценный факт: сторона моста доказана, молчит сторона Moho.");
+      return EXIT.SPOOL_STALLED;
+    }
+
     kv("исход", "BRIDGE_FAILED");
     log();
     log(`  Причина: ${bridgeFailure}`);
-    log("  Тул не был вызван до конца, ответа от Moho нет.");
+    log("  Запрос в spool не наблюдался — тул не был вызван до конца, ответа от Moho нет.");
     log();
     log("ВЕРДИКТ: связь с живым Moho НЕ подтверждена (сбой моста/стенда).");
     return EXIT.BRIDGE_FAILED;
@@ -602,13 +748,28 @@ async function main() {
       log("      затем перезапустить Moho.");
     }
     if (proc.running && plugin.installed) {
-      log("   1. В Moho открыть любой документ (без документа читать нечего).");
-      log("   2. Активировать опрос: Scripts -> MohoMCP Server (или выбрать инструмент");
-      log("      MohoMCP Poller на панели инструментов).");
-      log("   3. ГЛАВНОЕ: во время прогона держать окно Moho в фокусе и двигать мышью");
-      log("      над рабочей областью. Опрос висит на событиях перерисовки (~4 Гц);");
-      log("      простаивающее неактивное окно запросы не обрабатывает.");
-      log("   4. Повторить:  node scripts/verify_moho_live.mjs");
+      // Совет зависит от того, что показали файлы состояния плагина: без этого
+      // различения пользователю пришлось бы наугад выбирать между перезапуском
+      // Moho и запуском опроса.
+      if (runtime.state === "STOPPED" || runtime.state === "NEVER_STARTED") {
+        log("   1. Опрос плагина НЕ запущен — это и есть причина тишины.");
+        log(runtime.state === "STOPPED"
+          ? "      Файлы состояния показывают подпись остановленного сервера"
+          : "      Плагин ни разу не стартовал в этой сессии");
+        log("      (см. раздел 3 выше). Сам он не поднимется.");
+        log("   2. В Moho: открыть документ, затем в меню Scripts выбрать");
+        log("      \"MohoMCP Server\" — заголовок должен стать 🟢 (Active).");
+        log("      Либо выбрать инструмент \"MohoMCP Poller\" на панели инструментов.");
+        log("   3. Держать окно Moho в фокусе и подвигать мышью над рабочей областью:");
+        log("      опрос висит на событиях перерисовки (~4 Гц).");
+        log("   4. Повторить:  node scripts/verify_moho_live.mjs");
+      } else {
+        log("   1. Опрос плагина запущен (health.json пишется), но ответа нет.");
+        log("      Значит запрос доходит, а обработчик молчит: проверьте, открыт ли");
+        log("      документ — читать состояние без документа нечего.");
+        log("   2. Держать окно Moho в фокусе и подвигать мышью над рабочей областью.");
+        log("   3. Повторить:  node scripts/verify_moho_live.mjs");
+      }
     }
   }
   log();

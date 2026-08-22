@@ -13,6 +13,7 @@ import {
   FixPlan,
   ProductionPackage
 } from '../schemas/studio.js';
+import { defineTool } from './defineTool.js';
 
 /**
  * studioTools.ts — Центральный модуль AI Production System
@@ -32,7 +33,7 @@ export const studioTools = [
   // ──────────────────────────────────────────────────────────────
   // 1. from_prompt — THE entry point
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.studio.from_prompt',
     description:
       'ГЛАВНЫЙ ИНСТРУМЕНТ. Принимает текстовый промпт / идею сцены / раскадровку и генерирует ' +
@@ -57,7 +58,7 @@ export const studioTools = [
         'Если указан — сохраняет scene_plan.json и все вспомогательные файлы в эту папку'
       )
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const parsed = PromptParser.parse({
         prompt: args.prompt,
         production: args.production,
@@ -172,12 +173,12 @@ export const studioTools = [
         }
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 2. run_full_pipeline — end-to-end
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.studio.run_full_pipeline',
     description:
       'End-to-end выполнение полного production-пайплайна по scene_plan.json. ' +
@@ -193,7 +194,7 @@ export const studioTools = [
       skipRender: z.boolean().optional().default(false).describe('Пропустить рендер превью'),
       autoFix: z.boolean().optional().default(true).describe('Автоматически исправлять найденные ошибки')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       // Загружаем план
       let planObj: any;
       if (args.scenePlanPath) {
@@ -329,12 +330,12 @@ export const studioTools = [
           : { message: 'Сцена готова для работы в Harmony', productionReady: true }
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 3. generate_asset_checklist
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.studio.generate_asset_checklist',
     description:
       'Генерирует подробный checklist ассетов для производства сцены. ' +
@@ -345,7 +346,7 @@ export const studioTools = [
       scenePlanInline: z.any().optional().describe('scene_plan.json как объект'),
       outputFormat: z.enum(['json', 'markdown', 'both']).optional().default('both')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       let planObj: any;
       if (args.scenePlanPath) {
         const resolved = path.resolve(args.scenePlanPath);
@@ -442,12 +443,12 @@ export const studioTools = [
         markdown: args.outputFormat !== 'json' ? markdown : undefined
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 4. build_360_rig_plan
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.studio.build_360_rig_plan',
     description:
       'Генерирует полный план 360° рига для персонажа в Toon Boom Harmony. ' +
@@ -463,7 +464,7 @@ export const studioTools = [
       hasFingersDetail: z.boolean().optional().default(false),
       hasFacialDetail: z.boolean().optional().default(true)
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const name = args.characterName;
       const safeN = name.replace(/[^a-zA-Z0-9_]/g, '_');
 
@@ -570,12 +571,12 @@ MessageLog.trace("Риг ${name} создан");`;
         ]
       };
     }
-  },
+  }),
 
   // ──────────────────────────────────────────────────────────────
   // 5. export_client_package
   // ──────────────────────────────────────────────────────────────
-  {
+  defineTool({
     name: 'harmony.studio.export_client_package',
     description:
       'Собирает финальный пакет для клиента или ревью: ' +
@@ -591,7 +592,7 @@ MessageLog.trace("Риг ${name} создан");`;
       clientName: z.string().optional().describe('Имя клиента для README'),
       notes: z.string().optional().describe('Дополнительные заметки для клиента')
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const packageName = args.packageName || `${args.sceneName}_review`;
       const targetDir = path.join(path.resolve(args.outputDir), packageName);
 
@@ -690,5 +691,5 @@ ${args.notes ? `---\n\n## Заметки\n\n${args.notes}` : ''}
         fileCount: Object.keys(manifest.files).length + 1  // +1 для manifest.json
       };
     }
-  }
+  })
 ];

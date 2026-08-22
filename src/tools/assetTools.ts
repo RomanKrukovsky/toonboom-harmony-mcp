@@ -2,9 +2,10 @@ import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
+import { defineTool } from './defineTool.js';
 
 export const assetTools = [
-  {
+  defineTool({
     name: 'harmony.assets.list_templates',
     description: 'Сканирование папки (например, библиотеки шаблонов) и получение списка шаблонов Harmony (.tpl).',
     inputSchema: z.object({
@@ -36,8 +37,8 @@ export const assetTools = [
         templates
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.import_template',
     description: 'Импорт/копирование шаблона (.tpl) в целевую сцену или каталог библиотеки.',
     inputSchema: z.object({
@@ -45,7 +46,7 @@ export const assetTools = [
       targetDirectory: z.string().describe('Абсолютный путь к целевой папке назначения.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedSrc = verifyPathAccess(args.templatePath);
       const checkedDest = verifyPathAccess(args.targetDirectory);
 
@@ -67,8 +68,8 @@ export const assetTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.export_template',
     description: 'Экспорт элементов/директории из сцены во внешний шаблон Harmony (.tpl).',
     inputSchema: z.object({
@@ -76,7 +77,7 @@ export const assetTools = [
       templateDestinationPath: z.string().describe('Абсолютный путь к сохраняемому шаблону .tpl.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedSrc = verifyPathAccess(args.sourcePath);
       const checkedDest = verifyPathAccess(args.templateDestinationPath);
 
@@ -101,8 +102,8 @@ export const assetTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.list_palettes',
     description: 'Получение списка файлов палитр (.plt) в папке palette-library сцены.',
     inputSchema: z.object({
@@ -134,8 +135,8 @@ export const assetTools = [
         palettes
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.backup_palette',
     description: 'Резервное копирование файла палитры (.plt) в указанную папку.',
     inputSchema: z.object({
@@ -143,7 +144,7 @@ export const assetTools = [
       backupDirectoryPath: z.string().describe('Абсолютный путь к папке сохранения резервной копии.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedPlt = verifyPathAccess(args.paletteFilePath);
       const checkedBackup = verifyPathAccess(args.backupDirectoryPath);
 
@@ -162,8 +163,8 @@ export const assetTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.import_palette',
     description: 'Импорт/Восстановление файла палитры (.plt) в папку сцены.',
     inputSchema: z.object({
@@ -171,7 +172,7 @@ export const assetTools = [
       targetPaletteLibraryPath: z.string().describe('Абсолютный путь к папке палитр сцены назначения.'),
       dryRun: z.boolean().optional()
     }),
-    handler: async (args: any) => {
+    handler: async (args) => {
       const checkedSrc = verifyPathAccess(args.sourcePaletteFilePath);
       const checkedTarget = verifyPathAccess(args.targetPaletteLibraryPath);
 
@@ -190,8 +191,8 @@ export const assetTools = [
         };
       });
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.assets.collect_scene_assets',
     description: 'Поиск всех рисунков, аудиозаписей и ссылок на палитры в папке проекта сцены.',
     inputSchema: z.object({
@@ -235,7 +236,7 @@ export const assetTools = [
         assets
       };
     }
-  }
+  })
 ];
 
 function copyFolderRecursiveSync(src: string, dest: string) {

@@ -71,6 +71,10 @@ class VideoPoseFrame(BaseModel):
     sourceHeight: int = Field(..., gt=0)
     detectorBox: Optional[DetectorBox] = None
     detectorConfidence: Optional[float] = None
+    # True when the detector was skipped for this frame and the box was carried
+    # over from the previous pose (see track_video_pose(detect_every=...)). Without
+    # this flag a reused box would be indistinguishable from a fresh detection.
+    detectorBoxReused: bool = False
     selectedPersonId: Optional[str] = None
     keypoints: List[Keypoint] = Field(default_factory=list)
     visibleKeypointCount: int = Field(0, ge=0)

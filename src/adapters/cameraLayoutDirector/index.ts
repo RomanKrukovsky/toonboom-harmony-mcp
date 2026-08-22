@@ -21,7 +21,14 @@ export interface CameraLayoutInput {
   style?: 'restrained' | 'dynamic' | 'dramatic' | 'comedic';
 }
 
-const SHOT_SIZE_SCALES: Record<string, number> = {
+/**
+ * Camera scale per shot size.
+ *
+ * Exported because storyboardTools and layoutCameraTools both need this ladder
+ * to derive a camera Z from a framing choice. It used to be file-private, so
+ * every other module kept its own copy and they were free to drift apart.
+ */
+export const SHOT_SIZE_SCALES: Record<string, number> = {
   extreme_close_up: 3.0,
   close_up: 2.0,
   medium_close_up: 1.5,
@@ -38,9 +45,32 @@ const CHARACTER_POSITIONS: Record<string, { x: number; y: number }> = {
   right: { x: 200, y: 0 }
 };
 
-function determineShotSize(beat: any, characterCount: number): string {
-  if (beat.importance > 0.85) return 'close_up';
-  if (beat.importance > 0.7) return 'medium_close_up';
+/**
+ * The subset of a beat that framing decisions actually read.
+ *
+ * Nullable fields are declared as `| null` because the sceneIntelligence beat
+ * schema emits `null` (not `undefined`) for an absent reaction target.
+ */
+export interface ShotSizeBeatInput {
+  importance?: number;
+  beatKind?: string;
+  emotion?: string | null;
+  primaryCharacter?: string | null;
+  reactionTarget?: string | null;
+}
+
+/**
+ * Pick a shot size for a beat.
+ *
+ * Exported so the storyboard shot-list generator can reuse the same rule the
+ * camera director uses, instead of hardcoding a framing per shot index.
+ * `importance` is coalesced to 0: an absent importance must not be treated as
+ * significant (`undefined > 0.85` was already false, so behaviour is unchanged).
+ */
+export function determineShotSize(beat: ShotSizeBeatInput, characterCount: number): string {
+  const importance = beat.importance ?? 0;
+  if (importance > 0.85) return 'close_up';
+  if (importance > 0.7) return 'medium_close_up';
   if (characterCount > 2) return 'medium_shot';
   if (beat.beatKind === 'pause' || beat.beatKind === 'reaction') return 'medium_shot';
   return 'medium_shot';
@@ -78,7 +108,13 @@ function calculateCameraPosition(shotSize: string, focusX: number, focusY: numbe
   };
 }
 
-function generateFramingRules(shotSize: string, characterCount: number): string[] {
+/**
+ * Compositional rules that apply to a given framing.
+ *
+ * Exported so storyboard staging validation checks the same rules the camera
+ * director claims to apply, rather than inventing a second rule set.
+ */
+export function generateFramingRules(shotSize: string, characterCount: number): string[] {
   const rules: string[] = ['rule_of_thirds', 'headroom'];
 
   if (characterCount === 1) {

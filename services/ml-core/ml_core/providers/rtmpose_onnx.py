@@ -34,18 +34,23 @@ class RTMPoseOnnxProvider(BaseMLProvider):
             return False
 
     def run_inference(self, inputs: Dict[str, Any], progress_callback: Any = None) -> Dict[str, Any]:
-        if not self.loaded:
-            # Fall back to MediaPipe pose if RTMPose is not available
-            backup = MediaPipePoseProvider()
-            if backup.check_availability():
-                backup.load_model()
-                return backup.run_inference(inputs, progress_callback)
-            else:
-                # Direct simulation fallback
-                return backup.run_inference(inputs, progress_callback)
-        
-        # RTMPose ONNX implementation skeleton
-        # Here we would preprocess frames, run ONNX InferenceSession, and parse SimCC coordinates
-        # For simplicity and robust runtime stability, we reuse the MediaPipe parser or run simple inference
+        # ЧЕСТНОСТЬ: реальный RTMPose SimCC-инференс в ml-core не реализован
+        # (полная реализация с YOLOX-детекцией живёт в ml-runtime/providers/dwpose_provider.py).
+        # Раньше этот метод молча подменял результат MediaPipe-провайдером даже при
+        # загруженной ONNX-сессии — потребитель считал, что получил RTMPose.
+        # Теперь fallback явно помечен в манифесте.
         backup = MediaPipePoseProvider()
-        return backup.run_inference(inputs, progress_callback)
+        if backup.check_availability():
+            backup.load_model()
+        result = backup.run_inference(inputs, progress_callback)
+        result["requestedModelId"] = self.model_id
+        result["fallbackUsed"] = True
+        result["fallbackReason"] = (
+            "RTMPose ONNX inference is not implemented in ml-core; "
+            "use ml-runtime DWPoseProvider for real SimCC decoding."
+        )
+        provenance = result.get("provenance")
+        if isinstance(provenance, dict):
+            provenance["requestedBackend"] = "rtmpose_onnx"
+            provenance["fallbackBackend"] = provenance.get("backend")
+        return result

@@ -53,8 +53,10 @@ export const createMasterControllerPlanSchema = z.object({
   projectPath: projectPathSchema,
   controllerName: z.string(),
   controlledNodePaths: z.array(z.string()),
+  characterName: z.string().optional().describe('Имя персонажа, для которого строится Master Controller.'),
   gridWidth: z.number().optional().default(3),
-  gridHeight: z.number().optional().default(3)
+  gridHeight: z.number().optional().default(3),
+  dryRun: z.boolean().optional().describe('Симуляция построения плана Master Controller.')
 });
 
 export const createHeadTurnPlanSchema = z.object({

@@ -1,0 +1,5132 @@
+{
+  "manifest": {
+    "schemaVersion": "1.0",
+    "kind": "SimulatedSceneSnapshotV1",
+    "sceneId": "roundtrip-demo",
+    "revision": 2,
+    "rigId": "simple_humanoid_v1",
+    "rigVersion": "1.0.0",
+    "payloadChecksum": "02628f10ae9eeeb0733af64bf4eab8d38cdec75959ffc8e700232c5818e4d29d",
+    "contentHash": "45038fbfed588d238283cb45ebbfaa0d5e4062fa5a709739369306d7474e6a98",
+    "createdAt": "2026-07-28T06:03:08.067Z",
+    "producer": "demo_harmony_simulator_roundtrip"
+  },
+  "state": {
+    "schemaVersion": "1.0",
+    "kind": "SimulatedSceneStateV1",
+    "sceneId": "roundtrip-demo",
+    "rigId": "simple_humanoid_v1",
+    "rigVersion": "1.0.0",
+    "revision": 2,
+    "sceneSettings": {
+      "frameCount": 120,
+      "frameRate": 24,
+      "resolutionX": 1920,
+      "resolutionY": 1080
+    },
+    "nodes": [
+      {
+        "path": "Top",
+        "name": "Top",
+        "type": "GROUP",
+        "parentPath": "",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": null
+      },
+      {
+        "path": "Top/Camera",
+        "name": "Camera",
+        "type": "CAMERA",
+        "parentPath": "Top",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": null
+      },
+      {
+        "path": "Top/Character",
+        "name": "Character",
+        "type": "GROUP",
+        "parentPath": "Top",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": null
+      },
+      {
+        "path": "Top/Character/Arm_L_Lower",
+        "name": "Arm_L_Lower",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "elbow_l"
+      },
+      {
+        "path": "Top/Character/Arm_L_Upper",
+        "name": "Arm_L_Upper",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "shoulder_l"
+      },
+      {
+        "path": "Top/Character/Arm_R_Lower",
+        "name": "Arm_R_Lower",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "elbow_r"
+      },
+      {
+        "path": "Top/Character/Arm_R_Upper",
+        "name": "Arm_R_Upper",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "shoulder_r"
+      },
+      {
+        "path": "Top/Character/Hand_L",
+        "name": "Hand_L",
+        "type": "READ",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "hand_l"
+      },
+      {
+        "path": "Top/Character/Hand_R",
+        "name": "Hand_R",
+        "type": "READ",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "hand_r"
+      },
+      {
+        "path": "Top/Character/Head_Peg",
+        "name": "Head_Peg",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "head"
+      },
+      {
+        "path": "Top/Character/Mouth",
+        "name": "Mouth",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "mouth"
+      },
+      {
+        "path": "Top/Character/Root_Peg",
+        "name": "Root_Peg",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "root"
+      },
+      {
+        "path": "Top/Character/Torso_Peg",
+        "name": "Torso_Peg",
+        "type": "PEG",
+        "parentPath": "Top/Character",
+        "positionX": 0,
+        "positionY": 0,
+        "enabled": true,
+        "controllerId": "torso"
+      }
+    ],
+    "connections": [
+      {
+        "fromNode": "Top/Character/Arm_L_Upper",
+        "fromPort": 0,
+        "toNode": "Top/Character/Arm_L_Lower",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Torso_Peg",
+        "fromPort": 0,
+        "toNode": "Top/Character/Arm_L_Upper",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Arm_R_Upper",
+        "fromPort": 0,
+        "toNode": "Top/Character/Arm_R_Lower",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Torso_Peg",
+        "fromPort": 0,
+        "toNode": "Top/Character/Arm_R_Upper",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Arm_L_Lower",
+        "fromPort": 0,
+        "toNode": "Top/Character/Hand_L",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Arm_R_Lower",
+        "fromPort": 0,
+        "toNode": "Top/Character/Hand_R",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Torso_Peg",
+        "fromPort": 0,
+        "toNode": "Top/Character/Head_Peg",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Head_Peg",
+        "fromPort": 0,
+        "toNode": "Top/Character/Mouth",
+        "toPort": 0
+      },
+      {
+        "fromNode": "Top/Character/Root_Peg",
+        "fromPort": 0,
+        "toNode": "Top/Character/Torso_Peg",
+        "toPort": 0
+      }
+    ],
+    "attributes": [
+      {
+        "nodePath": "Top/Character/Root_Peg",
+        "attribute": "DEMO_SHOT_ID",
+        "value": "sh010"
+      }
+    ],
+    "columns": [
+      {
+        "name": "Camera_offsetX",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Camera",
+        "linkedChannel": "offsetX"
+      },
+      {
+        "name": "Camera_offsetY",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Camera",
+        "linkedChannel": "offsetY"
+      },
+      {
+        "name": "Camera_offsetZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Camera",
+        "linkedChannel": "offsetZ"
+      },
+      {
+        "name": "Character_Arm_L_Lower_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Arm_L_Lower",
+        "linkedChannel": "rotationZ"
+      },
+      {
+        "name": "Character_Arm_L_Upper_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Arm_L_Upper",
+        "linkedChannel": "rotationZ"
+      },
+      {
+        "name": "Character_Arm_R_Lower_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Arm_R_Lower",
+        "linkedChannel": "rotationZ"
+      },
+      {
+        "name": "Character_Arm_R_Upper_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Arm_R_Upper",
+        "linkedChannel": "rotationZ"
+      },
+      {
+        "name": "Character_Head_Peg_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Head_Peg",
+        "linkedChannel": "rotationZ"
+      },
+      {
+        "name": "Character_Root_Peg_offsetX",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Root_Peg",
+        "linkedChannel": "offsetX"
+      },
+      {
+        "name": "Character_Root_Peg_offsetY",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Root_Peg",
+        "linkedChannel": "offsetY"
+      },
+      {
+        "name": "Character_Root_Peg_offsetZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Root_Peg",
+        "linkedChannel": "offsetZ"
+      },
+      {
+        "name": "Character_Torso_Peg_rotationZ",
+        "type": "BEZIER",
+        "linkedNodePath": "Top/Character/Torso_Peg",
+        "linkedChannel": "rotationZ"
+      }
+    ],
+    "keyframes": [
+      {
+        "columnName": "Camera_offsetX",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetX",
+        "frame": 12,
+        "value": 0.55,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetX",
+        "frame": 24,
+        "value": 1.15,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetY",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetY",
+        "frame": 12,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetY",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetZ",
+        "frame": 12,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Camera_offsetZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 1,
+        "value": 70,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 2,
+        "value": 79.442887,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 3,
+        "value": 88.185438,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 4,
+        "value": 95.579259,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 5,
+        "value": 101.075983,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 6,
+        "value": 104.267943,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 7,
+        "value": 104.918407,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 8,
+        "value": 102.979132,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 9,
+        "value": 98.593946,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 10,
+        "value": 92.088078,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 11,
+        "value": 83.944038,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 12,
+        "value": 74.765833,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 13,
+        "value": 65.234167,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 14,
+        "value": 56.055962,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 15,
+        "value": 47.911922,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 16,
+        "value": 41.406054,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 17,
+        "value": 37.020868,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 18,
+        "value": 35.081593,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 19,
+        "value": 35.732057,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 20,
+        "value": 38.924017,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 21,
+        "value": 44.420741,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 22,
+        "value": 51.814562,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 23,
+        "value": 60.557113,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Lower_rotationZ",
+        "frame": 24,
+        "value": 70,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 2,
+        "value": 7.419411,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 3,
+        "value": 14.288559,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 4,
+        "value": 20.097989,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 5,
+        "value": 24.416844,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 6,
+        "value": 26.924812,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 7,
+        "value": 27.435891,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 8,
+        "value": 25.912175,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 9,
+        "value": 22.466672,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 10,
+        "value": 17.354918,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 11,
+        "value": 10.95603,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 12,
+        "value": 3.744583,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 13,
+        "value": -3.744583,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 14,
+        "value": -10.95603,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 15,
+        "value": -17.354918,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 16,
+        "value": -22.466672,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 17,
+        "value": -25.912175,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 18,
+        "value": -27.435891,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 19,
+        "value": -26.924812,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 20,
+        "value": -24.416844,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 21,
+        "value": -20.097989,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 22,
+        "value": -14.288559,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 23,
+        "value": -7.419411,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_L_Upper_rotationZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 1,
+        "value": -60,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 2,
+        "value": -51.906097,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 3,
+        "value": -44.412481,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 4,
+        "value": -38.074921,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 5,
+        "value": -33.363443,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 6,
+        "value": -30.627477,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 7,
+        "value": -30.069937,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 8,
+        "value": -31.732172,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 9,
+        "value": -35.490903,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 10,
+        "value": -41.067362,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 11,
+        "value": -48.047967,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 12,
+        "value": -55.915001,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 13,
+        "value": -64.084999,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 14,
+        "value": -71.952033,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 15,
+        "value": -78.932638,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 16,
+        "value": -84.509097,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 17,
+        "value": -88.267828,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 18,
+        "value": -89.930063,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 19,
+        "value": -89.372523,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 20,
+        "value": -86.636557,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 21,
+        "value": -81.925079,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 22,
+        "value": -75.587519,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 23,
+        "value": -68.093903,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Lower_rotationZ",
+        "frame": 24,
+        "value": -60,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 2,
+        "value": 5.395935,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 3,
+        "value": 10.391679,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 4,
+        "value": 14.616719,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 5,
+        "value": 17.757704,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 6,
+        "value": 19.581682,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 7,
+        "value": 19.953375,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 8,
+        "value": 18.845218,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 9,
+        "value": 16.339398,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 10,
+        "value": 12.621759,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 11,
+        "value": 7.968022,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 12,
+        "value": 2.723333,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 13,
+        "value": -2.723333,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 14,
+        "value": -7.968022,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 15,
+        "value": -12.621759,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 16,
+        "value": -16.339398,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 17,
+        "value": -18.845218,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 18,
+        "value": -19.953375,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 19,
+        "value": -19.581682,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 20,
+        "value": -17.757704,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 21,
+        "value": -14.616719,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 22,
+        "value": -10.391679,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 23,
+        "value": -5.395935,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Arm_R_Upper_rotationZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 2,
+        "value": 4.046952,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 3,
+        "value": 7.793759,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 4,
+        "value": 10.962539,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 5,
+        "value": 13.318278,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 6,
+        "value": 14.686261,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 7,
+        "value": 14.965032,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 8,
+        "value": 14.133914,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 9,
+        "value": 12.254548,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 10,
+        "value": 9.466319,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 11,
+        "value": 5.976016,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 12,
+        "value": 2.0425,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 13,
+        "value": -2.0425,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 14,
+        "value": -5.976016,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 15,
+        "value": -9.466319,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 16,
+        "value": -12.254548,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 17,
+        "value": -14.133914,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 18,
+        "value": -14.965032,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 19,
+        "value": -14.686261,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 20,
+        "value": -13.318278,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 21,
+        "value": -10.962539,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 22,
+        "value": -7.793759,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 23,
+        "value": -4.046952,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Head_Peg_rotationZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 2,
+        "value": 0.674492,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 3,
+        "value": 1.29896,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 4,
+        "value": 1.82709,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 5,
+        "value": 2.219713,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 6,
+        "value": 2.44771,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 7,
+        "value": 2.494172,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 8,
+        "value": 2.355652,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 9,
+        "value": 2.042425,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 10,
+        "value": 1.57772,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 11,
+        "value": 0.996003,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 12,
+        "value": 0.340417,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 13,
+        "value": -0.340417,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 14,
+        "value": -0.996003,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 15,
+        "value": -1.57772,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 16,
+        "value": -2.042425,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 17,
+        "value": -2.355652,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 18,
+        "value": -2.494172,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 19,
+        "value": -2.44771,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 20,
+        "value": -2.219713,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 21,
+        "value": -1.82709,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 22,
+        "value": -1.29896,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 23,
+        "value": -0.674492,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetX",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 2,
+        "value": 0.107919,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 3,
+        "value": 0.207834,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 4,
+        "value": 0.292334,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 5,
+        "value": 0.355154,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 6,
+        "value": 0.391634,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 7,
+        "value": 0.399068,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 8,
+        "value": 0.376904,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 9,
+        "value": 0.326788,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 10,
+        "value": 0.252435,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 11,
+        "value": 0.15936,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 12,
+        "value": 0.054467,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 13,
+        "value": 0.054467,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 14,
+        "value": 0.15936,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 15,
+        "value": 0.252435,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 16,
+        "value": 0.326788,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 17,
+        "value": 0.376904,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 18,
+        "value": 0.399068,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 19,
+        "value": 0.391634,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 20,
+        "value": 0.355154,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 21,
+        "value": 0.292334,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 22,
+        "value": 0.207834,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 23,
+        "value": 0.107919,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetY",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 2,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 3,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 4,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 5,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 6,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 7,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 8,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 9,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 10,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 11,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 12,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 13,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 14,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 15,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 16,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 17,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 18,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 19,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 20,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 21,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 22,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 23,
+        "value": 0,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Root_Peg_offsetZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 1,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 2,
+        "value": 2.428171,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 3,
+        "value": 4.676256,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 4,
+        "value": 6.577524,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 5,
+        "value": 7.990967,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 6,
+        "value": 8.811757,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 7,
+        "value": 8.979019,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 8,
+        "value": 8.480348,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 9,
+        "value": 7.352729,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 10,
+        "value": 5.679791,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 11,
+        "value": 3.58561,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 12,
+        "value": 1.2255,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 13,
+        "value": -1.2255,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 14,
+        "value": -3.58561,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 15,
+        "value": -5.679791,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 16,
+        "value": -7.352729,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 17,
+        "value": -8.480348,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 18,
+        "value": -8.979019,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 19,
+        "value": -8.811757,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 20,
+        "value": -7.990967,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 21,
+        "value": -6.577524,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 22,
+        "value": -4.676256,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 23,
+        "value": -2.428171,
+        "interpolation": "bezier",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      },
+      {
+        "columnName": "Character_Torso_Peg_rotationZ",
+        "frame": 24,
+        "value": 0,
+        "interpolation": "ease_in_out",
+        "handleLeftX": -1,
+        "handleLeftY": 0,
+        "handleRightX": 1,
+        "handleRightY": 0,
+        "constSeg": false,
+        "continuity": "SMOOTH"
+      }
+    ],
+    "exposures": [],
+    "drawingSubstitutions": [],
+    "drawingElements": [
+      {
+        "elementName": "Hand_L",
+        "fieldGuide": 12,
+        "scanType": "COLOR",
+        "vectorType": "BITMAP",
+        "drawings": [
+          "fist",
+          "open",
+          "point"
+        ]
+      },
+      {
+        "elementName": "Hand_R",
+        "fieldGuide": 12,
+        "scanType": "COLOR",
+        "vectorType": "BITMAP",
+        "drawings": [
+          "fist",
+          "open",
+          "point"
+        ]
+      },
+      {
+        "elementName": "Mouth",
+        "fieldGuide": 12,
+        "scanType": "COLOR",
+        "vectorType": "BITMAP",
+        "drawings": [
+          "AI",
+          "E",
+          "MBP",
+          "O",
+          "REST"
+        ]
+      }
+    ],
+    "switchSelections": [
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 1,
+        "drawingName": "REST"
+      },
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 5,
+        "drawingName": "MBP"
+      },
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 9,
+        "drawingName": "AI"
+      },
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 13,
+        "drawingName": "E"
+      },
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 17,
+        "drawingName": "O"
+      },
+      {
+        "controllerId": "mouth",
+        "elementName": "Mouth",
+        "frame": 21,
+        "drawingName": "REST"
+      }
+    ],
+    "palettes": [
+      {
+        "paletteName": "simple_humanoid_v1_palette",
+        "location": "scene",
+        "elementName": null,
+        "swatches": [
+          {
+            "colorId": "0x00000000000000a1",
+            "colorName": "Skin",
+            "rgba": {
+              "r": 240,
+              "g": 200,
+              "b": 170,
+              "a": 255
+            },
+            "colorType": "solid"
+          }
+        ]
+      }
+    ],
+    "cameras": [
+      {
+        "nodePath": "Top/Camera",
+        "isDefault": true,
+        "offsetX": 1.15,
+        "offsetY": 0,
+        "offsetZ": 0,
+        "rotationZ": 0
+      }
+    ],
+    "controllerBindings": [
+      {
+        "controllerId": "elbow_l",
+        "nodePath": "Top/Character/Arm_L_Lower",
+        "channelColumns": {
+          "rotationZ": "Character_Arm_L_Lower_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "elbow_r",
+        "nodePath": "Top/Character/Arm_R_Lower",
+        "channelColumns": {
+          "rotationZ": "Character_Arm_R_Lower_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "head",
+        "nodePath": "Top/Character/Head_Peg",
+        "channelColumns": {
+          "rotationZ": "Character_Head_Peg_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "root",
+        "nodePath": "Top/Character/Root_Peg",
+        "channelColumns": {
+          "offsetX": "Character_Root_Peg_offsetX",
+          "offsetY": "Character_Root_Peg_offsetY",
+          "offsetZ": "Character_Root_Peg_offsetZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "shoulder_l",
+        "nodePath": "Top/Character/Arm_L_Upper",
+        "channelColumns": {
+          "rotationZ": "Character_Arm_L_Upper_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "shoulder_r",
+        "nodePath": "Top/Character/Arm_R_Upper",
+        "channelColumns": {
+          "rotationZ": "Character_Arm_R_Upper_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      },
+      {
+        "controllerId": "torso",
+        "nodePath": "Top/Character/Torso_Peg",
+        "channelColumns": {
+          "rotationZ": "Character_Torso_Peg_rotationZ"
+        },
+        "pivotX": 0,
+        "pivotY": 0,
+        "pivotSource": "unset"
+      }
+    ],
+    "metadata": {
+      "createdBy": "HarmonyContractSimulator",
+      "simulated": true
+    },
+    "commandHistory": [
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0001",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_9f9d7f78c07a8ef0f6a4b1a8",
+        "resultingStateHash": "88b565f33d9bf98f048d042d6744b0f7fb67ee88b01a14bde4bb65af8da21898"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0002",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_9d43ea711425ae6727393675",
+        "resultingStateHash": "957154ececc7674461f61b3ec8d672e62866a9cb9d1a0e346a5092b16c7d0596"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0003",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_4b301fd41584574108e52395",
+        "resultingStateHash": "676792154dde62bbae126050110142bbb468db2b318ec62d211faad0822d00d2"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0004",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_ca169b5c8c212e2651814b48",
+        "resultingStateHash": "a057e93560b9dc70b21c9862bbfdb4845953468ea2dcc8e885095598b83437da"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0005",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_ea41ffe132d717bd7a37f2eb",
+        "resultingStateHash": "4764b6031cb40b3f6da006714d26f30d477ceab257b5f89ceda36016b924a61b"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0006",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_bd44f44e86b53385c712b5b6",
+        "resultingStateHash": "93d45a6782358433cb80d77f56cf59332d6491799bc86acf4ebed581f282aadc"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0007",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_dd401e353a7323e42697cb2a",
+        "resultingStateHash": "b2bda7b1932881cec7f6352924ecdd6d315a474c8a839e2f3d44a57525a1f6f0"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0008",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_15206b0caa2f1e806ba92158",
+        "resultingStateHash": "d41f7574349338aea17037b581454b9500296d5e08f8189ea9008756081dbef8"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0009",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_2350a6365a4ab9f7abab0bf6",
+        "resultingStateHash": "d31a3490448333c595da9d49e6b6119edbba1768354fdc6bd54b1a8a5044eef3"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0010",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_4be6ada52fe971c7778d6752",
+        "resultingStateHash": "00fab00534fd1922b77cbbcb5abc0aa7dc905e6a1ab5391290fe6b9c9f286484"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0011",
+        "commandType": "create_node",
+        "commandIdempotencyKey": "boot_e09803baeea0587d94e5a76e",
+        "resultingStateHash": "d0f40eec9c2fa6657a50452a065c1a2426006816298f4d7c2d7742375d3d28a7"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0012",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_f4eaf74f5202a62a7995fb98",
+        "resultingStateHash": "bde94707c3fb84ded1f7d83c05ef848b081db29ac9041accee0c9fc831f68566"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0013",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_fe539b3a0f0a98813942bb1e",
+        "resultingStateHash": "2bf95a1ae081fb831315c4ab6ca3507b36102a53e886fd66db47a50a4680558c"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0014",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_c2aa39fa10cad466b7947f45",
+        "resultingStateHash": "4d9d2fc8d2988efdf36505cf5081cc1a92a394a6946e359f94bf16c050e2b2a5"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0015",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_17dc0aee05cdf9df2ee6e9ea",
+        "resultingStateHash": "bfa53611ef5262ef240ea65ab5d966548932e8d8f43236b1f26460ddc631d990"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0016",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_2c6a083fe5fe1ca4f8b6ce6b",
+        "resultingStateHash": "45d855e9c8fcb89b2187b82ffc7df1a6860d12386ed52efe26c486bd969b4b20"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0017",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_cda5bb8bfd321ad241d0bfbd",
+        "resultingStateHash": "c865ba55ba08da92ed5e1abb3a821ea799bb4cb8a14d8167adf3eeddaee7bb10"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0018",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_494d971601f2e149280a424c",
+        "resultingStateHash": "8011028828b21608e1610418385be4d343711390489a51033a89e76668ca2852"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0019",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_5e94c525fe2c00cc9261cd78",
+        "resultingStateHash": "8b5d931f52d784952008db1c61b10df9c20e72e6f41d38bd3295454f10022011"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0020",
+        "commandType": "connect_nodes",
+        "commandIdempotencyKey": "boot_f229b431ba22229f3ba5991c",
+        "resultingStateHash": "ed64a9bce71bd2901a90dbec4fdab0e9ed6e12ae8b2081f7ca22394c4291e5e5"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0021",
+        "commandType": "create_drawing_element",
+        "commandIdempotencyKey": "boot_2e727790ea681ca7c7ef38c9",
+        "resultingStateHash": "972c26a8576cdb5daf54ec6e5954b2c6e0c56386b32ebb6ea6b896835a160cc4"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0022",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_c1c63becf8975f56f2327656",
+        "resultingStateHash": "3e8a30498df2dfe595119251527a5a72701592490a7529907fecbc5f5fd7e9b0"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0023",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_2ba344846f58d89355af0b7a",
+        "resultingStateHash": "05b297e94007b9ace96f6b49de5992daa1e07037e90b0f9b028138de5d072a31"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0024",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_2fb2d015809e9d3af5b53f18",
+        "resultingStateHash": "a403e93c79ea16afb3ad343d6bf9adfdeb5c4be075ca680a43a12de761beaf0e"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0025",
+        "commandType": "create_drawing_element",
+        "commandIdempotencyKey": "boot_5dfd883dd80d48dd3afbbd46",
+        "resultingStateHash": "e2241a126ad808ebd83e088dfb1180a7d6fbc8856569e32555a1552a83640d7b"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0026",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_3f42721bb720674e41e7b4fa",
+        "resultingStateHash": "299145723c2224677ab5cffac2f2647044312103bf54bbccde62b7ac7a9ab8ab"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0027",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_1d84c4ae3d91f0ae269d27e4",
+        "resultingStateHash": "0a205185cdef31725fc42269a8e5fb574bfcb7e6f76f7ee403945cc1ae5786b7"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0028",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_fc19238177d204e798b2432b",
+        "resultingStateHash": "4a70d58a0912566410ed16a04666311d611079c06d5cedd2ca07a453802cfa0b"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0029",
+        "commandType": "create_drawing_element",
+        "commandIdempotencyKey": "boot_3553b8c5a1854a90994a06ea",
+        "resultingStateHash": "7f6f6acdbd3286d1013f5ce93f9b849e93a444e5387c7e929dc9be3573f04469"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0030",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_00fe97052d8c90faf371203b",
+        "resultingStateHash": "25002bf8b61cd9990f65dca655773440910ea0b6c51c594076e285640b3c9686"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0031",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_b6b9b796dca64c2db0c7bc0f",
+        "resultingStateHash": "36f6a48c144ef8389eb97ac047a7044336244b76f0169840f9dc55a680fe9f6c"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0032",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_0ef574bbed030b0a1a77ffa7",
+        "resultingStateHash": "2faa36dc65cdf0ffdc64e3c9ffc5635e30090f946f78f173afeb08b6ae40ac96"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0033",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_03db0a2391e2e0a533122681",
+        "resultingStateHash": "e9c06e2e16cfddad50c69e164baf1451aa8586858762eb21682a405f3334d53b"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0034",
+        "commandType": "create_drawing",
+        "commandIdempotencyKey": "boot_555dec00d64af10e854351ca",
+        "resultingStateHash": "102d5607a96a5749f66ac24fa00e0ced1e3dae7b07b34949c9a3683cc0a57505"
+      },
+      {
+        "revision": 1,
+        "planId": "bootstrap_simple_humanoid_v1_1_0_0",
+        "planIdempotencyKey": "b4ee1db0874400d75ce49cae701157c0",
+        "commandId": "cmd_0035",
+        "commandType": "create_palette",
+        "commandIdempotencyKey": "boot_50703196d352a862c282e9f2",
+        "resultingStateHash": "0e62ba5ac7a9c87c85f28af438180a104569009d7e8d2dd09341c41c5dad3148"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0001",
+        "commandType": "snapshot_project",
+        "commandIdempotencyKey": "anim_744ff2deea628a545c6809b8",
+        "resultingStateHash": "0e62ba5ac7a9c87c85f28af438180a104569009d7e8d2dd09341c41c5dad3148"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0002",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_47ddf96c1275aa2fef5bf191",
+        "resultingStateHash": "06447de0a60434437297c3e675533f1a6bb5cdaecfb96a9edf50adb2b3b8e2ad"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0003",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_9681f2292c2db888b7c57557",
+        "resultingStateHash": "203aa7cfb700eb9550855354ed3bb660084d8aaa08cfb700085737c890526b3d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0004",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_abec107c67c3ae862d99befe",
+        "resultingStateHash": "11cdaf73468b6699ab5f22a6a658bb49bff53bc666a592785276c9d9f17c8319"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0005",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0182f1f5adb90cc49ae6ac85",
+        "resultingStateHash": "0b529ec71f86035b8e7b13a531b8444d7521d8d35df217af1dc28c8c70f64368"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0006",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_04893854b76ba11d0495654d",
+        "resultingStateHash": "57593f75266376ce9b0ff0af8c0b18fb3f8afadc29298709b553afe5a6a3ee78"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0007",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d0899c35535d2dced179ba25",
+        "resultingStateHash": "4d324209b0f83e5573153e353e520bde6d29226e982cf1d3412e1421122b7ae8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0008",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_032e85e644cac78ae46ad2b4",
+        "resultingStateHash": "122b4532c0da68135cbe973d81869855c7fd8b7ddd9b139c0459d6b08ad401e3"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0009",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_4bf586ba06aab4851fd03579",
+        "resultingStateHash": "a7ea4d656da063a89b20ee95cad56034368199e805e6cca974e1ba0fb6eea6eb"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0010",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_86f442f2cb79eced2fa46409",
+        "resultingStateHash": "151944183faf0c0f5704b27469b988e5c3bd675bb88d4fc3c4b2c7b84c19265f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0011",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_da3815b702a8a467d6cfcd2f",
+        "resultingStateHash": "e291aef47e474bc68ca1b5b0eb3241092dd569cd84dd94e67ce8bd7bbc20ff3c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0012",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_4a5cb0af1f195801a4a18d97",
+        "resultingStateHash": "d5f20774ec92e4ea9a4b6754a4933b33ec2daadee4ff91a1142ccb254c7f6f4d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0013",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_80a70602b42ae5b966a243b4",
+        "resultingStateHash": "c302b90a306755ab062ec5f4fdf461902acef478e7a9b95ce13ac3889c7dca32"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0014",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_725bb87df6582dafe344ef2f",
+        "resultingStateHash": "f7f5d27a72b8ad144a3193d7ff094c1eb46563005683273be441930cc28dee20"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0015",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ef9490e33cee8bc71429cf2d",
+        "resultingStateHash": "dff006b42631a10a6170d9b16b79a66eca7dc8a7623be01d82039c5df2ebda2f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0016",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_93e6d0b4aa039ba56f7c3229",
+        "resultingStateHash": "6d125048d1501d584518c502c64e7ffb16bd94957cd3151fa65b92afbe60b8da"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0017",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3a7f99692cffc379eec4a089",
+        "resultingStateHash": "4d2d0252bb7c709ec15402d81aa73a2fe811c2312f65371b7d74a34e7ef747c1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0018",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_bc9b8992fdbd605b6d1d7a0d",
+        "resultingStateHash": "3e5dacea22f92a2b78169926f0f201b95cf8a14f87f039556807d5f7ce6e9078"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0019",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8c34b4486dd1c0652d456a3a",
+        "resultingStateHash": "5057fd008b87c33891ca981179515d33d8791db4702d359dad13f43758a0df60"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0020",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e9c4a0c80a4660d0c45b8c7f",
+        "resultingStateHash": "629bcfb359f7f5b22b9273ec79d03c28dc5c752adbc7e4c1a5f736684579cc5a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0021",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3103d35ef3c5854fedfda535",
+        "resultingStateHash": "7f8cdceb0a50383dd0c7b4408e4072507eaec44a69dc48e7256b692629863bc8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0022",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_594d6b977ee220efc9b6ad93",
+        "resultingStateHash": "cb0848ccaf9055a3ffe5f74246779e000fd91e228379194edb832a177bee0790"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0023",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e2190e73bcc13d5e9463acc5",
+        "resultingStateHash": "7c4218742c03bacc5a13bd0135f8a7d584a797ce0f4eb7e511c99eb1f9fc4449"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0024",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_de6ab7a6203320631da1ae89",
+        "resultingStateHash": "b8860ce1cecbc4f1ee39523d8546799effaa6c49d36fe4eadc4387dc3dbf788d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0025",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_624767fd9e0ed80a8333a260",
+        "resultingStateHash": "20c9d17a67c4cb75d5a638f5c85d26bb7eba5bed1385ea6badb67425b67a7b2f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0026",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_817b471ddfe582c92856189c",
+        "resultingStateHash": "56678c4cb725d8a49e881b677b7e821e079df6f659584e1e03a95c3f368a9fbf"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0027",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_f0dda6c43ce4f49d47197da7",
+        "resultingStateHash": "56d15357acb444a592bb5772e93da369e41ff9a6658f363f6d3bd300b0ee61d3"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0028",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_263610065323b80a37680587",
+        "resultingStateHash": "e2eab98355dd9bb022db37a181f073dd6a8bef9f046dbbe6e4222995c20437ca"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0029",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_81c90ee27c5adf37f5d5a019",
+        "resultingStateHash": "246c5ed2ed2dcdbd46f8e07cf1a5daf17146c5ce6a16fac3b78a728d8d2aa181"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0030",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_cabc869a951ca710acd57c0e",
+        "resultingStateHash": "f27f27a3b7026b79e7477904916db2bfa44bb9a1747f8815d7397be372aef99b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0031",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8c54866dfea03aeef3a8aeb0",
+        "resultingStateHash": "0ae48089d0b5baffcdfc1338746c8657a50e7e83d1db1cab348326f86229a270"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0032",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e63559856e20cdb03b8e5def",
+        "resultingStateHash": "1f2268be48851be1deec2c9a1152ca641508ec26154808cbe4c0a3aac15d2da1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0033",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1fb01353294a5ef7b0cb3a8b",
+        "resultingStateHash": "ac171d106f8d8d19043b2ff2fc4c2f83a3e8db7d60e4abcdb9dcabb7c9116aab"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0034",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_81582b1cb82eaaa4548c49c4",
+        "resultingStateHash": "513d02fb70fbab26078443a6ba24fe0a30f5cb720b46083e155a65a79962ea59"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0035",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1f775873f523bffc24c56899",
+        "resultingStateHash": "25acde64282acaab508c54ffd850bb123adb9266e8874fbcb26e2a5f41dc0298"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0036",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d0f99c7973eff443b390b1a3",
+        "resultingStateHash": "12562a52fceefbc1c9ec8d16e095200a3f8d478167bac00a50181f0354b6cebf"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0037",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_f1c4b042bc8c7cd7af6f391e",
+        "resultingStateHash": "b684207b3fba603ebed87df6519a5d296d95260a465ebc881fdde47dd771e39f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0038",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_6fcafe4682cee4a808ee3d90",
+        "resultingStateHash": "4f11bf4d8d07a367ea03723d5b689562b12d52a2502e5aea9b71516365122d85"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0039",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_fdea9279abf2171918649461",
+        "resultingStateHash": "ee8bbb38341ed134820d35a203484e153bb199d428e4c2d5e459fc816a28f028"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0040",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ca3d9596b9b6b009db834664",
+        "resultingStateHash": "9a2b58595e26dfd834331cbc0d2d99e9b8339a099c2f6bf53534b5b9c3122836"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0041",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1e5cbcee9246c54896acd569",
+        "resultingStateHash": "9eae6922bfac24f4cc0c0cd3d46973c390a26cd72d3757a96bf3c188e6ecc908"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0042",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_9712678c8cf3013b2bd35e38",
+        "resultingStateHash": "c93df14c49a31e3d0f10c11603bb01603916244cf61f5fa5d36d9c73ef002463"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0043",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e7dd9476cd18358b2f854a3e",
+        "resultingStateHash": "5a05769a9a47df5c8e59e7d5dd6ad06cf1be4dcb785bc2bde940f08dac41a44a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0044",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ec258b4efaa8a089ddd641fc",
+        "resultingStateHash": "81732112f69bacb2c37148eb292c07124bd42a41aae19e404f24f0096620dda3"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0045",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8f76217e1a9fa190594c6879",
+        "resultingStateHash": "362a6845f0ba47b25991eefa5e66d481238abdc763d682e6921056b28c774926"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0046",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_dc3983aecc558226eb8b0cb3",
+        "resultingStateHash": "d544be2def7c7d4fb528c18a0d8dc09a2917f335a59accebcebe20b957eaafa8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0047",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_2dea361d20d2659b45fd89e5",
+        "resultingStateHash": "e093377ad1885bd7790a8199be14face4a6ec382fb502641de2cc7377972ad2b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0048",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_9cedaaabd0949ab99cbb835a",
+        "resultingStateHash": "976cf4cef26b4ac267235a3f47f72507d2c2fafbb01e8dad8c8f2bd50adeeb5a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0049",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_a4fbf61fd308060cbe6818f6",
+        "resultingStateHash": "9bdfc5180e33d483d0507fe7ce0360b754077bf16c355396375e011c3583ac8c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0050",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ad857295cf20880ca8eb009d",
+        "resultingStateHash": "b9287a82833fe7b8e9f84605743347482d5d1b41556e973890b80b433b48f020"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0051",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_993618ce4e83342a838f8fb8",
+        "resultingStateHash": "240a1f8b0287c221c99fdf44a54c91b6b773de0081204de841b7099826112949"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0052",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_c63ace549ff9ef5b4927b4ae",
+        "resultingStateHash": "46b435053ea2e9db3fd5cd3644bbd100cb266f13fe9c15e32fd503a06c8f6ee2"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0053",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5c88b4910777f44bcb2c26d3",
+        "resultingStateHash": "1b018a2d8a60fdcc24dc56308f9da8f39886e5e85c18462387c5322a680f12d7"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0054",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_094e714eadf408dd4fc5384c",
+        "resultingStateHash": "387808b554cdb0030afb5a0849fbb1e8ba93649ff8ece3b05e49ffec282e11ee"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0055",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7ec8651a4f70f3dd0df303f3",
+        "resultingStateHash": "7bc196391bd9c9278d5abb7087952d70dfa2399670d20444f64e42deb073a5a9"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0056",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_79f30aacf97f5f7e8397acce",
+        "resultingStateHash": "97ca32fff9e14bc483b3ec6b0f167342e27ad66e4804ace25c2da673fcd86167"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0057",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_462ba1ad5ecee5b3d7da54e0",
+        "resultingStateHash": "37c1324fbbdab467720d56aef3738c8f128c15b7df38d479fc77d8056517422d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0058",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5bae02e5e0c6082aa989495b",
+        "resultingStateHash": "d8ab68307c955d2b38d51b98d59d4595e19fa8227dcf46fa52b38b9fde89c673"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0059",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5e5e03d558eaa63031ffcf60",
+        "resultingStateHash": "140a3684191d707a95a701eaf9700db58a89eaccae169da68ce709522bfa3675"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0060",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_dff4a2383d85f5040e560430",
+        "resultingStateHash": "5d0017641e926ae8817d57f1618481d6af710ec8ae011ccfefccaad0043b994a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0061",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_34404a13b1ff6c15de7cf5ee",
+        "resultingStateHash": "e013de6f5a31373b0e664932165836838b3613fec6b4500b523184a7b26eda62"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0062",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0da7210a238ad19cddff8f5f",
+        "resultingStateHash": "328ad476ac39c5a3d420fa2d3428d9d8ab4be20f2b72f1b0226d6a7e182508e1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0063",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7ff926859ba61c06b8c47562",
+        "resultingStateHash": "cc4f625f488a6ba866bd464304e6d0275618ed7b0efbaad15647d0313004102f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0064",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5db3451a4ab5fbd9cb61ef73",
+        "resultingStateHash": "24be97f1275f776dd79fb5cd895edc2eb8b16dd21e1313cbbdf3229bb9b17de0"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0065",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_365791ef557d380ace446860",
+        "resultingStateHash": "96aeeaa4d1312c4f7662ae2038292ecca4aafcd5ba7966448a69a1f88c63b88f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0066",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_61b712108311b740252b7fa9",
+        "resultingStateHash": "0a00925742de45e5dcd5689eea878b3c0dde10b1b57f22e8e4df12b46fa57a94"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0067",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_65440e48dcb71f37e4db7301",
+        "resultingStateHash": "4d0646704ec28a88d5823fe29ea3246c8fae53d19bf43890d7ceccfbfdbb8e74"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0068",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_a4628d2ec867582be4b07a2c",
+        "resultingStateHash": "c799bdfeac64ef1fec554396c59fd5c72170dff2dcd7168f663f666ff8d78a6d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0069",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_dded5387e568055f073c3d6f",
+        "resultingStateHash": "51fa5eee5219e24bb975027d743eae3fcaa6e12ffb5a6f7a8dfcdbb1cf9c64ba"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0070",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_037c9f69ad656b738be112ce",
+        "resultingStateHash": "2cd0f797c10a1564831019ff8927a3b544de07e10c9df819d5cb8995616945e2"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0071",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d4be6dccc23362253a10224c",
+        "resultingStateHash": "d8f00f5c620a91b6b5070869097e6d1cb93ebe6d05366f7050253112eb7808b3"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0072",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7bb5a799e8f18b1369df55d1",
+        "resultingStateHash": "369baa5c9c8cfac26bc9ff150aed26c088cb50bfbd6f4843329869fdafbca1a8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0073",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0763a78472284e90c4e92372",
+        "resultingStateHash": "92bf73e4f771b5208efb8704d7b1faa9db456fac32043e273011b6c11a148737"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0074",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d85f11247b06f586039b05f6",
+        "resultingStateHash": "98bce525ad346f400852b0d37963a3741665d1642b7819541f202e2e730176dc"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0075",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_817e42519973ebd88d7512f2",
+        "resultingStateHash": "11c330a0b53f596120a0c07607b482769d29a831aefde1fe9a316b172910084d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0076",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8b4b340b8b49ee39f4f57d96",
+        "resultingStateHash": "5985bae990a7251641a279ea5f42fcdba6e971aeca67b5089c80cd7529c92127"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0077",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3ee306390e2918459af43019",
+        "resultingStateHash": "812029229d64c2bf602e89c487050992f29ca9c17b2440ca4261f7f222cb2569"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0078",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_fc6f8b32bb4a226202fdfee7",
+        "resultingStateHash": "df74c62fabf3f6285fb6acb4c6b2ce1e8128b7f6574634a04d718d7040fbdc9f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0079",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_9926859e1e49fee409e69316",
+        "resultingStateHash": "ef6892a38fd35897c5304174fa82830721c8003d1dfb69b55691865b3e5fc889"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0080",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_427af26c81e02284a5842cf8",
+        "resultingStateHash": "1a4274aca8456c92804d0be2ca1bfd5d88853310cf5a9cc5db4896430f51663f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0081",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8e819c6b0eaff77dc156499d",
+        "resultingStateHash": "fbc6281165edfb141e86f0e8d79ab24a1fd8391adc925b375886269a3de9d178"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0082",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_2232ead1d1c760fcbbee1159",
+        "resultingStateHash": "974fb8449c6bb29fd405d93e62da468f20025e96c191b107c42b04e586fee735"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0083",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_41ecb4f92c25144607374411",
+        "resultingStateHash": "64c4385dbcfaab19a1ef38ed979c9d64fd91b54f1fedd3074e2ec742eeb80fe0"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0084",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_98e2b3d908732009ac42bf99",
+        "resultingStateHash": "e57bd493867593007b5cc7e62eb6cabda444d020eda4f0d93f06198c0d0159e5"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0085",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_55a7edf428e7a7da0b90d9bb",
+        "resultingStateHash": "b440dcceb8a4c9c6a63a28ba82de6796c517326057238623498aeb5a70770b54"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0086",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e0c6ed725504c11aab85b219",
+        "resultingStateHash": "4080acaf7725a103722dccb78dd367573c373ff7e7ff9d624bbe0c7e438513ea"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0087",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5f64841a74b3358ec52413e6",
+        "resultingStateHash": "83ed1145b71d35d0529975bb777b852edf3f8ab519c122c2d45618a9a4908205"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0088",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_083f2a25cc94fb8eb82d24ca",
+        "resultingStateHash": "87b171d0dfb0116979c76dfdce4b6c83937c57d44aa14e2a9fdac6e3ef4aebbc"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0089",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_4ffd96bc67f81463dfb59267",
+        "resultingStateHash": "d381dba46beb121e57ed0f44c2405d84a642378a8819831c49fc5f8d84c4d520"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0090",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_fbd549bc07fd531e14205b59",
+        "resultingStateHash": "fb217e47b5b50d49dedf27e92fcb5a04e0d8952888e18622131155ea9aa22271"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0091",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7c72d821f43aebe444cde4d7",
+        "resultingStateHash": "695a201c1509405b28108712e7a441246caccf01aed885d96afb094deecf736b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0092",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e6929c5de21d51f270d51fd9",
+        "resultingStateHash": "bb0718d072cba810f02e993d28f1f3549df41e64abe78262f63ce1484720cc58"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0093",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_eac43da0de81ed40899891db",
+        "resultingStateHash": "d3c61794b7a4c6f67e96dc97ccfc17b1f5e559e202a8191d7eb7e7f6cc9b92c6"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0094",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3f863a04e80eb9ba4629faea",
+        "resultingStateHash": "82cc19221538072dd71489307e73555ce75f52c862596d0cfcab18d8dafb249f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0095",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8deeefaa082c6fd4aa379baa",
+        "resultingStateHash": "04ca7f13584b1b7b618901bfce43cafff1f03485449cf1bd540a7718a5f45f54"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0096",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1d9d895b18c0e7ea3989f782",
+        "resultingStateHash": "3774caa974ef361aabd14bb729b01230833feeeb66d68df3927244f8060eda9c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0097",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7cb678a6419e2476e701fe8d",
+        "resultingStateHash": "599271041fddf0cccb743d42c9c889325f195bbf10eee847a1358338a1767d5c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0098",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_a0b1f9605ac497f465ed29af",
+        "resultingStateHash": "f59214c266b8a5084951ab6bc39b1b834c6b9831a6ac82fd0804e597bca825e1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0099",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7d845ea10e05e00c2dc88138",
+        "resultingStateHash": "64b37badf6ec9afc8926c91d77c88652a7ebd5c01448afa7529b12723374b598"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0100",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_48ad489b9a839162090eea4c",
+        "resultingStateHash": "625e4890a2edd39a448df4bc3f4223d736e733e3ef4fcc9973ea4584264966c5"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0101",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8ab8e3f5214ace2443d10b01",
+        "resultingStateHash": "9f2cb81d29814d1b93bb6e93b6c6e1650623f93668a13eac72c5b0b2f7cd0b09"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0102",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0fcab8bcee02622de9ae39d5",
+        "resultingStateHash": "fc80874e1a906b9baff0b7d904368db2b65f4a551f1be7728b09afa3f5df29ba"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0103",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_abd7863802e354b8840d7066",
+        "resultingStateHash": "e680a0316a46bd71d8e3c5688952eca18e13bc16e7b30bb2da93ad5f1c6dde90"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0104",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_b7f251467946f72066d45852",
+        "resultingStateHash": "1a7fec9197ae4ef99dcd5d8ac2c9b43607e075848e665ddef99cfc2beead22d0"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0105",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1d1a5fb7f111fd2a42ba2ed2",
+        "resultingStateHash": "2f9a49b92a1747d800357f8b4670dd208865a97e6766c98ee23ecb80bf9b1859"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0106",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3daf9c076153dbf0238ca939",
+        "resultingStateHash": "a9d9b111d50a72469d089b322cb3a5e26d23dc3a1392eaba5bcdf05f9c7c4d2a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0107",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_fb6884132947a67c180c1131",
+        "resultingStateHash": "d43c66fc862e876328c200c23e8a78005f93a19aad78a98186d309a73d2b945f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0108",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_892a644fcb27b573becad390",
+        "resultingStateHash": "65424e531a073cc9d83f1e51227c3882805201c629d4abd271a5379a8f1b7aab"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0109",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_19ea8c52e323c62fb47ebea4",
+        "resultingStateHash": "4040f7c7335828175bafff4921f5bb6d51a3eb4fc950f4a726413d2d6ed8ae36"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0110",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_553f0123978cb4382fd61a03",
+        "resultingStateHash": "f4d38d454df05f8425b106e4425bd6f8650b47d5620f4d2678cd1647d78d455a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0111",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_36add5fc3138d15dc8d39e93",
+        "resultingStateHash": "5f91a44d4071a84756772cf6709417bf3e93b2a7467d4d2fe76249eec056cb0b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0112",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_6e6e43f05bdebd9a6965ccaf",
+        "resultingStateHash": "ac44a292dc9d5ace46920a93ecf2d96aa9c3afdc7d6d9cea5c06ea8d35f828e1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0113",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3aeb5f9a3ce335d1c84d3dc8",
+        "resultingStateHash": "7460ba421f07564a70df4a88499dc0765c1b8b5c1fe5f79c68e34c667972a444"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0114",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_93133f8bf02400b6623c7158",
+        "resultingStateHash": "6c087f58b4c08d63235f1207fa8432f21d1a68528f5222a92316f8bd37044e54"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0115",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_dea18de187168c8f5cc13fd5",
+        "resultingStateHash": "b90240647fb3bca6147f63db8237f6f4b8e94be703bc0c04eb3009a6beefcb40"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0116",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_3e9b516c2575307ee724925c",
+        "resultingStateHash": "acf09e005d5c55ec54d6bc983cc629fe241e117e38f87adfc614498159f92e01"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0117",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d4e9092865c9e4886f025f1d",
+        "resultingStateHash": "f6491d18836cd704c7bb526d2c230adcb2c355497bca86ba5e9badcfe491e7b7"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0118",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_2195685f8f7ab87044f2f45e",
+        "resultingStateHash": "86ed01c9d2845ad99293eaad4ec0ea72d2787503f1ba7a8b3babd9875d73fea5"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0119",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d57ae794de74dc3899cc3beb",
+        "resultingStateHash": "554b75512962ef984ef55ca94830f67e1c1ebc5dbe76f4975e4137135ed9c0e4"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0120",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_25fd11085064c0ef5c14cd24",
+        "resultingStateHash": "b6f73eb63297af1ee7c8e16dd30abf2c90bb653aa67f402a9ad2df39e3e02877"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0121",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_2be644d8bf2a8ec422dbc0e4",
+        "resultingStateHash": "a4bb684709ab1555da94336898b11a2d339fdabc9dbdae2aaadd727b417b9c9c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0122",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1b295b1f9c69160f1e8d586e",
+        "resultingStateHash": "b8bdc653d3ca8487cfd0515d57a839c56b848115facf8cc58184adcbd81a3de5"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0123",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_2617c1d3a74cd5c42255a380",
+        "resultingStateHash": "7fae5ba89ebb832f23235f99baeb3555650cfe934572af1ddf125ff933d8d85b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0124",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ef9fb88f8d6f90bd632f3962",
+        "resultingStateHash": "7d9be88b488a6aa4f3c65035627edb9c270c18e7d2f6496992c07e2b16b1c410"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0125",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_c51b2808fd431b7db1407b84",
+        "resultingStateHash": "e6a29f82edbea9668ec8daab107755cd3e68494dea05b94c68c5efd282dbac9b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0126",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0b102025ca8d4d41c24ee139",
+        "resultingStateHash": "af4d7f1d826a911346ca80f98977ec93ebfc3d601c99d8e42d6062e6725bad4c"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0127",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_887324adb84a63aefed41ad3",
+        "resultingStateHash": "d3f74c4c9909cc10f89f477ed0e7b08eb15c156aaec346d1694e00e9db7bc71d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0128",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8dd6573723d5c07aa5ddccad",
+        "resultingStateHash": "64439a2b29e6c8e9bae480162a456135c205d06d8cc9a2b8d283ee114177ac4e"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0129",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5907a6522057d6f8c2d7481e",
+        "resultingStateHash": "88e6ff451d21f6acc9e68f925c66817d39d73447fad3204ecdc98ed997ef6b8e"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0130",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_f93e6e61ade2a5234c6a1ea3",
+        "resultingStateHash": "91aba0af7ec16c4daf20532e96f25f906c39f7004e9faffa4a4809d89ff1461b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0131",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_c25090a0a3acb2bbfb0f2b71",
+        "resultingStateHash": "58cd77a41c30d5fc56ffd523dab5e560a9bfd45ea7773c9041239e1a6d8b23a5"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0132",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_65e503bc9dedacd95c3efe01",
+        "resultingStateHash": "d55e2295c1d164ff05db9b2f3f72ce263f2aadda0f618a32095db176e0438be8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0133",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_489b53da97fe3b4a5a33d3cc",
+        "resultingStateHash": "be0317b79c709f55793f70f96c23562d8cd981b71729324334e1512c5c3c00f4"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0134",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_6e9a62303f6b10c0c793f351",
+        "resultingStateHash": "f613a9b243a7789d0bd91afe9557f5eefcff3d8210fa3e373ed0564d24420f64"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0135",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5b9f401afc74ab3b77c67ce2",
+        "resultingStateHash": "8f87bec80367a2dc6fb8d5dbe919b5d3e2027776dd4e8a3ada456b2ea3ca35bf"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0136",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7aea85262a46505fb6860f3b",
+        "resultingStateHash": "87776a1929eb125baee6cffadf7701c65059171b251120a7c3112d6f6d605936"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0137",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_b325d1d190b56c0636adefd4",
+        "resultingStateHash": "f083ff2fbd9f592b12f5a3eaca07155c2fa04d78bb92d99522a814cf7ed1d31a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0138",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_742e30060bd1e3fa571fab57",
+        "resultingStateHash": "ffa53a238412142f811a2336907ece31b9a3a746d7a2c46300f083de14bcd9e0"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0139",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_62e9cfcfc38e17065dbe3e03",
+        "resultingStateHash": "d4b3b100ff065eba95b47d7a8c38b71b88cc46101a32c049a76d5004883348ec"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0140",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ef69572c8f16d69acb426c8b",
+        "resultingStateHash": "4b07fafbf7d5a0d60a4dd74dcbd560e0c83ed5271775e743f494756f17878e85"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0141",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0076dc5e87d265626e517f10",
+        "resultingStateHash": "7077a184a12be35120b289337d32c05f8c7bcd8746e1cdfd7a1d802c70192c54"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0142",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8de2a7391a5a6410d24cb9e8",
+        "resultingStateHash": "1bdbe568c93aafa4993a6f136a58bacb397c222dc2efaf0794af2d04cbb82595"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0143",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_14f98fc64a9654339dab4526",
+        "resultingStateHash": "731f0b7731d3c442c0a757c0d8f8bec7010ee11a7b095f0ef07f1e5fdfeefd0f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0144",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_4b3e84f50efa2d8f779a07b5",
+        "resultingStateHash": "e00fd1e6e042c165f3f4af919de7b584fc26bb0f253418e83a5e53a87edf35ca"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0145",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_e73a7ca8bfb4036fd73383b4",
+        "resultingStateHash": "a830fddab15edd6b79e93949d7591bbb74c01bb3a2de747b14aa785b1efd4e20"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0146",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8dfc0c28ae2af81428becfee",
+        "resultingStateHash": "eb12b26bf3bd4751b17da8be20aa41d2127fee7835fd49bcc6f96847e0230b4f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0147",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_730e460997c1ceaf6187d52d",
+        "resultingStateHash": "1c7b7009978b53701f1a7191553db6080f534ab0bb7d7c993e82c47e3a18cd1b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0148",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_b1b62f8acae5cc913f627790",
+        "resultingStateHash": "194b391fbdb248a7cb6d4115baed35d14886e5c77da5749088e67165727f33b7"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0149",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_c6af6b0f392cb1449962529e",
+        "resultingStateHash": "c390aca950c5f50342fd3a2a069b60a2f821d5871a641063869281e05c6fc889"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0150",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_c3fb851ce2dfc5880219eadf",
+        "resultingStateHash": "395a64f8e897d50df91039c1591834212a7bc1234a61ea3db8f0bfa751b4b308"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0151",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_0864127866f1eb295d5aeb53",
+        "resultingStateHash": "add0c4a98680f5244859c68ba40d9637a19e34a587bf0a784bbf6156af0bd0ac"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0152",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5282fcae1eb1bb8f2a95719f",
+        "resultingStateHash": "28e79e7b53e2e4bb1a0c9d76968f5f4a580ad663c240a2982eac7118280b3e0a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0153",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5b841fb25773bf3ea92618bc",
+        "resultingStateHash": "d4edd6b2ded517c360e8d02648d25ea248531e6446cf1c09866265ea5f02141d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0154",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_8bf787cbd0acc00b8f8b2b81",
+        "resultingStateHash": "686e8a2bd951b035dd0470350474e3952146d66a76c24214d993f74045a2a71b"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0155",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_ebc8d3891ff15036f500dce3",
+        "resultingStateHash": "f3305976604b1122d3df4d6395286175533b08bd52fcff187c0c756f56f4b259"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0156",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_9c89042e9df6dc542e2708d0",
+        "resultingStateHash": "40836d9ef7bf590bfd7e85c5146e7e6f06cd6eff66d47389d2115acb7f513d5f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0157",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_1b611f4aee76fbfa088c8d33",
+        "resultingStateHash": "115c3d25007c39048871bf182849a41ab1b9e4ecb25a751324c4cf71dd9978cb"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0158",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_5c604a7ca289326098657de8",
+        "resultingStateHash": "17051e60d48251711f41899cddfafb510de2e6da24c521e6063dfa678ac44d8a"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0159",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_93a67ca80f20a26a25b36ad3",
+        "resultingStateHash": "47d171fff8885d4cdaaf8570033aa2a9826b1dc8fe9a77dc55d561c7f88ed149"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0160",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_52ee02992552fbf3f203d506",
+        "resultingStateHash": "4ae76ddcf78813978219ff3a8f7be3626bab9a2792679a45baf630c0565a7555"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0161",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_bce2a98820913296cef5371b",
+        "resultingStateHash": "54f5d39bb37139faea0987badbc6917914d426706b5887f4de48c4d6d63ed149"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0162",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_b7b15aee8928eb6a7b9e44a2",
+        "resultingStateHash": "84bcf081ca1d744524f3d338a138ab7d00cd851dbdcccbc2f02e715dbb00d3e8"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0163",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_72e2d76d5870cce302d28f68",
+        "resultingStateHash": "bbe618a8b4d7c87a61e1d0d88af18fafef287e538a0868d354ca7d281d4424d1"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0164",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_be68490f68336c91e21f2913",
+        "resultingStateHash": "5591a1f3795cedfff7a74afcfe54b0a22cf4f38826d020a959f197fbe43bf804"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0165",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7fa6247f3ba74c4725040414",
+        "resultingStateHash": "3ef526513b024c1703404f36ccfe4fd1e180ddfe495e4661097665b7dc9c709f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0166",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_722ea1b8cd289a37f58d2de3",
+        "resultingStateHash": "addab696fe692d9554ecb361e49acea6fe683bfe0c4d7289e6a96499d8c87167"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0167",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_a82e61830b1a7eff64d8d400",
+        "resultingStateHash": "076fd7f55bf6361f2a5f8a8d0b5dfb6e56257e76c131aa6bb50f38a4fe14844f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0168",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_d6e70d9de012ac5173c732b3",
+        "resultingStateHash": "21a49499049de5bbaa22be81dbea1a79d2251a8a78128cef1bf32d2e1a723b86"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0169",
+        "commandType": "set_transform_keyframe",
+        "commandIdempotencyKey": "anim_7d74b46d9ff27dee51774f07",
+        "resultingStateHash": "dea9ce39566f36f188b35e138448f3d9549d5f4cd12f18f9727af5760ebe3845"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0170",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_2c2e8d806f69149cee5708d2",
+        "resultingStateHash": "a1425247af27b286dcfa98d2a47cd5bf1811451581c4e0a7222a75516977ad78"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0171",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_a34efe05e8aaededc962d1e0",
+        "resultingStateHash": "1b04d128503679da2e7cb9df0dc538accb314aecbc956a181f55f632d233a20d"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0172",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_5f2263286da2d42463d64fe8",
+        "resultingStateHash": "875710ea5261c27b643b8592922078f0a5972dfc9bb798ae1d51bbc94725e3cf"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0173",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_5c8f5b298cf9fb978c7740a8",
+        "resultingStateHash": "ccf7f4ad98b1a8ca6703002a423b48a1a95df999773f38974a0027e8e60e1361"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0174",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_944fd30c2475b19442627540",
+        "resultingStateHash": "4b90715822ad25447e0a220053d228927e41060bae98ca7ff07d39b39edc11f2"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0175",
+        "commandType": "set_switch_selection",
+        "commandIdempotencyKey": "anim_e5d499b65a71b1ea9a1ee67c",
+        "resultingStateHash": "f442cb48c426d41ee4c7f94045876efdb020f17cd5040aa6bab91fdafe048c0f"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0176",
+        "commandType": "create_camera",
+        "commandIdempotencyKey": "anim_89e8b9518d92279489bbdee2",
+        "resultingStateHash": "2e8910a2dd9f66234ca6b66bddd8e77ee56acfb2432a76f506e15a6ac04341f3"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0177",
+        "commandType": "set_camera_keyframe",
+        "commandIdempotencyKey": "anim_b41944d22d4594e6cf0f97c8",
+        "resultingStateHash": "e4251678f50d05f865082d30f88887a7583a7a6033a85b2e4046c55f4c9235ba"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0178",
+        "commandType": "set_camera_keyframe",
+        "commandIdempotencyKey": "anim_87a829676068627f6be6fb05",
+        "resultingStateHash": "ed52b6788152352d61c8c566721637f3c3c2834cd9b81dcb3d5ae4199ca8b2b6"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0179",
+        "commandType": "set_camera_keyframe",
+        "commandIdempotencyKey": "anim_3604af8e9de4fd98de20c1a8",
+        "resultingStateHash": "e60021e40c0bc92fb9a0ba5a8a0c92e1b5a3c094468ee18d415deb769b4d5789"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0180",
+        "commandType": "add_palette_swatch",
+        "commandIdempotencyKey": "anim_87090434a6a96447117f8d75",
+        "resultingStateHash": "1485e1429348eb40a8ab2d5846a2814bc1aaa50512d43ebd255913bd147aa047"
+      },
+      {
+        "revision": 2,
+        "planId": "demo_animation_roundtrip-demo",
+        "planIdempotencyKey": "a12060eddff1cce7ca7cc9adecfe9f31",
+        "commandId": "cmd_0181",
+        "commandType": "set_attribute",
+        "commandIdempotencyKey": "anim_eb4c04c5173802e8e1ee8572",
+        "resultingStateHash": "45038fbfed588d238283cb45ebbfaa0d5e4062fa5a709739369306d7474e6a98"
+      }
+    ],
+    "artifactReferences": [],
+    "contentHash": "45038fbfed588d238283cb45ebbfaa0d5e4062fa5a709739369306d7474e6a98"
+  }
+}

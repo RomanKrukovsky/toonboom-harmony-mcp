@@ -4,6 +4,7 @@ import { ControlCenterTelnet } from '../adapters/controlCenterTelnet.js';
 import { verifyPathAccess, executeWithDryRun, HarmonyError } from '../security.js';
 import { projectPathSchema } from '../schemas/common.js';
 import { FastXmlAuditor } from '../adapters/scenePlan/xmlAuditor.js';
+import { defineTool } from './defineTool.js';
 
 // Вспомогательная функция для перехвата PYTHON_API_UNAVAILABLE
 async function runAuditBridge(command: string, args: any): Promise<any> {
@@ -26,7 +27,7 @@ async function runAuditBridge(command: string, args: any): Promise<any> {
 }
 
 export const auditTools = [
-  {
+  defineTool({
     name: 'harmony.audit.scene',
     description: 'Полный аудит открытой сцены: ошибки структуры, слои, палитры, проверка Composite режимов (Bitmap вместо Pass Through), отрицательный масштаб на пегах с деформерами, Drawing Keyframe Pollution, изолированные ноды, Cutter polarity.',
     inputSchema: z.object({
@@ -130,8 +131,8 @@ export const auditTools = [
         warningCount: warnings.length
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.job',
     description: 'Аудит всех сцен внутри проекта (job) базы данных.',
     inputSchema: z.object({
@@ -141,8 +142,8 @@ export const auditTools = [
     handler: async (args: { environmentName: string; jobName: string }) => {
       throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "harmony.audit.job" требует подключённого Control Center / Python API.');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.environment',
     description: 'Аудит окружения (environment) базы данных.',
     inputSchema: z.object({
@@ -151,16 +152,16 @@ export const auditTools = [
     handler: async (args: { environmentName: string }) => {
       throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "harmony.audit.environment" требует подключённого Control Center / Python API.');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.production',
     description: 'Аудит готовности всего производства в трекере.',
     inputSchema: z.object({}),
     handler: async () => {
       throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "harmony.audit.production" требует подключённого Control Center / Python API.');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_missing_palettes',
     description: 'Поиск битых ссылок на файлы палитр в сцене.',
     inputSchema: z.object({
@@ -175,8 +176,8 @@ export const auditTools = [
         missingPalettes: []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_broken_nodes',
     description: 'Поиск поврежденных соединений портов и циклов в графе нод.',
     inputSchema: z.object({
@@ -202,8 +203,8 @@ export const auditTools = [
         brokenConnections: res.audit?.broken_connections || []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_empty_layers',
     description: 'Поиск слоев рисования, не содержащих рисунков.',
     inputSchema: z.object({
@@ -229,8 +230,8 @@ export const auditTools = [
         emptyLayers: res.audit?.empty_layers || []
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_missing_exposure',
     description: 'Поиск пустых промежутков кадров (exposure gaps) на таймлайне.',
     inputSchema: z.object({
@@ -242,16 +243,16 @@ export const auditTools = [
       if (res.status === 'unsupported') return res;
       return res;
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_locked_scenes',
     description: 'Поиск сцен, заблокированных пользователями в базе данных Harmony Server.',
     inputSchema: z.object({}),
     handler: async () => {
       throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "harmony.audit.find_locked_scenes" требует подключённого Control Center.');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.find_render_problems',
     description: 'Аудит файлов рендеринга на пропущенные кадры или битые изображения.',
     inputSchema: z.object({
@@ -261,8 +262,8 @@ export const auditTools = [
     handler: async (args: { projectPath?: string; framesDirectory?: string }) => {
       throw new HarmonyError('UNSUPPORTED_BY_VERSION', 'Операция "harmony.audit.find_render_problems" не реализована без Python API.');
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.suggest_fixes',
     description: 'Анализ ошибок сцены и выработка пошагового плана исправлений с auto-generated repair recipes (Composite Pass-Through, Kinematic Output, Cutter polarity, Drawing Keyframe Pollution, cycles, cloud storage).',
     inputSchema: z.object({
@@ -406,8 +407,8 @@ export const auditTools = [
           : 'No issues detected. Scene appears healthy.'
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.audit.export_mermaid_graph',
     description: 'Экспорт структуры графа нод открытой сцены в формате Mermaid-диаграммы.',
     inputSchema: z.object({
@@ -422,14 +423,17 @@ export const auditTools = [
         mermaidGraph
       };
     }
-  },
-  {
+  }),
+  defineTool({
     name: 'harmony.project.audit_storage_location',
     description: 'Локальная проверка абсолютного пути проекта на наличие облачных сервисов (Dropbox, Google Drive) или недопустимых символов, которые вызывают ошибки (например, Unable to read .tvg).',
     inputSchema: z.object({
-      projectPath: projectPathSchema
+      // Этот аудит анализирует именно путь, поэтому projectPath обязателен —
+      // общий projectPathSchema опционален, и раньше вызов без пути падал
+      // внутри verifyPathAccess(undefined).
+      projectPath: z.string().describe('Абсолютный путь к файлу проекта .xstage для проверки.')
     }),
-    handler: async (args: { projectPath: string }) => {
+    handler: async (args) => {
       const checkedPath = verifyPathAccess(args.projectPath);
       const issues: string[] = [];
       
@@ -457,5 +461,5 @@ export const auditTools = [
         issues
       };
     }
-  }
+  })
 ];
