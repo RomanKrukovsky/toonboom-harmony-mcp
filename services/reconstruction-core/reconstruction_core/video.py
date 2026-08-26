@@ -77,6 +77,31 @@ def enforce_limits(metadata: VideoMetadata, max_duration: int, max_width: int, m
         raise VideoError(f"Разрешение {metadata.width}x{metadata.height} превышает лимит {max_width}x{max_height}")
 
 
+_VSYNC_FLAG_CACHE: dict = {}
+
+
+def _frame_rate_control(executable: str) -> Tuple[str, str]:
+    """Return (flag, value) for pass-through frame rate control.
+
+    ffmpeg < 5.1: ``-vsync 0``. ffmpeg >= 5.1 deprecates it in favour of
+    ``-fps_mode vfr``; newer builds removed ``-vsync`` entirely.
+    """
+    cached = _VSYNC_FLAG_CACHE.get(executable)
+    if cached:
+        return cached
+    probe = subprocess.run(
+        [executable, "-hide_banner", "-h", "full"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+        stdin=subprocess.DEVNULL,
+    )
+    result = ("-fps_mode", "vfr") if "-fps_mode" in (probe.stdout + probe.stderr) else ("-vsync", "0")
+    _VSYNC_FLAG_CACHE[executable] = result
+    return result
+
+
 def extract_frames(
     video_path: str,
     output_dir: Path,
@@ -101,7 +126,10 @@ def extract_frames(
     command = [executable, "-hide_banner", "-loglevel", "error", "-i", str(Path(video_path).resolve())]
     if filters:
         command.extend(["-vf", ",".join(filters)])
-    command.extend(["-vsync", "0", "-compression_level", "3", str(output_dir / "frame_%06d.png")])
+    # ffmpeg 5.1+ deprecated -vsync in favour of -fps_mode (removed entirely in 8+).
+    # Probe once so both old and new builds work.
+    rate_flag, rate_value = _frame_rate_control(executable)
+    command.extend([rate_flag, rate_value, "-compression_level", "3", str(output_dir / "frame_%06d.png")])
     completed = subprocess.run(command, capture_output=True, text=True, timeout=600, check=False)
     if completed.returncode != 0:
         raise VideoError(f"FFmpeg не смог извлечь кадры: {completed.stderr.strip()[:2000]}")

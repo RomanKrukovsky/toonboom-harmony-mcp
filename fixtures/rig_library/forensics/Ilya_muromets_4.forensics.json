@@ -1,0 +1,6845 @@
+{
+ "id": "RIG_005",
+ "file": "Ilya_muromets_4.moho",
+ "version": 1039,
+ "project": {
+  "w": 1920,
+  "h": 1080,
+  "fps": 24.0,
+  "end_frame": 10000
+ },
+ "layer_tree": [
+  {
+   "d": 0,
+   "name": "Илья Муромец",
+   "type": "BoneLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": true
+  },
+  {
+   "d": 1,
+   "name": "Левая рука",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.032626,
+    "y": -0.03171
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "Бицепс",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": true
+  },
+  {
+   "d": 3,
+   "name": "сустав локтя",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.088528,
+    "y": -0.338348
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Задник  плеча",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.07766,
+    "y": -0.248587
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Рубаха",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 3,
+   "name": "Плечо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.017088,
+    "y": 0.019434
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 17,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "Предплечье",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "сустав кисти",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Предплечье",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.088835,
+    "y": -0.338198
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 2,
+   "name": "Кисть",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 18,
+   "origin": {
+    "x": 0.994473,
+    "y": -0.63691
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Обычный",
+    "Кулак",
+    "Указательный"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Кулак"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Обычный",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 19,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Кулак",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 19,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Указательный",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 21,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 1,
+   "name": "Ноги",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "Левая нога",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "Бедро",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Стопа",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 5
+  },
+  {
+   "d": 3,
+   "name": "Голень",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 2,
+   "name": "Правая нога",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "Бедро",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Стопа",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 5
+  },
+  {
+   "d": 3,
+   "name": "Голень",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 1,
+   "name": "Тело",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "Задняя часть брони",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "Шея",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.606458,
+    "y": 0.099579
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "Тело",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 81,
+   "mesh_shapes": 14
+  },
+  {
+   "d": 1,
+   "name": "голова",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.60916,
+    "y": 0.248171
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "Голова",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 44,
+   "mesh_shapes": 8
+  },
+  {
+   "d": 2,
+   "name": "Нос",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 17,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 2,
+   "name": "Рот переключатель",
+   "type": "SwitchLayer",
+   "visible": false,
+   "parent_bone": 50,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "А (открытый говорящий)",
+    "Е",
+    "ШЗС (Сжатые зубы)",
+    "Удивленный (грустный)",
+    "Недовольный ",
+    "Дефолтный закрытый",
+    "У",
+    "О",
+    "ЛК"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолтный закрытый"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "А (открытый говорящий)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Е",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "ШЗС (Сжатые зубы)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Удивленный (грустный)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Недовольный ",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Дефолтный закрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "У",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "О",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "ЛК",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 2,
+   "name": "Рот интерполяция",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 50,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "А (открытый говорящий)",
+    "Е",
+    "ШЗС (Сжатые зубы)",
+    "Удивленный (грустный)",
+    "Недовольный ",
+    "Дефолтный закрытый",
+    "У",
+    "О",
+    "ЛК"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолтный закрытый"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "А (открытый говорящий)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Е",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "ШЗС (Сжатые зубы)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Удивленный (грустный)",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Недовольный ",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Дефолтный закрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "У",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "О",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "ЛК",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Фон",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Нёбо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Язык",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "Зубы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Усы",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 2,
+   "name": "Глаза переключатель",
+   "type": "SwitchLayer",
+   "visible": false,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Дефолт",
+    "Широкие",
+    "Полу закрытые",
+    "Правый закрыт",
+    "Правый полузакрытый",
+    "Правый приоткрытый",
+    "Левый закрытый",
+    "Левый полузакрытый",
+    "Левый преоткрытый",
+    "Закрытые"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолт"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Дефолт",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Широкие",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Полу закрытые",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый закрыт",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый полузакрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый приоткрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый закрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый полузакрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый преоткрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Закрытые",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 2,
+   "name": "Глаза интерполяц",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Дефолт",
+    "Широкие",
+    "Полу закрытые",
+    "Правый закрыт",
+    "Правый полузакрытый",
+    "Правый приоткрытый",
+    "Левый закрытый",
+    "Левый полузакрытый",
+    "Левый преоткрытый",
+    "Закрытые"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолт"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Дефолт",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Широкие",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Полу закрытые",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый закрыт",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый полузакрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Правый приоткрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый закрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый полузакрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Левый преоткрытый",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "Закрытые",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 4,
+   "name": "Веки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": 57,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "Зрачки",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 2,
+   "name": "Брови переключатель",
+   "type": "SwitchLayer",
+   "visible": false,
+   "parent_bone": 54,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Дефолт",
+    "Злые",
+    "Приподнята правая",
+    "Приподнята левая",
+    "Удивленные"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолт"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Дефолт",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Злые",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Приподнята правая",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Приподнята левая",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Удивленные",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "Брови интерполяция",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 54,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Дефолт",
+    "Злые",
+    "Приподнята правая",
+    "Приподнята левая",
+    "Удивленные"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Дефолт"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Дефолт",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Злые",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Приподнята правая",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Приподнята левая",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Удивленные",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 1,
+   "name": "Правая рука",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.032626,
+    "y": -0.03171
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "Бицепс",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "сустав локтя",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.088528,
+    "y": -0.338348
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Задник  плеча",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.07766,
+    "y": -0.248587
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Рубаха",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 3,
+   "name": "Плечо",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.017088,
+    "y": 0.019434
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 17,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "Предплечье ",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "Предплечье 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.088835,
+    "y": -0.338198
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 3,
+   "name": "сустав кисти",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "Предплечье",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 1.088835,
+    "y": -0.338198
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 2,
+   "name": "Кисть",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 21,
+   "origin": {
+    "x": 0.994473,
+    "y": -0.63691
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "Обычный",
+    "Кулак",
+    "Указательный"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "Кулак"
+   ],
+   "switch_actions": []
+  },
+  {
+   "d": 3,
+   "name": "Обычный",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 19,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Кулак",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 19,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "Указательный",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 21,
+   "mesh_shapes": 1
+  }
+ ],
+ "layers_total": 228,
+ "skeletons": [
+  {
+   "layer_path": "/Илья Муромец",
+   "binding_mode": 1,
+   "bones": [
+    {
+     "name": "B1",
+     "parent": -1,
+     "length": 1.1605,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B2",
+     "parent": 0,
+     "length": 0.3796,
+     "strength": 0.319,
+     "constraints": true,
+     "min": -0.6109,
+     "max": 0.6109,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": [
+       {
+        "name": "Наклон",
+        "poses": 4,
+        "min": 0.959931,
+        "max": 2.181661
+       },
+       {
+        "name": "Скейл",
+        "poses": 3,
+        "min": 1.570796,
+        "max": 1.570796
+       }
+      ]
+     }
+    },
+    {
+     "name": "B3",
+     "parent": 1,
+     "length": 0.2787,
+     "strength": 0.319,
+     "constraints": true,
+     "min": -0.5236,
+     "max": 0.5236,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": [
+       {
+        "name": "Наклон",
+        "poses": 4,
+        "min": 5.759586,
+        "max": 6.806784
+       },
+       {
+        "name": "Скейл",
+        "poses": 3,
+        "min": 6.283185,
+        "max": 6.283185
+       }
+      ]
+     }
+    },
+    {
+     "name": "B4",
+     "parent": 2,
+     "length": 0.1978,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B5",
+     "parent": 3,
+     "length": 0.1546,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B6",
+     "parent": 0,
+     "length": 0.2503,
+     "strength": 0.319,
+     "constraints": true,
+     "min": -0.6109,
+     "max": 0.6109,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B7",
+     "parent": 5,
+     "length": 0.1723,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.7453,
+     "max": 1.7453,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.033
+      ],
+      "actions": [
+       {
+        "name": "B7",
+        "poses": 3,
+        "min": -1.712006,
+        "max": 0.033323
+       }
+      ]
+     }
+    },
+    {
+     "name": "B8",
+     "parent": 6,
+     "length": 0.3108,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.041
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B9",
+     "parent": 7,
+     "length": 0.2176,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.984
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B10",
+     "parent": 5,
+     "length": 0.2012,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.7453,
+     "max": 1.7453,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.052
+      ],
+      "actions": [
+       {
+        "name": "B10",
+        "poses": 3,
+        "min": 0.052329,
+        "max": 1.797658
+       }
+      ]
+     }
+    },
+    {
+     "name": "B11",
+     "parent": 9,
+     "length": 0.3128,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.027
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B12",
+     "parent": 10,
+     "length": 0.2049,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.986
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B13",
+     "parent": 2,
+     "length": 0.3992,
+     "strength": 0.649,
+     "constraints": true,
+     "min": -0.4363,
+     "max": 0.4363,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.863
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B14",
+     "parent": 2,
+     "length": 0.3248,
+     "strength": 0.78,
+     "constraints": true,
+     "min": -0.4363,
+     "max": 0.4363,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.332
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B15",
+     "parent": 1,
+     "length": 0.3555,
+     "strength": 0.319,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.71
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B16",
+     "parent": 1,
+     "length": 0.3393,
+     "strength": 0.319,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.654
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B17",
+     "parent": 13,
+     "length": 0.3763,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.586
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B18",
+     "parent": 16,
+     "length": 0.316,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.527
+      ],
+      "actions": [
+       {
+        "name": "B18",
+        "poses": 4,
+        "min": -2.61499,
+        "max": 3.682645
+       }
+      ]
+     }
+    },
+    {
+     "name": "B19",
+     "parent": 16,
+     "length": 0.2276,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.527
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B20",
+     "parent": 12,
+     "length": 0.3636,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.845
+      ],
+      "actions": [
+       {
+        "name": "B20",
+        "poses": 4,
+        "min": 1.692969,
+        "max": 7.976155
+       }
+      ]
+     }
+    },
+    {
+     "name": "B21",
+     "parent": 19,
+     "length": 0.318,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.698
+      ],
+      "actions": [
+       {
+        "name": "B21",
+        "poses": 4,
+        "min": 2.556841,
+        "max": 8.840026
+       }
+      ]
+     }
+    },
+    {
+     "name": "B22",
+     "parent": 19,
+     "length": 0.231,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.698
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B23",
+     "parent": 5,
+     "length": 0.2707,
+     "strength": 0.319,
+     "constraints": true,
+     "min": -1.2217,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.211
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B24",
+     "parent": 5,
+     "length": 0.2606,
+     "strength": 0.319,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.113
+      ],
+      "actions": [
+       {
+        "name": "B10",
+        "poses": 6,
+        "min": 0.113254,
+        "max": 1.727556
+       }
+      ]
+     }
+    },
+    {
+     "name": "B25",
+     "parent": 17,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B26",
+     "parent": 17,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B27",
+     "parent": 16,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B28",
+     "parent": 16,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B29",
+     "parent": 19,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B30",
+     "parent": 19,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B31",
+     "parent": 20,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B32",
+     "parent": 20,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B33",
+     "parent": 6,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B34",
+     "parent": 9,
+     "length": 0.05,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B35",
+     "parent": 6,
+     "length": 0.0938,
+     "strength": 0.0052,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.413
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B36",
+     "parent": 9,
+     "length": 0.1027,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.472
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B37",
+     "parent": 7,
+     "length": 0.0969,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.783
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B38",
+     "parent": 7,
+     "length": 0.0861,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.907
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B39",
+     "parent": 5,
+     "length": 0.0,
+     "strength": 0.8952,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B40",
+     "parent": 41,
+     "length": 0.0731,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.337
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B41",
+     "parent": 42,
+     "length": 0.0602,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.054
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B42",
+     "parent": 2,
+     "length": 0.2731,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.912
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B43",
+     "parent": 2,
+     "length": 0.3482,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.24
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B44",
+     "parent": 10,
+     "length": 0.0887,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.972
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B45",
+     "parent": 10,
+     "length": 0.0902,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.813
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B46",
+     "parent": 7,
+     "length": 0.1266,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.253
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B47",
+     "parent": 10,
+     "length": 0.1332,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.167
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B48",
+     "parent": -1,
+     "length": 0.2015,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.676
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B49",
+     "parent": -1,
+     "length": 0.1689,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.719
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B50",
+     "parent": 4,
+     "length": 0.113,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B51",
+     "parent": 49,
+     "length": 0.031,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B52",
+     "parent": 56,
+     "length": 0.0145,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.022
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B53",
+     "parent": 56,
+     "length": 0.0133,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B54",
+     "parent": 57,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.271
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B55",
+     "parent": 57,
+     "length": 0.0467,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B56",
+     "parent": 4,
+     "length": 0.1303,
+     "strength": 0.0636,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B57",
+     "parent": 53,
+     "length": 0.0321,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B58",
+     "parent": 49,
+     "length": 0.0519,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "Наклон",
+     "parent": -1,
+     "length": 0.4283,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": [
+       {
+        "name": "Наклон",
+        "poses": 4,
+        "min": 0.349066,
+        "max": 2.792526
+       }
+      ]
+     }
+    },
+    {
+     "name": "Скейл",
+     "parent": -1,
+     "length": 0.4222,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": [
+       {
+        "name": "Скейл",
+        "poses": 4,
+        "min": 0.349066,
+        "max": 2.792526
+       }
+      ]
+     }
+    },
+    {
+     "name": "B61",
+     "parent": 6,
+     "length": 0.203,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.325
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B62",
+     "parent": 60,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       2.496
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B63",
+     "parent": 5,
+     "length": 0.1533,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.2217,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.206
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B64",
+     "parent": 62,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B65",
+     "parent": 30,
+     "length": 0.18,
+     "strength": 1.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.714
+      ],
+      "actions": [
+       {
+        "name": "B65",
+        "poses": 3,
+        "min": 5.326195,
+        "max": 5.714381
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "layer_path": "/Илья Муромец/Левая рука/Кисть",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Рот переключатель",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Рот интерполяция",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Глаза переключатель",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Глаза интерполяц",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Брови переключатель",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/голова/Брови интерполяция",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Илья Муромец/Правая рука/Кисть",
+   "binding_mode": 1,
+   "bones": []
+  }
+ ],
+ "bones_total": 65,
+ "bones_constrained": 11,
+ "bones_ik": 65,
+ "bones_dials": 11,
+ "bones_dynamics": 0,
+ "binding_modes": [
+  1
+ ],
+ "dial_switch_links": [],
+ "animated_layers": [],
+ "actions_doc": [],
+ "masked_layers": [
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Фон",
+   "masking": 2
+  },
+  {
+   "name": "Усы",
+   "masking": 1
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  },
+  {
+   "name": "Веки",
+   "masking": 2
+  }
+ ],
+ "bone_name_vocabulary": {
+  "наклон": 1,
+  "скейл": 1
+ }
+}

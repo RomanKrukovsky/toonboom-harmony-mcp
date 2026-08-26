@@ -1,0 +1,78 @@
+{
+  "capabilityId": "production.episode_batch",
+  "generatedAt": "2026-08-24T12:53:10.724Z",
+  "executedOffline": true,
+  "realModelExecuted": false,
+  "realHarmonyExecuted": false,
+  "input": {
+    "fixture": "fixtures/show_bible/episode_e01_batch.json",
+    "showBibleFamily": "fixtures/show_bible/",
+    "shotsDeclared": 3
+  },
+  "pipeline": [
+    "ShowBibleLoader.load (once per batch)",
+    "EpisodeBatchCompiler.compile -> ShotManifest[] (cross-reference gate per shot)",
+    "RetargetingResolver.resolve per shot",
+    "HarmonyCommandBuilder.buildAnimationPlan per shot",
+    "schema validation for every PIR / plan"
+  ],
+  "totals": {
+    "shots": 3,
+    "beats": 5,
+    "keyframes": 36,
+    "commands": 36,
+    "totalFrames": 108
+  },
+  "perShot": [
+    {
+      "shotId": "E01_S01_SH01",
+      "performanceId": "PERF-2b6e27a827a6cc8b",
+      "beats": 2,
+      "keyframes": 15,
+      "commands": 15,
+      "commandTypes": [
+        "set_transform_keyframe"
+      ]
+    },
+    {
+      "shotId": "E01_S01_SH02",
+      "performanceId": "PERF-2da5f5203e293ff8",
+      "beats": 2,
+      "keyframes": 12,
+      "commands": 12,
+      "commandTypes": [
+        "set_transform_keyframe"
+      ]
+    },
+    {
+      "shotId": "E01_S02_SH01",
+      "performanceId": "PERF-7c64d3722186b22f",
+      "beats": 1,
+      "keyframes": 9,
+      "commands": 9,
+      "commandTypes": [
+        "set_transform_keyframe"
+      ]
+    }
+  ],
+  "rejections": [],
+  "schemaValidation": {
+    "episodeBatch": true,
+    "allPerformancePirs": true,
+    "allRetargetingPlans": true,
+    "allCommandPlans": true
+  },
+  "determinism": {
+    "checked": true,
+    "method": "two independent runs; SHA-256 over fast-json-stable-stringify of all volatile-stripped artifacts (planId/manifestId/createdAt are random per run by design)",
+    "episodeContentDigestMatch": true,
+    "episode_content_sha256": "sha256:bcd1396d1713fe77e23484bb7a9340eccb6078f4953955aac605016644ca159c"
+  },
+  "limitations": [
+    "No Harmony execution: compiled plans stay implemented_unverified until applied to a licensed Harmony.",
+    "RigBindingPlanV1 is a structural stub with zero bindings; no commissioned rig exists.",
+    "Beats carry real transform values from the declared gesture library (placeholder_curve provenance); unknown gestures stay HOLD with warnings.",
+    "All shots use the single declared character and the static-camera vocabulary of the fixture ShowBible."
+  ],
+  "nextRequiredProof": "Apply a multi-shot batch to a licensed Harmony in sequence (per-shot open_project -> execute -> save -> reopen -> verify) and audit native entities."
+}

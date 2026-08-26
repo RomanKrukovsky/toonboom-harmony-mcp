@@ -1,0 +1,46 @@
+{
+  "pirVersion": "1.0.0",
+  "characterId": "char_sprint0_photo_v1",
+  "drawingName": "mira_structural_turnaround_front",
+  "frame": 1,
+  "coordinateTransform": {
+    "sourceWidth": 512,
+    "sourceHeight": 512,
+    "coordinateSystem": "normalized",
+    "transformMatrix": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    "scale": 1.0,
+    "axisOrientation": { "x": "right", "y": "up" }
+  },
+  "layers": [
+    { "layerId": "L_torso", "name": "Torso", "semanticGroup": "torso", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_head", "name": "Head", "semanticGroup": "head", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_arm_l", "name": "Arm_L", "semanticGroup": "left_arm", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_forearm_l", "name": "Forearm_L", "semanticGroup": "left_forearm", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_hand_l", "name": "Hand_L", "semanticGroup": "left_hand", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_arm_r", "name": "Arm_R", "semanticGroup": "right_arm", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_forearm_r", "name": "Forearm_R", "semanticGroup": "right_forearm", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_hand_r", "name": "Hand_R", "semanticGroup": "right_hand", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_leg_l", "name": "Leg_L", "semanticGroup": "left_leg", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_shin_l", "name": "Shin_L", "semanticGroup": "left_shin", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_foot_l", "name": "Foot_L", "semanticGroup": "left_foot", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_leg_r", "name": "Leg_R", "semanticGroup": "right_leg", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_shin_r", "name": "Shin_R", "semanticGroup": "right_shin", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_foot_r", "name": "Foot_R", "semanticGroup": "right_foot", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_eyes", "name": "Eyes", "semanticGroup": "eyes", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_brows", "name": "Brows", "semanticGroup": "brows", "artLayer": "line", "strokes": [], "fillRegions": [] },
+    { "layerId": "L_mouth", "name": "Mouth", "semanticGroup": "mouth", "artLayer": "line", "strokes": [], "fillRegions": [] }
+  ],
+  "unassignedStrokes": [],
+  "unassignedFills": [],
+  "palette": [
+    { "id": "line_main", "name": "Outline", "color": { "r": 26, "g": 26, "b": 26, "a": 255 } }
+  ],
+  "qualityMetrics": {
+    "totalStrokes": 0,
+    "totalFills": 0,
+    "averageControlPointsPerStroke": 0,
+    "rmsGeometricError": 0,
+    "firstPassAcceptanceRate": 0,
+    "requiresHumanReviewCount": 0
+  }
+}

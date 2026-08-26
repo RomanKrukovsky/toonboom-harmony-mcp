@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "char_main_v1",
+  "gestures": [
+    {
+      "gestureId": "point",
+      "description": "Raise right arm to point forward, brief hold, return. Placeholder curve until a commissioned rig defines real controller ranges (fixtures/show_bible/README.md).",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0 },
+            { "offsetFrame": 5, "rotation": -80 },
+            { "offsetFrame": 9, "rotation": -70 },
+            { "offsetFrame": 11, "rotation": 0 }
+          ]
+        },
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0 },
+            { "offsetFrame": 5, "rotation": 6 },
+            { "offsetFrame": 11, "rotation": 0 }
+          ]
+        }
+      ]
+    }
+  ]
+}

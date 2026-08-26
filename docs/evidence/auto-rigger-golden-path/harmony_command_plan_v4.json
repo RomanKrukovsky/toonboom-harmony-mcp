@@ -1,0 +1,542 @@
+{
+  "schemaVersion": "4.0",
+  "planId": "PLAN-7A33481BFC51",
+  "manifestId": "MAN-9F55E6DC",
+  "createdAt": "2026-08-24T09:57:00.603Z",
+  "status": "implemented_unverified",
+  "requiresRealHarmony": true,
+  "sourceManifestSha256": "aec504a0c0337a7f460324462bed507a2c73ac2e4a84d5ed0f69ac61bb692e79",
+  "commands": [
+    {
+      "commandId": "cmd_0001",
+      "type": "create_peg",
+      "params": {
+        "node_id": "NODE_MASTER_PEG",
+        "name": "Master-P"
+      },
+      "preconditions": [
+        "project_open"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "create_NODE_MASTER_PEG",
+      "rollback": {
+        "strategy": "delete_created",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node",
+        "path": "NODE_MASTER_PEG",
+        "nonempty": true
+      },
+      "verification": {
+        "method": "node_exists",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0002",
+      "type": "create_peg",
+      "params": {
+        "node_id": "NODE_BODY_PEG",
+        "name": "Body-P"
+      },
+      "preconditions": [
+        "project_open"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "create_NODE_BODY_PEG",
+      "rollback": {
+        "strategy": "delete_created",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node",
+        "path": "NODE_BODY_PEG",
+        "nonempty": true
+      },
+      "verification": {
+        "method": "node_exists",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0003",
+      "type": "create_peg",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "name": "Head-P"
+      },
+      "preconditions": [
+        "project_open"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "create_NODE_HEAD_PEG",
+      "rollback": {
+        "strategy": "delete_created",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node",
+        "path": "NODE_HEAD_PEG",
+        "nonempty": true
+      },
+      "verification": {
+        "method": "node_exists",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0004",
+      "type": "create_peg",
+      "params": {
+        "node_id": "NODE_LEFT_ARM_PEG",
+        "name": "Arm_L-P"
+      },
+      "preconditions": [
+        "project_open"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "create_NODE_LEFT_ARM_PEG",
+      "rollback": {
+        "strategy": "delete_created",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node",
+        "path": "NODE_LEFT_ARM_PEG",
+        "nonempty": true
+      },
+      "verification": {
+        "method": "node_exists",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0005",
+      "type": "create_peg",
+      "params": {
+        "node_id": "NODE_RIGHT_ARM_PEG",
+        "name": "Arm_R-P"
+      },
+      "preconditions": [
+        "project_open"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "create_NODE_RIGHT_ARM_PEG",
+      "rollback": {
+        "strategy": "delete_created",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node",
+        "path": "NODE_RIGHT_ARM_PEG",
+        "nonempty": true
+      },
+      "verification": {
+        "method": "node_exists",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0006",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "NODE_HEAD_PEG",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 224.0050844086541,
+          "y": 123.43845240275064,
+          "z": 0
+        },
+        "source_binding": "head_top"
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_NODE_HEAD_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0007",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "NODE_BODY_PEG",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 247.26027244991724,
+          "y": 101.78706900278726,
+          "z": 0
+        },
+        "source_binding": "neck"
+      },
+      "preconditions": [
+        "node_exists:NODE_BODY_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_NODE_BODY_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0008",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "NODE_LEFT_ARM_PEG",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 323.4410608609517,
+          "y": 273.39433002471924,
+          "z": 0
+        },
+        "source_binding": "shoulder_left"
+      },
+      "preconditions": [
+        "node_exists:NODE_LEFT_ARM_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_NODE_LEFT_ARM_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0009",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "NODE_RIGHT_ARM_PEG",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 203.15560547510782,
+          "y": 100.1832628250122,
+          "z": 0
+        },
+        "source_binding": "shoulder_right"
+      },
+      "preconditions": [
+        "node_exists:NODE_RIGHT_ARM_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_NODE_RIGHT_ARM_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0010",
+      "type": "connect_nodes",
+      "params": {
+        "from_node": "NODE_MASTER_PEG",
+        "from_port": 0,
+        "to_node": "NODE_BODY_PEG",
+        "to_port": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_MASTER_PEG",
+        "node_exists:NODE_BODY_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "conn_NODE_MASTER_PEG_NODE_BODY_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "connection",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_connection",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0011",
+      "type": "connect_nodes",
+      "params": {
+        "from_node": "NODE_BODY_PEG",
+        "from_port": 0,
+        "to_node": "NODE_HEAD_PEG",
+        "to_port": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_BODY_PEG",
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "conn_NODE_BODY_PEG_NODE_HEAD_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "connection",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_connection",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0012",
+      "type": "connect_nodes",
+      "params": {
+        "from_node": "NODE_BODY_PEG",
+        "from_port": 0,
+        "to_node": "NODE_LEFT_ARM_PEG",
+        "to_port": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_BODY_PEG",
+        "node_exists:NODE_LEFT_ARM_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "conn_NODE_BODY_PEG_NODE_LEFT_ARM_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "connection",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_connection",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_0013",
+      "type": "connect_nodes",
+      "params": {
+        "from_node": "NODE_BODY_PEG",
+        "from_port": 0,
+        "to_node": "NODE_RIGHT_ARM_PEG",
+        "to_port": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_BODY_PEG",
+        "node_exists:NODE_RIGHT_ARM_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "conn_NODE_BODY_PEG_NODE_RIGHT_ARM_PEG",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "connection",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_connection",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_9013",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "char_sprint0_photo_v1_Forearm_L_P",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 100.51201687918768,
+          "y": 260.56388060251874,
+          "z": 0
+        },
+        "source_binding": "joint_guide:elbow_left"
+      },
+      "preconditions": [
+        "node_exists:char_sprint0_photo_v1_Forearm_L_P"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_hinge_elbow_left_center",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_9014",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "char_sprint0_photo_v1_Forearm_R_P",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 273.7230726348029,
+          "y": 119.42893695831299,
+          "z": 0
+        },
+        "source_binding": "joint_guide:elbow_right"
+      },
+      "preconditions": [
+        "node_exists:char_sprint0_photo_v1_Forearm_R_P"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_hinge_elbow_right_center",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_9015",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "char_sprint0_photo_v1_Shin_L_P",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 153.43761724895901,
+          "y": 509.1538381576538,
+          "z": 0
+        },
+        "source_binding": "joint_guide:knee_left"
+      },
+      "preconditions": [
+        "node_exists:char_sprint0_photo_v1_Shin_L_P"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_hinge_knee_left_center",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_9016",
+      "type": "set_peg_pivot",
+      "params": {
+        "target_node_id": "char_sprint0_photo_v1_Shin_R_P",
+        "coordinate_space": "HARMONY_SCENE",
+        "pivot": {
+          "x": 349.9038610458374,
+          "y": 481.88913313547766,
+          "z": 0
+        },
+        "source_binding": "joint_guide:knee_right"
+      },
+      "preconditions": [
+        "node_exists:char_sprint0_photo_v1_Shin_R_P"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "pivot_hinge_knee_right_center",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "check_attr",
+        "required": true,
+        "acceptance": []
+      }
+    }
+  ],
+  "acceptanceGates": [
+    "gate1",
+    "gate2",
+    "gate3",
+    "gate4",
+    "gate5",
+    "gate6"
+  ],
+  "provenance": {
+    "compiler": "HarmonyCommandPlanV4Compiler v1",
+    "source": "RigBindingResolver"
+  }
+}

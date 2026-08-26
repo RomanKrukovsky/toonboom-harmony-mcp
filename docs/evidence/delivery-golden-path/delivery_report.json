@@ -1,0 +1,47 @@
+{
+  "capabilityId": "delivery.episode_pipeline",
+  "generatedAt": "2026-08-24T16:24:03.618Z",
+  "chain": [
+    "EpisodeBatchCompiler.compile",
+    "stand-in renders (lavfi)",
+    "assemble_episode.mjs",
+    "build_review_package.mjs"
+  ],
+  "compiled": {
+    "totals": {
+      "shots": 3,
+      "beats": 5,
+      "keyframes": 36,
+      "commands": 36,
+      "totalFrames": 108
+    },
+    "digest": "sha256:bcd1396d1713fe77e23484bb7a9340eccb6078f4953955aac605016644ca159c"
+  },
+  "renders": [
+    {
+      "sceneId": "S01",
+      "videoPath": "output/delivery_golden/S01_standin.mp4",
+      "frames": 48,
+      "provenance": "stand_in_render"
+    },
+    {
+      "sceneId": "S02",
+      "videoPath": "output/delivery_golden/S02_standin.mp4",
+      "frames": 24,
+      "provenance": "stand_in_render"
+    }
+  ],
+  "assembly": {
+    "output": "output/delivery_golden/E01_preview.mp4",
+    "bytes": 120889
+  },
+  "review": {
+    "files": 3,
+    "hashVerified": true
+  },
+  "limitations": [
+    "Renders are ffmpeg stand-ins: no licensed Harmony on this host; real .xstage renders drop in by filename.",
+    "LLM direction is not part of this chain; the committed fixture batch is the deterministic input."
+  ],
+  "nextRequiredProof": "Replace stand-in renders with real Harmony batch renders and re-run unchanged."
+}

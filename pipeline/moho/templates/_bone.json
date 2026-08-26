@@ -1,0 +1,308 @@
+{
+ "type": "Bone",
+ "name": "B1",
+ "parent": -1,
+ "angle_control_parent": -1,
+ "angle_control_scale": 1.0,
+ "pos_control_parent": -1,
+ "pos_control_scale": {
+  "x": 1.0,
+  "y": 1.0
+ },
+ "scale_control_parent": -1,
+ "scale_control_scale": 1.0,
+ "selected": false,
+ "hidden": false,
+ "shy": false,
+ "length": 0.260685,
+ "strength": 1.40678,
+ "ignored_by_ik": false,
+ "physics_radius": -1.0,
+ "physics_return_to_zero": false,
+ "physics_motor_speed": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   0.0
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "physics_torque": 10.0,
+ "physics_lock_tip": false,
+ "offset": {
+  "x": 0.0,
+  "y": 0.0
+ },
+ "fixed_angle": false,
+ "scaling_mode": 0,
+ "squash_stretch_scaling": 1.0,
+ "max_auto_scaling": 1.0,
+ "constraints": false,
+ "min_constraint": -1.22173,
+ "max_constraint": 1.22173,
+ "bone_dynamics": {
+  "type": "Bool",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   false
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "torque_force": 2.0,
+ "spring_force": 2.0,
+ "damping_force": 1.0,
+ "anim_pos": {
+  "type": "Vec2",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   {
+    "x": 0.121658,
+    "y": -0.081105
+   }
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "anim_angle": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   1.476938
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "anim_scale": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   1.0
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "flip_h": {
+  "type": "Bool",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   false
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "flip_v": {
+  "type": "Bool",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   false
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "target_bone": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   -1.0
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "anim_parent": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   -1.0
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "ik_lock": {
+  "type": "Bool",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   false
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "ik_parent_target": {
+  "type": "Vec2",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   {
+    "x": 0.0,
+    "y": 0.0
+   }
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "ik_global_angle": {
+  "type": "Val",
+  "ref": false,
+  "mute": false,
+  "when": [
+   0
+  ],
+  "val": [
+   0.0
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": -1.0,
+    "v2": -1.0,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ }
+}

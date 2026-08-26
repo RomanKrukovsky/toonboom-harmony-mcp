@@ -192,7 +192,7 @@
       ],
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "Apply the same verified-hash + relative-path pattern to the remaining model families (VoxCPM, Whisper, SAM)."
+      "nextRequiredProof": "Apply the same verified-hash + relative-path pattern to the remaining model families (Whisper, SAM). VoxCPM was removed from the project in 2026-08."
     },
     {
       "capabilityId": "recorder.harmony_action_capture",
@@ -270,15 +270,233 @@
     {
       "capabilityId": "production.shot_factory",
       "productionStage": "orchestration",
-      "implementationFiles": [],
-      "publicTools": [],
-      "backendType": "none",
-      "verificationLevel": "not_implemented",
+      "implementationFiles": [
+        "src/schemas/showBible.ts",
+        "src/schemas/shotManifest.ts",
+        "src/schemas/gestureTracks.ts",
+        "src/services/showBibleLoader/index.ts",
+        "src/services/shotManifestCompiler/index.ts",
+        "src/services/motionValueResolver/index.ts",
+        "src/services/retargetingResolver/index.ts",
+        "src/services/harmonyCommandBuilder/index.ts",
+        "src/tools/factoryCompilerTools.ts"
+      ],
+      "publicTools": [
+        "harmony.factory.compile_shot"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/shot-factory-golden-path/shot_manifest.json",
+        "docs/evidence/shot-factory-golden-path/rig_binding_plan.json",
+        "docs/evidence/shot-factory-golden-path/performance_pir.json",
+        "docs/evidence/shot-factory-golden-path/retargeting_plan.json",
+        "docs/evidence/shot-factory-golden-path/harmony_command_plan_v4.json",
+        "docs/evidence/shot-factory-golden-path/execution-report.json",
+        "docs/evidence/shot-factory-golden-path/hashes.json"
+      ],
+      "knownFailures": [
+        "No Harmony execution: the compiled plan stays implemented_unverified until applied to a licensed Harmony.",
+        "RigBindingPlanV1 in the bundle is a structural stub with zero bindings; no commissioned rig exists (fixtures/show_bible/README.md).",
+        "Beats carry real transform values from the declared gesture library (placeholder_curve provenance); unknown gestures stay HOLD with warnings.",
+        "Command-plan identity fields (planId, manifestId, createdAt) are random per run by design; the determinism gate compares volatile-stripped content digests.",
+        "tests/shotFactoryGoldenPath.test.ts fails by design if code and committed evidence drift apart."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Apply the compiled HarmonyCommandPlanV4 to a licensed Harmony (open_project -> execute -> save -> close -> reopen -> verify native entities) to reach real_harmony_smoke_verified."
+    },
+    {
+      "capabilityId": "rigger.moho_production_rig",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "src/schemas/mohoCommandPlan.ts",
+        "src/services/mohoPlanBuilder/index.ts",
+        "src/services/mohoLuaEmitter/index.ts",
+        "src/tools/fullRigTools.ts"
+      ],
+      "publicTools": [
+        "harmony.rig.create_full_production_rig"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "contract_verified",
       "evidencePaths": [],
-      "knownFailures": [],
-      "blockingReason": "Not started. Deliberately deferred: building a shot factory on top of a perception layer that fabricated keypoints would have industrialised a false result.",
-      "lastVerifiedAt": "2026-07-27",
-      "nextRequiredProof": "ShotManifest schema, deterministic compiler and an offline golden-path bundle."
+      "knownFailures": [
+        "Moho automates via in-app Lua only: no headless daemon exists, so execution = running the generated idempotent Lua inside Moho Pro (Scripts > Run Lua Script); the script prints per-step [OK]/[FAIL] verification and a final audit.",
+        "Smart-bone action wiring is emitted as recorded [WIRE] intents: final dial authoring is interactive in the Moho UI.",
+        "Never executed inside a real Moho install on this host; Lua API usage follows Moho Pro 13+ documented bindings and is UNVERIFIED in-app."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Run the generated Lua inside a real Moho Pro install and capture the [AUDIT] bones count plus saved document hash."
+    },
+    {
+      "capabilityId": "rigger.full_production_rig",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "src/services/fullRigPlanBuilder/index.ts",
+        "src/tools/fullRigTools.ts",
+        "src/services/autoRigCompiler/index.ts",
+        "src/services/jointGuideSolver/index.ts"
+      ],
+      "publicTools": [
+        "harmony.rig.create_full_production_rig"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Execution requires a licensed Harmony: without it the tool returns plan_ready_unexecuted (honest), never a fabricated rig.",
+        "Bridge deformer/master-controller creation is written against the documented DOM API but is UNVERIFIED on a licensed install; per-command verification and rollback are fail-closed.",
+        "Topology audit on the photo fixture flags unreliable joints; production-grade hinges need clean full-body art."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "One licensed-Harmony execution of the 122-command plan: open -> execute -> save -> reopen -> native audit matches (18 parts, 18 deformers, hinge pivots at circle centers)."
+    },
+    {
+      "capabilityId": "production.season_director",
+      "productionStage": "orchestration",
+      "implementationFiles": [
+        "src/services/seasonDirector/index.ts",
+        "src/services/llmDirector/index.ts",
+        "src/services/seriesMemory/index.ts",
+        "src/tools/factoryCompilerTools.ts"
+      ],
+      "publicTools": [
+        "harmony.factory.direct_episode",
+        "harmony.factory.direct_season"
+      ],
+      "backendType": "openrouter_free_llm",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "LLM output is nondeterministic: no hash-pinned evidence bundle; every run records fresh digests under output/series_memory/.",
+        "Live season run 2026-08-23: 2/2 episodes compiled on nvidia/nemotron-3-super-120b-a12b:free, zero refusals, season digest sha256:205530708c866498e29a0826dafa3372fe06f56a7f9ec1634f8e0059aab771fb.",
+        "Only :free OpenRouter models allowed by policy (OpenRouterClient hard guard).",
+        "Direction is draft-level: human review of beats/staging remains mandatory."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Commit a live-run execution report as evidence and promote to offline_verified; Harmony execution still required for scene output."
+    },
+    {
+      "capabilityId": "production.retake_loop",
+      "productionStage": "qa",
+      "implementationFiles": [
+        "src/services/retakeTranslator/index.ts",
+        "src/services/retakeLoop/index.ts",
+        "src/services/renderMetrics/index.ts"
+      ],
+      "publicTools": [],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Bridges 2 and 3 (snapshot capture, plan execution) exist in the bridge code but need a licensed Harmony to prove end-to-end.",
+        "Loop policy caps autonomous iterations at 2; anything non-autoFixable escalates to a human queue."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "One real Harmony shot closed through the loop (defect -> patch -> re-render -> approved) with an evidence bundle."
+    },
+    {
+      "capabilityId": "delivery.episode_pipeline",
+      "productionStage": "delivery",
+      "implementationFiles": [
+        "scripts/assemble_episode.mjs",
+        "scripts/build_review_package.mjs",
+        "scripts/run_delivery_golden_path.mjs"
+      ],
+      "publicTools": [],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/delivery-golden-path/delivery_report.json",
+        "docs/evidence/delivery-golden-path/hashes.json"
+      ],
+      "knownFailures": [
+        "Renders in the golden path are ffmpeg stand-ins; real Harmony renders replace them by filename once licensed."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Re-run the chain unchanged with real Harmony renders and commit the resulting review package hashes."
+    },
+    {
+      "capabilityId": "production.episode_batch",
+      "productionStage": "orchestration",
+      "implementationFiles": [
+        "src/schemas/episodeBatch.ts",
+        "src/schemas/gestureTracks.ts",
+        "src/services/episodeBatchCompiler/index.ts",
+        "src/services/motionValueResolver/index.ts"
+      ],
+      "publicTools": [],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/episode-batch-golden-path/episode_batch_input.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s01_sh01_performance_pir.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s01_sh01_command_plan_v4.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s01_sh02_performance_pir.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s01_sh02_command_plan_v4.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s02_sh01_performance_pir.json",
+        "docs/evidence/episode-batch-golden-path/shot_e01_s02_sh01_command_plan_v4.json",
+        "docs/evidence/episode-batch-golden-path/execution-report.json",
+        "docs/evidence/episode-batch-golden-path/hashes.json"
+      ],
+      "knownFailures": [
+        "No Harmony execution: batch plans stay implemented_unverified until applied to a licensed Harmony.",
+        "Fixture batch covers one character, static camera, and the declared neutral/surprise vocabulary only.",
+        "Any single-shot cross-reference violation marks the whole batch rejected; no silent shot dropping.",
+        "Command-plan identity fields are random per run; the determinism gate compares volatile-stripped content digests.",
+        "tests/episodeBatchGoldenPath.test.ts fails by design if code and committed evidence drift apart."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Apply a multi-shot batch to a licensed Harmony in sequence (per-shot open_project -> execute -> save -> reopen -> verify) and audit native entities per shot."
+    },
+    {
+      "capabilityId": "rigger.auto_rig_compile",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "src/services/autoRigCompiler/index.ts",
+        "src/services/pivotEstimator/index.ts",
+        "src/services/rigTemplateRegistry/index.ts",
+        "src/services/rigBindingResolver/index.ts",
+        "src/adapters/characterRigAssembler.ts",
+        "src/adapters/deformerGenerator.ts",
+        "src/schemas/characterRigPIR.ts",
+        "src/schemas/deformerPIR.ts"
+      ],
+      "publicTools": [],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/auto-rigger-golden-path/character_topology_pir.json",
+        "docs/evidence/auto-rigger-golden-path/rig_binding_plan.json",
+        "docs/evidence/auto-rigger-golden-path/harmony_command_plan_v4.json",
+        "docs/evidence/auto-rigger-golden-path/rig_assembly_plan.json",
+        "docs/evidence/auto-rigger-golden-path/deformer_master_controller_plan.json",
+        "docs/evidence/auto-rigger-golden-path/joint_guides.json",
+        "docs/evidence/auto-rigger-golden-path/joint_guides_overlay.png",
+        "docs/evidence/auto-rigger-golden-path/execution-report.json",
+        "docs/evidence/auto-rigger-golden-path/hashes.json"
+      ],
+      "knownFailures": [
+        "No Harmony execution: the rig package stays implemented_unverified until applied to a licensed Harmony.",
+        "Input skeleton is real-model-derived (Sprint-0 DWPose, photographic fixture); stylised line-art characters are unvalidated upstream.",
+        "The drawing decomposition in the bundle is structural (semantic layers, zero strokes); real artwork slicing arrives with a commissioned character.",
+        "The bridge-side deformer executor is an acknowledged mock (GROUP placeholders); deformers are PLAN-level until that executor is implemented.",
+        "Hinge-circle guides (joint_guides.json + overlay) are exact geometry for the given landmarks, but on THIS fixture the DWPose hinge landmarks are visually unreliable (crossed-arms pose); guides are production-grade only on clean full-body art.",
+        "The assembly template now carries the two-segment hinge hierarchy (Arm+Forearm, Leg+Shin, Foot) and hinge pivots are wired to circle centers in the command plan; actual artwork slicing along the computed chords still requires real layered art.",
+        "Topology reliability audit flags joints needing review; art-gap patch artwork at deformed joints and final rig approval stay human.",
+        "planId/createdAt of assembly and deformer plans and the derived planHash are volatile by design; content digests exclude them.",
+        "tests/autoRigGoldenPath.test.ts fails by design if code and committed evidence drift apart."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-23",
+      "nextRequiredProof": "Apply the full rig package to a licensed Harmony (open_project -> execute pegs/pivots/connections -> create deformers via a real executor -> save -> reopen -> audit node graph)."
     },
     {
       "capabilityId": "tracking.multi_person",

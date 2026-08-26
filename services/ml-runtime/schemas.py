@@ -52,25 +52,35 @@ class InbetweenRequest(BaseModel):
     count: int = 3
 
 class InbetweenResponse(BaseModel):
-    format: str
-    version: str
-    sourceKeyframes: List[Dict[str, Any]]
-    inbetweens: List[Dict[str, Any]]
+    """Union of a real InbetweenPIR payload and an honest blocked envelope.
 
-class VoxCPMRequest(BaseModel):
-    text: str
-    outputWavPath: str
-    voiceDescription: Optional[str] = None
-    referenceWavPath: Optional[str] = None
-    instruct: Optional[str] = None
-    guidanceScale: float = 2.0
-    numSteps: int = 10
+    The blocked provider deliberately omits PIR fields; every field therefore
+    carries a default so the blocked path serialises as HTTP 200 instead of a
+    ResponseValidationError (500).
+    """
+    # Real inference payload
+    format: Optional[str] = None
+    version: Optional[str] = None
+    sourceKeyframes: List[Any] = []
+    inbetweens: List[Dict[str, Any]] = []
+    # Envelope shared by blocked and real results
+    status: str = "completed"
+    realInferenceExecuted: bool = True
+    provider: str = "animeinbet"
+    requestedCount: Optional[int] = None
+    artifactCreated: bool = False
+    blockingReason: Optional[str] = None
 
-class VoxCPMResponse(BaseModel):
-    status: str
-    realInferenceExecuted: bool
-    outputWavPath: Optional[str] = None
-    sampleRate: int = 48000
-    durationSec: float = 0.0
-    provider: str = "voxcpm_provider"
-    errors: List[str] = []
+    @model_validator(mode="after")
+    def _reject_false_success(self) -> "InbetweenResponse":
+        if self.realInferenceExecuted and self.status not in ("completed", "success"):
+            raise ValueError(
+                f"realInferenceExecuted=true is incompatible with status={self.status!r}"
+            )
+        if not self.realInferenceExecuted:
+            if self.inbetweens:
+                raise ValueError("inbetweens must be empty when realInferenceExecuted=false")
+            if self.artifactCreated:
+                raise ValueError("artifactCreated must be false when realInferenceExecuted=false")
+        return self
+

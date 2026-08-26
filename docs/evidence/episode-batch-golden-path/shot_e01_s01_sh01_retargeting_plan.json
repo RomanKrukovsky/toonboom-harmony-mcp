@@ -1,0 +1,91 @@
+{
+  "schema": "toon-boom-mcp/retargeting-plan-v1",
+  "characterId": "char_main_v1",
+  "performanceId": "PERF-2b6e27a827a6cc8b",
+  "bindingHash": "sha256:57a6f64582139c53892deea4c244e3e135a3fb9d9b833b400ceb99c17d20c25e",
+  "tracks": [
+    {
+      "nodeId": "NODE_HEAD_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "rotation": 0,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 35,
+          "rotation": 6,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 48,
+          "rotation": 0,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_MOUTH_D",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 48,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_ARM_R_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "rotation": 0,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 35,
+          "rotation": -80,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 44,
+          "rotation": -70,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 48,
+          "rotation": 0,
+          "interpolation": "LINEAR"
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

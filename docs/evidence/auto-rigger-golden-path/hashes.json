@@ -1,0 +1,11 @@
+{
+  "hashes": {
+    "character_topology_pir.json": "2c55e6735748c70c17357deaa3c6c665c989d54aaf4326e64fe7b2fee219bff0",
+    "deformer_master_controller_plan.json": "fad1b32bea386558c1370dcf2c9ee13f9fa53287ad727d90668007d4431218c6",
+    "execution-report.json": "f6a69605355f909685fb0b91ab4e873e5308c96ecfff4c800b86ea9df142f286",
+    "harmony_command_plan_v4.json": "6e95b0fcae91dcccf66149cc0b7c608bbe088bcd785ee34c842624dce4edd281",
+    "joint_guides.json": "451c11e0260dc87ee764c28b32412c892fcfa3e57b6ffc42f4ac5f6d3f2e73fe",
+    "rig_assembly_plan.json": "8c2702549a036ba4dec6c1b48e189be25ade9b43c22a2e3216155abe5790193c",
+    "rig_binding_plan.json": "a70d4a3a2b80ce4307ec51aba130a9dffcd8ac09f3b54f69164fec8b1fc4e711"
+  }
+}

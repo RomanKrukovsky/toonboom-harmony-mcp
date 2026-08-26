@@ -1,0 +1,1443 @@
+{
+ "type": "MeshLayer",
+ "noisy_shapes": false,
+ "noisy_lines": false,
+ "animated_noise": false,
+ "extra_sketchy": false,
+ "noise_amp": 0.008333,
+ "noise_scale": 0.066667,
+ "noise_interval": 1,
+ "extra_lines": 0,
+ "squashable_deformer": true,
+ "frame_zero_deformer": true,
+ "gap_filling": false,
+ "exclude_lines_from_mask": false,
+ "antialiasing": true,
+ "fill_texture_fileref": {
+  "relativeTo": "Absolute",
+  "path": ""
+ },
+ "fill_texture_path": "",
+ "line_texture_fileref": {
+  "relativeTo": "Absolute",
+  "path": ""
+ },
+ "line_texture_path": "",
+ "3d_mode": 0,
+ "3d_options": {
+  "type": "Mesh3DOptions",
+  "3d_shading_mode": 1,
+  "3d_shading_density": 50,
+  "3d_shading_color": {
+   "r": 64,
+   "g": 64,
+   "b": 64,
+   "a": 255
+  },
+  "3d_silhouette_edges": true,
+  "3d_material_edges": true,
+  "3d_crease_edges": true,
+  "3d_crease_angle": 1.047198,
+  "3d_edge_extension": 0.0,
+  "3d_backface_removal": false,
+  "3d_reset_z": false
+ },
+ "triangulated": false,
+ "name": "Tail (Warp)",
+ "uuid": "f5adf059-858a-40da-86a5-474dac42e873",
+ "label_col": 0,
+ "quality_flags": 12284,
+ "animated_layer_effects": false,
+ "origin": {
+  "x": 0.0,
+  "y": 0.0
+ },
+ "parent_bone": -1,
+ "visible": true,
+ "shown_in_timeline": false,
+ "consolidated_channels": false,
+ "render_only": false,
+ "edit_only": true,
+ "ignored_by_layer_picker": false,
+ "scale_compensation": true,
+ "scale_normalization": 1.0,
+ "rotate_to_follow": false,
+ "face_camera": false,
+ "face_camera_mode": 2,
+ "masking": 0,
+ "mask_expansion": false,
+ "blend_mode": 0,
+ "camera_immune": false,
+ "dof_immune": false,
+ "layer_ref_uuid": "",
+ "layer_ref_fileref": {
+  "relativeTo": "Absolute",
+  "path": ""
+ },
+ "layer_ref_path": "",
+ "layer_ref_same_doc": false,
+ "layer_ref_mod_date": 0,
+ "flexi_bone_subset": "17|18|19|20",
+ "flexi_bone_elbow": false,
+ "timing_offset": 0,
+ "follow_layer_uuid": "",
+ "follow_curve": -1,
+ "follow_bending": false,
+ "distortion_layer_uuid": "",
+ "random_num": 7832,
+ "transforms": {
+  "translation": {
+   "type": "Vec3",
+   "ref": true,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "x": 1.033333,
+     "y": -1.45,
+     "z": 0.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "scale": {
+   "type": "Vec3",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "x": 1.0,
+     "y": 1.0,
+     "z": 1.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "rotation_x": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "rotation_y": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "rotation_z": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "flip_h": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "flip_v": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "shear": {
+   "type": "Vec3",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "following": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "physics_nudge": {
+   "type": "Vec2",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "x": 0.0,
+     "y": 0.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "layer_effects": {
+  "visibility": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    true
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "blur": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "alpha": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    1.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "ambient_occlusion": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "threshold": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "noise": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "pixelation": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "layer_shadow": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "angle": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    5.497787
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "offset": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.033333
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "blur": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.016667
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "expansion": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "color": {
+   "type": "Color",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "r": 0.0,
+     "g": 0.0,
+     "b": 0.0,
+     "a": 0.501961
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "noise_amp": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "noise_scale": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    64.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "threshold": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "clip_to_group": false
+ },
+ "layer_shading": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "angle": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    5.497787
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "offset": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.033333
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "blur": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.066667
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "contraction": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "color": {
+   "type": "Color",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "r": 0.0,
+     "g": 0.0,
+     "b": 0.0,
+     "a": 0.501961
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "noise_amp": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "noise_scale": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    64.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "threshold": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "perspective_shadow": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "blur": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.012346
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "scale": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    1.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "shear": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "color": {
+   "type": "Color",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "r": 0.0,
+     "g": 0.0,
+     "b": 0.0,
+     "a": 0.501961
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "threshold": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "motion_blur": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "sub_frames": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    true
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "frames": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    20.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "skip": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    1.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "alpha_start": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.3
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "alpha_end": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.1
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "radius": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.008333
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "frame_percentage": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    1.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "extended_frames": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.0
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "layer_outline": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "width": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    0.004115
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "color": {
+   "type": "Color",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "r": 0.0,
+     "g": 0.0,
+     "b": 0.0,
+     "a": 1.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "layer_color": {
+  "on": {
+   "type": "Bool",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    false
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "color": {
+   "type": "Color",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "r": 0.0,
+     "g": 0.0,
+     "b": 0.0,
+     "a": 1.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "timeline_markers": {
+  "type": "String",
+  "ref": false,
+  "mute": false,
+  "when": [
+   -1000000
+  ],
+  "val": [
+   ""
+  ],
+  "interp": [
+   {
+    "im": 1,
+    "v1": 0.1,
+    "v2": 0.5,
+    "in": 1,
+    "h": 0,
+    "s": false,
+    "t": 0
+   }
+  ]
+ },
+ "physics": {
+  "enabled": true,
+  "static": false,
+  "sleeping": false,
+  "respawn": 0,
+  "velocity": {
+   "x": 0.0,
+   "y": 0.0
+  },
+  "density": 1.0,
+  "friction": 0.3,
+  "restitution": 0.5,
+  "pivot": false,
+  "enable_motor": false,
+  "motor_speed": {
+   "type": "Val",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    3.141593
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  },
+  "motor_torque": 10000.0,
+  "force_field": false,
+  "force_field_vector": {
+   "type": "Vec2",
+   "ref": false,
+   "mute": false,
+   "when": [
+    0
+   ],
+   "val": [
+    {
+     "x": 0.0,
+     "y": 1.0
+    }
+   ],
+   "interp": [
+    {
+     "im": 1,
+     "v1": 0.1,
+     "v2": 0.5,
+     "in": 1,
+     "h": 0,
+     "s": false,
+     "t": 0
+    }
+   ]
+  }
+ },
+ "layer_user_comments": "",
+ "layer_user_tags": ""
+}

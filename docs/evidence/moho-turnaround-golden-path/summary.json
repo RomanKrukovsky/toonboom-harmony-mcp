@@ -1,0 +1,14 @@
+{
+  "characterId": "char_hero_turnaround_v1",
+  "characterName": "Hero_Turnaround",
+  "turnaroundAnglesCount": 8,
+  "smartDialsCount": 2,
+  "vitruvianGroupsCount": 4,
+  "jointCorrectionsCount": 4,
+  "squashStretchCount": 2,
+  "meshTrianglesCount": 18,
+  "compiledBonesCount": 27,
+  "fileSizeBytes": 1940,
+  "contentSha256": "2eedae4e7a37c024b97c0a3829a633015e0b0eb4d495f9a393ebdaaa7e3af335",
+  "generatedAt": "2026-08-26T19:04:38.344Z"
+}

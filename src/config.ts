@@ -231,7 +231,7 @@ export const config: HarmonyConfig = {
       anthropic: process.env.ANTHROPIC_API_KEY,
       openrouter: process.env.OPENROUTER_API_KEY
     },
-    openrouterModel: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-super:free'
+    openrouterModel: process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-super-120b-a12b:free'
   },
   reconstruction: {
     coreUrl: process.env.RECONSTRUCTION_CORE_URL || 'http://127.0.0.1:8765',

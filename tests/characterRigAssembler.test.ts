@@ -78,10 +78,13 @@ describe('CharacterRigAssembler Tests', () => {
     const headPart = plan.parts.find((p) => p.partId === 'Head');
     expect(headPart?.zOffset).toBeGreaterThan(0);
 
-    // Check Auto-patch Joints
+    // Check Auto-patch Joints — two-segment hinge hierarchy:
+    // Arm_L -> Forearm_L (elbow), Forearm_L -> Hand_L (wrist).
     expect(plan.autoPatchJoints.length).toBeGreaterThan(0);
-    const armHandJoint = plan.autoPatchJoints.find((j) => j.partA === 'Arm_L' && j.partB === 'Hand_L');
-    expect(armHandJoint).toBeDefined();
+    const elbowJoint = plan.autoPatchJoints.find((j) => j.partA === 'Arm_L' && j.partB === 'Forearm_L');
+    expect(elbowJoint).toBeDefined();
+    const wristJoint = plan.autoPatchJoints.find((j) => j.partA === 'Forearm_L' && j.partB === 'Hand_L');
+    expect(wristJoint).toBeDefined();
 
     // Check Backdrops
     expect(plan.backdrops.length).toBe(4);

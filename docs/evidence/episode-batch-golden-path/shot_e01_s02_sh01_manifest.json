@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "shotId": "E01_S02_SH01",
+  "showBibleRef": "fixtures/show_bible/show_bible.json",
+  "production": "polygon_show",
+  "episode": "E01",
+  "sceneName": "S02",
+  "description": "Mira points at the board and holds.",
+  "staging": {
+    "positions": [
+      {
+        "characterId": "char_main_v1",
+        "preset": "center"
+      }
+    ],
+    "shotSize": "medium_shot",
+    "cameraMove": "static",
+    "backgroundRef": "bg/room_v1.png"
+  },
+  "timing": {
+    "totalFrames": 24,
+    "fps": 24,
+    "minBeatFrames": 2,
+    "maxBeatFrames": 96,
+    "anticipationFrames": 4,
+    "followThroughFrames": 6,
+    "pauseBeforeBeats": {}
+  },
+  "beats": [
+    {
+      "beatId": "b1",
+      "startFrame": 1,
+      "endFrame": 24,
+      "characterId": "char_main_v1",
+      "intent": "explain",
+      "emotion": "neutral",
+      "gestureId": "point"
+    }
+  ],
+  "fx": [],
+  "render": {
+    "preview": true,
+    "format": "mp4",
+    "quality": "standard"
+  },
+  "provenance": {
+    "director": "llm_director_v1",
+    "createdAt": "2026-07-27T12:00:00Z",
+    "sourceScriptRef": "scripts/E01/S02.txt"
+  }
+}

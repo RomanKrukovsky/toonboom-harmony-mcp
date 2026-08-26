@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "polygon_show_v1",
+  "title": "Polygon Show",
+  "logLine": "One character, one room.",
+  "fps": 24,
+  "resolution": { "width": 1920, "height": 1080 },
+  "visualStyle": "flat editorial",
+  "lineRules": { "defaultThicknessPt": 2.0, "lineColourId": "line_main", "fillColourId": "fill_skin" },
+  "lighting": { "type": "soft_top_left", "shadowColourId": "shadow_soft" },
+  "allowedDeformations": ["peg_transform"],
+  "characterBibles": [{ "characterId": "char_main_v1", "ref": "character_bible_mira.json" }],
+  "paletteManifestRef": "palette_manifest.json",
+  "cameraRulesRef": "camera_rules.json",
+  "motionGrammarRef": "motion_grammar.json",
+  "qaThresholdsRef": "qa_thresholds.json",
+  "forbiddenSources": [],
+  "provenance": { "approver": "td_lead", "approvedAt": "2026-07-27T12:00:00Z" }
+}

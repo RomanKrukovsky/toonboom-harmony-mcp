@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "paletteId": "palette_main_v1",
+  "name": "Polygon Show Palette",
+  "colours": [
+    { "colourId": "line_main", "name": "Outline", "rgba": "#1A1A1AFF", "usage": "line", "locked": true },
+    { "colourId": "fill_skin", "name": "Skin", "rgba": "#FF8C6BFF", "usage": "skin", "locked": true },
+    { "colourId": "shadow_soft", "name": "Shadow", "rgba": "#3A2A20FF", "usage": "shadow", "locked": true }
+  ],
+  "provenance": { "approver": "td_lead", "approvedAt": "2026-07-27T12:00:00Z" }
+}

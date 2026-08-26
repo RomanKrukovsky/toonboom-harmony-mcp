@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "allowedShotSizes": ["close_up", "medium_shot"],
+  "allowedCameraMoves": ["static"],
+  "defaultShotSize": "medium_shot",
+  "safeMargins": { "top": 0.05, "bottom": 0.05, "left": 0.05, "right": 0.05 },
+  "forbiddenMoves": [],
+  "provenance": { "approver": "td_lead", "approvedAt": "2026-07-27T12:00:00Z" }
+}

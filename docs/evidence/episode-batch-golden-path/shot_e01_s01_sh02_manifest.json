@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "shotId": "E01_S01_SH02",
+  "showBibleRef": "fixtures/show_bible/show_bible.json",
+  "production": "polygon_show",
+  "episode": "E01",
+  "sceneName": "S01",
+  "description": "Close-up on the surprised reaction.",
+  "staging": {
+    "positions": [
+      {
+        "characterId": "char_main_v1",
+        "preset": "close_up"
+      }
+    ],
+    "shotSize": "close_up",
+    "cameraMove": "static",
+    "backgroundRef": "bg/room_v1.png"
+  },
+  "timing": {
+    "totalFrames": 36,
+    "fps": 24,
+    "minBeatFrames": 2,
+    "maxBeatFrames": 96,
+    "anticipationFrames": 4,
+    "followThroughFrames": 6,
+    "pauseBeforeBeats": {}
+  },
+  "beats": [
+    {
+      "beatId": "b1",
+      "startFrame": 1,
+      "endFrame": 18,
+      "characterId": "char_main_v1",
+      "intent": "hold_surprise",
+      "emotion": "surprise"
+    },
+    {
+      "beatId": "b2",
+      "startFrame": 19,
+      "endFrame": 36,
+      "characterId": "char_main_v1",
+      "intent": "settle",
+      "emotion": "neutral"
+    }
+  ],
+  "fx": [],
+  "render": {
+    "preview": true,
+    "format": "mp4",
+    "quality": "standard"
+  },
+  "provenance": {
+    "director": "llm_director_v1",
+    "createdAt": "2026-07-27T12:00:00Z",
+    "sourceScriptRef": "scripts/E01/S01.txt"
+  }
+}

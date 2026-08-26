@@ -1,6 +1,8 @@
 import sys
 import json
 import os
+import shutil
+import datetime
 import traceback
 
 class ResponseException(Exception):
@@ -1073,6 +1075,17 @@ def process_command(input_data):
                 "safe_to_render_mp4": len(heavy_nodes) == 0
             })
 
+        elif command == "snapshot_scene":
+            result = execute_locked(lambda: build_scene_snapshot(project))
+            respond(result)
+
+        elif command == "execute_command_plan_v4":
+            plan = args.get("plan")
+            if not isinstance(plan, dict):
+                respond_error("INVALID_HARMONY_OBJECT", "Command Plan V4 отсутствует или имеет неверный тип.")
+            result = execute_locked(lambda: execute_command_plan_v4(harmony, project, plan))
+            respond(result)
+
         else:
             respond_error("UNSUPPORTED_BY_VERSION", f"Команда '{command}' не поддерживается мостом Python.")
 
@@ -1317,32 +1330,53 @@ def apply_reconstruction_manifest(harmony, project, manifest):
     }
 
 
-def execute_command_plan(harmony, project, plan):
-    # План команд содержит список строго типизированных операций
-    if not hasattr(harmony, "DrawingAccess") or not hasattr(harmony, "BezierPath"):
-        raise RuntimeError("Установленная версия Harmony не совместима с требуемыми API (DrawingAccess, BezierPath)")
-
-    scene = getattr(project, "scene", None)
-    if scene is None or not hasattr(scene, "columns") or not hasattr(scene, "nodes"):
-        raise RuntimeError("Версия Harmony не предоставляет Python DOM scene.columns/scene.nodes")
-
-    commands = plan.get("commands", [])
-    
-    # Контекст для шагов плана
-    ctx = {
-        "palette": None,
-        "colour_ids": {},
-        "drawing_attribute": None,
-        "drawing_by_name": {},
-        "nonempty_drawing_count": 0,
-        "created_shapes_in_drawing": {}
-    }
-    
+def _run_plan_commands(harmony, project, scene, commands, ctx):
     for cmd in commands:
         cmd_type = cmd.get("type")
         params = cmd.get("params", {})
         
-        if cmd_type == "create_palette":
+        if cmd_type == "create_deformer":
+            if "deformer_id" in params:
+                # FullRig production shape: typed module + points + target wiring,
+                # fail-closed (no silent success).
+                deformer_id = params.get("deformer_id", "Deformer")
+                node_type = params.get("node_type", "CURVE_DEFORMER")
+                target_node_name = params.get("target_node")
+                num_points = int(params.get("num_points", 3))
+                node_name = safe_harmony_name(f"{deformer_id}_DEF")
+                try:
+                    def_node = scene.nodes.create(node_type, "Top/" + node_name)
+                    if not def_node:
+                        raise RuntimeError(f"scene.nodes.create returned no node for {node_name}")
+                    try:
+                        if hasattr(def_node, "setNumPoints"):
+                            def_node.setNumPoints(num_points)
+                        elif hasattr(def_node, "attributes") and hasattr(def_node.attributes, "numPoints"):
+                            def_node.attributes.numPoints.setValue(num_points)
+                    except Exception as attr_err:
+                        print(f"[Warning] numPoints not set on {node_name}: {attr_err}")
+                    if target_node_name:
+                        target = scene_node(scene, "Top/" + safe_harmony_name(target_node_name))
+                        if target is None:
+                            raise RuntimeError(f"deformer target missing: {target_node_name}")
+                        link_nodes(def_node, target)
+                except Exception as e:
+                    raise RuntimeError(f"create_deformer failed for {deformer_id}: {e}")
+            else:
+                # Legacy shape (v3 plans): lenient deformer creation.
+                deformer_name = safe_harmony_name(params.get("deformerName", "Deformer"))
+                deformer_type = params.get("deformerType", "DEFORMATION_CHAIN")
+                print(f"[DEFORMER COMMAND] create_deformer: {deformer_name} ({deformer_type})")
+                try:
+                    def_node = scene.nodes.create(deformer_type, "Top/" + deformer_name)
+                    if "targetElement" in params:
+                        target_node = scene_node(scene, "Top/" + safe_harmony_name(params["targetElement"]))
+                        if target_node and def_node:
+                            link_nodes(def_node, target_node)
+                except Exception as e:
+                    print(f"[Warning] Failed to create deformer {deformer_name}: {e}")
+
+        elif cmd_type == "create_palette":
             palette_name = safe_harmony_name(params["paletteName"])
             palette = None
             for existing in project.palettes:
@@ -1524,8 +1558,35 @@ def execute_command_plan(harmony, project, plan):
             print(f"[PEG TRANSFORM COMMAND] set_transform_interpolation: {peg_name} range {start_frame}-{end_frame} ({interpolation})")
 
         elif cmd_type == "create_deformer":
-            deformer_name = safe_harmony_name(params.get("deformerName", "Deformer"))
-            deformer_type = params.get("deformerType", "DEFORMATION_CHAIN")
+            if "deformer_id" in params:
+                # FullRig production shape: typed module + points + target wiring,
+                # fail-closed (no silent success).
+                deformer_id = params.get("deformer_id", "Deformer")
+                node_type = params.get("node_type", "CURVE_DEFORMER")
+                target_node_name = params.get("target_node")
+                num_points = int(params.get("num_points", 3))
+                node_name = safe_harmony_name(f"{deformer_id}_DEF")
+                try:
+                    def_node = scene.nodes.create(node_type, "Top/" + node_name)
+                    if not def_node:
+                        raise RuntimeError(f"scene.nodes.create returned no node for {node_name}")
+                    try:
+                        if hasattr(def_node, "setNumPoints"):
+                            def_node.setNumPoints(num_points)
+                        elif hasattr(def_node, "attributes") and hasattr(def_node.attributes, "numPoints"):
+                            def_node.attributes.numPoints.setValue(num_points)
+                    except Exception as attr_err:
+                        print(f"[Warning] numPoints not set on {node_name}: {attr_err}")
+                    if target_node_name:
+                        target = scene_node(scene, "Top/" + safe_harmony_name(target_node_name))
+                        if target is None:
+                            raise RuntimeError(f"deformer target missing: {target_node_name}")
+                        link_nodes(def_node, target)
+                except Exception as e:
+                    raise RuntimeError(f"create_deformer failed for {deformer_id}: {e}")
+            else:
+                deformer_name = safe_harmony_name(params.get("deformerName", "Deformer"))
+                deformer_type = params.get("deformerType", "DEFORMATION_CHAIN")
             print(f"[DEFORMER COMMAND] create_deformer: {deformer_name} ({deformer_type})")
             try:
                 def_node = scene.nodes.create(deformer_type, "Top/" + deformer_name)
@@ -1535,15 +1596,100 @@ def execute_command_plan(harmony, project, plan):
                         link_nodes(def_node, target_node)
             except Exception as e:
                 print(f"[Warning] Failed to create deformer {deformer_name}: {e}")
-            
+
+        elif cmd_type == "create_group":
+            group_name = safe_harmony_name(params.get("node_id", "Group"))
+            try:
+                created = scene.nodes.create("GROUP", "Top/" + group_name)
+                if not created:
+                    raise RuntimeError(f"scene.nodes.create returned no node for {group_name}")
+            except Exception as e:
+                raise RuntimeError(f"create_group failed for {group_name}: {e}")
+
+        elif cmd_type == "create_deformer_v2":
+            # Full-production deformer creation (FullRig plan): typed module,
+            # point count, closed flag, wired to its target drawing node.
+            deformer_id = params.get("deformer_id", "Deformer")
+            node_type = params.get("node_type", "CURVE_DEFORMER")
+            target_node_name = params.get("target_node")
+            num_points = int(params.get("num_points", 3))
+            node_name = safe_harmony_name(f"{deformer_id}_DEF")
+            try:
+                def_node = scene.nodes.create(node_type, "Top/" + node_name)
+                if not def_node:
+                    raise RuntimeError(f"scene.nodes.create returned no node for {node_name}")
+                # Point count where the DOM exposes it (Curve/Envelope modules).
+                try:
+                    pts_attr = _read_numbered_attribute(def_node, "numPoints") if False else None
+                    if hasattr(def_node, "setNumPoints"):
+                        def_node.setNumPoints(num_points)
+                    elif hasattr(def_node, "attributes") and hasattr(def_node.attributes, "numPoints"):
+                        def_node.attributes.numPoints.setValue(num_points)
+                except Exception as attr_err:
+                    print(f"[Warning] numPoints not set on {node_name}: {attr_err}")
+                if target_node_name:
+                    target = scene_node(scene, "Top/" + safe_harmony_name(target_node_name))
+                    if target is None:
+                        raise RuntimeError(f"deformer target missing: {target_node_name}")
+                    link_nodes(def_node, target)
+            except Exception as e:
+                raise RuntimeError(f"create_deformer_v2 failed for {deformer_id}: {e}")
+
+        elif cmd_type == "create_master_controller":
+            # Face/body master controller: node + links to every controlled peg.
+            mc_name = safe_harmony_name(params.get("name", "MasterController"))
+            controlled = params.get("controlled_nodes", []) or []
+            try:
+                mc_node = scene.nodes.create("tbMasterController", "Top/" + mc_name)
+                if not mc_node:
+                    raise RuntimeError(f"scene.nodes.create returned no node for {mc_name}")
+                linked = 0
+                for peg_name in controlled:
+                    peg = scene_node(scene, "Top/" + safe_harmony_name(peg_name))
+                    if peg is None:
+                        print(f"[Warning] MC '{mc_name}': controlled node missing: {peg_name}")
+                        continue
+                    try:
+                        link_nodes(mc_node, peg)
+                        linked += 1
+                    except Exception as link_err:
+                        print(f"[Warning] MC '{mc_name}': link to {peg_name} failed: {link_err}")
+                if controlled and linked == 0:
+                    raise RuntimeError(f"master controller '{mc_name}' could not link any controlled node")
+            except Exception as e:
+                raise RuntimeError(f"create_master_controller failed for {mc_name}: {e}")
+
         elif cmd_type == "save_project":
             frame_count = int(params["frameCount"])
             fps = float(params["fps"])
             width = int(params["width"])
             height = int(params["height"])
-            
+
             set_project_scene_settings(project, scene, frame_count, fps, width, height)
             save_harmony_project(project)
+
+
+def execute_command_plan(harmony, project, plan):
+    # План команд содержит список строго типизированных операций
+    if not hasattr(harmony, "DrawingAccess") or not hasattr(harmony, "BezierPath"):
+        raise RuntimeError("Установленная версия Harmony не совместима с требуемыми API (DrawingAccess, BezierPath)")
+
+    scene = getattr(project, "scene", None)
+    if scene is None or not hasattr(scene, "columns") or not hasattr(scene, "nodes"):
+        raise RuntimeError("Версия Harmony не предоставляет Python DOM scene.columns/scene.nodes")
+
+    commands = plan.get("commands", [])
+
+    ctx = {
+        "palette": None,
+        "colour_ids": {},
+        "drawing_attribute": None,
+        "drawing_by_name": {},
+        "nonempty_drawing_count": 0,
+        "created_shapes_in_drawing": {}
+    }
+
+    _run_plan_commands(harmony, project, scene, commands, ctx)
 
     # Считаем непустые рисунки для нативного аудита
     nonempty_count = sum(1 for name, count in ctx["created_shapes_in_drawing"].items() if count > 0)
@@ -2348,6 +2494,850 @@ def execute_command_plan_v3(harmony, project, plan):
         "skipped": skipped,
         "errors": errors
     }
+
+
+_SCENE_SNAPSHOT_FORMAT = "SceneSnapshotPIR"
+_SCENE_SNAPSHOT_VERSION = "1.0.0"
+_SNAPSHOT_TRANSFORM_ATTRS = (
+    ("x", "position.x"),
+    ("y", "position.y"),
+    ("rotation", "rotation.anglez"),
+    ("scaleX", "scale.x"),
+    ("scaleY", "scale.y"),
+)
+
+_V4_CONTENT_COMMAND_TYPES = frozenset({
+    "create_palette",
+    "add_palette_swatch",
+    "create_drawing_element",
+    "create_drawing",
+    "write_path",
+    "set_exposure",
+    "create_node",
+    "connect_nodes",
+    "create_peg",
+    "attach_drawing_to_peg",
+    "set_peg_pivot",
+    "set_transform_keyframe",
+    "set_transform_interpolation",
+    "save_project",
+})
+
+_V4_LIFECYCLE_COMMAND_TYPES = frozenset({
+    "snapshot_project",
+    "close_project",
+    "reopen_project",
+    "inspect_native_entities",
+    "render_preview",
+    "compare_render",
+    "rollback_snapshot",
+    "verify_rollback",
+})
+
+_V4_DEFAULT_ROLLBACK_STRATEGIES = {
+    "create_palette": "remove_palette",
+    "add_palette_swatch": "remove_swatch",
+    "create_drawing_element": "delete_node",
+    "create_node": "delete_node",
+    "create_peg": "delete_node",
+    "connect_nodes": "disconnect_link",
+    "attach_drawing_to_peg": "disconnect_link",
+}
+
+_V4_SEEN_IDEMPOTENCY_KEYS = set()
+_V4_FLOAT_TOLERANCE = 1e-6
+_V4_AUDIT_COUNT_KEYS = (
+    "elementCount",
+    "drawingCount",
+    "nonemptyDrawingCount",
+    "colourArtStrokeCount",
+    "lineArtStrokeCount",
+    "paletteColorCount",
+    "exposureFrameCount",
+    "sceneFrameCount",
+)
+
+
+def _snapshot_collect_nodes(group, out):
+    if not hasattr(group, "nodes"):
+        return
+    try:
+        children = list(group.nodes)
+    except Exception:
+        children = []
+    for child in children:
+        out.append(child)
+        _snapshot_collect_nodes(child, out)
+
+
+def _read_numbered_attribute(node, attr_name, frame):
+    attributes = getattr(node, "attributes", None)
+    if attributes is None:
+        return None
+    try:
+        attr = attributes[attr_name]
+    except Exception:
+        return None
+    if attr is None:
+        return None
+    getter = getattr(attr, "value", None)
+    if callable(getter):
+        try:
+            return float(getter(frame))
+        except Exception:
+            pass
+    try:
+        return float(attr.value)
+    except Exception:
+        return None
+
+
+def _snapshot_transform_keys(node):
+    frames = set()
+    interpolations = []
+    for _, attr_name in _SNAPSHOT_TRANSFORM_ATTRS:
+        attributes = getattr(node, "attributes", None)
+        if attributes is None:
+            continue
+        try:
+            attr = attributes[attr_name]
+        except Exception:
+            continue
+        if attr is None:
+            continue
+        keyframes = getattr(attr, "keyframes", None)
+        try:
+            keyframe_items = list(keyframes) if keyframes is not None else []
+        except Exception:
+            keyframe_items = []
+        for keyframe in keyframe_items:
+            frame_value = getattr(keyframe, "frame", None)
+            if frame_value is None:
+                continue
+            try:
+                frames.add(int(frame_value))
+            except Exception:
+                continue
+            interp_value = getattr(keyframe, "interpolation", None)
+            if interp_value:
+                interpolations.append(str(interp_value))
+    if not frames:
+        return None
+    keys = []
+    for frame in sorted(frames):
+        entry = {"frame": int(frame)}
+        readable = False
+        for out_key, attr_name in _SNAPSHOT_TRANSFORM_ATTRS:
+            value = _read_numbered_attribute(node, attr_name, frame)
+            if value is not None:
+                entry[out_key] = value
+                readable = True
+        if readable:
+            if interpolations:
+                entry["interpolation"] = interpolations[0]
+            keys.append(entry)
+    return keys or None
+
+
+def _snapshot_exposures(node, frame_count):
+    if frame_count <= 0:
+        return None
+    try:
+        drawing_attribute = get_drawing_attribute(node)
+    except Exception:
+        return None
+    getter = getattr(drawing_attribute, "value", None)
+    if not callable(getter):
+        return None
+    segments = []
+    current_name = None
+    start_frame = None
+    for frame in range(1, frame_count + 1):
+        try:
+            name = drawing_value_name(getter(frame))
+        except Exception:
+            name = None
+        if name and name != current_name:
+            if current_name is not None:
+                segments.append({"frame": start_frame, "drawing": current_name})
+            current_name = name
+            start_frame = frame
+    if current_name is not None:
+        segments.append({"frame": start_frame, "drawing": current_name})
+    return segments or None
+
+
+def build_scene_snapshot(project):
+    scene = getattr(project, "scene", None)
+    if scene is None:
+        raise RuntimeError("Проект не предоставляет scene")
+    project_file = str(getattr(project, "project_path", "") or "")
+    root_group = getattr(project, "root_group", None)
+    if root_group is None:
+        root_group = getattr(scene, "root_group", None)
+    nodes = []
+    if root_group is not None:
+        _snapshot_collect_nodes(root_group, nodes)
+    elif hasattr(scene, "nodes"):
+        try:
+            nodes = list(scene.nodes)
+        except Exception:
+            nodes = []
+    try:
+        frame_count = int(getattr(scene, "frame_count", 0) or 0)
+    except Exception:
+        frame_count = 0
+    node_entries = []
+    connections = []
+    node_data = []
+    seen_ids = set()
+    for node in nodes:
+        node_id = str(getattr(node, "path", "") or "")
+        if not node_id or node_id in seen_ids:
+            continue
+        seen_ids.add(node_id)
+        base_name = os.path.basename(node_id)
+        node_entries.append({
+            "id": node_id,
+            "type": str(getattr(node, "type", "")),
+            "name": str(getattr(node, "name", "") or base_name),
+        })
+        ports_out = getattr(node, "ports_out", None)
+        try:
+            port_items = list(ports_out) if ports_out is not None else []
+        except Exception:
+            port_items = []
+        for port_index, port in enumerate(port_items):
+            destinations = getattr(port, "destination_nodes", None)
+            try:
+                destination_items = list(destinations) if destinations is not None else []
+            except Exception:
+                destination_items = []
+            for dest in destination_items:
+                dest_path = str(getattr(dest, "path", "") or "")
+                if not dest_path:
+                    continue
+                connection = {"fromNode": node_id, "toNode": dest_path}
+                declared_port_index = getattr(port, "port_index", None)
+                if isinstance(declared_port_index, int):
+                    connection["fromPort"] = int(declared_port_index)
+                elif isinstance(port_index, int):
+                    connection["fromPort"] = port_index
+                connections.append(connection)
+        transform_keys = _snapshot_transform_keys(node)
+        exposures = _snapshot_exposures(node, frame_count)
+        if transform_keys is not None or exposures is not None:
+            data_entry = {"nodeId": node_id}
+            if transform_keys is not None:
+                data_entry["transformKeys"] = transform_keys
+            if exposures is not None:
+                data_entry["exposures"] = exposures
+            node_data.append(data_entry)
+    scene_id = os.path.splitext(os.path.basename(project_file))[0] if project_file else "unknown"
+    return {
+        "status": "success",
+        "snapshot": {
+            "format": _SCENE_SNAPSHOT_FORMAT,
+            "version": _SCENE_SNAPSHOT_VERSION,
+            "sceneId": scene_id,
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "nodes": node_entries,
+            "connections": connections,
+            "nodeData": node_data,
+        },
+    }
+
+
+def _v4_validate_plan(plan):
+    if plan.get("schemaVersion") != "4.0":
+        respond_error(
+            "PLAN_VALIDATION_FAILED",
+            "Command Plan V4 требует schemaVersion '4.0'.",
+            {"actual": plan.get("schemaVersion")}
+        )
+    idempotency_key = plan.get("idempotencyKey")
+    if not isinstance(idempotency_key, str) or not idempotency_key.strip():
+        respond_error("PLAN_VALIDATION_FAILED", "Command Plan V4 требует непустой строковый idempotencyKey.")
+    commands = plan.get("commands")
+    if not isinstance(commands, list) or not commands:
+        respond_error("PLAN_VALIDATION_FAILED", "Command Plan V4 требует непустой список commands.")
+    first_command = commands[0]
+    first_type = first_command.get("type") if isinstance(first_command, dict) else None
+    if first_type != "snapshot_project":
+        respond_error(
+            "PLAN_VALIDATION_FAILED",
+            "Первой командой Command Plan V4 обязан быть 'snapshot_project'.",
+            {"actual": first_type}
+        )
+    if idempotency_key in _V4_SEEN_IDEMPOTENCY_KEYS:
+        respond_error(
+            "DUPLICATE_IDEMPOTENCY_KEY",
+            f"idempotencyKey '{idempotency_key}' уже выполнялся в этой сессии моста.",
+            {"idempotencyKey": idempotency_key}
+        )
+    _V4_SEEN_IDEMPOTENCY_KEYS.add(idempotency_key)
+    return commands
+
+
+def _v4_numbers_equal(left, right):
+    try:
+        return abs(float(left) - float(right)) <= _V4_FLOAT_TOLERANCE
+    except Exception:
+        return False
+
+
+def _v4_verify_content_command(harmony, project, scene, command, ctx):
+    cmd_type = command.get("type")
+    params = command.get("params") or {}
+    if cmd_type == "create_deformer":
+        deformer_id = params.get("deformer_id", "Deformer")
+        node_name = safe_harmony_name(f"{deformer_id}_DEF")
+        node_path = "Top/" + node_name
+        node = scene_node(scene, node_path)
+        if node is None:
+            return "unverified", {"nodePath": node_path}
+        actual_type = str(getattr(node, "type", "") or "")
+        expected = str(params.get("node_type", ""))
+        type_ok = (not expected) or (expected.lower() in actual_type.lower()) or ("DEFORM" in actual_type.upper()) or ("BONE" in actual_type.upper())
+        return ("verified" if type_ok else "unverified"), {"nodePath": node_path, "actualType": actual_type}
+    if cmd_type == "create_master_controller":
+        mc_name = safe_harmony_name(params.get("name", "MasterController"))
+        node_path = "Top/" + mc_name
+        node = scene_node(scene, node_path)
+        if node is None:
+            return "unverified", {"nodePath": node_path}
+        controlled = params.get("controlled_nodes", []) or []
+        linked = sum(1 for peg in controlled if scene_node(scene, "Top/" + safe_harmony_name(peg)) is not None)
+        ok = (len(controlled) == 0) or (linked > 0)
+        return ("verified" if ok else "unverified"), {"nodePath": node_path, "controlledFound": linked}
+    if cmd_type == "create_group":
+        group_name = safe_harmony_name(params.get("node_id", "Group"))
+        node_path = "Top/" + group_name
+        found = scene_node(scene, node_path) is not None
+        return ("verified" if found else "unverified"), {"nodePath": node_path}
+    if cmd_type == "create_palette":
+        wanted = safe_harmony_name(params["paletteName"])
+        found = any(getattr(item, "name", None) == wanted for item in project.palettes)
+        return ("verified" if found else "unverified"), {"paletteName": wanted}
+    if cmd_type == "add_palette_swatch":
+        palette = ctx.get("palette")
+        wanted = safe_harmony_name(params["colorName"])
+        found = False
+        if palette is not None:
+            found = any(getattr(item, "name", None) == wanted for item in palette)
+        return ("verified" if found else "unverified"), {"colourName": wanted}
+    if cmd_type == "create_drawing_element":
+        node_path = "Top/" + safe_harmony_name(params["nodeName"])
+        found = scene_node(scene, node_path) is not None
+        return ("verified" if found else "unverified"), {"nodePath": node_path}
+    if cmd_type == "create_drawing":
+        drawing_name = safe_harmony_name(params["drawingName"])
+        element_obj = ctx.get("element_obj")
+        found = drawing_name in ctx.get("drawing_by_name", {})
+        if found and element_obj is not None:
+            try:
+                found = any(str(getattr(item, "name", "")) == drawing_name for item in element_obj.drawings)
+            except Exception:
+                found = False
+        return ("verified" if found else "unverified"), {"drawingName": drawing_name}
+    if cmd_type == "write_path":
+        drawing_name = safe_harmony_name(params["drawingName"])
+        shape_count = int(ctx.get("created_shapes_in_drawing", {}).get(drawing_name, 0))
+        return ("verified" if shape_count > 0 else "unverified"), {
+            "drawingName": drawing_name,
+            "shapeCount": shape_count,
+        }
+    if cmd_type == "set_exposure":
+        drawing_name = safe_harmony_name(params["drawingName"])
+        frame = int(params["frame"])
+        attribute = ctx.get("drawing_attribute")
+        verified = False
+        if attribute is not None:
+            getter = getattr(attribute, "value", None)
+            if callable(getter):
+                try:
+                    verified = drawing_value_name(getter(frame)) == drawing_name
+                except Exception:
+                    verified = False
+        return ("verified" if verified else "unverified"), {"drawingName": drawing_name, "frame": frame}
+    if cmd_type == "create_node":
+        node_path = "Top/" + safe_harmony_name(params["nodeName"])
+        found = scene_node(scene, node_path) is not None
+        return ("verified" if found else "unverified"), {"nodePath": node_path}
+    if cmd_type == "connect_nodes":
+        src_path = "Top/" + safe_harmony_name(params["fromNode"])
+        dst_path = "Top/" + safe_harmony_name(params["toNode"])
+        source = scene_node(scene, src_path)
+        destination = scene_node(scene, dst_path)
+        linked = nodes_linked(source, destination)
+        return ("verified" if linked else "unverified"), {
+            "srcPath": src_path,
+            "dstPath": dst_path,
+            "dstPort": int(params["toPort"]),
+        }
+    if cmd_type == "create_peg":
+        node_path = "Top/" + safe_harmony_name(params["pegName"])
+        found = scene_node(scene, node_path) is not None
+        return ("verified" if found else "unverified"), {"nodePath": node_path}
+    if cmd_type == "attach_drawing_to_peg":
+        peg_path = "Top/" + safe_harmony_name(params["pegName"])
+        drawing_path = "Top/" + safe_harmony_name(params["drawingNodeName"])
+        peg_node = scene_node(scene, peg_path)
+        drawing_node = scene_node(scene, drawing_path)
+        linked = nodes_linked(peg_node, drawing_node)
+        return ("verified" if linked else "unverified"), {
+            "srcPath": peg_path,
+            "dstPath": drawing_path,
+            "dstPort": 0,
+        }
+    if cmd_type == "set_peg_pivot":
+        node_path = "Top/" + safe_harmony_name(params["pegName"])
+        peg_node = scene_node(scene, node_path)
+        verified = (
+            peg_node is not None
+            and _v4_numbers_equal(_read_numbered_attribute(peg_node, "pivot.x", 0), params["pivotX"])
+            and _v4_numbers_equal(_read_numbered_attribute(peg_node, "pivot.y", 0), params["pivotY"])
+        )
+        return ("verified" if verified else "unverified"), {"nodePath": node_path}
+    if cmd_type == "set_transform_keyframe":
+        node_path = "Top/" + safe_harmony_name(params["pegName"])
+        peg_node = scene_node(scene, node_path)
+        frame = int(params["frame"])
+        expected_values = (
+            ("position.x", params["positionX"]),
+            ("position.y", params["positionY"]),
+            ("rotation.anglez", params["rotation"]),
+            ("scale.x", params["scaleX"]),
+            ("scale.y", params["scaleY"]),
+            ("skew", params["skew"]),
+        )
+        verified = peg_node is not None and all(
+            _v4_numbers_equal(_read_numbered_attribute(peg_node, attr_name, frame), expected)
+            for attr_name, expected in expected_values
+        )
+        return ("verified" if verified else "unverified"), {"nodePath": node_path, "frame": frame}
+    if cmd_type == "set_transform_interpolation":
+        return "skipped", None
+    if cmd_type == "save_project":
+        return "verified", {"projectPath": str(getattr(project, "project_path", ""))}
+    return "unverified", None
+
+
+def _v4_compare_frames(params, state):
+    reference_paths = params.get("referencePaths")
+    preview_paths = params.get("previewPaths")
+    if not preview_paths:
+        preview_paths = state.get("lastPreviews")
+    reference_directory = params.get("referenceDirectory")
+    if not reference_paths and reference_directory:
+        reference_paths = sorted(
+            os.path.join(reference_directory, name)
+            for name in os.listdir(reference_directory)
+            if name.lower().endswith(".png")
+        )
+    preview_directory = params.get("previewDirectory")
+    if not preview_paths and preview_directory:
+        preview_paths = sorted(
+            os.path.join(preview_directory, name)
+            for name in os.listdir(preview_directory)
+            if name.lower().endswith(".png")
+        )
+    reference_paths = [str(item) for item in (reference_paths or [])]
+    preview_paths = [str(item) for item in (preview_paths or [])]
+    if not reference_paths or not preview_paths:
+        raise ValueError("compare_render fail-closed: нет кадров для сравнения (нужны reference- и preview-кадры)")
+    if len(reference_paths) != len(preview_paths):
+        raise ValueError(
+            f"compare_render fail-closed: число кадров не совпадает ({len(reference_paths)} vs {len(preview_paths)})"
+        )
+    missing = [item for item in reference_paths + preview_paths if not os.path.isfile(item)]
+    if missing:
+        raise ValueError(f"compare_render fail-closed: файлы кадров отсутствуют: {missing[:3]}")
+    try:
+        from PIL import Image
+        import numpy
+    except ImportError as exc:
+        raise RuntimeError(f"PIL/numpy недоступны для compare_render: {exc}")
+    diffs = []
+    for reference_path, preview_path in zip(reference_paths, preview_paths):
+        with Image.open(reference_path) as reference_image:
+            with Image.open(preview_path) as preview_image:
+                if reference_image.size != preview_image.size:
+                    raise ValueError(
+                        "compare_render fail-closed: размеры кадров не совпадают: "
+                        f"{reference_image.size} vs {preview_image.size}"
+                    )
+                reference_data = numpy.asarray(reference_image.convert("RGB"), dtype=numpy.float64)
+                preview_data = numpy.asarray(preview_image.convert("RGB"), dtype=numpy.float64)
+        diffs.append(float(numpy.abs(reference_data - preview_data).mean()))
+    return diffs
+
+
+def _v4_project_paths(state):
+    project_file = state.get("projectFile")
+    if not project_file or not os.path.isfile(project_file):
+        raise RuntimeError(f"Активный проект не сопоставлен с файлом на диске: '{project_file}'")
+    project_dir = os.path.dirname(project_file)
+    base_name = os.path.splitext(os.path.basename(project_file))[0]
+    snapshot_dir = os.path.join(os.path.dirname(project_dir), base_name + ".snapshot_v4")
+    return project_file, project_dir, snapshot_dir
+
+
+def _v4_cmd_snapshot_project(harmony, project, cmd_id, state):
+    project_file, project_dir, snapshot_dir = _v4_project_paths(state)
+    if not validate_path_allowed(project_dir):
+        raise RuntimeError(f"Каталог проекта вне разрешённых корней HARMONY_ALLOWED_ROOTS: '{project_dir}'")
+    if os.path.realpath(snapshot_dir) == os.path.realpath(project_dir):
+        raise RuntimeError("Каталог снапшота совпадает с каталогом проекта")
+    if os.path.exists(snapshot_dir):
+        raise RuntimeError(f"Каталог снапшота уже существует, удалите его перед повторным прогоном: '{snapshot_dir}'")
+    shutil.copytree(project_dir, snapshot_dir)
+    restored_file = os.path.join(snapshot_dir, os.path.basename(project_file))
+    verified = os.path.isdir(snapshot_dir) and os.path.isfile(restored_file)
+    state["snapshotPath"] = snapshot_dir
+    return {
+        "commandId": cmd_id,
+        "type": "snapshot_project",
+        "verified": bool(verified),
+        "artifact": {"snapshotPath": snapshot_dir},
+    }
+
+
+def _v4_cmd_rollback_snapshot(harmony, cmd_id, state):
+    snapshot_dir = state.get("snapshotPath")
+    if not snapshot_dir or not os.path.isdir(snapshot_dir):
+        raise RuntimeError("rollback_snapshot fail-closed: каталог снапшота недоступен")
+    project_file, project_dir, _ = _v4_project_paths(state)
+    for path in (project_dir, snapshot_dir):
+        if not validate_path_allowed(path):
+            raise RuntimeError(f"Путь вне разрешённых корней HARMONY_ALLOWED_ROOTS: '{path}'")
+    if os.path.realpath(snapshot_dir) == os.path.realpath(project_dir):
+        raise RuntimeError("rollback_snapshot: каталоги снапшота и проекта совпадают")
+    if hasattr(harmony, "close_project"):
+        try:
+            harmony.close_project()
+        except Exception:
+            pass
+    state["project"] = None
+    shutil.rmtree(project_dir)
+    shutil.copytree(snapshot_dir, project_dir)
+    verified = os.path.isdir(project_dir) and os.path.isfile(project_file)
+    return {
+        "commandId": cmd_id,
+        "type": "rollback_snapshot",
+        "verified": bool(verified),
+        "artifact": {"restoredFrom": snapshot_dir},
+    }, None
+
+
+def _v4_cmd_verify_rollback(harmony, cmd_id, state):
+    pre_audit = state.get("preRollbackAudit")
+    manifest = state.get("manifest")
+    if not isinstance(pre_audit, dict):
+        raise RuntimeError("verify_rollback fail-closed: нет пре-роллбэк аудита (выполните inspect_native_entities до rollback_snapshot)")
+    if not isinstance(manifest, dict):
+        raise RuntimeError("verify_rollback fail-closed: нет манифеста реконструкции для повторного аудита")
+    if not hasattr(harmony, "open_project") or not hasattr(harmony, "session"):
+        raise RuntimeError("harmony.open_project/session недоступны в данной версии")
+    harmony.open_project(state["projectFile"])
+    session = harmony.session()
+    reopened = getattr(session, "project", None)
+    if reopened is None:
+        raise RuntimeError("После reopen в verify_rollback активный проект недоступен")
+    state["project"] = reopened
+    post_audit = audit_reconstruction_scene(harmony, reopened, manifest).get("nativeAudit") or {}
+    mismatches = {}
+    for key in _V4_AUDIT_COUNT_KEYS:
+        before = pre_audit.get(key)
+        after = post_audit.get(key)
+        if before != after:
+            mismatches[key] = {"before": before, "after": after}
+    matched_counts = {key: post_audit.get(key) for key in _V4_AUDIT_COUNT_KEYS}
+    return {
+        "commandId": cmd_id,
+        "type": "verify_rollback",
+        "verified": not mismatches,
+        "artifact": {"matchedCounts": matched_counts, "mismatches": mismatches},
+    }, None
+
+
+def _v4_execute_lifecycle_command(harmony, state, command, cmd_id, params):
+    cmd_type = command.get("type")
+    project = state.get("project")
+    if project is None:
+        raise RuntimeError(f"Команда '{cmd_type}' требует активный проект, а он закрыт или не открыт")
+    if cmd_type == "snapshot_project":
+        return _v4_cmd_snapshot_project(harmony, project, cmd_id, state), None
+    if cmd_type == "close_project":
+        if not hasattr(harmony, "close_project"):
+            raise RuntimeError("harmony.close_project недоступен в данной версии")
+        harmony.close_project()
+        state["project"] = None
+        return {"commandId": cmd_id, "type": cmd_type, "verified": True}, None
+    if cmd_type == "reopen_project":
+        if not hasattr(harmony, "open_project") or not hasattr(harmony, "session"):
+            raise RuntimeError("harmony.open_project/session недоступны в данной версии")
+        harmony.open_project(state["projectFile"])
+        session = harmony.session()
+        reopened = getattr(session, "project", None)
+        if reopened is None:
+            raise RuntimeError("После reopen_project активный проект недоступен")
+        state["project"] = reopened
+        return {
+            "commandId": cmd_id,
+            "type": cmd_type,
+            "verified": True,
+            "artifact": {"projectPath": str(getattr(reopened, "project_path", ""))},
+        }, None
+    if cmd_type == "inspect_native_entities":
+        manifest = params.get("manifest") or state.get("manifest")
+        if not isinstance(manifest, dict):
+            raise ValueError("inspect_native_entities требует манифест реконструкции (params.manifest или plan.manifest)")
+        audit_result = audit_reconstruction_scene(harmony, project, manifest)
+        state["manifest"] = manifest
+        state["preRollbackAudit"] = audit_result.get("nativeAudit")
+        return {
+            "commandId": cmd_id,
+            "type": cmd_type,
+            "verified": bool(audit_result.get("verified")),
+            "artifact": {"nativeAudit": audit_result.get("nativeAudit")},
+        }, None
+    if cmd_type == "render_preview":
+        manifest = params.get("manifest") or state.get("manifest")
+        if not isinstance(manifest, dict):
+            raise ValueError("render_preview требует манифест реконструкции (params.manifest или plan.manifest)")
+        output_dir = params.get("outputDirectory")
+        if not output_dir:
+            raise ValueError("render_preview требует params.outputDirectory")
+        start_frame = int(params.get("startFrame", 1))
+        end_frame = int(params.get("endFrame", start_frame))
+        rendered = render_reconstruction_preview(harmony, project, manifest, output_dir, start_frame, end_frame)
+        previews = list(rendered.get("previewPaths", []))
+        state["lastPreviews"] = previews
+        return {
+            "commandId": cmd_id,
+            "type": cmd_type,
+            "verified": bool(rendered.get("rendered")),
+            "artifact": {
+                "previewPaths": previews,
+                "expectedFrameCount": rendered.get("expectedFrameCount"),
+                "actualFrameCount": rendered.get("actualFrameCount"),
+            },
+        }, None
+    if cmd_type == "compare_render":
+        diffs = _v4_compare_frames(params, state)
+        tolerance = float(params.get("tolerance", 0.0))
+        max_diff = max(diffs) if diffs else 255.0
+        mean_diff = (sum(diffs) / len(diffs)) if diffs else None
+        verified = bool(diffs) and max_diff <= tolerance
+        return {
+            "commandId": cmd_id,
+            "type": cmd_type,
+            "verified": bool(verified),
+            "artifact": {
+                "comparedFrames": len(diffs),
+                "frameDiffs": diffs,
+                "maxDiff": max_diff,
+                "meanDiff": mean_diff,
+                "tolerance": tolerance,
+            },
+        }, None
+    if cmd_type == "rollback_snapshot":
+        return _v4_cmd_rollback_snapshot(harmony, cmd_id, state)
+    if cmd_type == "verify_rollback":
+        return _v4_cmd_verify_rollback(harmony, cmd_id, state)
+    raise ValueError(f"Неизвестная lifecycle-команда плана V4: '{cmd_type}'")
+
+
+def _v4_apply_undo_strategy(harmony, state, entry):
+    strategy = entry.get("strategy")
+    detail = entry.get("detail") or {}
+    if strategy in (None, "", "none", "snapshot_restore"):
+        return None
+    project = state.get("project")
+    scene = getattr(project, "scene", None) if project is not None else None
+    if strategy == "delete_node":
+        node_path = detail.get("nodePath")
+        node = scene_node(scene, node_path) if scene is not None and node_path else None
+        if node is None:
+            return f"delete_node: нода не найдена для отката: '{node_path}'"
+        remover = getattr(node, "delete_node", None) or getattr(node, "delete", None)
+        if callable(remover):
+            remover()
+            return None
+        collection_remove = getattr(getattr(scene, "nodes", None), "remove", None)
+        if callable(collection_remove):
+            collection_remove(node)
+            return None
+        return "delete_node: API удаления нод недоступен в данной версии"
+    if strategy == "disconnect_link":
+        disconnect = getattr(project, "disconnect", None)
+        dst_node = scene_node(scene, detail.get("dstPath")) if scene is not None and detail.get("dstPath") else None
+        if callable(disconnect) and dst_node is not None:
+            disconnect(dst_node, int(detail.get("dstPort", 0)))
+            return None
+        return "disconnect_link: API отключения нод недоступен"
+    if strategy == "remove_palette":
+        palettes = getattr(project, "palettes", None)
+        wanted = detail.get("paletteName")
+        if palettes is not None and hasattr(palettes, "remove") and wanted:
+            for candidate in palettes:
+                if getattr(candidate, "name", None) == wanted:
+                    palettes.remove(candidate)
+                    return None
+            return None
+        return "remove_palette: API удаления палитр недоступен"
+    if strategy == "remove_swatch":
+        palette = (state.get("ctx") or {}).get("palette")
+        wanted = detail.get("colourName")
+        if palette is not None and hasattr(palette, "remove") and wanted:
+            for candidate in palette:
+                if getattr(candidate, "name", None) == wanted:
+                    palette.remove(candidate)
+                    return None
+            return None
+        return "remove_swatch: API удаления цветов недоступен"
+    return f"Неизвестная стратегия отката: '{strategy}'"
+
+
+def _v4_respond_failure(plan, harmony, state, results, executed, skipped, undo_stack, failed_id, failed_type):
+    rollback_log = []
+    rollback_errors = []
+    for entry in reversed(undo_stack):
+        try:
+            note = _v4_apply_undo_strategy(harmony, state, entry)
+            if note:
+                rollback_log.append(note)
+        except Exception as exc:
+            rollback_errors.append(f"{entry.get('strategy')}: {exc}")
+    snapshot_dir = state.get("snapshotPath")
+    project_file = state.get("projectFile")
+    fully_restored = False
+    if snapshot_dir and project_file and os.path.isdir(snapshot_dir):
+        try:
+            project_dir = os.path.dirname(project_file)
+            if (
+                validate_path_allowed(project_dir)
+                and validate_path_allowed(snapshot_dir)
+                and os.path.realpath(project_dir) != os.path.realpath(snapshot_dir)
+            ):
+                if hasattr(harmony, "close_project"):
+                    try:
+                        harmony.close_project()
+                    except Exception:
+                        pass
+                state["project"] = None
+                shutil.rmtree(project_dir)
+                shutil.copytree(snapshot_dir, project_dir)
+                fully_restored = os.path.isfile(project_file)
+                rollback_log.append(f"Проект восстановлен из снапшота: {snapshot_dir}")
+        except Exception as exc:
+            rollback_errors.append(f"Восстановление из снапшота не удалось: {exc}")
+    response = {
+        "status": "failed",
+        "rolledBack": bool(fully_restored),
+        "failedCommand": failed_id,
+        "failedType": failed_type,
+        "planId": plan.get("planId"),
+        "manifestId": plan.get("manifestId"),
+        "executed": executed,
+        "skipped": skipped,
+        "results": results,
+        "rollbackLog": rollback_log,
+        "rollbackErrors": rollback_errors,
+    }
+    if snapshot_dir:
+        response["snapshotPath"] = snapshot_dir
+    respond(response)
+
+
+def execute_command_plan_v4(harmony, project, plan):
+    commands = _v4_validate_plan(plan)
+    if not hasattr(harmony, "DrawingAccess") or not hasattr(harmony, "BezierPath"):
+        raise RuntimeError("Установленная версия Harmony не совместима с требуемыми API (DrawingAccess, BezierPath)")
+    state = {
+        "project": project,
+        "projectFile": os.path.realpath(str(getattr(project, "project_path", "") or "")),
+        "snapshotPath": None,
+        "manifest": plan.get("manifest"),
+        "preRollbackAudit": None,
+        "lastPreviews": [],
+        "ctx": {
+            "palette": None,
+            "colour_ids": {},
+            "drawing_attribute": None,
+            "drawing_by_name": {},
+            "nonempty_drawing_count": 0,
+            "created_shapes_in_drawing": {}
+        },
+    }
+    ctx = state["ctx"]
+    results = []
+    undo_stack = []
+    executed = 0
+    skipped = 0
+
+    for index, command in enumerate(commands):
+        if not isinstance(command, dict):
+            results.append({"commandId": f"command_{index}", "type": str(type(command)), "verified": False,
+                            "error": "Элемент commands не является объектом"})
+            _v4_respond_failure(plan, harmony, state, results, executed, skipped, undo_stack, f"command_{index}", None)
+        cmd_id = str(command.get("id") or f"command_{index}")
+        cmd_type = command.get("type")
+        params = command.get("params") or {}
+        try:
+            if cmd_type in _V4_LIFECYCLE_COMMAND_TYPES:
+                result, undo = _v4_execute_lifecycle_command(harmony, state, command, cmd_id, params)
+            elif cmd_type in _V4_CONTENT_COMMAND_TYPES:
+                active_project = state.get("project")
+                if active_project is None:
+                    raise RuntimeError("Нет активного проекта для выполнения команды плана (проект закрыт?)")
+                scene = getattr(active_project, "scene", None)
+                if scene is None or not hasattr(scene, "columns") or not hasattr(scene, "nodes"):
+                    raise RuntimeError("Версия Harmony не предоставляет Python DOM scene.columns/scene.nodes")
+                _run_plan_commands(harmony, active_project, scene, [command], ctx)
+                strategy = ((command.get("rollback") or {}).get("strategy")) \
+                    or _V4_DEFAULT_ROLLBACK_STRATEGIES.get(cmd_type, "snapshot_restore")
+                undo_stack.append({"strategy": strategy, "detail": {}})
+                outcome, artifact = _v4_verify_content_command(harmony, active_project, scene, command, ctx)
+                if outcome == "skipped":
+                    undo_stack.pop()
+                    skipped += 1
+                    result = {
+                        "commandId": cmd_id,
+                        "type": cmd_type,
+                        "verified": False,
+                        "note": "Операция реализована в текущем мосте как заглушка и пропущена",
+                    }
+                    undo = None
+                elif outcome == "verified":
+                    undo_stack[-1]["detail"] = artifact or {}
+                    executed += 1
+                    result = {"commandId": cmd_id, "type": cmd_type, "verified": True}
+                    if artifact:
+                        result["artifact"] = artifact
+                    undo = None
+                else:
+                    undo_stack[-1]["detail"] = artifact or {}
+                    raise RuntimeError(f"Верификация команды '{cmd_type}' не пройдена, запускается откат плана")
+            else:
+                raise ValueError(f"Неизвестный тип команды плана V4: '{cmd_type}'")
+        except Exception as exc:
+            results.append({"commandId": cmd_id, "type": str(cmd_type), "verified": False, "error": str(exc)})
+            _v4_respond_failure(plan, harmony, state, results, executed, skipped, undo_stack, cmd_id, str(cmd_type))
+        results.append(result)
+
+    response = {
+        "status": "success",
+        "planId": plan.get("planId"),
+        "manifestId": plan.get("manifestId"),
+        "executed": executed,
+        "skipped": skipped,
+        "results": results,
+    }
+    if state.get("snapshotPath"):
+        response["snapshotPath"] = state["snapshotPath"]
+    respond(response)
 
 
 def scene_node(scene, node_path):

@@ -1,0 +1,108 @@
+{
+ "id": "RIG_002",
+ "file": "Ball.moho",
+ "version": 1045,
+ "project": {
+  "w": 1280,
+  "h": 720,
+  "fps": 24.0,
+  "end_frame": 72
+ },
+ "layer_tree": [
+  {
+   "d": 0,
+   "name": "Ball",
+   "type": "BoneLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 1,
+   "name": "Layer 1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 20,
+   "mesh_shapes": 5
+  }
+ ],
+ "layers_total": 2,
+ "skeletons": [
+  {
+   "layer_path": "/Ball",
+   "binding_mode": 1,
+   "bones": [
+    {
+     "name": "B1",
+     "parent": -1,
+     "length": 0.3858,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 2,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": true,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    }
+   ]
+  }
+ ],
+ "bones_total": 1,
+ "bones_constrained": 0,
+ "bones_ik": 1,
+ "bones_dials": 0,
+ "bones_dynamics": 1,
+ "binding_modes": [
+  1
+ ],
+ "dial_switch_links": [],
+ "animated_layers": [],
+ "actions_doc": [],
+ "masked_layers": [],
+ "bone_name_vocabulary": {}
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "toon-boom-mcp/rig-binding-plan-v1",
+  "character_id": "char_main_v1",
+  "template": {
+    "template_id": "biped_standard_structural_stub",
+    "version": "0.0.0",
+    "content_hash": "sha256:49b9a3327df8c633a59399480bfa66a749789be4047b3ed6776a70e5cdb3e469"
+  },
+  "source": {
+    "pir_id": "PERF-4990258c389be7d1",
+    "pir_hash": "sha256:a92596b338a4cda9810ab1dcba1e0080f895a72a239595bd32ea60bf29876e45"
+  },
+  "bindings": [],
+  "unresolved": [
+    "all_controller_bindings"
+  ],
+  "warnings": [
+    "Structural stub: no commissioned rig; bindings empty by design."
+  ]
+}

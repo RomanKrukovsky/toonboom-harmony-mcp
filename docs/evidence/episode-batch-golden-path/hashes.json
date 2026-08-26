@@ -1,0 +1,18 @@
+{
+  "hashes": {
+    "episode_batch_input.json": "06a981b5cab6e0f513f03a53965f11a64603dcbbaf168dcabcd2b5751a6a2c16",
+    "execution-report.json": "7e27a78d92c36a157bff614bd70e9ebb62d35760253b988a384ffb8475c78ae7",
+    "shot_e01_s01_sh01_command_plan_v4.json": "ea6a409ccb563e4041a7ab3d663d41af92ab3e5646c854c6a5bca593f20f36c1",
+    "shot_e01_s01_sh01_manifest.json": "19533c362e7db7c2db857c7d63af07f5342eadb909a0fbdca39580dc0e85b936",
+    "shot_e01_s01_sh01_performance_pir.json": "5b0d768c27c914135b639c5bc2db1b1e369ba3401bf60fbe55141fc6392ccc18",
+    "shot_e01_s01_sh01_retargeting_plan.json": "b7093448ad7fac8d3559b3647ce1cfbc6d0458496a1b25462358ebcdf38f5754",
+    "shot_e01_s01_sh02_command_plan_v4.json": "064ff6ad91c49f76fded32aa26944dbbdcafd949270a4c152d4b65bb48f38971",
+    "shot_e01_s01_sh02_manifest.json": "4e4cd66f06846dd6ffc76cc62862b87b3b067534b6873e694c89bec2b2d0a08f",
+    "shot_e01_s01_sh02_performance_pir.json": "0a92b9b9a358a763a3176c64501c4cc1bafd498d8079928ba0761b477953ec2e",
+    "shot_e01_s01_sh02_retargeting_plan.json": "52069ce8e7c1939b2ec4b839f1b960de00ee1f038d8a7f1f591482617b9d40b8",
+    "shot_e01_s02_sh01_command_plan_v4.json": "bb54748b90d4699d136806bf42631943f619fadd3b0f123a60ca2eae67944687",
+    "shot_e01_s02_sh01_manifest.json": "4169ffdfa3786aee63235afe84f57bd1997b0f7b8739332b34cce21d48905c3a",
+    "shot_e01_s02_sh01_performance_pir.json": "600690970e224336c32fe6b7dd3139d3ac3e0bec1d7524647559cb5b1cb2cba3",
+    "shot_e01_s02_sh01_retargeting_plan.json": "904326c0d707d0b3bd64670ee03d328f5d2efaf52a4018a1b7eed738ab06fe44"
+  }
+}

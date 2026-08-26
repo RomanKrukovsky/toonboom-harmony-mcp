@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "grammarId": "grammar_main_v1",
+  "rules": [
+    {
+      "ruleId": "rule_default",
+      "description": "default",
+      "allowedGestures": ["point"],
+      "forbiddenGestures": [],
+      "allowedEmotions": ["neutral", "surprise"],
+      "poseLibraryRefs": [],
+      "timing": { "minHoldFrames": 2, "maxHoldFrames": 48, "anticipationFrames": 4, "followThroughFrames": 6 }
+    }
+  ],
+  "defaultTiming": { "fps": 24, "minBeatFrames": 2, "maxBeatFrames": 96 },
+  "provenance": { "approver": "td_lead", "approvedAt": "2026-07-27T12:00:00Z" }
+}

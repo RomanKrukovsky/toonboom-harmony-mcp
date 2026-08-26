@@ -1,0 +1,98 @@
+{
+  "schema": "toon-boom-mcp/performance-pir-v1",
+  "performanceId": "PERF-2da5f5203e293ff8",
+  "characterId": "char_main_v1",
+  "durationFrames": 36,
+  "fps": 24,
+  "tracks": [
+    {
+      "nodeId": "NODE_HEAD_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_MOUTH_D",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_ARM_R_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    }
+  ],
+  "holds": [],
+  "shotManifestRef": "E01_S01_SH02",
+  "staging": {
+    "shotSize": "close_up",
+    "cameraMove": "static",
+    "backgroundRef": "bg/room_v1.png"
+  },
+  "timing": {
+    "totalFrames": 36,
+    "minBeatFrames": 2,
+    "maxBeatFrames": 96,
+    "anticipationFrames": 4,
+    "followThroughFrames": 6
+  },
+  "beatFrameMap": [
+    {
+      "beatId": "b1",
+      "startFrame": 1,
+      "endFrame": 18
+    },
+    {
+      "beatId": "b2",
+      "startFrame": 19,
+      "endFrame": 36
+    }
+  ]
+}

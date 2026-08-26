@@ -1,0 +1,146 @@
+{
+  "planId": "deformer_plan_1787565420605",
+  "characterName": "char_sprint0_photo_v1",
+  "deformers": [
+    {
+      "deformerId": "def_Torso",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Torso_Drawing",
+      "numPoints": 4,
+      "closed": true
+    },
+    {
+      "deformerId": "def_Head",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Head_Drawing",
+      "numPoints": 4,
+      "closed": true
+    },
+    {
+      "deformerId": "def_Eyes",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Eyes_Drawing",
+      "numPoints": 4,
+      "closed": true
+    },
+    {
+      "deformerId": "def_Brows",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Brows_Drawing",
+      "numPoints": 4,
+      "closed": true
+    },
+    {
+      "deformerId": "def_Mouth",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Mouth_Drawing",
+      "numPoints": 4,
+      "closed": true
+    },
+    {
+      "deformerId": "def_Arm_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Arm_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Forearm_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Forearm_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Hand_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Hand_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Arm_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Arm_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Forearm_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Forearm_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Hand_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Hand_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Leg_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Leg_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Shin_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Shin_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Foot_L",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Foot_L_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Leg_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Leg_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Shin_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Shin_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Foot_R",
+      "type": "Curve",
+      "targetNode": "char_sprint0_photo_v1_Foot_R_Drawing",
+      "numPoints": 3,
+      "closed": false
+    },
+    {
+      "deformerId": "def_Clothing",
+      "type": "Envelope",
+      "targetNode": "char_sprint0_photo_v1_Clothing_Drawing",
+      "numPoints": 4,
+      "closed": true
+    }
+  ],
+  "masterControllers": [
+    {
+      "mcId": "mc_char_sprint0_photo_v1_Face",
+      "name": "char_sprint0_photo_v1_Face_MC",
+      "widgetType": "Grid",
+      "controlledNodes": [
+        "char_sprint0_photo_v1_Eyes_P",
+        "char_sprint0_photo_v1_Brows_P",
+        "char_sprint0_photo_v1_Mouth_P"
+      ],
+      "gridWidth": 3,
+      "gridHeight": 3
+    }
+  ]
+}

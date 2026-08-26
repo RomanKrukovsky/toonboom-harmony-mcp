@@ -50,6 +50,38 @@ export interface ShotManifestCompilerResult {
   warnings: string[];
 }
 
+type CameraKeyValues = Pick<
+  TransformTrack['keys'][number],
+  'rotation' | 'x' | 'y' | 'scaleX' | 'scaleY'
+>;
+
+type NonStaticCameraMove = Exclude<ShotManifest['staging']['cameraMove'], 'static'>;
+
+/**
+ * Deterministic start -> end transform deltas per declared camera move.
+ * Values live in the RigTemplate's normalized coordinate space, mirroring
+ * how beat tracks declare WHERE keys go while deferring absolute rig-space
+ * resolution to downstream resolvers.
+ */
+const CAMERA_MOVE_ENDPOINTS: Record<NonStaticCameraMove, { from: CameraKeyValues; to: CameraKeyValues }> = {
+  pan_left: { from: { x: 0 }, to: { x: -100 } },
+  pan_right: { from: { x: 0 }, to: { x: 100 } },
+  tilt_up: { from: { y: 0 }, to: { y: 80 } },
+  tilt_down: { from: { y: 0 }, to: { y: -80 } },
+  dolly_in: { from: { scaleX: 1, scaleY: 1 }, to: { scaleX: 1.15, scaleY: 1.15 } },
+  dolly_out: { from: { scaleX: 1, scaleY: 1 }, to: { scaleX: 0.87, scaleY: 0.87 } },
+  truck_left: { from: { x: 0 }, to: { x: -80 } },
+  truck_right: { from: { x: 0 }, to: { x: 80 } },
+  pedestal_up: { from: { y: 0 }, to: { y: 60 } },
+  pedestal_down: { from: { y: 0 }, to: { y: -60 } },
+  zoom_in: { from: { scaleX: 1, scaleY: 1 }, to: { scaleX: 1.2, scaleY: 1.2 } },
+  zoom_out: { from: { scaleX: 1, scaleY: 1 }, to: { scaleX: 0.83, scaleY: 0.83 } },
+  arc_left: { from: { x: 0, rotation: 0 }, to: { x: 60, rotation: -5 } },
+  arc_right: { from: { x: 0, rotation: 0 }, to: { x: -60, rotation: 5 } },
+  crane_up: { from: { y: 0 }, to: { y: 100 } },
+  crane_down: { from: { y: 0 }, to: { y: -100 } }
+};
+
 export class ShotManifestCompiler {
   compile(
     manifest: ShotManifest,
@@ -79,6 +111,24 @@ export class ShotManifestCompiler {
 
     for (const beat of manifest.beats) {
       this.applyBeat(beat, manifest, options, ensureTrack, warnings);
+    }
+
+    // Camera move: a declared non-static camera move becomes a deterministic
+    // TransformTrack on the camera peg so downstream consumers key real motion
+    // instead of silently dropping the director's intent.
+    this.applyCameraMove(manifest, ensureTrack, warnings);
+
+    // Multi-character staging: characters that are staged (on stage) but have
+    // no beats still need controller tracks, otherwise they would disappear
+    // from the compiled performance.
+    this.applyHoldsForUnbeatenCharacters(manifest, options, ensureTrack, warnings);
+
+    // FX honesty: declared effects are recorded as warnings until a real FX
+    // executor exists. Silent dropping would fabricate a clean shot.
+    for (const fx of manifest.fx) {
+      warnings.push(
+        `fx "${fx.type}" on "${fx.target}" (${fx.startFrame}-${fx.endFrame}) declared but FX execution is not implemented — skipped`
+      );
     }
 
     const performanceId = this.derivePerformanceId(manifest);
@@ -151,6 +201,64 @@ export class ShotManifestCompiler {
     if (beat.poseLibraryRef) {
       warnings.push(
         `beat "${beat.beatId}": poseLibraryRef "${beat.poseLibraryRef}" declared but pose binding is deferred to RetargetingResolver`
+      );
+    }
+  }
+
+  private applyCameraMove(
+    manifest: ShotManifest,
+    ensureTrack: (nodeId: string) => TransformTrack,
+    warnings: string[]
+  ): void {
+    const move = manifest.staging.cameraMove;
+    if (move === 'static') return;
+
+    const endpoints = CAMERA_MOVE_ENDPOINTS[move];
+    if (!endpoints) return; // unreachable for schema-valid moves
+
+    const startFrame = manifest.staging.cameraStartFrame ?? 1;
+    const endFrame = manifest.staging.cameraEndFrame ?? manifest.timing.totalFrames;
+    const track = ensureTrack('NODE_CAMERA_PEG');
+    track.keys.push({
+      frame: startFrame,
+      interpolation: 'LINEAR',
+      ...endpoints.from
+    });
+    if (endFrame > startFrame) {
+      track.keys.push({
+        frame: endFrame,
+        interpolation: 'LINEAR',
+        ...endpoints.to
+      });
+    }
+    warnings.push(`camera "${move}" compiled to NODE_CAMERA_PEG keyframes`);
+  }
+
+  private applyHoldsForUnbeatenCharacters(
+    manifest: ShotManifest,
+    options: ShotManifestCompilerOptions,
+    ensureTrack: (nodeId: string) => TransformTrack,
+    warnings: string[]
+  ): void {
+    if (manifest.staging.positions.length <= 1) return;
+
+    const beatCharacterIds = new Set(manifest.beats.map(b => b.characterId));
+    const emitted = new Set<string>();
+    for (const position of manifest.staging.positions) {
+      if (beatCharacterIds.has(position.characterId)) continue;
+      if (emitted.has(position.characterId)) continue;
+      emitted.add(position.characterId);
+
+      const controllerMap = options.controllerMaps?.[position.characterId] ?? [];
+      for (const ctrl of controllerMap) {
+        const track = ensureTrack(ctrl.nodePath);
+        track.keys.push({ frame: 1, interpolation: 'LINEAR' });
+        if (manifest.timing.totalFrames > 1) {
+          track.keys.push({ frame: manifest.timing.totalFrames, interpolation: 'LINEAR' });
+        }
+      }
+      warnings.push(
+        `character "${position.characterId}" staged without beats — HOLD track emitted`
       );
     }
   }

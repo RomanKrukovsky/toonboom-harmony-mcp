@@ -1,0 +1,101 @@
+{
+  "schema": "toon-boom-mcp/rig-binding-plan-v1",
+  "character_id": "char_sprint0_photo_v1",
+  "template": {
+    "template_id": "biped_standard",
+    "version": "1.0.0",
+    "content_hash": "sha256:29dd785c4c693e6022486912f99a611be1a050d4633c12f3e4d80c73e02c3476"
+  },
+  "source": {
+    "pir_id": "char_sprint0_photo_v1",
+    "pir_hash": "sha256:2affd01d8056e82fceb2b87e260366e84e94aca5279b42d03cf7d88a71fae86f"
+  },
+  "bindings": [
+    {
+      "template_slot": "head_top",
+      "pir_landmark": "head_top",
+      "confidence": 0.8354240655899048,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "neck",
+      "pir_landmark": "neck",
+      "confidence": 0.8874853849411011,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "shoulder_left",
+      "pir_landmark": "shoulder_left",
+      "confidence": 0.7771137952804565,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "shoulder_right",
+      "pir_landmark": "shoulder_right",
+      "confidence": 0.8648526668548584,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "hip_left",
+      "pir_landmark": "hip_left",
+      "confidence": 0.6398212909698486,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "hip_right",
+      "pir_landmark": "hip_right",
+      "confidence": 0.7786321640014648,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "elbow_left",
+      "pir_landmark": "elbow_left",
+      "confidence": 0.6347447037696838,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "elbow_right",
+      "pir_landmark": "elbow_right",
+      "confidence": 0.7842921018600464,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "wrist_left",
+      "pir_landmark": "wrist_left",
+      "confidence": 0.7391223311424255,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "wrist_right",
+      "pir_landmark": "wrist_right",
+      "confidence": 0.7860365509986877,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "knee_left",
+      "pir_landmark": "knee_left",
+      "confidence": 0.5319586992263794,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "knee_right",
+      "pir_landmark": "knee_right",
+      "confidence": 0.48551419377326965,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "ankle_left",
+      "pir_landmark": "ankle_left",
+      "confidence": 0.2969328761100769,
+      "resolution": "DIRECT"
+    },
+    {
+      "template_slot": "ankle_right",
+      "pir_landmark": "ankle_right",
+      "confidence": 0.6591102480888367,
+      "resolution": "DIRECT"
+    }
+  ],
+  "unresolved": [],
+  "warnings": []
+}

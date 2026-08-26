@@ -1,0 +1,5462 @@
+{
+ "id": "RIG_007",
+ "file": "Mr.Stu.moho",
+ "version": 1039,
+ "project": {
+  "w": 1920,
+  "h": 1080,
+  "fps": 24.0,
+  "end_frame": 240
+ },
+ "layer_tree": [
+  {
+   "d": 0,
+   "name": "Mr.Stu",
+   "type": "BoneLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": true
+  },
+  {
+   "d": 1,
+   "name": "shoulder L",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": -0.149612,
+    "y": 0.005229
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 21,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 1,
+   "name": "forearm+hand L",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": -0.149612,
+    "y": 0.005229
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 18,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 1,
+   "name": "Body",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "join back",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "leg L",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.547336,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 2,
+   "name": "body",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 40,
+   "mesh_shapes": 6
+  },
+  {
+   "d": 2,
+   "name": "leg R",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 2,
+   "name": "shadow",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 10,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 1,
+   "name": "shoulder R",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 21,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 1,
+   "name": "forearm+hand R",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 18,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 1,
+   "name": "head",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 2,
+   "name": "head",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false
+  },
+  {
+   "d": 3,
+   "name": "head",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "shadow",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 39,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 3,
+   "name": "antenna",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 41,
+   "mesh_shapes": 13
+  },
+  {
+   "d": 2,
+   "name": "eyes",
+   "type": "GroupLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.061814,
+    "y": 0.165187
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": true
+  },
+  {
+   "d": 3,
+   "name": "color",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 66,
+   "origin": {
+    "x": 0.055553,
+    "y": 0.173762
+   },
+   "masking": 2,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "1"
+   ],
+   "switch_actions": [
+    {
+     "name": "Eyes swicth",
+     "when": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+     ],
+     "val": [
+      "1",
+      "1",
+      "1 2",
+      "1 3",
+      "1 3 2",
+      "1 4",
+      "1 5",
+      "1 6",
+      "1 7",
+      "1 8",
+      "1 9",
+      "1 10",
+      "1 10 2",
+      "1 11",
+      "1 12",
+      "1 13",
+      "1 14",
+      "1 16",
+      "1 15"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 4,
+   "name": "1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 3",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 3 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 4",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "1 5",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "1 6",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "1 7",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 0,
+   "mesh_shapes": 0
+  },
+  {
+   "d": 4,
+   "name": "1 8",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 0,
+   "mesh_shapes": 0
+  },
+  {
+   "d": 4,
+   "name": "1 9",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 0,
+   "mesh_shapes": 0
+  },
+  {
+   "d": 4,
+   "name": "1 10",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 10 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 4,
+   "name": "1 11",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "1 12",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "1 13",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 57,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "1 14",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 38,
+   "mesh_shapes": 8
+  },
+  {
+   "d": 4,
+   "name": "1 16",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 0,
+   "mesh_shapes": 0
+  },
+  {
+   "d": 4,
+   "name": "1 15",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 32,
+   "mesh_shapes": 8
+  },
+  {
+   "d": 3,
+   "name": "pupils",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "pupils",
+    "dnt"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "pupils"
+   ],
+   "switch_actions": [
+    {
+     "name": "Eyes swicth",
+     "when": [
+      0,
+      18,
+      19
+     ],
+     "val": [
+      "pupils",
+      "dnt",
+      "pupils"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 4,
+   "name": "pupils",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 49,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "1",
+    "1 4",
+    "1 2",
+    "1 3",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 5"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "1"
+   ],
+   "switch_actions": [
+    {
+     "name": "Pupil",
+     "when": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+     ],
+     "val": [
+      "1",
+      "1",
+      "1 4",
+      "1 2",
+      "1 3",
+      "1 6",
+      "1 7",
+      "1 8",
+      "1 5"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 5,
+   "name": "1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 5,
+   "name": "1 4",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 5,
+   "name": "1 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 5,
+   "name": "1 3",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 20,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 5,
+   "name": "1 6",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 40,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 5,
+   "name": "1 7",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 5,
+   "name": "1 8",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 5,
+   "name": "1 5",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "dnt",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "stroke",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 66,
+   "origin": {
+    "x": 0.055553,
+    "y": 0.173762
+   },
+   "masking": 1,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "1"
+   ],
+   "switch_actions": [
+    {
+     "name": "Eyes swicth",
+     "when": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+     ],
+     "val": [
+      "1",
+      "1",
+      "1 2",
+      "1 3",
+      "1 3 2",
+      "1 4",
+      "1 5",
+      "1 6",
+      "1 7",
+      "1 8",
+      "1 9",
+      "1 10",
+      "1 10 2",
+      "1 11",
+      "1 12",
+      "1 13",
+      "1 14",
+      "1 16",
+      "1 15"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 4,
+   "name": "1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 3",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 3 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 16,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 4",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 5",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 6",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "1 7",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 8,
+   "mesh_shapes": 3
+  },
+  {
+   "d": 4,
+   "name": "1 8",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 3,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 9",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 3,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 10",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 10 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 13,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 11",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 12",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 12,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 13",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 57,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 4,
+   "name": "1 14",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 38,
+   "mesh_shapes": 5
+  },
+  {
+   "d": 4,
+   "name": "1 16",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 4,
+   "name": "1 15",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 32,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 2,
+   "name": "nose",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 14,
+   "mesh_shapes": 4
+  },
+  {
+   "d": 2,
+   "name": "mouth",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 48,
+   "origin": {
+    "x": 0.059008,
+    "y": -0.076604
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "5_1",
+    "5_2",
+    "5_2 2",
+    "6",
+    "7",
+    "8"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "1"
+   ],
+   "switch_actions": [
+    {
+     "name": "Mouth switch",
+     "when": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+     ],
+     "val": [
+      "1",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "5_1",
+      "5_2",
+      "5_2 2",
+      "6",
+      "7",
+      "8"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 3,
+   "name": "1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 7
+  },
+  {
+   "d": 3,
+   "name": "2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 24,
+   "mesh_shapes": 7
+  },
+  {
+   "d": 3,
+   "name": "3",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 23,
+   "mesh_shapes": 7
+  },
+  {
+   "d": 3,
+   "name": "4",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 33,
+   "mesh_shapes": 10
+  },
+  {
+   "d": 3,
+   "name": "5",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 36,
+   "mesh_shapes": 13
+  },
+  {
+   "d": 3,
+   "name": "5_1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 21,
+   "mesh_shapes": 5
+  },
+  {
+   "d": 3,
+   "name": "5_2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 10,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "5_2 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 10,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "6",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "7",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 3,
+   "name": "8",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 9,
+   "mesh_shapes": 1
+  },
+  {
+   "d": 2,
+   "name": "brows",
+   "type": "SwitchLayer",
+   "visible": true,
+   "parent_bone": 74,
+   "origin": {
+    "x": 0.030916,
+    "y": 0.400425
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": false,
+   "switch_states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 4",
+    "1 5"
+   ],
+   "switch_when": [
+    0
+   ],
+   "switch_val": [
+    "1"
+   ],
+   "switch_actions": [
+    {
+     "name": "Brows switch",
+     "when": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "val": [
+      "1",
+      "1",
+      "1 2",
+      "1 3",
+      "1 4",
+      "1 5"
+     ]
+    }
+   ]
+  },
+  {
+   "d": 3,
+   "name": "1",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "1 2",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "1 3",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "1 4",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 6,
+   "mesh_shapes": 2
+  },
+  {
+   "d": 3,
+   "name": "1 5",
+   "type": "MeshLayer",
+   "visible": true,
+   "parent_bone": -1,
+   "origin": {
+    "x": 0.0,
+    "y": 0.0
+   },
+   "masking": 0,
+   "blend_mode": 0,
+   "expanded": null,
+   "mesh_points": 4,
+   "mesh_shapes": 2
+  }
+ ],
+ "layers_total": 85,
+ "skeletons": [
+  {
+   "layer_path": "/Mr.Stu",
+   "binding_mode": 1,
+   "bones": [
+    {
+     "name": "B1",
+     "parent": -1,
+     "length": 1.1061,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B2",
+     "parent": 0,
+     "length": 0.0633,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B3",
+     "parent": 0,
+     "length": 0.5352,
+     "strength": 0.2269,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B4",
+     "parent": 8,
+     "length": 0.3074,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.256
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 3,
+        "min": 1.256038,
+        "max": 1.463382
+       }
+      ]
+     }
+    },
+    {
+     "name": "B5",
+     "parent": 3,
+     "length": 0.282,
+     "strength": 0.1352,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.1
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 0.291373,
+        "max": 1.100154
+       }
+      ]
+     }
+    },
+    {
+     "name": "B6",
+     "parent": 4,
+     "length": 0.2382,
+     "strength": 0.2366,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.476
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 1.476483,
+        "max": 2.017254
+       }
+      ]
+     }
+    },
+    {
+     "name": "B7",
+     "parent": 5,
+     "length": 0.206,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.397
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 1.246277,
+        "max": 1.397492
+       }
+      ]
+     }
+    },
+    {
+     "name": "B8",
+     "parent": 6,
+     "length": 0.1615,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.649
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 3,
+        "min": 1.355454,
+        "max": 1.648806
+       }
+      ]
+     }
+    },
+    {
+     "name": "B9",
+     "parent": 2,
+     "length": 0.1332,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 2,
+        "min": 4.712389,
+        "max": 4.712389
+       },
+       {
+        "name": "Front/Back",
+        "poses": 2,
+        "min": 4.712389,
+        "max": 4.712389
+       }
+      ]
+     }
+    },
+    {
+     "name": "B10",
+     "parent": 3,
+     "length": 0.06,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.498
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B11",
+     "parent": 4,
+     "length": 0.06,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.498
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B12",
+     "parent": 5,
+     "length": 0.06,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.498
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B13",
+     "parent": 6,
+     "length": 0.06,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.498
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B14",
+     "parent": 51,
+     "length": 0.3099,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.477
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B15",
+     "parent": 13,
+     "length": 0.1973,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.102
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B16",
+     "parent": 14,
+     "length": 0.0513,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.177
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B17",
+     "parent": 13,
+     "length": 0.1,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B18",
+     "parent": 13,
+     "length": 0.0619,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B19",
+     "parent": 15,
+     "length": 0.0349,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.225
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B20",
+     "parent": 18,
+     "length": 0.0551,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       5.89
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B21",
+     "parent": 15,
+     "length": 0.0511,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.052
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B22",
+     "parent": 20,
+     "length": 0.0423,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.104
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B23",
+     "parent": 15,
+     "length": 0.0553,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.153
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B24",
+     "parent": 22,
+     "length": 0.0521,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.112
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B25",
+     "parent": 15,
+     "length": 0.0496,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.23
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B26",
+     "parent": 24,
+     "length": 0.0465,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.156
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B14 Dup",
+     "parent": 51,
+     "length": 0.3099,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.664
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B15 Dup",
+     "parent": 26,
+     "length": 0.1973,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.181
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B16 Dup",
+     "parent": 27,
+     "length": 0.0513,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.107
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B17 Dup",
+     "parent": 26,
+     "length": 0.1,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B18 Dup",
+     "parent": 26,
+     "length": 0.0619,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B19 Dup",
+     "parent": 28,
+     "length": 0.0349,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.059
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B20 Dup",
+     "parent": 31,
+     "length": 0.0551,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.394
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B21 Dup",
+     "parent": 28,
+     "length": 0.0511,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.232
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B22 Dup",
+     "parent": 33,
+     "length": 0.0423,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.179
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B23 Dup",
+     "parent": 28,
+     "length": 0.0553,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.13
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B24 Dup",
+     "parent": 35,
+     "length": 0.0521,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.171
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B25 Dup",
+     "parent": 28,
+     "length": 0.0496,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.053
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B26 Dup",
+     "parent": 37,
+     "length": 0.0465,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.127
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B40",
+     "parent": 55,
+     "length": 0.1902,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.723
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B41",
+     "parent": 39,
+     "length": 0.1452,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.13
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B42",
+     "parent": 40,
+     "length": 0.1589,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.643
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B43",
+     "parent": 41,
+     "length": 0.1083,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.227
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B45",
+     "parent": 39,
+     "length": 0.0486,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B46",
+     "parent": -1,
+     "length": 0.2026,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "shadow 1",
+     "parent": 2,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Front/Back",
+        "poses": 3,
+        "min": 4.712389,
+        "max": 4.712389
+       }
+      ]
+     }
+    },
+    {
+     "name": "shadow 2",
+     "parent": 2,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Front/Back",
+        "poses": 2,
+        "min": 4.712389,
+        "max": 4.712389
+       }
+      ]
+     }
+    },
+    {
+     "name": "Face",
+     "parent": 2,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B51",
+     "parent": 2,
+     "length": 0.2248,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 3,
+        "min": 4.53211,
+        "max": 4.712389
+       }
+      ]
+     }
+    },
+    {
+     "name": "B52",
+     "parent": 66,
+     "length": 0.0642,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 2,
+        "min": 0.0,
+        "max": 0.0
+       }
+      ]
+     }
+    },
+    {
+     "name": "B53",
+     "parent": 2,
+     "length": 0.0865,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 4.431789,
+        "max": 4.835246
+       },
+       {
+        "name": "Face U/D",
+        "poses": 3,
+        "min": 4.712389,
+        "max": 4.762834
+       }
+      ]
+     }
+    },
+    {
+     "name": "B54",
+     "parent": 2,
+     "length": 0.1071,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B57",
+     "parent": 45,
+     "length": 0.0601,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B58",
+     "parent": 46,
+     "length": 0.0842,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "S/S body",
+     "parent": 1,
+     "length": 0.3,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.5708,
+     "max": 1.5708,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": [
+       {
+        "name": "S/S body",
+        "poses": 4,
+        "min": -1.570796,
+        "max": 1.570796
+       }
+      ]
+     }
+    },
+    {
+     "name": "B59",
+     "parent": 2,
+     "length": 0.1234,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B40 Dup",
+     "parent": 55,
+     "length": 0.1902,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.723
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B41 Dup",
+     "parent": 56,
+     "length": 0.1452,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.13
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B42 Dup",
+     "parent": 57,
+     "length": 0.1589,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.643
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B43 Dup",
+     "parent": 58,
+     "length": 0.1083,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.227
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B45 Dup",
+     "parent": 56,
+     "length": 0.0486,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B46 Dup",
+     "parent": -1,
+     "length": 0.2026,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "Face U/D",
+     "parent": 65,
+     "length": 0.2,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -0.5236,
+     "max": 0.5236,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.571
+      ],
+      "actions": [
+       {
+        "name": "Face U/D",
+        "poses": 4,
+        "min": 1.047197,
+        "max": 2.094395
+       }
+      ]
+     }
+    },
+    {
+     "name": "Face R/L",
+     "parent": 64,
+     "length": 0.2,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -0.6981,
+     "max": 0.6981,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       3.142
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 2.443461,
+        "max": 3.839725
+       }
+      ]
+     }
+    },
+    {
+     "name": "B68",
+     "parent": 2,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B69",
+     "parent": 2,
+     "length": 0.0,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": []
+     }
+    },
+    {
+     "name": "B70",
+     "parent": 2,
+     "length": 0.156,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 3,
+        "min": 6.043648,
+        "max": 6.283185
+       }
+      ]
+     }
+    },
+    {
+     "name": "Front/Back",
+     "parent": 1,
+     "length": 0.3,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -1.5708,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": [
+       {
+        "name": "Front/Back",
+        "poses": 3,
+        "min": 4.712389,
+        "max": 6.283185
+       }
+      ]
+     }
+    },
+    {
+     "name": "B71",
+     "parent": 50,
+     "length": 0.0955,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       1.412
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 5,
+        "min": 1.020752,
+        "max": 1.617332
+       }
+      ]
+     }
+    },
+    {
+     "name": "Mouth switch",
+     "parent": 1,
+     "length": 0.3,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -6.2832,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": [
+       {
+        "name": "Mouth switch",
+        "poses": 3,
+        "min": -6.283185,
+        "max": 0.0
+       }
+      ]
+     }
+    },
+    {
+     "name": "Eyes swicth",
+     "parent": 1,
+     "length": 0.3,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -6.2832,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0,
+       1
+      ],
+      "val": [
+       0.0,
+       -6.283
+      ],
+      "actions": [
+       {
+        "name": "Eyes swicth",
+        "poses": 3,
+        "min": -6.283185,
+        "max": 0.0
+       }
+      ]
+     }
+    },
+    {
+     "name": "Pupil",
+     "parent": 70,
+     "length": 0.1745,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -3.0543,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": [
+       {
+        "name": "Pupil",
+        "poses": 3,
+        "min": -3.054326,
+        "max": 0.0
+       }
+      ]
+     }
+    },
+    {
+     "name": "mouth S/S X",
+     "parent": 1,
+     "length": 0.2334,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -0.6981,
+     "max": 0.6981,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       6.283
+      ],
+      "actions": [
+       {
+        "name": "mouth S/S X",
+        "poses": 4,
+        "min": 5.585054,
+        "max": 6.981317
+       }
+      ]
+     }
+    },
+    {
+     "name": "mouth S/S Y",
+     "parent": 1,
+     "length": 0.2334,
+     "strength": 0.0,
+     "constraints": true,
+     "min": -0.6981,
+     "max": 0.6981,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "mouth S/S Y",
+        "poses": 4,
+        "min": 4.014257,
+        "max": 5.410521
+       }
+      ]
+     }
+    },
+    {
+     "name": "B75",
+     "parent": 2,
+     "length": 0.1977,
+     "strength": 0.0,
+     "constraints": false,
+     "min": -1.2217,
+     "max": 1.2217,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 0,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       4.712
+      ],
+      "actions": [
+       {
+        "name": "Face R/L",
+        "poses": 4,
+        "min": 4.583498,
+        "max": 4.915778
+       }
+      ]
+     }
+    },
+    {
+     "name": "Brows switch",
+     "parent": 1,
+     "length": 0.3,
+     "strength": 1.0,
+     "constraints": true,
+     "min": -3.1416,
+     "max": 0.0,
+     "target_bone": -1,
+     "ik_lock": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+       0
+      ],
+      "val": [
+       false
+      ],
+      "interp": [
+       {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+       }
+      ]
+     },
+     "flexi_elbow": false,
+     "dynamics": false,
+     "dial": {
+      "when": [
+       0
+      ],
+      "val": [
+       0.0
+      ],
+      "actions": [
+       {
+        "name": "Brows switch",
+        "poses": 3,
+        "min": -3.141592,
+        "max": 0.0
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "layer_path": "/Mr.Stu/head/eyes/color",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Mr.Stu/head/eyes/pupils",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Mr.Stu/head/eyes/pupils/pupils",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Mr.Stu/head/eyes/stroke",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Mr.Stu/head/mouth",
+   "binding_mode": 1,
+   "bones": []
+  },
+  {
+   "layer_path": "/Mr.Stu/head/brows",
+   "binding_mode": 1,
+   "bones": []
+  }
+ ],
+ "bones_total": 76,
+ "bones_constrained": 10,
+ "bones_ik": 76,
+ "bones_dials": 24,
+ "bones_dynamics": 0,
+ "binding_modes": [
+  1
+ ],
+ "dial_switch_links": [
+  {
+   "switch": "color",
+   "dial": "Eyes swicth",
+   "states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ],
+   "pose_when": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "pose_val": [
+    "1",
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ]
+  },
+  {
+   "switch": "pupils",
+   "dial": "Eyes swicth",
+   "states": [
+    "pupils",
+    "dnt"
+   ],
+   "pose_when": [
+    0,
+    18,
+    19
+   ],
+   "pose_val": [
+    "pupils",
+    "dnt",
+    "pupils"
+   ]
+  },
+  {
+   "switch": "pupils",
+   "dial": "Pupil",
+   "states": [
+    "1",
+    "1 4",
+    "1 2",
+    "1 3",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 5"
+   ],
+   "pose_when": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "pose_val": [
+    "1",
+    "1",
+    "1 4",
+    "1 2",
+    "1 3",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 5"
+   ]
+  },
+  {
+   "switch": "stroke",
+   "dial": "Eyes swicth",
+   "states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ],
+   "pose_when": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "pose_val": [
+    "1",
+    "1",
+    "1 2",
+    "1 3",
+    "1 3 2",
+    "1 4",
+    "1 5",
+    "1 6",
+    "1 7",
+    "1 8",
+    "1 9",
+    "1 10",
+    "1 10 2",
+    "1 11",
+    "1 12",
+    "1 13",
+    "1 14",
+    "1 16",
+    "1 15"
+   ]
+  },
+  {
+   "switch": "mouth",
+   "dial": "Mouth switch",
+   "states": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "5_1",
+    "5_2",
+    "5_2 2",
+    "6",
+    "7",
+    "8"
+   ],
+   "pose_when": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "pose_val": [
+    "1",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "5_1",
+    "5_2",
+    "5_2 2",
+    "6",
+    "7",
+    "8"
+   ]
+  },
+  {
+   "switch": "brows",
+   "dial": "Brows switch",
+   "states": [
+    "1",
+    "1 2",
+    "1 3",
+    "1 4",
+    "1 5"
+   ],
+   "pose_when": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "pose_val": [
+    "1",
+    "1",
+    "1 2",
+    "1 3",
+    "1 4",
+    "1 5"
+   ]
+  }
+ ],
+ "animated_layers": [],
+ "actions_doc": [],
+ "masked_layers": [
+  {
+   "name": "join back",
+   "masking": 2
+  },
+  {
+   "name": "leg L",
+   "masking": 2
+  },
+  {
+   "name": "body",
+   "masking": 2
+  },
+  {
+   "name": "leg R",
+   "masking": 2
+  },
+  {
+   "name": "head",
+   "masking": 2
+  },
+  {
+   "name": "antenna",
+   "masking": 1
+  },
+  {
+   "name": "color",
+   "masking": 2
+  },
+  {
+   "name": "stroke",
+   "masking": 1
+  }
+ ],
+ "bone_name_vocabulary": {
+  "dup": 19,
+  "face": 3,
+  "s/s": 3,
+  "mouth": 3,
+  "shadow": 2,
+  "switch": 2,
+  "body": 1,
+  "u/d": 1,
+  "r/l": 1,
+  "front/back": 1,
+  "eyes": 1,
+  "swicth": 1,
+  "pupil": 1,
+  "x": 1,
+  "y": 1,
+  "brows": 1
+ }
+}

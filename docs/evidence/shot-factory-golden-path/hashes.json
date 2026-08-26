@@ -1,0 +1,10 @@
+{
+  "hashes": {
+    "execution-report.json": "dfc637f7621a144b480684ed8fa191589a89606551dd6b43ea2e4571cbce3d87",
+    "harmony_command_plan_v4.json": "70579fa7d478f4ed4cc86ce384b1da9475963f46c98314e1d7ca3f719dff5982",
+    "performance_pir.json": "0edefc3fca94d92bbd0fdb6c68a3fb372c097cff2087ff9d1b34e0335ec6fe6a",
+    "retargeting_plan.json": "ac9dbde98475c2080c6ea956c6bd28fdb7b1a37430d1fed927c886075a5f1927",
+    "rig_binding_plan.json": "e8c14ed06c884a6980f57b5a93878ee38130cae27840449c0f920b87e41c6f3b",
+    "shot_manifest.json": "052bb3e7469dc0d68f16ce929f76dba06d7a7b2bb2f0e3a30f47cd2199dd749c"
+  }
+}

@@ -1,0 +1,435 @@
+{
+  "schemaVersion": "4.0",
+  "planId": "ANIM-A45E98BE0E73",
+  "manifestId": "MAN-71A1220D",
+  "createdAt": "2026-08-24T12:53:10.716Z",
+  "status": "implemented_unverified",
+  "requiresRealHarmony": true,
+  "sourceManifestSha256": "1e878f8ee5ce87525ee358b0629a56709a769a53e52763089aae937a8edf5209",
+  "commands": [
+    {
+      "commandId": "cmd_1000",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "frame": 1
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_HEAD_PEG_1",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1001",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "frame": 24
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_HEAD_PEG_24",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1002",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "frame": 25,
+        "rotation": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_HEAD_PEG_25",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1003",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "frame": 35,
+        "rotation": 6
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_HEAD_PEG_35",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1004",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_HEAD_PEG",
+        "frame": 48,
+        "rotation": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_HEAD_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_HEAD_PEG_48",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1005",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_MOUTH_D",
+        "frame": 1
+      },
+      "preconditions": [
+        "node_exists:NODE_MOUTH_D"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_MOUTH_D_1",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1006",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_MOUTH_D",
+        "frame": 24
+      },
+      "preconditions": [
+        "node_exists:NODE_MOUTH_D"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_MOUTH_D_24",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1007",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_MOUTH_D",
+        "frame": 25
+      },
+      "preconditions": [
+        "node_exists:NODE_MOUTH_D"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_MOUTH_D_25",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1008",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_MOUTH_D",
+        "frame": 48
+      },
+      "preconditions": [
+        "node_exists:NODE_MOUTH_D"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_MOUTH_D_48",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1009",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 1
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_1",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1010",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 24
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_24",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1011",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 25,
+        "rotation": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_25",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1012",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 35,
+        "rotation": -80
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_35",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1013",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 44,
+        "rotation": -70
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_44",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    },
+    {
+      "commandId": "cmd_1014",
+      "type": "set_transform_keyframe",
+      "params": {
+        "node_id": "NODE_ARM_R_PEG",
+        "frame": 48,
+        "rotation": 0
+      },
+      "preconditions": [
+        "node_exists:NODE_ARM_R_PEG"
+      ],
+      "destructiveLevel": "reversible",
+      "idempotencyKey": "key_NODE_ARM_R_PEG_48",
+      "rollback": {
+        "strategy": "none",
+        "snapshotRequired": false
+      },
+      "expectedArtifact": {
+        "kind": "node_attr",
+        "path": null,
+        "nonempty": false
+      },
+      "verification": {
+        "method": "none",
+        "required": false,
+        "acceptance": []
+      }
+    }
+  ],
+  "acceptanceGates": [
+    "gate1",
+    "gate2",
+    "gate3",
+    "gate4",
+    "gate5",
+    "gate6"
+  ],
+  "provenance": {
+    "compiler": "HarmonyCommandPlanV4Compiler v1",
+    "source": "RetargetingResolver"
+  }
+}

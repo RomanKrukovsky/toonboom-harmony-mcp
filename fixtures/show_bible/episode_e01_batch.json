@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "E01",
+  "production": "polygon_show",
+  "showBibleRef": "fixtures/show_bible/show_bible.json",
+  "director": "llm_director_v1",
+  "createdAt": "2026-07-27T12:00:00Z",
+  "shots": [
+    {
+      "shotId": "E01_S01_SH01",
+      "sceneName": "S01",
+      "description": "Mira looks up from her desk.",
+      "staging": {
+        "positions": [{ "characterId": "char_main_v1", "preset": "center" }],
+        "shotSize": "medium_shot",
+        "cameraMove": "static",
+        "backgroundRef": "bg/room_v1.png"
+      },
+      "timing": {
+        "totalFrames": 48,
+        "fps": 24,
+        "minBeatFrames": 2,
+        "maxBeatFrames": 96,
+        "anticipationFrames": 4,
+        "followThroughFrames": 6,
+        "pauseBeforeBeats": {}
+      },
+      "beats": [
+        { "beatId": "b1", "startFrame": 1, "endFrame": 24, "characterId": "char_main_v1", "intent": "look_up", "emotion": "neutral" },
+        { "beatId": "b2", "startFrame": 25, "endFrame": 48, "characterId": "char_main_v1", "intent": "react", "emotion": "surprise", "gestureId": "point" }
+      ],
+      "fx": [],
+      "render": { "preview": true, "format": "mp4", "quality": "standard" },
+      "sourceScriptRef": "scripts/E01/S01.txt"
+    },
+    {
+      "shotId": "E01_S01_SH02",
+      "sceneName": "S01",
+      "description": "Close-up on the surprised reaction.",
+      "staging": {
+        "positions": [{ "characterId": "char_main_v1", "preset": "close_up" }],
+        "shotSize": "close_up",
+        "cameraMove": "static",
+        "backgroundRef": "bg/room_v1.png"
+      },
+      "timing": {
+        "totalFrames": 36,
+        "fps": 24,
+        "minBeatFrames": 2,
+        "maxBeatFrames": 96,
+        "anticipationFrames": 4,
+        "followThroughFrames": 6,
+        "pauseBeforeBeats": {}
+      },
+      "beats": [
+        { "beatId": "b1", "startFrame": 1, "endFrame": 18, "characterId": "char_main_v1", "intent": "hold_surprise", "emotion": "surprise" },
+        { "beatId": "b2", "startFrame": 19, "endFrame": 36, "characterId": "char_main_v1", "intent": "settle", "emotion": "neutral" }
+      ],
+      "fx": [],
+      "render": { "preview": true, "format": "mp4", "quality": "standard" },
+      "sourceScriptRef": "scripts/E01/S01.txt"
+    },
+    {
+      "shotId": "E01_S02_SH01",
+      "sceneName": "S02",
+      "description": "Mira points at the board and holds.",
+      "staging": {
+        "positions": [{ "characterId": "char_main_v1", "preset": "center" }],
+        "shotSize": "medium_shot",
+        "cameraMove": "static",
+        "backgroundRef": "bg/room_v1.png"
+      },
+      "timing": {
+        "totalFrames": 24,
+        "fps": 24,
+        "minBeatFrames": 2,
+        "maxBeatFrames": 96,
+        "anticipationFrames": 4,
+        "followThroughFrames": 6,
+        "pauseBeforeBeats": {}
+      },
+      "beats": [
+        { "beatId": "b1", "startFrame": 1, "endFrame": 24, "characterId": "char_main_v1", "intent": "explain", "emotion": "neutral", "gestureId": "point" }
+      ],
+      "fx": [],
+      "render": { "preview": true, "format": "mp4", "quality": "standard" },
+      "sourceScriptRef": "scripts/E01/S02.txt"
+    }
+  ]
+}

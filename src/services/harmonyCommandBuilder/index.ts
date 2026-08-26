@@ -160,7 +160,7 @@ export class HarmonyCommandBuilder {
             },
             preconditions: [`node_exists:${track.nodeId}`],
             destructiveLevel: 'reversible',
-            idempotencyKey: `interp_${track.nodeId}_${key.frame}_long_enough`,
+            idempotencyKey: `interp_${track.nodeId}_${key.frame}`,
             rollback: { strategy: 'none', snapshotRequired: false },
             expectedArtifact: { kind: 'node_attr', path: null, nonempty: false },
             verification: { method: 'none', required: false, acceptance: [] }
@@ -182,7 +182,7 @@ export class HarmonyCommandBuilder {
           },
           preconditions: [`node_exists:${track.nodeId}`],
           destructiveLevel: 'reversible',
-          idempotencyKey: `key_${track.nodeId}_${key.frame}_long_enough`,
+          idempotencyKey: `key_${track.nodeId}_${key.frame}`,
           rollback: { strategy: 'none', snapshotRequired: false },
           expectedArtifact: { kind: 'node_attr', path: null, nonempty: false },
           verification: { method: 'none', required: false, acceptance: [] }
@@ -190,20 +190,6 @@ export class HarmonyCommandBuilder {
       }
     }
 
-    // Min 10 commands check
-    while (commands.length < 10) {
-      commands.push({
-        commandId: generateId(),
-        type: 'snapshot_project',
-        params: {},
-        preconditions: ['project_open'],
-        destructiveLevel: 'none',
-        idempotencyKey: `snap_anim_${commandCounter}_long_enough`,
-        rollback: { strategy: 'none', snapshotRequired: false },
-        expectedArtifact: { kind: 'snapshot', path: null, nonempty: true },
-        verification: { method: 'none', required: false, acceptance: [] }
-      });
-    }
 
     const inputHashStr = stringify(retargetingPlan) || '';
     const inputHash = crypto.createHash('sha256').update(inputHashStr).digest('hex');
@@ -222,6 +208,72 @@ export class HarmonyCommandBuilder {
         compiler: 'HarmonyCommandPlanV4Compiler v1',
         source: 'RetargetingResolver'
       }
+    };
+  }
+
+
+  /**
+   * buildSceneSetupPlan — palette + background commands from the ShowBible
+   * family, so a compiled scene carries its locked look, not just characters.
+   */
+  public buildSceneSetupPlan(
+    palette: { paletteId: string; colours: Array<{ colourId: string; name: string; rgba: string; usage: string }> },
+    background?: { nodeId: string; imagePath: string }
+  ): HarmonyCommandPlanV4 {
+    const commands: HarmonyCommandPlanV4['commands'] = [];
+    let counter = 3000;
+    const gen = () => `cmd_${counter++}`;
+
+    commands.push({
+      commandId: gen(),
+      type: 'create_palette',
+      params: { palette_id: palette.paletteId },
+      preconditions: ['project_open'],
+      destructiveLevel: 'reversible',
+      idempotencyKey: `palette_${palette.paletteId}`,
+      rollback: { strategy: 'none', snapshotRequired: false },
+      expectedArtifact: { kind: 'palette', path: null, nonempty: true },
+      verification: { method: 'check_attr', required: true, acceptance: [] }
+    });
+    for (const c of palette.colours) {
+      commands.push({
+        commandId: gen(),
+        type: 'add_palette_swatch',
+        params: { palette_id: palette.paletteId, colour_id: c.colourId, name: c.name, rgba: c.rgba },
+        preconditions: [`palette_exists:${palette.paletteId}`],
+        destructiveLevel: 'reversible',
+        idempotencyKey: `swatch_${palette.paletteId}_${c.colourId}`,
+        rollback: { strategy: 'none', snapshotRequired: false },
+        expectedArtifact: { kind: 'palette_attr', path: null, nonempty: false },
+        verification: { method: 'check_attr', required: true, acceptance: [] }
+      });
+    }
+    if (background) {
+      commands.push({
+        commandId: gen(),
+        type: 'create_node',
+        params: { node_id: background.nodeId, node_type: 'READ', image_path: background.imagePath },
+        preconditions: ['project_open'],
+        destructiveLevel: 'reversible',
+        idempotencyKey: `bg_${background.nodeId}`,
+        rollback: { strategy: 'delete_created', snapshotRequired: false },
+        expectedArtifact: { kind: 'node', path: background.nodeId, nonempty: true },
+        verification: { method: 'node_exists', required: true, acceptance: [] }
+      });
+    }
+
+    const inputHash = crypto.createHash('sha256').update(stringify({ palette, background }) || '').digest('hex');
+    return {
+      schemaVersion: HARMONY_COMMAND_PLAN_V4,
+      planId: `SETUP-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
+      manifestId: `MAN-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
+      createdAt: new Date().toISOString(),
+      status: 'implemented_unverified',
+      requiresRealHarmony: true,
+      sourceManifestSha256: inputHash,
+      commands,
+      acceptanceGates: ['gate1', 'gate2', 'gate3', 'gate4', 'gate5', 'gate6'],
+      provenance: { compiler: 'HarmonyCommandPlanV4Compiler v1', source: 'ShowBiblePalette' }
     };
   }
 

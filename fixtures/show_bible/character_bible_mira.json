@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "char_main_v1",
+  "name": "Mira",
+  "role": "protagonist",
+  "rigPath": "rigs/mira/mira.xstage",
+  "templatePath": "rigs/mira/mira.tpl",
+  "turnaroundViews": ["front"],
+  "controllers": [
+    { "controllerId": "HEAD_ROT", "nodePath": "NODE_HEAD_PEG", "purpose": "head rotation" },
+    { "controllerId": "MOUTH_OPEN", "nodePath": "NODE_MOUTH_D", "purpose": "mouth open" },
+    { "controllerId": "ARM_POINT", "nodePath": "NODE_ARM_R_PEG", "purpose": "right arm point" }
+  ],
+  "mouthShapes": [],
+  "expressions": [],
+  "gestureLibrary": [],
+  "paletteRef": "palette_main_v1",
+  "provenance": {
+    "approver": "td_lead",
+    "approvedAt": "2026-07-27T12:00:00Z",
+    "rigAuthor": "unassigned_placeholder",
+    "licensePath": "legal/mira_license.json"
+  }
+}

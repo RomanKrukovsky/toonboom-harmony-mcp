@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "assetId": "character_main_rig_v1",
+  "creator": "unassigned_placeholder",
+  "source": "commission",
+  "license": "exclusive commercial assignment (pending signature)",
+  "commercialUse": true,
+  "modificationAllowed": true,
+  "datasetUseAllowed": true,
+  "redistributionAllowed": false,
+  "contractPath": "legal/mira_contract.md",
+  "forbiddenTags": [],
+  "notes": "Structural fixture for offline compiler verification only. No real rig has been commissioned; creator is a placeholder and the contract stub is unsigned. Replace before any production use."
+}

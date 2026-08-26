@@ -1,6 +1,7 @@
 # Временные файлы и сборка
 node_modules/
 dist/
+.probe-dist/
 .env
 *.db
 *.log
@@ -47,3 +48,10 @@ docs/evidence/harmony-action-recorder-real-smoke/captures/
 fixtures/video/*
 !fixtures/video/README.md
 !fixtures/video/*.source.json
+
+# Rust build artifacts
+target/
+crates/**/target/
+crates/**/*.node
+crates/**/*.dylib
+

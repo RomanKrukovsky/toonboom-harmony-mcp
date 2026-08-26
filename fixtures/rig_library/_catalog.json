@@ -1,0 +1,494 @@
+[
+ {
+  "file": "Among.moho",
+  "version": 1039,
+  "layers_total": 187,
+  "types": {
+   "BoneLayer": 1,
+   "SwitchLayer": 11,
+   "MeshLayer": 144,
+   "GroupLayer": 31
+  },
+  "bones": 61,
+  "switches": "11 (73 сост.)",
+  "smart_bone_hints": 61,
+  "constrained_bones": 9,
+  "animated_channels": 9,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Ball.moho",
+  "version": 1045,
+  "layers_total": 2,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 1
+  },
+  "bones": 1,
+  "switches": "0 (0 сост.)",
+  "smart_bone_hints": 1,
+  "constrained_bones": 0,
+  "animated_channels": 0,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Dad body.moho",
+  "version": 1041,
+  "layers_total": 416,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 294,
+   "GroupLayer": 64,
+   "SwitchLayer": 57
+  },
+  "bones": 140,
+  "switches": "57 (197 сост.)",
+  "smart_bone_hints": 140,
+  "constrained_bones": 33,
+  "animated_channels": 1764,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Girl.moho",
+  "version": 1041,
+  "layers_total": 546,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 362,
+   "SwitchLayer": 44,
+   "GroupLayer": 139
+  },
+  "bones": 297,
+  "switches": "44 (230 сост.)",
+  "smart_bone_hints": 297,
+  "constrained_bones": 42,
+  "animated_channels": 4503,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Ilya_muromets_4.moho",
+  "version": 1039,
+  "layers_total": 228,
+  "types": {
+   "BoneLayer": 1,
+   "GroupLayer": 49,
+   "MeshLayer": 170,
+   "SwitchLayer": 8
+  },
+  "bones": 65,
+  "switches": "8 (54 сост.)",
+  "smart_bone_hints": 65,
+  "constrained_bones": 11,
+  "animated_channels": 519,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Litle girl.moho",
+  "version": 1045,
+  "layers_total": 270,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 199,
+   "SwitchLayer": 17,
+   "GroupLayer": 53
+  },
+  "bones": 168,
+  "switches": "17 (79 сост.)",
+  "smart_bone_hints": 168,
+  "constrained_bones": 25,
+  "animated_channels": 813,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Mr.Stu.moho",
+  "version": 1039,
+  "layers_total": 85,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 74,
+   "GroupLayer": 4,
+   "SwitchLayer": 6
+  },
+  "bones": 76,
+  "switches": "6 (62 сост.)",
+  "smart_bone_hints": 76,
+  "constrained_bones": 10,
+  "animated_channels": 339,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Normann.moho",
+  "version": 1039,
+  "layers_total": 221,
+  "types": {
+   "BoneLayer": 1,
+   "GroupLayer": 32,
+   "MeshLayer": 157,
+   "SwitchLayer": 31
+  },
+  "bones": 73,
+  "switches": "31 (124 сост.)",
+  "smart_bone_hints": 73,
+  "constrained_bones": 14,
+  "animated_channels": 975,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Pioneer Pesel.moho",
+  "version": 1040,
+  "layers_total": 343,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 230,
+   "GroupLayer": 76,
+   "SwitchLayer": 36
+  },
+  "bones": 199,
+  "switches": "36 (97 сост.)",
+  "smart_bone_hints": 199,
+  "constrained_bones": 29,
+  "animated_channels": 3731,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Robo.moho",
+  "version": 1041,
+  "layers_total": 25,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 17,
+   "GroupLayer": 6,
+   "SwitchLayer": 1
+  },
+  "bones": 40,
+  "switches": "1 (2 сост.)",
+  "smart_bone_hints": 40,
+  "constrained_bones": 8,
+  "animated_channels": 1476,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Rytsar.moho",
+  "version": 1039,
+  "layers_total": 15,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 14
+  },
+  "bones": 22,
+  "switches": "0 (0 сост.)",
+  "smart_bone_hints": 22,
+  "constrained_bones": 3,
+  "animated_channels": 23,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Skelet.moho",
+  "version": 1039,
+  "layers_total": 364,
+  "types": {
+   "BoneLayer": 35,
+   "GroupLayer": 49,
+   "MeshLayer": 260,
+   "SwitchLayer": 4,
+   "PatchLayer": 16
+  },
+  "bones": 311,
+  "switches": "4 (46 сост.)",
+  "smart_bone_hints": 311,
+  "constrained_bones": 19,
+  "animated_channels": 44,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Test leg 4.moho",
+  "version": 1045,
+  "layers_total": 12,
+  "types": {
+   "BoneLayer": 1,
+   "GroupLayer": 4,
+   "MeshLayer": 7
+  },
+  "bones": 23,
+  "switches": "0 (0 сост.)",
+  "smart_bone_hints": 23,
+  "constrained_bones": 3,
+  "animated_channels": 204,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Tsianid.anime",
+  "version": 1039,
+  "layers_total": 74,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 56,
+   "SwitchLayer": 9,
+   "GroupLayer": 8
+  },
+  "bones": 38,
+  "switches": "9 (41 сост.)",
+  "smart_bone_hints": 38,
+  "constrained_bones": 10,
+  "animated_channels": 1157,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "alien.moho",
+  "version": 1040,
+  "layers_total": 175,
+  "types": {
+   "BoneLayer": 1,
+   "SwitchLayer": 26,
+   "MeshLayer": 129,
+   "GroupLayer": 19
+  },
+  "bones": 104,
+  "switches": "26 (95 сост.)",
+  "smart_bone_hints": 104,
+  "constrained_bones": 12,
+  "animated_channels": 74,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "astronaft.moho",
+  "version": 1040,
+  "layers_total": 639,
+  "types": {
+   "BoneLayer": 1,
+   "GroupLayer": 90,
+   "MeshLayer": 474,
+   "SwitchLayer": 74
+  },
+  "bones": 165,
+  "switches": "74 (343 сост.)",
+  "smart_bone_hints": 165,
+  "constrained_bones": 37,
+  "animated_channels": 3691,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "flet_devoka_aka_sara_konar.moho",
+  "version": 1039,
+  "layers_total": 28,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 22,
+   "GroupLayer": 4,
+   "ImageLayer": 1
+  },
+  "bones": 14,
+  "switches": "0 (0 сост.)",
+  "smart_bone_hints": 14,
+  "constrained_bones": 0,
+  "animated_channels": 0,
+  "actions": 0,
+  "images": 1,
+  "zip_members": 2
+ },
+ {
+  "file": "football_player.moho",
+  "version": 1039,
+  "layers_total": 171,
+  "types": {
+   "BoneLayer": 6,
+   "GroupLayer": 28,
+   "MeshLayer": 119,
+   "PatchLayer": 18
+  },
+  "bones": 212,
+  "switches": "0 (0 сост.)",
+  "smart_bone_hints": 212,
+  "constrained_bones": 48,
+  "animated_channels": 10938,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "mannequin.moho",
+  "version": 1045,
+  "layers_total": 97,
+  "types": {
+   "BoneLayer": 1,
+   "SwitchLayer": 7,
+   "GroupLayer": 18,
+   "MeshLayer": 71
+  },
+  "bones": 79,
+  "switches": "7 (42 сост.)",
+  "smart_bone_hints": 79,
+  "constrained_bones": 6,
+  "animated_channels": 23,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "referee.moho",
+  "version": 1039,
+  "layers_total": 77,
+  "types": {
+   "ImageLayer": 3,
+   "BoneLayer": 2,
+   "GroupLayer": 8,
+   "MeshLayer": 53,
+   "PatchLayer": 9,
+   "SwitchLayer": 2
+  },
+  "bones": 86,
+  "switches": "2 (8 сост.)",
+  "smart_bone_hints": 86,
+  "constrained_bones": 15,
+  "animated_channels": 1123,
+  "actions": 0,
+  "images": 3,
+  "zip_members": 2
+ },
+ {
+  "file": "Cuddles.moho",
+  "version": 1040,
+  "layers_total": 38,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 30,
+   "SwitchLayer": 5,
+   "GroupLayer": 2
+  },
+  "bones": 30,
+  "switches": "5 (17 сост.)",
+  "smart_bone_hints": 30,
+  "constrained_bones": 6,
+  "animated_channels": 15,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Huggy Wuggy.moho",
+  "version": 1040,
+  "layers_total": 64,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 50,
+   "SwitchLayer": 5,
+   "GroupLayer": 8
+  },
+  "bones": 36,
+  "switches": "5 (28 сост.)",
+  "smart_bone_hints": 36,
+  "constrained_bones": 5,
+  "animated_channels": 366,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Cuddles.moho",
+  "version": 1040,
+  "layers_total": 38,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 30,
+   "SwitchLayer": 5,
+   "GroupLayer": 2
+  },
+  "bones": 30,
+  "switches": "5 (17 сост.)",
+  "smart_bone_hints": 30,
+  "constrained_bones": 6,
+  "animated_channels": 15,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Huggy Wuggy.moho",
+  "version": 1040,
+  "layers_total": 64,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 50,
+   "SwitchLayer": 5,
+   "GroupLayer": 8
+  },
+  "bones": 36,
+  "switches": "5 (28 сост.)",
+  "smart_bone_hints": 36,
+  "constrained_bones": 5,
+  "animated_channels": 366,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Cuddles.moho",
+  "version": 1040,
+  "layers_total": 38,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 30,
+   "SwitchLayer": 5,
+   "GroupLayer": 2
+  },
+  "bones": 30,
+  "switches": "5 (17 сост.)",
+  "smart_bone_hints": 30,
+  "constrained_bones": 6,
+  "animated_channels": 15,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ },
+ {
+  "file": "Huggy Wuggy.moho",
+  "version": 1040,
+  "layers_total": 64,
+  "types": {
+   "BoneLayer": 1,
+   "MeshLayer": 50,
+   "SwitchLayer": 5,
+   "GroupLayer": 8
+  },
+  "bones": 36,
+  "switches": "5 (28 сост.)",
+  "smart_bone_hints": 36,
+  "constrained_bones": 5,
+  "animated_channels": 366,
+  "actions": 0,
+  "images": 0,
+  "zip_members": 2
+ }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "lesson": 1,
+    "filename": "[SW.BAND] Урок 1. Модернизация костяной системы #1 ( констрейны в голове + доп кости).mp4",
+    "duration": 1232.7466875,
+    "segments_count": 128,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_01.md"
+  },
+  {
+    "lesson": 2,
+    "filename": "[SW.BAND] Урок 2. Экшены.mp4",
+    "duration": 1099.2426875,
+    "segments_count": 90,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_02.md"
+  },
+  {
+    "lesson": 3,
+    "filename": "[SW.BAND] Урок 3. Экшены #3.mp4",
+    "duration": 1556.544,
+    "segments_count": 54,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_03.md"
+  },
+  {
+    "lesson": 4,
+    "filename": "[SW.BAND] Урок 4. Модернизация костяной системы #2 ( веки в голове + экшены на веки).mp4",
+    "duration": 961.856,
+    "segments_count": 69,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_04.md"
+  },
+  {
+    "lesson": 5,
+    "filename": "[SW.BAND] Урок 5. Модернизация костяной системы #3 ( витрувиансие кости в голове , ногах).mp4",
+    "duration": 744.064,
+    "segments_count": 89,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_05.md"
+  },
+  {
+    "lesson": 6,
+    "filename": "[SW.BAND] Урок 6. Умная тень.mp4",
+    "duration": 418.5386875,
+    "segments_count": 58,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_06.md"
+  },
+  {
+    "lesson": 7,
+    "filename": "[SW.BAND] Урок 7. Сетка триангуляции.mp4",
+    "duration": 190.5066875,
+    "segments_count": 43,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_07.md"
+  },
+  {
+    "lesson": 8,
+    "filename": "[SW.BAND] Урок 8. Растровые риги.mp4",
+    "duration": 35.7333125,
+    "segments_count": 11,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_08.md"
+  },
+  {
+    "lesson": 9,
+    "filename": "[SW.BAND] Урок 9. Подготовка модели перед передачей аниматорам.mp4",
+    "duration": 387.2853125,
+    "segments_count": 61,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_09.md"
+  },
+  {
+    "lesson": 10,
+    "filename": "[SW.BAND] Урок 10. Скрипты для ускорения работы.mp4",
+    "duration": 279.5733125,
+    "segments_count": 75,
+    "transcript_path": "/Users/romanmolodyko/Documents/toon-boom-harmony-mcp/docs/transcripts/borsch_moho_course/lesson_10.md"
+  }
+]

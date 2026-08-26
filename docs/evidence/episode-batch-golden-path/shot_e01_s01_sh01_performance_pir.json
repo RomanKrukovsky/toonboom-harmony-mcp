@@ -1,0 +1,117 @@
+{
+  "schema": "toon-boom-mcp/performance-pir-v1",
+  "performanceId": "PERF-2b6e27a827a6cc8b",
+  "characterId": "char_main_v1",
+  "durationFrames": 48,
+  "fps": 24,
+  "tracks": [
+    {
+      "nodeId": "NODE_HEAD_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "interpolation": "LINEAR",
+          "rotation": 0
+        },
+        {
+          "frame": 35,
+          "interpolation": "LINEAR",
+          "rotation": 6
+        },
+        {
+          "frame": 48,
+          "interpolation": "LINEAR",
+          "rotation": 0
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_MOUTH_D",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 48,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_ARM_R_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 24,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 25,
+          "interpolation": "LINEAR",
+          "rotation": 0
+        },
+        {
+          "frame": 35,
+          "interpolation": "LINEAR",
+          "rotation": -80
+        },
+        {
+          "frame": 44,
+          "interpolation": "LINEAR",
+          "rotation": -70
+        },
+        {
+          "frame": 48,
+          "interpolation": "LINEAR",
+          "rotation": 0
+        }
+      ]
+    }
+  ],
+  "holds": [],
+  "shotManifestRef": "E01_S01_SH01",
+  "staging": {
+    "shotSize": "medium_shot",
+    "cameraMove": "static",
+    "backgroundRef": "bg/room_v1.png"
+  },
+  "timing": {
+    "totalFrames": 48,
+    "minBeatFrames": 2,
+    "maxBeatFrames": 96,
+    "anticipationFrames": 4,
+    "followThroughFrames": 6
+  },
+  "beatFrameMap": [
+    {
+      "beatId": "b1",
+      "startFrame": 1,
+      "endFrame": 24
+    },
+    {
+      "beatId": "b2",
+      "startFrame": 25,
+      "endFrame": 48
+    }
+  ]
+}

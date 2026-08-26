@@ -97,4 +97,58 @@ describe('ShotManifestCompiler', () => {
     const { warnings } = compiler.compile(manifest, goodRefs, {});
     expect(warnings.some(w => w.includes('HOLD'))).toBe(true);
   });
+
+  it('compiles a non-static camera move into NODE_CAMERA_PEG keyframes', () => {
+    const panManifest: ShotManifest = {
+      ...manifest,
+      staging: { ...manifest.staging, cameraMove: 'pan_left' }
+    };
+    const panRefs: ShowBibleCrossRefs = {
+      ...goodRefs,
+      cameraRules: { allowedShotSizes: ['close_up'], allowedCameraMoves: ['static', 'pan_left'] }
+    };
+    const { performance, violations, warnings } = compiler.compile(panManifest, panRefs, { controllerMaps });
+    expect(violations).toEqual([]);
+    const cam = performance.tracks.find(t => t.nodeId === 'NODE_CAMERA_PEG');
+    expect(cam).toBeDefined();
+    expect(cam!.keys).toHaveLength(2);
+    expect(cam!.keys[0]).toMatchObject({ frame: 1, x: 0, interpolation: 'LINEAR' });
+    expect(cam!.keys[1]).toMatchObject({ frame: 48, x: -100, interpolation: 'LINEAR' });
+    expect(warnings.some(w => w === 'camera "pan_left" compiled to NODE_CAMERA_PEG keyframes')).toBe(true);
+  });
+
+  it('does not emit a camera track for static shots', () => {
+    const { performance, warnings } = compiler.compile(manifest, goodRefs, { controllerMaps });
+    expect(performance.tracks.find(t => t.nodeId === 'NODE_CAMERA_PEG')).toBeUndefined();
+    expect(warnings.some(w => w.startsWith('camera "'))).toBe(false);
+  });
+
+  it('emits HOLD tracks for staged characters without beats', () => {
+    const twoCharManifest: ShotManifest = {
+      ...manifest,
+      staging: {
+        ...manifest.staging,
+        positions: [
+          { characterId: 'char_main_v1', preset: 'left' },
+          { characterId: 'char_side_v1', preset: 'right' }
+        ]
+      }
+    };
+    const twoCharRefs: ShowBibleCrossRefs = {
+      ...goodRefs,
+      characterIds: ['char_main_v1', 'char_side_v1']
+    };
+    const maps = {
+      ...controllerMaps,
+      char_side_v1: [{ controllerId: 'HEAD_ROT', nodePath: 'Top/Side/Head_Peg' }]
+    };
+    const { performance, violations, warnings } = compiler.compile(twoCharManifest, twoCharRefs, { controllerMaps: maps });
+    expect(violations).toEqual([]);
+    const hold = performance.tracks.find(t => t.nodeId === 'Top/Side/Head_Peg');
+    expect(hold).toBeDefined();
+    const frames = hold!.keys.map(k => k.frame).sort((a, b) => a - b);
+    expect(frames).toEqual([1, 48]);
+    expect(hold!.keys.every(k => k.interpolation === 'LINEAR')).toBe(true);
+    expect(warnings.some(w => w === 'character "char_side_v1" staged without beats — HOLD track emitted')).toBe(true);
+  });
 });

@@ -1,0 +1,139 @@
+{
+  "capabilityId": "rigger.auto_rig_compile",
+  "generatedAt": "2026-08-24T09:57:00.619Z",
+  "executedOffline": true,
+  "realModelExecuted": false,
+  "realModelDerivedInput": true,
+  "realHarmonyExecuted": false,
+  "input": {
+    "skeletonFixture": "fixtures/auto_rig/skeleton_dwpose_real.json",
+    "skeletonProvenance": "byte-for-byte copy of docs/evidence/sprint0-pose/skeleton.json (real YOLOX_l + dw-ll_ucoco_384 ONNX inference on fixtures/character.png)",
+    "drawingPirFixture": "fixtures/auto_rig/drawing_pir_structural.json",
+    "drawingPirProvenance": "structural semantic-layer decomposition (zero strokes); replaced by a real vectorization PIR once a character is commissioned",
+    "characterId": "char_sprint0_photo_v1"
+  },
+  "pipeline": [
+    "PivotEstimator.estimate -> CharacterTopologyPIR (+ schema validation, reliability audit)",
+    "RigTemplateRegistry.getTemplate(biped_standard, 1.0.0)",
+    "RigBindingResolver.resolveBinding (landmark -> template slot)",
+    "HarmonyCommandBuilder.buildPlan -> HarmonyCommandPlanV4",
+    "CharacterRigAssembler.assemblePlan -> cut-out part hierarchy (pegs, patches, backdrops)",
+    "DeformerGenerator.generatePlan -> Curve/Envelope deformers + face master controller",
+    "harmonyCommandPlanV4Schema.safeParse"
+  ],
+  "topologyAudit": {
+    "pointsTotal": 147,
+    "requiresHumanReview": true,
+    "missingOrUnreliableJoints": [
+      "body_9",
+      "body_13",
+      "body_14",
+      "body_15",
+      "body_16",
+      "foot_17",
+      "foot_18",
+      "foot_19",
+      "foot_20",
+      "foot_21",
+      "foot_22",
+      "hand_91",
+      "hand_92",
+      "hand_93",
+      "hand_94",
+      "hand_95",
+      "hand_96",
+      "hand_97",
+      "hand_98",
+      "hand_99",
+      "hand_100",
+      "hand_101",
+      "hand_102",
+      "hand_103",
+      "hand_104",
+      "hand_105",
+      "hand_106",
+      "hand_107",
+      "hand_108",
+      "hand_109",
+      "hand_110",
+      "hand_111",
+      "hand_114",
+      "hand_115",
+      "hand_116",
+      "hand_117",
+      "hand_118",
+      "hand_119",
+      "hand_120",
+      "hand_121",
+      "hand_122",
+      "hand_123",
+      "hand_124",
+      "hand_125",
+      "hand_126",
+      "hand_127",
+      "hand_128",
+      "hand_129",
+      "hand_130",
+      "hand_131",
+      "hand_132"
+    ]
+  },
+  "bindingSummary": {
+    "bindingsResolved": 14,
+    "unresolved": [],
+    "warnings": []
+  },
+  "commandPlanSummary": {
+    "status": "implemented_unverified",
+    "requiresRealHarmony": true,
+    "commandCount": 17,
+    "commandTypes": [
+      "create_peg",
+      "set_peg_pivot",
+      "connect_nodes"
+    ]
+  },
+  "rigPackageSummary": {
+    "partsPlanned": 18,
+    "deformersPlanned": 18,
+    "deformerTypes": [
+      "Envelope",
+      "Curve"
+    ],
+    "masterControllers": 1,
+    "faceMcControlledNodes": 3,
+    "autoPatchJoints": 11
+  },
+  "jointGuidesSummary": {
+    "hingesSolved": 4,
+    "missingHingeLandmarks": [],
+    "overlapFactor": 0.3,
+    "radii": {
+      "elbow_left": 66.98938809595072,
+      "elbow_right": 21.943443336819005,
+      "knee_left": 39.45656304946823,
+      "knee_right": 64.67063362517786
+    },
+    "overlay": "joint_guides_overlay.png",
+    "visualAuditNote": "On THIS fixture the hinge landmarks are visually unreliable (elbow_right lands near the face, knee_right on the foreground helmet) because the subject sits with crossed arms. The circle geometry is exact for the given landmarks; guides become production-grade only on full-body artwork with clean joints. The overlay exists precisely to make this audit visible."
+  },
+  "schemaValidation": {
+    "characterTopologyPir": true,
+    "harmonyCommandPlanV4": true
+  },
+  "determinism": {
+    "checked": true,
+    "method": "two independent runs; SHA-256 over fast-json-stable-stringify of all volatile-stripped artifacts (planId/manifestId/createdAt are random per run by design)",
+    "rigContentDigestMatch": true,
+    "rig_content_sha256": "sha256:2e3c0d45295f105c6b0896d7d21630497a15b84d7e288b73b54f5cf8b6a24766"
+  },
+  "limitations": [
+    "No Harmony execution: the rig package stays implemented_unverified until applied to a licensed Harmony.",
+    "Topology derives from one photographic fixture; stylised/animated line-art characters are unvalidated upstream (Sprint 0 known failure).",
+    "The drawing decomposition is structural (semantic layers, zero strokes); real artwork slicing arrives with a commissioned character.",
+    "The bridge-side deformer executor is an acknowledged mock (GROUP placeholders); deformers are PLAN-level until the executor is implemented.",
+    "The reliability audit flags joints needing review; art-gap patch artwork at deformed joints and final rig approval stay human.",
+    "planId fields of assembly/deformer plans and command-plan identity fields are random per run by design."
+  ],
+  "nextRequiredProof": "Apply the rig command plan to a licensed Harmony (open_project -> execute create_peg/set_peg_pivot/connect_nodes -> save -> reopen -> audit node graph)."
+}

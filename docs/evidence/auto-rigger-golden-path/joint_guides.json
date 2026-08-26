@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "char_sprint0_photo_v1",
+  "overlapFactor": 0.3,
+  "guides": [
+    {
+      "jointName": "elbow_left",
+      "centerX": 100.51201687918768,
+      "centerY": 260.56388060251874,
+      "radiusPx": 66.98938809595072,
+      "parentLandmark": "shoulder_left",
+      "childLandmark": "wrist_left",
+      "sliceChord": {
+        "x1": 162,
+        "y1": 358.04,
+        "x2": 172.78,
+        "y2": 170.78
+      },
+      "overlapPx": 66.98938809595072,
+      "confidence": 0.6347447037696838
+    },
+    {
+      "jointName": "elbow_right",
+      "centerX": 273.7230726348029,
+      "centerY": 119.42893695831299,
+      "radiusPx": 21.943443336819005,
+      "parentLandmark": "shoulder_right",
+      "childLandmark": "wrist_right",
+      "sliceChord": {
+        "x1": 260.64,
+        "y1": 84.02,
+        "x2": 244.47,
+        "y2": 143.29
+      },
+      "overlapPx": 21.943443336819005,
+      "confidence": 0.7842921018600464
+    },
+    {
+      "jointName": "knee_left",
+      "centerX": 153.43761724895901,
+      "centerY": 509.1538381576538,
+      "radiusPx": 39.45656304946823,
+      "parentLandmark": "hip_left",
+      "childLandmark": "ankle_left",
+      "sliceChord": {
+        "x1": 193.56,
+        "y1": 563.91,
+        "x2": 192.22,
+        "y2": 453.44
+      },
+      "overlapPx": 39.45656304946823,
+      "confidence": 0.2969328761100769
+    },
+    {
+      "jointName": "knee_right",
+      "centerX": 349.9038610458374,
+      "centerY": 481.88913313547766,
+      "radiusPx": 64.67063362517786,
+      "parentLandmark": "hip_right",
+      "childLandmark": "ankle_right",
+      "sliceChord": {
+        "x1": 305.01,
+        "y1": 380.08,
+        "x2": 268.16,
+        "y2": 557.37
+      },
+      "overlapPx": 64.67063362517786,
+      "confidence": 0.48551419377326965
+    }
+  ]
+}

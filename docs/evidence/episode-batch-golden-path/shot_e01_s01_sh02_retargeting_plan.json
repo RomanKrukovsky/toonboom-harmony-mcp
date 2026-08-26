@@ -1,0 +1,72 @@
+{
+  "schema": "toon-boom-mcp/retargeting-plan-v1",
+  "characterId": "char_main_v1",
+  "performanceId": "PERF-2da5f5203e293ff8",
+  "bindingHash": "sha256:2185f8fe501871c9e3355b7416ba60fa76bf1d8b753118aef3258499b6769873",
+  "tracks": [
+    {
+      "nodeId": "NODE_HEAD_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_MOUTH_D",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    },
+    {
+      "nodeId": "NODE_ARM_R_PEG",
+      "keys": [
+        {
+          "frame": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 18,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 19,
+          "interpolation": "LINEAR"
+        },
+        {
+          "frame": 36,
+          "interpolation": "LINEAR"
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

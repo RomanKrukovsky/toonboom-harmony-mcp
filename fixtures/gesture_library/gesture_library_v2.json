@@ -1,0 +1,341 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "char_main_v1",
+  "gestures": [
+    {
+      "gestureId": "point",
+      "description": "Extends the arm straight ahead toward an off-screen target.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -8, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -70, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": -65, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "wave",
+      "description": "Raises the arm and swings it side to side in greeting.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -20, "interpolation": "LINEAR" },
+            { "offsetFrame": 3, "rotation": -50, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": -30, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": -42, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "shrug",
+      "description": "Tilts the head sideways with an uncertain half-roll.",
+      "durationFrames": 8,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 3, "rotation": 6, "interpolation": "LINEAR" },
+            { "offsetFrame": 6, "rotation": -4, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": 0, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "nod",
+      "description": "Dips the head down and back up in agreement.",
+      "durationFrames": 8,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 2, "rotation": 8, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -4, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": 2, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "head_shake",
+      "description": "Sweeps the head left and right in refusal.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 2, "rotation": 10, "interpolation": "LINEAR" },
+            { "offsetFrame": 5, "rotation": -10, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": 0, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "thumbs_up",
+      "description": "Snaps the arm up into an approving raised fist.",
+      "durationFrames": 8,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -10, "interpolation": "LINEAR" },
+            { "offsetFrame": 3, "rotation": -85, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": -80, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "facepalm",
+      "description": "Drops the head into a defeated palm-cover angle.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 3, "rotation": -12, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": -14, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": -13, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "reach_out",
+      "description": "Stretches the arm fully outward toward someone.",
+      "durationFrames": 14,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -5, "interpolation": "LINEAR" },
+            { "offsetFrame": 5, "rotation": -75, "interpolation": "LINEAR" },
+            { "offsetFrame": 10, "rotation": -90, "interpolation": "LINEAR" },
+            { "offsetFrame": 13, "rotation": -88, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "pull_back",
+      "description": "Retracts the arm from extended to tucked at the side.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -90, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -40, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": -15, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "lean_forward",
+      "description": "Rolls the head forward into an intent lean.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": 9, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": 11, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "lean_back",
+      "description": "Tips the head back into a relaxed recline.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -8, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": -10, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "cower",
+      "description": "Curls the head down while pulling the arm protectively close.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -10, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": -12, "interpolation": "LINEAR" }
+          ]
+        },
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -20, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -95, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": -98, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "perk_up",
+      "description": "Lifts the head sharply out of a droop into alertness.",
+      "durationFrames": 8,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -6, "interpolation": "LINEAR" },
+            { "offsetFrame": 3, "rotation": 5, "interpolation": "LINEAR" },
+            { "offsetFrame": 7, "rotation": 3, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "slump",
+      "description": "Lets the head sink slowly forward in defeat.",
+      "durationFrames": 14,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 6, "rotation": 10, "interpolation": "LINEAR" },
+            { "offsetFrame": 13, "rotation": 13, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "straighten",
+      "description": "Unfolds the head back to neutral from a hunched pose.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 12, "interpolation": "LINEAR" },
+            { "offsetFrame": 5, "rotation": 4, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": 0, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "step_forward",
+      "description": "Counter-swings the arm as the body advances one step.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -30, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -55, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": -35, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "step_back",
+      "description": "Trails the arm behind as the body retreats one step.",
+      "durationFrames": 10,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "ARM_POINT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": -30, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -8, "interpolation": "LINEAR" },
+            { "offsetFrame": 9, "rotation": -12, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "turn_away",
+      "description": "Rotates the head off-screen to break eye contact.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": 13, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": 14, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "turn_toward",
+      "description": "Swings the head back around to face the subject.",
+      "durationFrames": 12,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 14, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": -6, "interpolation": "LINEAR" },
+            { "offsetFrame": 11, "rotation": 0, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    },
+    {
+      "gestureId": "look_around",
+      "description": "Scans left and right with a wary double take.",
+      "durationFrames": 16,
+      "provenance": "placeholder_curve",
+      "tracks": [
+        {
+          "controllerId": "HEAD_ROT",
+          "keys": [
+            { "offsetFrame": 0, "rotation": 0, "interpolation": "LINEAR" },
+            { "offsetFrame": 4, "rotation": 11, "interpolation": "LINEAR" },
+            { "offsetFrame": 8, "rotation": -11, "interpolation": "LINEAR" },
+            { "offsetFrame": 15, "rotation": 0, "interpolation": "LINEAR" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,464 @@
+{
+  "planId": "rig_plan_char_sprint0_photo_v1_1787565420604",
+  "characterName": "char_sprint0_photo_v1",
+  "masterPegName": "char_sprint0_photo_v1_Master_P",
+  "parts": [
+    {
+      "partId": "Torso",
+      "drawingNodeName": "char_sprint0_photo_v1_Torso_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Torso_P",
+      "parentPartId": null,
+      "semanticGroup": "torso",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0001,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "torso"
+    },
+    {
+      "partId": "Head",
+      "drawingNodeName": "char_sprint0_photo_v1_Head_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Head_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "head",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "head"
+    },
+    {
+      "partId": "Eyes",
+      "drawingNodeName": "char_sprint0_photo_v1_Eyes_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Eyes_P",
+      "parentPartId": "Face",
+      "semanticGroup": "eyes",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "head"
+    },
+    {
+      "partId": "Brows",
+      "drawingNodeName": "char_sprint0_photo_v1_Brows_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Brows_P",
+      "parentPartId": "Face",
+      "semanticGroup": "brows",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "head"
+    },
+    {
+      "partId": "Mouth",
+      "drawingNodeName": "char_sprint0_photo_v1_Mouth_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Mouth_P",
+      "parentPartId": "Face",
+      "semanticGroup": "mouth",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "head"
+    },
+    {
+      "partId": "Arm_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Arm_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Arm_L_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "left_arm",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Forearm_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Forearm_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Forearm_L_P",
+      "parentPartId": "Arm_L",
+      "semanticGroup": "left_forearm",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0003,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Hand_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Hand_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Hand_L_P",
+      "parentPartId": "Forearm_L",
+      "semanticGroup": "left_hand",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Arm_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Arm_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Arm_R_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "right_arm",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Forearm_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Forearm_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Forearm_R_P",
+      "parentPartId": "Arm_R",
+      "semanticGroup": "right_forearm",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0003,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Hand_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Hand_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Hand_R_P",
+      "parentPartId": "Forearm_R",
+      "semanticGroup": "right_hand",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "arms"
+    },
+    {
+      "partId": "Leg_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Leg_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Leg_L_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "left_leg",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Shin_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Shin_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Shin_L_P",
+      "parentPartId": "Leg_L",
+      "semanticGroup": "left_shin",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0003,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Foot_L",
+      "drawingNodeName": "char_sprint0_photo_v1_Foot_L_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Foot_L_P",
+      "parentPartId": "Shin_L",
+      "semanticGroup": "left_foot",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Leg_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Leg_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Leg_R_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "right_leg",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Shin_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Shin_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Shin_R_P",
+      "parentPartId": "Leg_R",
+      "semanticGroup": "right_shin",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0003,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Foot_R",
+      "drawingNodeName": "char_sprint0_photo_v1_Foot_R_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Foot_R_P",
+      "parentPartId": "Shin_R",
+      "semanticGroup": "right_foot",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0004,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "legs"
+    },
+    {
+      "partId": "Clothing",
+      "drawingNodeName": "char_sprint0_photo_v1_Clothing_Drawing",
+      "pegNodeName": "char_sprint0_photo_v1_Clothing_P",
+      "parentPartId": "Torso",
+      "semanticGroup": "clothing",
+      "artLayer": "line",
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "zOffset": 0.0002,
+      "separatePosition": true,
+      "lockDrawingMode": true,
+      "hasDeformer": false,
+      "isKinematicAccessory": false,
+      "backdropGroup": "torso"
+    }
+  ],
+  "autoPatchJoints": [
+    {
+      "jointId": "patch_Joint_Elbow_L",
+      "jointName": "Joint_Elbow_L",
+      "partA": "Arm_L",
+      "partB": "Forearm_L",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Elbow_R",
+      "jointName": "Joint_Elbow_R",
+      "partA": "Arm_R",
+      "partB": "Forearm_R",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Wrist_L",
+      "jointName": "Joint_Wrist_L",
+      "partA": "Forearm_L",
+      "partB": "Hand_L",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Wrist_R",
+      "jointName": "Joint_Wrist_R",
+      "partA": "Forearm_R",
+      "partB": "Hand_R",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Hip_L",
+      "jointName": "Joint_Hip_L",
+      "partA": "Torso",
+      "partB": "Leg_L",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Hip_R",
+      "jointName": "Joint_Hip_R",
+      "partA": "Torso",
+      "partB": "Leg_R",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Knee_L",
+      "jointName": "Joint_Knee_L",
+      "partA": "Leg_L",
+      "partB": "Shin_L",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Knee_R",
+      "jointName": "Joint_Knee_R",
+      "partA": "Leg_R",
+      "partB": "Shin_R",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Ankle_L",
+      "jointName": "Joint_Ankle_L",
+      "partA": "Shin_L",
+      "partB": "Foot_L",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Ankle_R",
+      "jointName": "Joint_Ankle_R",
+      "partA": "Shin_R",
+      "partB": "Foot_R",
+      "patchRadius": 15
+    },
+    {
+      "jointId": "patch_Joint_Head_Torso",
+      "jointName": "Joint_Head_Torso",
+      "partA": "Torso",
+      "partB": "Head",
+      "patchRadius": 15
+    }
+  ],
+  "kinematicAccessories": [],
+  "backdrops": [
+    {
+      "title": "char_sprint0_photo_v1 Master",
+      "color": "red",
+      "nodes": [
+        "Top/char_sprint0_photo_v1/Master_P"
+      ]
+    },
+    {
+      "title": "char_sprint0_photo_v1 Head",
+      "color": "green",
+      "nodes": [
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Head_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Head_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Eyes_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Eyes_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Brows_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Brows_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Mouth_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Mouth_P"
+      ]
+    },
+    {
+      "title": "char_sprint0_photo_v1 Torso",
+      "color": "blue",
+      "nodes": [
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Torso_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Torso_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Clothing_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Clothing_P"
+      ]
+    },
+    {
+      "title": "char_sprint0_photo_v1 Arms",
+      "color": "yellow",
+      "nodes": [
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Arm_L_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Arm_L_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Forearm_L_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Forearm_L_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Hand_L_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Hand_L_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Arm_R_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Arm_R_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Forearm_R_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Forearm_R_P",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Hand_R_Drawing",
+        "Top/char_sprint0_photo_v1/char_sprint0_photo_v1_Hand_R_P"
+      ]
+    }
+  ],
+  "createdAt": "2026-08-24T09:57:00.604Z",
+  "planHash": "02099e12561d46925857b34dca4472a0735d390186a57d0f51f6006c2328ce8b"
+}

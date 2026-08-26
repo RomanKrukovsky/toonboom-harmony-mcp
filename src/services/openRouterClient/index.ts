@@ -30,15 +30,23 @@ export class OpenRouterClient {
 
   constructor(apiKey?: string, defaultModel?: string) {
     this.apiKey = apiKey !== undefined ? apiKey : (config.backends.apiKeys.openrouter || process.env.OPENROUTER_API_KEY || '');
-    this.defaultModel = defaultModel || config.backends.openrouterModel || 'nvidia/nemotron-3-super:free';
+    this.defaultModel = defaultModel || config.backends.openrouterModel || 'nvidia/nemotron-3-super-120b-a12b:free';
+    // Project policy (2026-08): ONLY OpenRouter ":free" models may be used.
+    if (!this.defaultModel.endsWith(':free')) {
+      throw new Error(`OpenRouterClient policy violation: model "${this.defaultModel}" is not a :free model`);
+    }
   }
 
   /**
-   * Sends a completion request to OpenRouter API (defaults to nvidia/nemotron-3-super:free).
+   * Sends a completion request to OpenRouter API (defaults to nvidia/nemotron-3-super-120b-a12b:free).
+   * Per-request models are also policy-checked before any network activity.
    */
   public async complete(request: OpenRouterRequest): Promise<OpenRouterResponse> {
     const validated = openRouterRequestSchema.parse(request);
     const modelToUse = validated.model || this.defaultModel;
+    if (!modelToUse.endsWith(':free')) {
+      throw new Error(`OpenRouterClient policy violation: model "${modelToUse}" is not a :free model`);
+    }
 
     const messages = [];
     if (validated.systemPrompt) {

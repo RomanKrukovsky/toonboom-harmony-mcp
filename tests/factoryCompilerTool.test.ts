@@ -125,7 +125,9 @@ function buildFamily(root: string): string {
 describe('harmony.factory.compile_shot MCP tool', () => {
   let tmpDir: string;
   let showBiblePath: string;
-  const tool = factoryCompilerTools[0];
+  const tool = factoryCompilerTools[0] as typeof factoryCompilerTools[number] & {
+    handler: (args: { showBiblePath: string; shotManifest: any }) => Promise<any>;
+  };
 
   beforeAll(() => {
     tmpDir = path.resolve(process.cwd(), 'output', 'test-factory-tool');

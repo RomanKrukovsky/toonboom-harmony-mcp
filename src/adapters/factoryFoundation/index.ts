@@ -32,5 +32,71 @@ export class FactoryFoundationStore {
   async ingest(source:string,mediaType='application/octet-stream'){await this.initialize();const real=verifyPathAccess(source);if(!fs.statSync(real).isFile())throw new Error('Artifact source is not a file');const sha=await hashFile(real),dir=path.join(this.root,'objects',sha.slice(0,2)),stored=path.join(dir,sha);fs.mkdirSync(dir,{recursive:true});if(!fs.existsSync(stored))fs.copyFileSync(real,stored);const size=fs.statSync(stored).size,id=`artifact_${sha.slice(0,20)}`;await this.run('INSERT OR IGNORE INTO factory_artifacts VALUES(?,?,?,?,?,?,?)',[id,sha,size,mediaType,real,stored,new Date().toISOString()]);return{id,sha256:sha,size,mediaType,sourcePath:real,storedPath:stored,verified:fs.statSync(stored).size===size};}
   async metric(name:string,value:number,labels:any={}){await this.initialize();await this.run('INSERT INTO factory_metrics(name,value,labels_json,created_at) VALUES(?,?,?,?)',[name,value,JSON.stringify(labels),new Date().toISOString()]);}
   private exec(sql:string){return new Promise<void>((ok,bad)=>this.db.exec(sql,e=>e?bad(e):ok()));} private run(sql:string,p:any[]){return new Promise<void>((ok,bad)=>this.db.run(sql,p,e=>e?bad(e):ok()));} private get(sql:string,p:any[]){return new Promise<any>((ok,bad)=>this.db.get(sql,p,(e,r)=>e?bad(e):ok(r)));} private all(sql:string,p:any[]){return new Promise<any[]>((ok,bad)=>this.db.all(sql,p,(e,r)=>e?bad(e):ok(r)));}
+
+  /**
+   * executeJob — the real pipeline-producer executor.
+   *
+   * Runs a job's steps in depends_on order (topological for chain deps),
+   * re-checking cancel_requested in the DB before EVERY attempt so an external
+   * `cancel()` call stops the job between steps, retrying failed steps up to
+   * maxAttemptsPerStep, and updating job status/progress as it goes.
+   *
+   * Handlers map step name -> async unit of work returning a checkpoint
+   * payload. A handler that throws counts as one failed attempt; the error is
+   * stored on the job. Statuses: running -> completed | failed | cancelled.
+   */
+  async executeJob(jobId:string, handlers:Record<string,()=>Promise<any>>, opts:{maxAttemptsPerStep?:number}={}):Promise<ReturnType<FactoryFoundationStore['getJob']>>{
+    await this.initialize();
+    const maxAttempts=Math.max(1,opts.maxAttemptsPerStep??1);
+    let job=await this.getJob(jobId);
+    if(['completed','failed','cancelled'].includes(job.status))return job;
+    const pending=job.steps.filter(s=>s.status!=='completed');
+    // Topological order over single-parent depends_on chains (cycle = config bug).
+    const byName=new Map(job.steps.map(s=>[s.name,s]));
+    const ordered:any[]=[];const seen=new Set<string>();
+    const visit=(s:any)=>{if(seen.has(s.name))return;seen.add(s.name);if(s.dependsOn&&byName.has(s.dependsOn))visit(byName.get(s.dependsOn));ordered.push(s);};
+    pending.forEach(visit);
+    if(ordered.length!==pending.length)throw new Error(`Job ${jobId} step dependencies contain a cycle`);
+
+    await this.setJob(jobId,'running',job.progress);
+    let done=job.steps.length-pending.length;
+    try{
+      for(const step of ordered){
+        let attemptBase=step.attempt;
+        for(let attempt=1;attempt<=maxAttempts;attempt++){
+          job=await this.getJob(jobId);
+          if(job.cancelRequested){
+            await this.setStep(jobId,step.name,'cancelled',{reason:'cancel_requested'});
+            await this.setJob(jobId,'cancelled',done/job.steps.length);
+            return this.getJob(jobId);
+          }
+          try{
+            const checkpoint=handlers[step.name]?await handlers[step.name]():null;
+            await this.setStep(jobId,step.name,'completed',checkpoint);
+            break;
+          }catch(err:any){
+            const last=attempt===maxAttempts;
+            await this.setStep(jobId,step.name,last?'failed':'retrying',{error:String(err?.message??err),attempt:attemptBase+attempt});
+            if(last){
+              await this.setJob(jobId,'failed',done/job.steps.length,null,{step:step.name,error:String(err?.message??err)});
+              return this.getJob(jobId);
+            }
+          }
+        }
+        if((await this.getStep(jobId,step.name))!=='completed'){
+          return this.getJob(jobId);
+        }
+        done+=1;
+        await this.setJob(jobId,'running',done/job.steps.length);
+      }
+      job=await this.getJob(jobId);
+      await this.setJob(jobId, job.cancelRequested?'cancelled':'completed', 1, {stepsCompleted:done});
+    }catch(err:any){
+      await this.setJob(jobId,'failed',(await this.getJob(jobId)).progress,null,{executorError:String(err?.message??err)});
+    }
+    return this.getJob(jobId);
+  }
+
+  private async getStep(jobId:string,name:string){const r:any=await this.get('SELECT status FROM factory_steps WHERE job_id=? AND name=?',[jobId,name]);return r?.status;}
 }
 function parse(v:any){if(!v)return null;try{return JSON.parse(v);}catch{return v;}} async function hashFile(file:string){const h=crypto.createHash('sha256');for await(const chunk of fs.createReadStream(file))h.update(chunk as Buffer);return h.digest('hex');}
