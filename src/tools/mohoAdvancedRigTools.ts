@@ -81,5 +81,25 @@ export const mohoAdvancedRigTools = [
       const morph = MohoPointMorphEngine.generateHeadMorph(args.basePointsCount);
       return { status: 'success', morph };
     }
+  },
+  {
+    name: 'moho.rig.build_studio_master_character',
+    description:
+      'ГЕНЕРАТОР ЭТАЛОННОГО БРОАДКАСТ-РИГА MOHO. Создает полноценный production-grade риг персонажа (360° повороты, 2D XY джойстик лица, 2-Bone IK с таргет-пинами, 10 фонем рта, 6 поз рук, физика волос, смары и 4 готовых анимационных клипа) и компилирует готовый бинарный .moho файл.',
+    inputSchema: z.object({
+      characterName: z.string().default('HeroCharacter'),
+      gender: z.enum(['male', 'female', 'neutral']).default('neutral'),
+      skinColorRgba: z.array(z.number()).length(4).default([242, 210, 189, 255]),
+      hairColorRgba: z.array(z.number()).length(4).default([55, 45, 40, 255]),
+      shirtColorRgba: z.array(z.number()).length(4).default([65, 125, 220, 255]),
+      pantsColorRgba: z.array(z.number()).length(4).default([45, 55, 75, 255]),
+      shoesColorRgba: z.array(z.number()).length(4).default([30, 30, 30, 255]),
+      outputPath: z.string().optional().describe('Путь для сохранения скомпилированного .moho файла')
+    }),
+    handler: async (args: any) => {
+      const { MohoStudioMasterRigGenerator } = await import('../services/mohoStudioMasterRigGenerator/index.js');
+      const result = MohoStudioMasterRigGenerator.generateMasterRig(args);
+      return { status: 'success', masterRig: result };
+    }
   }
 ];
