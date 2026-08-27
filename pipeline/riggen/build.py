@@ -345,6 +345,41 @@ def build_rig(spec: dict) -> Rig:
     ]
     rig.extras["bones_groups"] = [bg for bg in bone_groups if bg["bones"]]
 
+    # 7. Генерация библиотеки экшенов анимации (Walk, Run, Idle)
+    if spec.get("include_actions", True):
+        from .animation_cycles import build_standard_action_library
+        actions_lib = build_standard_action_library()
+        action_descriptors = []
+        for act in actions_lib:
+            act_name = act["name"]
+            action_descriptors.append({"name": act_name, "pose": 0})
+            for b_name, b_chans in act.get("bones", {}).items():
+                target_bone = next((b for b in all_bones if b.id == b_name), None)
+                if target_bone is None:
+                    continue
+                if "anim_pos" in b_chans:
+                    chan_data = b_chans["anim_pos"]
+                    if target_bone.pos_channel_raw is None:
+                        target_bone.pos_channel_raw = {
+                            "type": "Vec2", "ref": False, "mute": False,
+                            "when": [0], "val": [{"x": target_bone.position[0], "y": target_bone.position[1]}],
+                            "interp": [dict(BASE_INTERP)], "actions": []
+                        }
+                    target_bone.pos_channel_raw.setdefault("actions", []).append({
+                        "name": act_name,
+                        "pose": chan_data
+                    })
+                if "anim_angle" in b_chans:
+                    chan_data = b_chans["anim_angle"]
+                    if target_bone.dial_actions is None:
+                        target_bone.dial_actions = []
+                    target_bone.dial_actions.append({
+                        "name": act_name,
+                        "pose": chan_data
+                    })
+        root.actions_raw = action_descriptors
+        rig.extras["actions"] = action_descriptors
+
     return rig
 
 

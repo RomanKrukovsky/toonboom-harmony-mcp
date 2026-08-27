@@ -288,6 +288,9 @@ def build_doc(rig: Rig) -> dict:
             if bg:
                 skel["bones_groups"] = copy.deepcopy(bg)
             layer["skeleton"] = skel
+            actions = getattr(part, "actions_raw", None) or rig.extras.get("actions")
+            if actions:
+                layer["actions"] = copy.deepcopy(actions)
         doc["layers"].append(layer)
     doc = _coerce_doubles(doc)
     # project_data.width/height — нативные ЦЕЛЫЕ числа (число кадров/пиксели),

@@ -43,6 +43,23 @@ interface NativeCoreModule {
     targetAngleDeg: number,
     config: { spring: number; damping: number; mass: number; gravity: number; frames: number }
   ): number[];
+  rustDetectSmearBreakdowns(
+    keyframes: Array<{ frame: number; posX: number; posY: number }>,
+    velocityThreshold: number,
+    angularVelocityThresholdDeg: number
+  ): Array<{ frame: number; smearType: string; velocityMagnitude: number; motionAngleDeg: number; recommendedDurationFrames: number }>;
+  rustGenerateArcSmear(
+    name: string,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    arcCurvature: number,
+    baseThickness: number,
+    trailTaper: number,
+    fillRgba: number[],
+    strokeWidth: number
+  ): MohoVectorShape;
 }
 
 let nativeModule: NativeCoreModule | null = null;
@@ -240,5 +257,108 @@ export class MohoNativeBridge {
       trajectory.push(Number(currentAngle.toFixed(2)));
     }
     return trajectory;
+  }
+
+  public static detectSmearBreakdowns(
+    keyframes: Array<{ frame: number; posX: number; posY: number }>,
+    velocityThreshold = 30.0,
+    angularVelocityThresholdDeg = 45.0
+  ): Array<{ frame: number; smearType: string; velocityMagnitude: number; motionAngleDeg: number; recommendedDurationFrames: number }> {
+    const native = loadNativeCore();
+    if (native) {
+      return native.rustDetectSmearBreakdowns(keyframes, velocityThreshold, angularVelocityThresholdDeg);
+    }
+    // Fallback TS detection
+    const detections: Array<{ frame: number; smearType: string; velocityMagnitude: number; motionAngleDeg: number; recommendedDurationFrames: number }> = [];
+    for (let i = 1; i < keyframes.length; i++) {
+      const prev = keyframes[i - 1];
+      const curr = keyframes[i];
+      const dt = Math.max(Math.abs(curr.frame - prev.frame), 1);
+      const dx = curr.posX - prev.posX;
+      const dy = curr.posY - prev.posY;
+      const vel = Math.hypot(dx, dy) / dt;
+      const angleDeg = Math.round((Math.atan2(dy, dx) * 180) / Math.PI);
+      if (vel >= velocityThreshold) {
+        let isArc = false;
+        if (i + 1 < keyframes.length) {
+          const next = keyframes[i + 1];
+          const ndx = next.posX - curr.posX;
+          const ndy = next.posY - curr.posY;
+          const nextAngle = Math.round((Math.atan2(ndy, ndx) * 180) / Math.PI);
+          const diff = Math.abs(nextAngle - angleDeg);
+          if (diff >= angularVelocityThresholdDeg && diff <= 180.0) {
+            isArc = true;
+          }
+        }
+        const smearType = isArc ? 'arc' : vel > velocityThreshold * 2.0 ? 'multi' : 'stretch';
+        detections.push({
+          frame: curr.frame,
+          smearType,
+          velocityMagnitude: Math.round(vel * 100) / 100,
+          motionAngleDeg: angleDeg,
+          recommendedDurationFrames: vel > velocityThreshold * 2.5 ? 2 : 1
+        });
+      }
+    }
+    return detections;
+  }
+
+  public static generateArcSmear(options: {
+    name: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    arcCurvature?: number;
+    baseThickness?: number;
+    trailTaper?: number;
+    fillRgba?: number[];
+    strokeWidth?: number;
+  }): MohoVectorShape {
+    const native = loadNativeCore();
+    if (native) {
+      return native.rustGenerateArcSmear(
+        options.name,
+        options.startX,
+        options.startY,
+        options.endX,
+        options.endY,
+        options.arcCurvature ?? 0.35,
+        options.baseThickness ?? 24.0,
+        options.trailTaper ?? 0.3,
+        options.fillRgba ?? [240, 215, 195, 255],
+        options.strokeWidth ?? 2.0
+      );
+    }
+    // Fallback handled in MohoSmearSynthesizer
+    const dx = options.endX - options.startX;
+    const dy = options.endY - options.startY;
+    const dist = Math.max(Math.hypot(dx, dy), 0.01);
+    const nx = -dy / dist;
+    const ny = dx / dist;
+    const arcCurv = options.arcCurvature ?? 0.35;
+    const baseThick = options.baseThickness ?? 24.0;
+    const trailTap = options.trailTaper ?? 0.3;
+    const midX = (options.startX + options.endX) * 0.5 + nx * arcCurv * dist;
+    const midY = (options.startY + options.endY) * 0.5 + ny * arcCurv * dist;
+    const tStart = baseThick * trailTap;
+    const tMid = baseThick * 1.35;
+    const tEnd = baseThick;
+
+    return {
+      name: options.name,
+      points: [
+        { x: Math.round((options.startX - nx * tStart * 0.5) * 100) / 100, y: Math.round((options.startY - ny * tStart * 0.5) * 100) / 100, handleIn: undefined, handleOut: { dx: dx * 0.25, dy: dy * 0.25 }, curvature: 0.35 },
+        { x: Math.round((midX + nx * tMid * 0.5) * 100) / 100, y: Math.round((midY + ny * tMid * 0.5) * 100) / 100, handleIn: { dx: -dx * 0.2, dy: -dy * 0.2 }, handleOut: { dx: dx * 0.2, dy: dy * 0.2 }, curvature: 0.4 },
+        { x: Math.round((options.endX + nx * tEnd * 0.5) * 100) / 100, y: Math.round((options.endY + ny * tEnd * 0.5) * 100) / 100, handleIn: { dx: -dx * 0.25, dy: -dy * 0.25 }, handleOut: undefined, curvature: 0.35 },
+        { x: Math.round((options.endX - nx * tEnd * 0.5) * 100) / 100, y: Math.round((options.endY - ny * tEnd * 0.5) * 100) / 100, handleIn: undefined, handleOut: { dx: -dx * 0.25, dy: -dy * 0.25 }, curvature: 0.35 },
+        { x: Math.round((midX - nx * tMid * 0.3) * 100) / 100, y: Math.round((midY - ny * tMid * 0.3) * 100) / 100, handleIn: { dx: dx * 0.2, dy: dy * 0.2 }, handleOut: { dx: -dx * 0.2, dy: -dy * 0.2 }, curvature: 0.4 },
+        { x: Math.round((options.startX + nx * tStart * 0.5) * 100) / 100, y: Math.round((options.startY + ny * tStart * 0.5) * 100) / 100, handleIn: { dx: dx * 0.25, dy: dy * 0.25 }, handleOut: undefined, curvature: 0.35 }
+      ],
+      fillColor: { r: options.fillRgba?.[0] ?? 240, g: options.fillRgba?.[1] ?? 215, b: options.fillRgba?.[2] ?? 195, a: options.fillRgba?.[3] ?? 255 },
+      strokeColor: { r: 26, g: 26, b: 26, a: 255 },
+      strokeWidth: options.strokeWidth ?? 2.0,
+      isClosed: true
+    };
   }
 }

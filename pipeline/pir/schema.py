@@ -82,15 +82,15 @@ class Part:
     children: list["Part"] = field(default_factory=list)
     switch_states: list[str] = field(default_factory=list)
     switch_channel: Optional[Channel] = None
-    switch_dial_actions: Optional[list[dict]] = None  # связь с диалами
+    switch_dial_actions: Optional[list[dict]] = None
     image_ref: Optional[str] = None
-    # v1: распознанные свойства
     is_head_turn: bool = False  # SwitchLayer управляется Head Switch
     head_turn_views: list[str] = field(default_factory=list)  # стандартные виды
     mask_layer_id: Optional[str] = None  # какой слой маскирует эту часть
     masking: int = 0  # 0=нет, 1=mask this layer, 2=don't mask / mask+visible, 5=clear+add, 6=exclude stroke
     group_mask: int = 0  # 0=нет, 1=reveal all, 2=hide all
     blend_mode: int = 0
+    actions_raw: Optional[list[dict]] = None
 
 
 @dataclass

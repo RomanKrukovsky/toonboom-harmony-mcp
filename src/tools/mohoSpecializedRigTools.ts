@@ -4,6 +4,8 @@ import { MohoMechanicalPistonBuilder } from '../services/mohoMechanicalPistonBui
 import { MohoSplineTentacleEngine } from '../services/mohoSplineTentacleEngine/index.js';
 import { MohoPsdImageLayerIngest } from '../services/mohoPsdImageLayerIngest/index.js';
 import { MohoTrajectorySquashEngine } from '../services/mohoTrajectorySquashEngine/index.js';
+import { MohoSmearSynthesizer } from '../services/mohoSmearSynthesizer/index.js';
+import { MohoNativeBridge } from '../services/mohoNativeBridge/index.js';
 
 export const mohoSpecializedRigTools = [
   {
@@ -152,6 +154,53 @@ export const mohoSpecializedRigTools = [
         args.squashIntensity
       );
       return { status: 'success', squash };
+    }
+  },
+  {
+    name: 'moho.rig.synthesize_smear_frames',
+    description:
+      'Генерирует высокоскоростные смары (Motion Arc, Velocity Stretch, Multi-Ghosting, Whiplash S-Curves) и упаковывает их в Moho SwitchLayer с автоматической детекцией по траектории (Rust/Python/TS).',
+    inputSchema: z.object({
+      limbName: z.string().default('Arm_L'),
+      trajectory: z.array(
+        z.object({
+          frame: z.number(),
+          posX: z.number(),
+          posY: z.number()
+        })
+      ).optional().describe('Траектория движения для автоматической детекции смаров.'),
+      velocityThreshold: z.number().default(30.0),
+      fillRgba: z.array(z.number()).length(4).default([240, 215, 195, 255])
+    }),
+    handler: async (args: {
+      limbName?: string;
+      trajectory?: Array<{ frame: number; posX: number; posY: number }>;
+      velocityThreshold?: number;
+      fillRgba?: number[];
+    }) => {
+      const name = args.limbName ?? 'Arm_L';
+      const fill = args.fillRgba ?? [240, 215, 195, 255];
+      const baseNormal = MohoNativeBridge.generateCapsuleShape({
+        name: `${name}_Normal`,
+        centerX: 0,
+        centerY: 0,
+        radiusX: 20,
+        radiusY: 60,
+        fillRgba: [fill[0], fill[1], fill[2], fill[3]],
+        strokeWidth: 2.0,
+        jointCapPadding: false
+      });
+
+      const pack = MohoSmearSynthesizer.buildSmearSwitchPack(name, baseNormal, fill);
+      const detections = args.trajectory
+        ? MohoSmearSynthesizer.detectSmears(args.trajectory, args.velocityThreshold ?? 30.0)
+        : [];
+
+      return {
+        status: 'success',
+        smearSwitchPack: pack,
+        detectedSmearFrames: detections
+      };
     }
   }
 ];
