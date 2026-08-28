@@ -39,7 +39,7 @@ DEFAULT_INTERP = {"im": 1, "v1": 0.1, "v2": 0.5, "in": 1, "h": 0, "s": False, "t
 STEP_INTERP = {"im": 0, "v1": 0.1, "v2": 0.5, "in": 1, "h": 0, "s": False, "t": 0}
 
 
-def make_point(x: float, y: float, parent_bone: int = -1, width: float = 0.005556,
+def make_point(x: float, y: float, parent_bone: int = -1, width: float = 1.0,
                curves: list[dict] | None = None) -> dict:
     """Создаёт объект Point для Moho mesh."""
     return {
@@ -57,8 +57,17 @@ def make_point(x: float, y: float, parent_bone: int = -1, width: float = 0.00555
         "parent": int(parent_bone),
         "selected": False,
         "colored": False,
-        "color": {"r": 0, "g": 0, "b": 0, "a": 255},
-        "color_strength": 1.0,
+        "color": {
+            "type": "Color", "ref": False, "mute": False,
+            "when": [0],
+            "val": [{"r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0}],
+            "interp": [dict(DEFAULT_INTERP)],
+        },
+        "color_strength": {
+            "type": "Val", "ref": False, "mute": False,
+            "when": [0], "val": [1.0],
+            "interp": [dict(DEFAULT_INTERP)],
+        },
         "curves": curves if curves is not None else [],
     }
 
@@ -100,14 +109,12 @@ def make_curve(point_indices: Sequence[int], closed: bool = True,
 
     return {
         "type": "Curve",
+        "num_points": len(curve_points),
         "closed": bool(closed),
-        "selected": False,
-        "curvature": {
-            "type": "Val", "ref": False, "mute": False,
-            "when": [0], "val": [0.0],
-            "interp": [dict(DEFAULT_INTERP)],
-        },
-        "curve_points": curve_points,
+        "profile_layer_uuid": "",
+        "profile_curve_id": -1,
+        "profile_repeat": 16,
+        "points": curve_points,
         "start_percent": {
             "type": "Val", "ref": False, "mute": False,
             "when": [0], "val": [-0.1],
@@ -217,12 +224,12 @@ def assemble_mesh(points: list[dict], curves: list[dict], shapes: list[dict]) ->
     """Собирает цельный mesh-словарь и обновляет перекрёстные ссылки в точках."""
     # Заполняем массив point.curves
     for c_idx, curve in enumerate(curves):
-        pt_indices = [cp["point"] for cp in curve["curve_points"]]
-        for p_idx in pt_indices:
+        pt_indices = [cp["point"] for cp in curve["points"]]
+        for curve_point_idx, p_idx in enumerate(pt_indices):
             if 0 <= p_idx < len(points):
                 points[p_idx].setdefault("curves", []).append({
                     "curve": c_idx,
-                    "curve_points": list(pt_indices),
+                    "curve_points": curve_point_idx,
                 })
 
     shape_order = list(range(len(shapes)))
@@ -254,7 +261,7 @@ def make_ellipse_mesh(cx: float, cy: float, rx: float, ry: float,
         angle = 2 * math.pi * i / num_points
         px = cx + rx * math.cos(angle)
         py = cy + ry * math.sin(angle)
-        points.append(make_point(px, py, parent_bone=parent_bone, width=line_width))
+        points.append(make_point(px, py, parent_bone=parent_bone))
         pt_indices.append(i)
 
     curve = make_curve(pt_indices, closed=True, smoothness=0.391379)
@@ -274,7 +281,7 @@ def make_polygon_mesh(poly_pts: list[tuple[float, float]],
     points = []
     pt_indices = []
     for i, (px, py) in enumerate(poly_pts):
-        points.append(make_point(px, py, parent_bone=parent_bone, width=line_width))
+        points.append(make_point(px, py, parent_bone=parent_bone))
         pt_indices.append(i)
 
     curve = make_curve(pt_indices, closed=closed, smoothness=smoothness)
@@ -505,7 +512,7 @@ def generate_brow_mesh(side: str, state: str = "neutral", view: str = "Front",
     shapes: list[dict] = []
 
     for px, py in brow_pts:
-        points.append(make_point(px, py, parent_bone=parent_bone, width=0.008))
+        points.append(make_point(px, py, parent_bone=parent_bone))
     c_brow = make_curve(list(range(len(brow_pts))), closed=False, smoothness=0.35)
     curves.append(c_brow)
     shapes.append(make_shape(0, 0, len(brow_pts) - 1, fill_color=COLOR_LINE,
@@ -534,7 +541,7 @@ def generate_mouth_mesh(phoneme: str = "Closed", view: str = "Front",
             (cx + 0.12, cy),
         ]
         for px, py in lip_pts:
-            points.append(make_point(px, py, parent_bone=parent_bone, width=0.006))
+            points.append(make_point(px, py, parent_bone=parent_bone))
         c_lip = make_curve(list(range(len(lip_pts))), closed=False, smoothness=0.35)
         curves.append(c_lip)
         shapes.append(make_shape(0, 0, len(lip_pts) - 1, line_color=COLOR_LIP,
@@ -649,7 +656,7 @@ def generate_torso_mesh(parent_bone: int = -1) -> dict:
     button_pts = [(0.0, 0.30), (0.0, -0.40)]
     b_off = len(points)
     for px, py in button_pts:
-        points.append(make_point(px, py, parent_bone=parent_bone, width=0.005))
+        points.append(make_point(px, py, parent_bone=parent_bone))
     c_btn = make_curve(list(range(b_off, b_off + len(button_pts))), closed=False, smoothness=0.0)
     curves.append(c_btn)
     shapes.append(make_shape(2, len(curves) - 1, 1, line_color=COLOR_SHIRT_DARK,

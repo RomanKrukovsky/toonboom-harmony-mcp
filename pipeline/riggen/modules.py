@@ -51,14 +51,13 @@ def make_mesh_part(part_id: str, name: str, mesh_dict: dict, bone_id: str,
                    masking: int = 0, group_mask: int = 0) -> Part:
     """Создаёт векторный MeshLayer Part с геометрией Bezier."""
     p = Part(id=part_id, name=name, type="mesh", geometry_raw=mesh_dict,
-             bone=bone_id, origin=origin_moho, masking=masking, group_mask=group_mask)
-    dx = center_moho[0] - origin_moho[0]
-    dy = center_moho[1] - origin_moho[1]
-    cos_a, sin_a = math.cos(-bone_abs_angle), math.sin(-bone_abs_angle)
-    loc = (dx * cos_a - dy * sin_a, dx * sin_a + dy * cos_a)
+             bone=None, origin=(0.0, 0.0), masking=masking, group_mask=group_mask)
+    # Production vector rigs deform through Point.parent; binding the layer too
+    # would apply the same bone transform twice.
     p.transforms["translation"] = Channel(
         type="Vec3", when=[0],
-        val=[{"x": round(loc[0], 6), "y": round(loc[1], 6), "z": 0.0}],
+        val=[{"x": round(center_moho[0], 6),
+              "y": round(center_moho[1], 6), "z": 0.0}],
         interp=[dict(BASE_INTERP)])
     return p
 
@@ -67,7 +66,7 @@ def make_switch(switch_id: str, name: str, states: dict[str, str],
                 bone_id: str, origin_fn, center_fn, abs_angles: dict[str, float],
                 z_start: int) -> Part:
     """SwitchLayer с image-детьми по одному на состояние."""
-    sw = Part(id=switch_id, name=name, type="switch", bone=bone_id,
+    sw = Part(id=switch_id, name=name, type="switch", bone=None,
               switch_states=list(states.keys()))
     for i, (state_name, img) in enumerate(states.items()):
         child = make_image_part(f"{switch_id}_st_{i}", state_name, img, bone_id,
@@ -112,7 +111,7 @@ def make_bone_group(name: str, bone_indices: list[int], action_name: str | None 
         "active_bone": {
             "type": "Val", "ref": False, "mute": False,
             "when": [0], "val": [0.0],
-            "interp": [dict(DEFAULT_INTERP)],
+            "interp": [dict(BASE_INTERP)],
         }
     }
     if action_name and action_poses:
@@ -123,7 +122,7 @@ def make_bone_group(name: str, bone_indices: list[int], action_name: str | None 
                 "type": "Val", "ref": False, "mute": False,
                 "when": list(range(n)),
                 "val": list(action_poses),
-                "interp": [dict(DEFAULT_INTERP) for _ in range(n)],
+                "interp": [dict(BASE_INTERP) for _ in range(n)],
             }
         }]
     return group

@@ -19,7 +19,8 @@ from ..pir.schema import Bone, Channel, Part, Rig
 from .modules import (HEAD_TURN_ANGLES, PHONEMES_FULL, BASE_INTERP,
                       attach_simple_dial, dial_ensure_action,
                       make_flexi_pair, make_image_part, make_mesh_part,
-                      make_simple_dial, make_switch, make_vector_switch,
+                       make_simple_dial, make_switch, make_vector_switch,
+                       make_bone_group,
                       switch_attach_action, wire_dial, head_turn_map)
 from .skeleton import (add_leg_ik_targets, bone_root_joint,
                        build_bones, to_moho_coords)
@@ -161,6 +162,13 @@ def build_rig(spec: dict) -> Rig:
         bone_id = cfg.get("bone", "Body")
         is_vector = any(isinstance(v, dict) for v in states.values())
         if is_vector:
+            point_parent = name_to_idx.get(bone_id, -1)
+            states = copy.deepcopy(states)
+            if point_parent >= 0:
+                for mesh in states.values():
+                    for point in mesh.get("points", []):
+                        if point.get("parent", -1) < 0:
+                            point["parent"] = point_parent
             sw = make_vector_switch(f"sw_{cfg['id']}", cfg.get("name", cfg["id"]),
                                     states, bone_id, origin_of,
                                     lambda s_, c=cfg: center_moho(
@@ -178,7 +186,8 @@ def build_rig(spec: dict) -> Rig:
             sw.group_mask = cfg.get("group_mask", 0)
         z_extra += len(states)
         parts.append(sw)
-        sw.bone = bone_id
+        if not is_vector:
+            sw.bone = bone_id
         anchor = jw[bone_root_joint(bone_id)]
         dial_world = (anchor[0] - 0.8, anchor[1] + 0.5 * idx)
         dial, _vals = make_simple_dial(
@@ -218,7 +227,8 @@ def build_rig(spec: dict) -> Rig:
                                         origin_of(head_bone_id),
                                         center, abs_angle[head_bone_id])
             grp = Part(id=f"view_{view}", name=view, type="group",
-                       bone=head_bone_id, origin=center)
+                       bone=None if isinstance(state_val, dict) else head_bone_id,
+                       origin=center)
             grp.children = [skull]
             for i, (mod, cfg) in enumerate(FACE_MODULES.items()):
                 mconf = face_cfg.get(mod)
@@ -252,7 +262,8 @@ def build_rig(spec: dict) -> Rig:
                                      abs_angle, z0 + 1 + i)
                     sw.masking = mconf.get("masking", 0)
                     sw.group_mask = mconf.get("group_mask", 0)
-                sw.bone = head_bone_id
+                if not is_vec:
+                    sw.bone = head_bone_id
                 action = cfg["action"]
                 vals = face_dials.get(action)
                 if vals is None:
@@ -284,8 +295,9 @@ def build_rig(spec: dict) -> Rig:
         parts_by_view = {v: view_part(v, z + i) for i, v in enumerate(views)}
         z += len(views)
         # свитч головы: состояния-группы
+        all_vector_head = all(isinstance(state, dict) for state in states.values())
         sw_head = Part(id="sw_head_turn", name="Head", type="switch",
-                       bone=head_bone_id,
+                       bone=None if all_vector_head else head_bone_id,
                        switch_states=views)
         for v in views:
             g = parts_by_view[v]
@@ -298,7 +310,6 @@ def build_rig(spec: dict) -> Rig:
                                                   "h": 0, "s": False,
                                                   "t": 0}])
         parts.append(sw_head)
-        sw_head.bone = head_bone_id
         dial_world = (jw["head_base"][0] + 0.8, jw["head_base"][1])
         dial = Bone(id="Head Switch Dial", parent=head_bone_id,
                     position=_local_in_parent(head_bone_id, dial_world,
@@ -330,18 +341,13 @@ def build_rig(spec: dict) -> Rig:
         return [all_name_to_idx[n] for n in names if n in all_name_to_idx]
 
     bone_groups = [
-        {"type": "BoneGroup", "enabled": True, "name": "Body & Spine",
-         "bones": bone_indices(["Main", "Pelvis", "Body", "Neck", "Head"])},
-        {"type": "BoneGroup", "enabled": True, "name": "Left Arm",
-         "bones": bone_indices(["UpperArm L", "LowerArm L", "LowerArm L start", "LowerArm L end"])},
-        {"type": "BoneGroup", "enabled": True, "name": "Right Arm",
-         "bones": bone_indices(["UpperArm R", "LowerArm R", "LowerArm R start", "LowerArm R end"])},
-        {"type": "BoneGroup", "enabled": True, "name": "Left Leg",
-         "bones": bone_indices(["Thigh L", "Shin L", "Foot L", "Target Leg L", "Shin L start", "Shin L end"])},
-        {"type": "BoneGroup", "enabled": True, "name": "Right Leg",
-         "bones": bone_indices(["Thigh R", "Shin R", "Foot R", "Target Leg R", "Shin R start", "Shin R end"])},
-        {"type": "BoneGroup", "enabled": True, "name": "Dials & Controls",
-         "bones": [i for i, b in enumerate(all_bones) if b.is_dial or "Dial" in b.id]},
+        make_bone_group("Body & Spine", bone_indices(["Main", "Pelvis", "Body", "Neck", "Head"])),
+        make_bone_group("Left Arm", bone_indices(["UpperArm L", "LowerArm L", "LowerArm L start", "LowerArm L end"])),
+        make_bone_group("Right Arm", bone_indices(["UpperArm R", "LowerArm R", "LowerArm R start", "LowerArm R end"])),
+        make_bone_group("Left Leg", bone_indices(["Thigh L", "Shin L", "Foot L", "Target Leg L", "Shin L start", "Shin L end"])),
+        make_bone_group("Right Leg", bone_indices(["Thigh R", "Shin R", "Foot R", "Target Leg R", "Shin R start", "Shin R end"])),
+        make_bone_group("Dials & Controls", [i for i, b in enumerate(all_bones)
+                                              if b.is_dial or "Dial" in b.id]),
     ]
     rig.extras["bones_groups"] = [bg for bg in bone_groups if bg["bones"]]
 

@@ -28,6 +28,16 @@ def _walk(parts):
         yield from _walk(p.children)
 
 
+def _is_bound(part, bone_count: int) -> bool:
+    if part.bone is not None or part.parent_bone_raw >= 0:
+        return True
+    if part.type != "mesh" or not part.geometry_raw:
+        return False
+    return any(isinstance(point.get("parent"), int)
+               and 0 <= point.get("parent", -1) < bone_count
+               for point in part.geometry_raw.get("points", []))
+
+
 def qa_rig(rig: Rig) -> tuple[str, list[str]]:
     fails: list[str] = []
     warns: list[str] = []
@@ -51,7 +61,8 @@ def qa_rig(rig: Rig) -> tuple[str, list[str]]:
         fails.append(f"binding_mode={bm}, допустимы 1 (авто) и 2 (явный)")
     if bm == 2:
         bound = [p for p in all_parts
-                 if p.type in ("image", "mesh") and p.bone is None]
+                  if p.type in ("image", "mesh")
+                  and not _is_bound(p, len(rig.bones))]
         if bound:
             warns.append(f"binding_mode=2, но {len(bound)} частей без явной "
                          "кости — в mode=2 они не деформируются")
@@ -86,8 +97,8 @@ def qa_rig(rig: Rig) -> tuple[str, list[str]]:
         unbound = []
     else:
         unbound = [p.name for p in all_parts
-                   if p.type in ("image", "mesh") and p.bone is None
-                   and p.parent_bone_raw < 0]
+                   if p.type in ("image", "mesh")
+                   and not _is_bound(p, len(rig.bones))]
     if unbound:
         warns.append(f"части без кости: {unbound[:5]}")
 

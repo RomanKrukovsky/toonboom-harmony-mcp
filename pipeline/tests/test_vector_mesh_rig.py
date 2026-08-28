@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import unittest
+import tempfile
 from pathlib import Path
+
+from PIL import Image
 
 from pipeline.pir.schema import Rig
 from pipeline.riggen.artgen import generate_all_vector_art, HEAD_VIEWS, PHONEMES
@@ -16,6 +19,7 @@ from pipeline.moho.emit import emit, build_doc
 from pipeline.moho.extract import extract, extract_from_file
 from pipeline.tools.moho_format_validator import validate
 from pipeline.tools.qa_check import qa_rig
+from pipeline.tools.render_preview import render
 from pipeline.examples.build_dial_demo import JOINTS
 
 
@@ -28,6 +32,14 @@ class TestVectorMeshRig(unittest.TestCase):
         self.assertGreater(len(head["shapes"]), 0)
         # Проверяем, что parent установлен
         self.assertEqual(head["points"][0]["parent"], 4)
+        self.assertEqual(head["points"][0]["width"]["val"], [1.0])
+        self.assertEqual(head["points"][0]["color"]["type"], "Color")
+        self.assertEqual(head["points"][0]["color_strength"]["type"], "Val")
+        self.assertIn("points", head["curves"][0])
+        self.assertNotIn("curve_points", head["curves"][0])
+        self.assertEqual(head["curves"][0]["num_points"],
+                         len(head["curves"][0]["points"]))
+        self.assertIsInstance(head["points"][0]["curves"][0]["curve_points"], int)
 
         eye = generate_eye_mesh("R", state="open", parent_bone=4)
         self.assertGreater(len(eye["points"]), 0)
@@ -82,6 +94,21 @@ class TestVectorMeshRig(unittest.TestCase):
         skel = doc["layers"][0]["skeleton"]
         self.assertIn("bones_groups", skel)
         self.assertEqual(len(skel["bones_groups"]), len(bg))
+        mesh_layers = []
+
+        def collect_meshes(layers):
+            for layer in layers:
+                if layer.get("type") == "MeshLayer":
+                    mesh_layers.append(layer)
+                collect_meshes(layer.get("layers", []))
+
+        collect_meshes(doc["layers"])
+        self.assertGreater(len(mesh_layers), 0)
+        self.assertTrue(all(layer.get("parent_bone") == -1
+                            for layer in mesh_layers))
+        self.assertTrue(all(any(point.get("parent", -1) >= 0
+                                for point in layer["mesh"]["points"])
+                            for layer in mesh_layers))
 
     def test_emit_and_validate_vector_moho(self):
         art = generate_all_vector_art()
@@ -110,6 +137,14 @@ class TestVectorMeshRig(unittest.TestCase):
         self.assertEqual(r2.name, "test_validate_char")
         meshes = [p for p in r2.walk_parts() if p.type == "mesh"]
         self.assertGreater(len(meshes), 0)
+
+        doc = build_doc(rig)
+        with tempfile.TemporaryDirectory() as tmp:
+            preview = Path(tmp) / "preview.png"
+            render(doc, Path(out_path), preview, 400, 600)
+            colors = Image.open(preview).convert("RGB").getcolors(maxcolors=1_000_000)
+            self.assertIsNotNone(colors)
+            self.assertGreater(len(colors), 1, "векторный preview не должен быть пустым")
 
     def test_leg_ik_and_constraints(self):
         art = generate_all_vector_art()

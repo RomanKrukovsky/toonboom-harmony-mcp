@@ -101,5 +101,56 @@ export const mohoAdvancedRigTools = [
       const result = MohoStudioMasterRigGenerator.generateMasterRig(args);
       return { status: 'success', masterRig: result };
     }
+  },
+  {
+    name: 'moho.animation.synthesize_dialogue_acting',
+    description:
+      'АВТОМАТИЧЕСКАЯ АКТЕРСКАЯ ИГРА И ЛИПСИНГ. Синхронизирует реплику диалога с фонемной дорожкой рта (Preston Blair), эмоциональными микро-выражениями бровей и глаз, кивками головы в ритм речи и акцентной жестикуляцией рук.',
+    inputSchema: z.object({
+      speaker: z.string().default('HeroCharacter'),
+      text: z.string().describe('Текст реплики для синтеза актерской игры.'),
+      startFrame: z.number().default(1),
+      endFrame: z.number().default(96),
+      emotion: z.enum(['neutral', 'happy', 'angry', 'sad', 'surprised', 'scheming', 'sarcastic']).default('neutral'),
+      fps: z.number().default(24)
+    }),
+    handler: async (args: any) => {
+      const { MohoDialogueActingSynthesizer } = await import('../services/mohoDialogueActingSynthesizer/index.js');
+      const performance = MohoDialogueActingSynthesizer.synthesizeActing({
+        speaker: args.speaker,
+        text: args.text,
+        startFrame: args.startFrame,
+        endFrame: args.endFrame,
+        emotion: args.emotion
+      }, args.fps ?? 24);
+      return { status: 'success', performance };
+    }
+  },
+  {
+    name: 'moho.scene.choreograph_camera',
+    description:
+      'КИНЕМАТОГРАФИЧЕСКАЯ 2.5D КАМЕРА И МУЛЬТИПЛАН. Генерирует траектории камеры (Dramatic Push-In, Whip Pan, Tracking, Handheld Drift) с плавными кривыми Безье и расчетом слоев параллакса фона.',
+    inputSchema: z.object({
+      shotType: z.enum(['close_up', 'medium_shot', 'wide_shot', 'extreme_wide']).default('medium_shot'),
+      moveStyle: z.enum(['static', 'dramatic_push_in', 'whip_pan', 'tracking_follow', 'handheld_drift']).default('dramatic_push_in'),
+      startFrame: z.number().default(1),
+      endFrame: z.number().default(72),
+      targetCharacterPos: z.tuple([z.number(), z.number()]).default([0, 0]),
+      zoomFactor: z.number().default(1.45),
+      panDirection: z.enum(['left', 'right']).default('right')
+    }),
+    handler: async (args: any) => {
+      const { MohoCameraChoreographer } = await import('../services/mohoCameraChoreographer/index.js');
+      const cameraResult = MohoCameraChoreographer.choreographCamera({
+        shotType: args.shotType,
+        moveStyle: args.moveStyle,
+        startFrame: args.startFrame,
+        endFrame: args.endFrame,
+        targetCharacterPos: args.targetCharacterPos,
+        zoomFactor: args.zoomFactor,
+        panDirection: args.panDirection
+      });
+      return { status: 'success', cameraResult };
+    }
   }
 ];

@@ -115,19 +115,51 @@ def validate(path: str) -> tuple[bool, list[str]]:
                         pts = m.get("points", [])
                         curves = m.get("curves", [])
                         shapes = m.get("shapes", [])
-
                         for p_idx, pt in enumerate(pts):
                             pb = pt.get("parent", -1)
                             if isinstance(pb, int) and pb >= num_bones and num_bones > 0:
                                 problems.append(
                                     f'MeshLayer "{l_name}" pt[{p_idx}]: parent_bone={pb} >= num_bones({num_bones})')
+                            for field, channel_type in (("color", "Color"),
+                                                        ("color_strength", "Val")):
+                                ch = pt.get(field)
+                                if not isinstance(ch, dict) or ch.get("type") != channel_type:
+                                    problems.append(
+                                        f'MeshLayer "{l_name}" pt[{p_idx}]: {field} не канал {channel_type}')
+                            for membership in pt.get("curves", []):
+                                c_ref = membership.get("curve")
+                                cp_ref = membership.get("curve_points")
+                                if not isinstance(c_ref, int) or not (0 <= c_ref < len(curves)):
+                                    problems.append(
+                                        f'MeshLayer "{l_name}" pt[{p_idx}]: curve index {c_ref!r} out of bounds')
+                                elif not isinstance(cp_ref, int) or not (0 <= cp_ref < len(curves[c_ref].get("points", []))):
+                                    problems.append(
+                                        f'MeshLayer "{l_name}" pt[{p_idx}]: curve_points {cp_ref!r} out of bounds')
+                                elif curves[c_ref]["points"][cp_ref].get("point") != p_idx:
+                                    problems.append(
+                                        f'MeshLayer "{l_name}" pt[{p_idx}]: membership не ссылается обратно на точку')
 
                         for c_idx, c in enumerate(curves):
-                            for cp in c.get("curve_points", []):
+                            curve_points = c.get("points")
+                            if not isinstance(curve_points, list):
+                                problems.append(
+                                    f'MeshLayer "{l_name}" curve[{c_idx}]: отсутствует points')
+                                curve_points = []
+                            if c.get("num_points") != len(curve_points):
+                                problems.append(
+                                    f'MeshLayer "{l_name}" curve[{c_idx}]: num_points не совпадает с points')
+                            for cp_idx, cp in enumerate(curve_points):
                                 p_ref = cp.get("point")
                                 if isinstance(p_ref, int) and (p_ref < 0 or p_ref >= len(pts)):
                                     problems.append(
                                         f'MeshLayer "{l_name}" curve[{c_idx}]: point index {p_ref} out of bounds ({len(pts)})')
+                                elif isinstance(p_ref, int):
+                                    memberships = pts[p_ref].get("curves", [])
+                                    if not any(item.get("curve") == c_idx
+                                               and item.get("curve_points") == cp_idx
+                                               for item in memberships):
+                                        problems.append(
+                                            f'MeshLayer "{l_name}" curve[{c_idx}].points[{cp_idx}]: нет обратного membership')
 
                         for s_idx, s in enumerate(shapes):
                             edges = s.get("edges", {})

@@ -26,32 +26,47 @@ def bone_worlds(doc: dict) -> dict[str, tuple[float, float, float]]:
     if not sk:
         return {}
     bones = sk["bones"]
-    by_idx = {}
-    # world-позиции через anim_pos + parent
+    worlds_by_name = {}
     world: dict[int, tuple[float, float]] = {}
     ang: dict[int, float] = {}
-    for i, b in enumerate(bones):
-        idx = i
+
+    def scalar(value, default=0.0):
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, dict):
+            return float(value.get("v", default))
+        return default
+
+    def solve(idx: int, visiting: set[int]) -> None:
+        if idx in world:
+            return
+        if idx in visiting:
+            raise ValueError(f"цикл в иерархии костей у индекса {idx}")
+        visiting.add(idx)
+        b = bones[idx]
         parent = b.get("parent", -1)
-        # anim_pos val[0] в локальных координатах кости
         pval = b.get("anim_pos", {}).get("val", [{}])
         local = (pval[0].get("x", 0.0), pval[0].get("y", 0.0))
         aval = b.get("anim_angle", {}).get("val", [0.0])
-        a = aval[0] if isinstance(aval, list) else 0.0
+        a = scalar(aval[0]) if isinstance(aval, list) and aval else 0.0
         if parent < 0:
             world[idx] = local
             ang[idx] = a
         else:
+            solve(parent, visiting)
             pw = world[parent]
             pa = ang[parent]
             cos_a, sin_a = math.cos(pa), math.sin(pa)
-            # локальная -> мировая: поворот на +pa
             wx = pw[0] + local[0] * cos_a - local[1] * sin_a
             wy = pw[1] + local[0] * sin_a + local[1] * cos_a
             world[idx] = (wx, wy)
             ang[idx] = pa + a
-        by_idx[b.get("name")] = (world[idx][0], world[idx][1], ang[idx])
-    return by_idx
+        visiting.remove(idx)
+
+    for i, b in enumerate(bones):
+        solve(i, set())
+        worlds_by_name[b.get("name")] = (world[i][0], world[i][1], ang[i])
+    return worlds_by_name
 
 
 def _layer_image(layer: dict, image_path: Path) -> Image.Image | None:
@@ -66,9 +81,12 @@ def _layer_image(layer: dict, image_path: Path) -> Image.Image | None:
     return Image.open(p).convert("RGBA")
 
 
-def _render_mesh_layer(mesh: dict, width: float, height: float, D: float = 72.0) -> Image.Image | None:
+def _render_mesh_layer(width: float, height: float, layer: dict,
+                       bone_world: tuple[float, float, float] | None,
+                       D: float = 72.0) -> Image.Image | None:
     """Отрисовка векторного MeshLayer в PIL Image."""
     from PIL import ImageDraw
+    mesh = layer.get("mesh", {})
     pts = mesh.get("points", [])
     if not pts:
         return None
@@ -76,7 +94,28 @@ def _render_mesh_layer(mesh: dict, width: float, height: float, D: float = 72.0)
     layer_img = Image.new("RGBA", (int(width), int(height)), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer_img)
 
+    transforms = layer.get("transforms", {})
+    translation = transforms.get("translation", {}).get("val", [{}])
+    scale = transforms.get("scale", {}).get("val", [{}])
+    rotation = transforms.get("rotation_z", {}).get("val", [0.0])
+    t = translation[0] if translation else {}
+    scale_value = scale[0] if scale else {}
+    tx, ty = t.get("x", 0.0), t.get("y", 0.0)
+    sx, sy = scale_value.get("x", 1.0), scale_value.get("y", 1.0)
+    layer_angle = rotation[0] if rotation else 0.0
+
     def to_px(mx, my):
+        mx, my = mx * sx, my * sy
+        cos_l, sin_l = math.cos(layer_angle), math.sin(layer_angle)
+        lx = tx + mx * cos_l - my * sin_l
+        ly = ty + mx * sin_l + my * cos_l
+        if bone_world:
+            bx, by, ba = bone_world
+            cos_b, sin_b = math.cos(ba), math.sin(ba)
+            mx = bx + lx * cos_b - ly * sin_b
+            my = by + lx * sin_b + ly * cos_b
+        else:
+            mx, my = lx, ly
         px = (mx + width / (2 * D)) * D
         py = (height / (2 * D) - my) * D
         return (px, py)
@@ -88,35 +127,53 @@ def _render_mesh_layer(mesh: dict, width: float, height: float, D: float = 72.0)
     curves = mesh.get("curves", [])
     shapes = mesh.get("shapes", [])
 
-    for s in shapes:
-        edges = s.get("edges", {})
+    for shape in shapes:
+        edges = shape.get("edges", {})
         c_refs = edges.get("curve", [])
         if not c_refs:
             continue
-        c_idx = c_refs[0]
-        if c_idx >= len(curves):
-            continue
-        c = curves[c_idx]
-        poly = [pt_coords[cp["point"]] for cp in c.get("curve_points", []) if cp.get("point") < len(pt_coords)]
-        if len(poly) < 2:
-            continue
-
-        st = s.get("style", {})
+        st = shape.get("style", {})
         fc = st.get("fill_color", {}).get("val", [{}])[0]
         lc = st.get("line_color", {}).get("val", [{}])[0]
         fill_rgba = (int(fc.get("r", 0) * 255), int(fc.get("g", 0) * 255),
-                     int(fc.get("b", 0) * 255), int(fc.get("a", 1.0) * 255)) if s.get("has_fill") else None
+                     int(fc.get("b", 0) * 255), int(fc.get("a", 1.0) * 255)) if shape.get("has_fill") else None
         line_rgba = (int(lc.get("r", 0) * 255), int(lc.get("g", 0) * 255),
-                     int(lc.get("b", 0) * 255), int(lc.get("a", 1.0) * 255)) if s.get("has_outline") else None
+                     int(lc.get("b", 0) * 255), int(lc.get("a", 1.0) * 255)) if shape.get("has_outline") else None
         l_width = max(int(st.get("line_width", 0.005) * D), 1)
 
-        if s.get("has_fill") and len(poly) >= 3 and fill_rgba:
-            d.polygon(poly, fill=fill_rgba)
-        if s.get("has_outline") and line_rgba:
-            if c.get("closed", True) and len(poly) >= 3:
-                d.line(poly + [poly[0]], fill=line_rgba, width=l_width, joint="curve")
+        boundary = []
+        segments = edges.get("segment", [])
+        flags = edges.get("flag", [])
+        for edge_idx, c_idx in enumerate(c_refs):
+            if not isinstance(c_idx, int) or not (0 <= c_idx < len(curves)):
+                continue
+            c = curves[c_idx]
+            curve_points = c.get("points", [])
+            if len(curve_points) < 2:
+                continue
+            segment = segments[edge_idx] if edge_idx < len(segments) else 0
+            if not isinstance(segment, int) or not (0 <= segment < len(curve_points)):
+                continue
+            next_segment = (segment + 1) % len(curve_points)
+            if not c.get("closed", True) and next_segment == 0:
+                continue
+            pair = [curve_points[segment].get("point"),
+                    curve_points[next_segment].get("point")]
+            if edge_idx < len(flags) and flags[edge_idx]:
+                pair.reverse()
+            if not all(isinstance(i, int) and 0 <= i < len(pt_coords) for i in pair):
+                continue
+            segment_points = [pt_coords[pair[0]], pt_coords[pair[1]]]
+            if boundary and boundary[-1] == segment_points[0]:
+                boundary.append(segment_points[1])
             else:
-                d.line(poly, fill=line_rgba, width=l_width, joint="curve")
+                boundary.extend(segment_points)
+
+        boundary_closed = len(boundary) >= 3 and boundary[0] == boundary[-1]
+        if shape.get("has_fill") and boundary_closed and fill_rgba:
+            d.polygon(boundary, fill=fill_rgba)
+        if shape.get("has_outline") and len(boundary) >= 2 and line_rgba:
+            d.line(boundary, fill=line_rgba, width=l_width, joint="curve")
 
     return layer_img
 
@@ -130,13 +187,12 @@ def render(doc: dict, image_path: Path, out: Path,
     name_by_idx = {i: b.get("name") for i, b in enumerate(sk["bones"])} if sk else {}
 
     D = 72.0
-    canvas = Image.new("RGBA", (int(width), int(height)),
-                       (int(height * 0.85), int(height * 0.9), int(height * 0.86), 255))
+    canvas = Image.new("RGBA", (int(width), int(height)), (235, 238, 242, 255))
     # список (z, img, center_px) в порядке обхода
     comps: list[tuple[int, Image.Image, tuple[float, float] | None]] = []
     counter = [0]
 
-    def click(layer: dict):
+    def collect_layer(layer: dict):
         counter[0] += 1
         z = counter[0]
         if layer.get("type") == "ImageLayer":
@@ -159,7 +215,10 @@ def render(doc: dict, image_path: Path, out: Path,
                 py = (height / (2 * D) - cy) * D
                 comps.append((z, img, (px, py)))
         elif layer.get("type") == "MeshLayer":
-            m_img = _render_mesh_layer(layer.get("mesh", {}), width, height, D)
+            pb = layer.get("parent_bone", -1)
+            bone = name_by_idx.get(pb) if pb >= 0 else None
+            m_img = _render_mesh_layer(width, height, layer,
+                                       bws.get(bone) if bone else None, D)
             if m_img:
                 comps.append((z, m_img, None))
 
@@ -169,10 +228,10 @@ def render(doc: dict, image_path: Path, out: Path,
                 active = layer.get("switch_keys", {}).get("val", [None])[0]
                 if child.get("name") != active:
                     continue
-            click(child)
+            collect_layer(child)
 
     for layer in doc.get("layers", []):
-        click(layer)
+        collect_layer(layer)
 
     comps.sort(key=lambda t: t[0])
     for _z, img, pos in comps:
