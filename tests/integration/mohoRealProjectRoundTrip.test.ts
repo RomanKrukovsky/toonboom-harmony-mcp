@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import { afterAll, describe, expect, it } from '@jest/globals';
 import { MohoBespokeCreatureBuilder } from '../../src/services/mohoBespokeCreatureBuilder/index.js';
+import { MohoNativeBridge } from '../../src/services/mohoNativeBridge/index.js';
 import { MohoProjectCompiler } from '../../src/services/mohoProjectCompiler/index.js';
 import { MohoProductionQualityAuditor } from '../../src/services/mohoProductionQualityAuditor/index.js';
 import { MohoRenderManager } from '../../src/services/mohoRenderManager/index.js';
@@ -139,5 +140,22 @@ describeWithRealMoho('Moho real project round-trip', () => {
       expect(result.status).toBe('rendered');
       expect(result.renderedFiles).toHaveLength(1);
     }
+  }, 30_000);
+
+  it('keeps the legacy binary compiler compatible without producing corrupt files', async () => {
+    const projectPath = path.join(tempDir, 'legacy-native-bridge.moho');
+    const renderDir = path.join(tempDir, 'legacy-native-render');
+    const document = MohoProjectCompiler.compileToDocumentJson(spec);
+    fs.writeFileSync(projectPath, MohoNativeBridge.compileMohoZip(JSON.stringify(document)));
+
+    const result = await MohoRenderManager.executeRender({
+      mohoProjectPath: projectPath,
+      outputDirectory: renderDir,
+      format: 'png_sequence',
+      startFrame: 1,
+      endFrame: 1
+    });
+    expect(result.status).toBe('rendered');
+    expect(result.renderedFiles).toHaveLength(1);
   }, 30_000);
 });

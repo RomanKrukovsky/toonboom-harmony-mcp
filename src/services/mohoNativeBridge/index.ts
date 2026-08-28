@@ -1,9 +1,11 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { createRequire } from 'module';
 import { type Point2D, type SmartMeshResult, MohoMeshWarper } from '../mohoMeshWarper/index.js';
 import { type VectorPoint, type MohoVectorShape, MohoVectorSimplifier } from '../mohoVectorSimplifier/index.js';
 import { type TrajectoryKeyframe, type DynamicSquashKeyframe, MohoTrajectorySquashEngine } from '../mohoTrajectorySquashEngine/index.js';
+import { MohoProjectCompiler } from '../mohoProjectCompiler/index.js';
 
 interface NativeCoreModule {
   rustSimplifyContour(points: Array<{ x: number; y: number }>, epsilon: number): Array<{ x: number; y: number }>;
@@ -169,12 +171,46 @@ export class MohoNativeBridge {
   }
 
   public static compileMohoZip(jsonContent: string): Buffer {
-    const native = loadNativeCore();
-    if (native) {
-      return Buffer.from(native.rustCompileMohoZip(jsonContent));
+    const parsed = JSON.parse(jsonContent) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Moho project JSON must be an object');
     }
-    // Fallback: pure JS zip creation if needed
-    return Buffer.from(jsonContent, 'utf8');
+
+    const document = parsed as Record<string, unknown>;
+    if (!document.project_data || typeof document.project_data !== 'object') {
+      document.project_data = {
+        width: 1920,
+        height: 1080,
+        start_frame: 1,
+        end_frame: 240,
+        fps: 24
+      };
+    }
+    if (!Array.isArray(document.layers) || document.layers.length === 0) {
+      document.layers = [{
+        name: typeof document.name === 'string' ? document.name : 'Character',
+        type: 'BoneLayer',
+        skeleton: {
+          bones: [{
+            name: 'Master',
+            parent: -1,
+            length: { val: 20 },
+            strength: 0,
+            anim_pos: { val: [0, 0] },
+            anim_angle: { val: 0 }
+          }]
+        }
+      }];
+    }
+
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'moho-native-bridge-'));
+    const outputPath = path.join(temporaryDirectory, 'compiled.moho');
+    try {
+      MohoProjectCompiler.compileDocumentToFile(document, outputPath);
+      return fs.readFileSync(outputPath);
+    } finally {
+      fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+    }
   }
 
   public static calculateTrajectorySquash(

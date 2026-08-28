@@ -1,6 +1,5 @@
-import path from 'path';
-import fs from 'fs';
 import { MohoNativeBridge } from '../mohoNativeBridge/index.js';
+import { MohoProjectCompiler } from '../mohoProjectCompiler/index.js';
 import { type MohoVectorShape } from '../mohoVectorSimplifier/index.js';
 
 export interface BespokeLimbSpec {
@@ -138,22 +137,15 @@ export class MohoBespokeCreatureBuilder {
       ]
     };
 
-    // 5. Compile ZIP via Native Rust Bridge
-    const jsonStr = JSON.stringify(docJson, null, 2);
-    const zipBuffer = MohoNativeBridge.compileMohoZip(jsonStr);
-
+    let fileSizeBytes = Buffer.byteLength(JSON.stringify(docJson));
     if (options.outputPath) {
-      const outDir = path.dirname(options.outputPath);
-      if (!fs.existsSync(outDir)) {
-        fs.mkdirSync(outDir, { recursive: true });
-      }
-      fs.writeFileSync(options.outputPath, zipBuffer);
+      fileSizeBytes = MohoProjectCompiler.compileDocumentToFile(docJson, options.outputPath);
     }
 
     return {
       creatureName: name,
       outputPath: options.outputPath,
-      fileSizeBytes: zipBuffer.length,
+      fileSizeBytes,
       totalBonesCount: bonesFormatted.length,
       totalLayersCount: layers.length,
       limbsCount: options.limbs.length,

@@ -236,5 +236,48 @@ export const mohoAdvancedRigTools = [
       const result = MohoVisualFeedbackLoop.runVisualAudit(args.mohoPath, args.outPreviewPng);
       return { status: 'success', visualAuditResult: result };
     }
+  },
+  {
+    name: 'moho.speech.bake_phonemes',
+    description:
+      'АВТОМАТИЧЕСКИЙ БЕЙКЕР РЕЧЕВЫХ ФОНЕМ И ЛИПСИНГА. Принимает аудиодорожку или текст сценария, рассчитывает 10 фонем Престона Блэра, динамическую высоту открытия рта по громкости и питч бровей для Moho 14.',
+    inputSchema: z.object({
+      audioPath: z.string().optional().describe('Путь к аудиофайлу WAV или MP3'),
+      transcriptText: z.string().optional().describe('Текст произносимой реплики'),
+      durationSeconds: z.number().optional().describe('Длительность в секундах'),
+      characterName: z.string().default('Character'),
+      fps: z.number().default(24)
+    }),
+    handler: async (args: any) => {
+      const { MohoSpeechPhonemeBaker } = await import('../services/mohoSpeechPhonemeBaker/index.js');
+      const result = MohoSpeechPhonemeBaker.bakeSpeechTrack(args);
+      return { status: 'success', speechTimeline: result };
+    }
+  },
+  {
+    name: 'moho.timeline.compose_broadcast_edit',
+    description:
+      'МОНТАЖНЫЙ ЭКСПОРТ ТАЙМЛАЙНА (OpenTimelineIO / FCPXML). Объединяет отрендеренные шоты Moho в единый монтажный таймлайн для DaVinci Resolve, Premiere Pro и Final Cut Pro с аудио-дорожками, титрами и переходами камеры.',
+    inputSchema: z.object({
+      timelineName: z.string().describe('Название таймлайна/эпизода'),
+      shots: z.array(
+        z.object({
+          shotName: z.string(),
+          durationFrames: z.number(),
+          videoFilePath: z.string().optional(),
+          audioDialoguePath: z.string().optional(),
+          cameraMotionType: z.enum(['DramaticPushIn', 'WhipPan', 'TrackingShot', 'Static']).default('Static'),
+          dialogueSubtitle: z.string().optional()
+        })
+      ),
+      fps: z.number().default(24),
+      outputOtioPath: z.string().optional(),
+      outputXmlPath: z.string().optional()
+    }),
+    handler: async (args: any) => {
+      const { MohoBroadcastTimelineComposer } = await import('../services/mohoBroadcastTimelineComposer/index.js');
+      const result = MohoBroadcastTimelineComposer.composeTimeline(args);
+      return { status: 'success', broadcastTimeline: result };
+    }
   }
 ];

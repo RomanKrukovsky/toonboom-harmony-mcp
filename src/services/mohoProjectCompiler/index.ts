@@ -57,6 +57,33 @@ export function stripVolatileMohoFields(doc: Record<string, unknown>): Record<st
 }
 
 export class MohoProjectCompiler {
+  public static compileDocumentToFile(docJson: Record<string, unknown>, outputPath: string): number {
+    const helperPath = resolveProjectAsset('scripts/python/compile_moho_project.py');
+    const templatePath = process.env.MOHO_PROJECT_TEMPLATE
+      ?? resolveProjectAsset('fixtures/moho_reference/gramps_rig.moho.bak');
+    const result = spawnSync(
+      resolvePythonExecutable(),
+      [helperPath, templatePath, path.resolve(outputPath)],
+      {
+        input: JSON.stringify(docJson),
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024
+      }
+    );
+
+    if (result.error) {
+      throw new Error(`Could not run the safe Moho compiler: ${result.error.message}`);
+    }
+    if (result.status !== 0) {
+      const details = result.stderr.trim() || result.stdout.trim() || `exit code ${result.status}`;
+      throw new Error(details);
+    }
+    if (!fs.existsSync(outputPath)) {
+      throw new Error('Safe Moho compiler finished without creating the requested file');
+    }
+    return fs.statSync(outputPath).size;
+  }
+
   public static compileToDocumentJson(
     spec: MohoProductionRigSpec,
     width = 1920,
@@ -237,31 +264,7 @@ export class MohoProjectCompiler {
     smartDialsCount: number;
   } {
     const docJson = this.compileToDocumentJson(opts.spec, opts.width, opts.height, opts.fps);
-    const helperPath = resolveProjectAsset('scripts/python/compile_moho_project.py');
-    const templatePath = process.env.MOHO_PROJECT_TEMPLATE
-      ?? resolveProjectAsset('fixtures/moho_reference/gramps_rig.moho.bak');
-    const result = spawnSync(
-      resolvePythonExecutable(),
-      [helperPath, templatePath, path.resolve(opts.outputPath)],
-      {
-        input: JSON.stringify(docJson),
-        encoding: 'utf8',
-        maxBuffer: 10 * 1024 * 1024
-      }
-    );
-
-    if (result.error) {
-      throw new Error(`Could not run the safe Moho compiler: ${result.error.message}`);
-    }
-    if (result.status !== 0) {
-      const details = result.stderr.trim() || result.stdout.trim() || `exit code ${result.status}`;
-      throw new Error(details);
-    }
-    if (!fs.existsSync(opts.outputPath)) {
-      throw new Error('Safe Moho compiler finished without creating the requested file');
-    }
-
-    const fileSizeBytes = fs.statSync(opts.outputPath).size;
+    const fileSizeBytes = this.compileDocumentToFile(docJson, opts.outputPath);
 
     const rootLayer = (docJson.layers as Array<Record<string, unknown>>)[0];
     const skel = (rootLayer.skeleton as Record<string, unknown>) ?? {};
