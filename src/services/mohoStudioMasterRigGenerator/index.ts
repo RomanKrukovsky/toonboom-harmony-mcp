@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import child_process from 'child_process';
 import { MohoNativeBridge } from '../mohoNativeBridge/index.js';
 import { MohoSmearSynthesizer } from '../mohoSmearSynthesizer/index.js';
 import { MohoAnatomyVectorSynthesizer } from '../mohoAnatomyVectorSynthesizer/index.js';
@@ -176,7 +177,35 @@ export class MohoStudioMasterRigGenerator {
       if (!fs.existsSync(outDir)) {
         fs.mkdirSync(outDir, { recursive: true });
       }
-      fs.writeFileSync(options.outputPath, zipBuffer);
+      try {
+        const pyScript = path.resolve(process.cwd(), 'pipeline/riggen/master_character_compiler.py');
+        if (fs.existsSync(pyScript)) {
+          const skin = options.skinColorRgba ?? [242, 210, 189, 255];
+          const hair = options.hairColorRgba ?? [230, 115, 45, 255];
+          const shirt = options.shirtColorRgba ?? [215, 80, 130, 255];
+          const pants = options.pantsColorRgba ?? [240, 240, 240, 255];
+          const shoes = options.shoesColorRgba ?? [30, 30, 30, 255];
+
+          const pyCode = `
+from pipeline.riggen.master_character_compiler import compile_master_character
+compile_master_character(
+    name=${JSON.stringify(charName)},
+    gender=${JSON.stringify(options.gender ?? 'female')},
+    skin_rgb=(${skin[0] / 255}, ${skin[1] / 255}, ${skin[2] / 255}),
+    hair_rgb=(${hair[0] / 255}, ${hair[1] / 255}, ${hair[2] / 255}),
+    shirt_rgb=(${shirt[0] / 255}, ${shirt[1] / 255}, ${shirt[2] / 255}),
+    pants_rgb=(${pants[0] / 255}, ${pants[1] / 255}, ${pants[2] / 255}),
+    shoes_rgb=(${shoes[0] / 255}, ${shoes[1] / 255}, ${shoes[2] / 255}),
+    out_path=${JSON.stringify(options.outputPath)}
+)
+`;
+          child_process.execFileSync('python3', ['-c', pyCode], { cwd: process.cwd() });
+        } else {
+          fs.writeFileSync(options.outputPath, zipBuffer);
+        }
+      } catch (err) {
+        fs.writeFileSync(options.outputPath, zipBuffer);
+      }
     }
 
     return {
