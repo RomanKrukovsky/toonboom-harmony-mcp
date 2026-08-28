@@ -222,5 +222,19 @@ export const mohoAdvancedRigTools = [
       const result = MohoSmartPsdSemanticParser.ingestPsdToRig(args);
       return { status: 'success', psdRigResult: result };
     }
+  },
+  {
+    name: 'moho.qc.visual_feedback_loop',
+    description:
+      'ЗРИТЕЛЬНЫЙ КОНТУР САМОКОНТРОЛЯ И СТУДИЙНЫЙ QC ГЕЙТ. Headless-рендерит проект .moho, проверяет кадр на разрывы в суставах, соответствие границ холста, симметрию лица, корректность Z-глубины и выдает визуальный сертификат качества со скорингом от 0 до 100%.',
+    inputSchema: z.object({
+      mohoPath: z.string().describe('Путь к файлу .moho для визуального аудита'),
+      outPreviewPng: z.string().optional().describe('Куда сохранить отрендеренное изображение превью')
+    }),
+    handler: async (args: { mohoPath: string; outPreviewPng?: string }) => {
+      const { MohoVisualFeedbackLoop } = await import('../services/mohoVisualFeedbackLoop/index.js');
+      const result = MohoVisualFeedbackLoop.runVisualAudit(args.mohoPath, args.outPreviewPng);
+      return { status: 'success', visualAuditResult: result };
+    }
   }
 ];

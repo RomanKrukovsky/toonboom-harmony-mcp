@@ -52,7 +52,7 @@ export const mohoProductionTools = [
         endFrame: args.endFrame ?? 120,
         fps: args.fps ?? 24
       });
-      return { status: 'success', result };
+      return { status: result.status, result };
     }
   },
   {

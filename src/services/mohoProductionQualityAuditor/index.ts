@@ -1,7 +1,34 @@
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import zlib from 'zlib';
-import { MohoNativeBridge } from '../mohoNativeBridge/index.js';
+
+function resolveRepairHelper(): string {
+  const relativePath = 'scripts/python/repair_moho_project.py';
+  const candidates = [
+    path.resolve(process.cwd(), relativePath),
+    path.resolve(path.dirname(process.argv[1] ?? process.cwd()), '..', relativePath)
+  ];
+  const found = candidates.find(candidate => fs.existsSync(candidate));
+  if (!found) {
+    throw new Error(`Required Moho repair helper is missing: ${relativePath}`);
+  }
+  return found;
+}
+
+function runRepairHelper(mohoPath: string, mode: 'inspect' | 'repair'): string {
+  const python = process.env.MOHO_PYTHON_BIN ?? process.env.PYTHON_BIN ?? (process.platform === 'win32' ? 'python' : 'python3');
+  const result = spawnSync(python, [resolveRepairHelper(), mohoPath, mode], {
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024
+  });
+  if (result.error) {
+    throw new Error(`Could not run the safe Moho repair helper: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(result.stderr.trim() || result.stdout.trim() || `Moho repair helper exited with ${result.status}`);
+  }
+  return result.stdout;
+}
 
 export interface MohoQCIssue {
   ruleId: string;
@@ -171,10 +198,10 @@ export class MohoProductionQualityAuditor {
           }
 
           // 3. Fix color coding
-          if (bName.endsWith('_L') && bone.tag_color !== 3) {
+          if (Object.prototype.hasOwnProperty.call(bone, 'tag_color') && bName.endsWith('_L') && bone.tag_color !== 3) {
             bone.tag_color = 3;
             fixesCount++;
-          } else if (bName.endsWith('_R') && bone.tag_color !== 5) {
+          } else if (Object.prototype.hasOwnProperty.call(bone, 'tag_color') && bName.endsWith('_R') && bone.tag_color !== 5) {
             bone.tag_color = 5;
             fixesCount++;
           }
@@ -196,44 +223,23 @@ export class MohoProductionQualityAuditor {
       throw new Error(`File not found: ${mohoPath}`);
     }
 
-    const fileBuf = fs.readFileSync(mohoPath);
-    // Extract Project.mohoproj from ZIP container
-    const jsonStr = this.extractProjectJsonFromZip(fileBuf);
-    const docJson = JSON.parse(jsonStr);
+    const docJson = JSON.parse(runRepairHelper(mohoPath, 'inspect')) as Record<string, unknown>;
 
     const report = this.auditDocumentJson(docJson, path.basename(mohoPath));
 
     if (autoFix && report.issuesCount > 0) {
-      const { fixedDocJson, fixesAppliedCount } = this.autoFixDocumentJson(docJson);
-      report.fixedIssuesCount = fixesAppliedCount;
-
-      const fixedZipBuf = MohoNativeBridge.compileMohoZip(JSON.stringify(fixedDocJson, null, 2));
-      fs.writeFileSync(mohoPath, fixedZipBuf);
+      const repairResult = JSON.parse(runRepairHelper(mohoPath, 'repair')) as { fixes: number };
+      report.fixedIssuesCount = repairResult.fixes;
       report.repairedMohoPath = mohoPath;
-      report.isProductionReady = true;
+      const repairedDocument = JSON.parse(runRepairHelper(mohoPath, 'inspect')) as Record<string, unknown>;
+      const repairedReport = this.auditDocumentJson(repairedDocument, path.basename(mohoPath));
+      report.issues = repairedReport.issues;
+      report.issuesCount = repairedReport.issuesCount;
+      report.errorsCount = repairedReport.errorsCount;
+      report.warningsCount = repairedReport.warningsCount;
+      report.isProductionReady = repairedReport.isProductionReady;
     }
 
     return report;
-  }
-
-  private static extractProjectJsonFromZip(buf: Buffer): string {
-    // Search for Project.mohoproj in ZIP central directory or deflate streams
-    // Fallback simple search if raw JSON string is present
-    const str = buf.toString('utf8');
-    const jsonStart = str.indexOf('{"mime_type":');
-    if (jsonStart !== -1) {
-      const jsonEnd = str.lastIndexOf('}');
-      if (jsonEnd !== -1) {
-        return str.substring(jsonStart, jsonEnd + 1);
-      }
-    }
-
-    // Try uncompressing first compressed block
-    try {
-      const unzipped = zlib.inflateRawSync(buf.slice(30 + 16)); // Standard offset for local header 1
-      return unzipped.toString('utf8');
-    } catch {
-      return JSON.stringify({ layers: [], version: 1045 });
-    }
   }
 }

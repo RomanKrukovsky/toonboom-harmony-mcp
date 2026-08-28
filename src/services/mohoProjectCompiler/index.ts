@@ -1,6 +1,6 @@
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import zlib from 'zlib';
 import {
   type MohoProductionRigSpec,
   type SmartBoneDialSpec,
@@ -13,103 +13,27 @@ import { MohoShadowBuilder } from '../mohoShadowBuilder/index.js';
 import { MohoAnimatorContractGate } from '../mohoAnimatorContractGate/index.js';
 
 /**
- * MohoProjectCompiler — directly synthesizes binary-valid .moho project files
- * (ZIP container containing Project.mohoproj JSON and preview.jpg).
+ * MohoProjectCompiler — builds native .moho projects from a known-good Moho
+ * template. Moho's parser distinguishes integer and floating-point JSON tokens,
+ * so the final document is serialized by the loss-preserving Python helper.
  *
  * This enables 100% automated, headless generation of Turnaround Production Rigs.
  */
 
-// Minimal 1x1 valid JPEG image for preview.jpg in .moho container
-const MINIMAL_JPEG = Buffer.from([
-  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
-  0x00, 0x48, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43, 0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08,
-  0x07, 0x07, 0x07, 0x09, 0x09, 0x08, 0x0a, 0x0c, 0x14, 0x0d, 0x0c, 0x0b, 0x0b, 0x0c, 0x19, 0x12,
-  0x13, 0x0f, 0x14, 0x1d, 0x1a, 0x1f, 0x1e, 0x1d, 0x1a, 0x1c, 0x1c, 0x20, 0x24, 0x2e, 0x27, 0x20,
-  0x22, 0x2c, 0x23, 0x1c, 0x1c, 0x28, 0x37, 0x29, 0x2c, 0x30, 0x31, 0x34, 0x34, 0x34, 0x1f, 0x27,
-  0x39, 0x3d, 0x38, 0x32, 0x3c, 0x2e, 0x33, 0x34, 0x32, 0xff, 0xc0, 0x00, 0x0b, 0x08, 0x00, 0x01,
-  0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xff, 0xc4, 0x00, 0x1f, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01,
-  0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04,
-  0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0xff, 0xda, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3f,
-  0x00, 0xbf, 0x80, 0xff, 0xd9
-]);
-
-function createZipArchive(files: Array<{ name: string; content: Buffer }>): Buffer {
-  const localHeaders: Buffer[] = [];
-  const centralHeaders: Buffer[] = [];
-  let offset = 0;
-
-  for (const file of files) {
-    const filenameBuf = Buffer.from(file.name, 'utf8');
-    const compressed = zlib.deflateRawSync(file.content);
-    const crc = computeCrc32(file.content);
-
-    // Local file header (30 bytes + name)
-    const local = Buffer.alloc(30 + filenameBuf.length);
-    local.writeUInt32LE(0x04034b50, 0); // Signature
-    local.writeUInt16LE(20, 4);          // Version needed (2.0)
-    local.writeUInt16LE(0, 6);           // Flags
-    local.writeUInt16LE(8, 8);           // Method (Deflate)
-    local.writeUInt16LE(0, 10);          // Mod time
-    local.writeUInt16LE(0, 12);          // Mod date
-    local.writeUInt32LE(crc, 14);        // CRC32
-    local.writeUInt32LE(compressed.length, 18); // Compressed size
-    local.writeUInt32LE(file.content.length, 22); // Uncompressed size
-    local.writeUInt16LE(filenameBuf.length, 26);  // Filename len
-    local.writeUInt16LE(0, 28);          // Extra field len
-    filenameBuf.copy(local, 30);
-
-    // Central directory header (46 bytes + name)
-    const central = Buffer.alloc(46 + filenameBuf.length);
-    central.writeUInt32LE(0x02014b50, 0); // Signature
-    central.writeUInt16LE(20, 4);          // Version made by
-    central.writeUInt16LE(20, 6);          // Version needed
-    central.writeUInt16LE(0, 8);           // Flags
-    central.writeUInt16LE(8, 10);          // Method
-    central.writeUInt16LE(0, 12);          // Mod time
-    central.writeUInt16LE(0, 14);          // Mod date
-    central.writeUInt32LE(crc, 16);        // CRC32
-    central.writeUInt32LE(compressed.length, 20); // Compressed size
-    central.writeUInt32LE(file.content.length, 24); // Uncompressed size
-    central.writeUInt16LE(filenameBuf.length, 28);  // Filename len
-    central.writeUInt16LE(0, 30);          // Extra len
-    central.writeUInt16LE(0, 32);          // Comment len
-    central.writeUInt16LE(0, 34);          // Disk start
-    central.writeUInt16LE(0, 36);          // Internal attr
-    central.writeUInt32LE(0, 38);          // External attr
-    central.writeUInt32LE(offset, 42);     // Local header offset
-    filenameBuf.copy(central, 46);
-
-    localHeaders.push(local, compressed);
-    centralHeaders.push(central);
-    offset += local.length + compressed.length;
+function resolveProjectAsset(relativePath: string): string {
+  const candidates = [
+    path.resolve(process.cwd(), relativePath),
+    path.resolve(path.dirname(process.argv[1] ?? process.cwd()), '..', relativePath)
+  ];
+  const found = candidates.find(candidate => fs.existsSync(candidate));
+  if (!found) {
+    throw new Error(`Required Moho compiler asset is missing: ${relativePath}`);
   }
-
-  const centralDirOffset = offset;
-  const centralDirSize = centralHeaders.reduce((sum, b) => sum + b.length, 0);
-
-  // End of central directory record (22 bytes)
-  const eocd = Buffer.alloc(22);
-  eocd.writeUInt32LE(0x06054b50, 0);
-  eocd.writeUInt16LE(0, 4);
-  eocd.writeUInt16LE(0, 6);
-  eocd.writeUInt16LE(files.length, 8);
-  eocd.writeUInt16LE(files.length, 10);
-  eocd.writeUInt32LE(centralDirSize, 12);
-  eocd.writeUInt32LE(centralDirOffset, 16);
-  eocd.writeUInt16LE(0, 20);
-
-  return Buffer.concat([...localHeaders, ...centralHeaders, eocd]);
+  return found;
 }
 
-function computeCrc32(buf: Buffer): number {
-  let crc = ~0;
-  for (let i = 0; i < buf.length; i++) {
-    crc ^= buf[i];
-    for (let j = 0; j < 8; j++) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
-    }
-  }
-  return (~crc) >>> 0;
+function resolvePythonExecutable(): string {
+  return process.env.MOHO_PYTHON_BIN ?? process.env.PYTHON_BIN ?? (process.platform === 'win32' ? 'python' : 'python3');
 }
 
 export interface CompileMohoProjectOptions {
@@ -313,19 +237,31 @@ export class MohoProjectCompiler {
     smartDialsCount: number;
   } {
     const docJson = this.compileToDocumentJson(opts.spec, opts.width, opts.height, opts.fps);
-    const jsonBuffer = Buffer.from(JSON.stringify(docJson, null, 2), 'utf8');
+    const helperPath = resolveProjectAsset('scripts/python/compile_moho_project.py');
+    const templatePath = process.env.MOHO_PROJECT_TEMPLATE
+      ?? resolveProjectAsset('fixtures/moho_reference/gramps_rig.moho.bak');
+    const result = spawnSync(
+      resolvePythonExecutable(),
+      [helperPath, templatePath, path.resolve(opts.outputPath)],
+      {
+        input: JSON.stringify(docJson),
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024
+      }
+    );
 
-    const zipBuffer = createZipArchive([
-      { name: 'Project.mohoproj', content: jsonBuffer },
-      { name: 'preview.jpg', content: MINIMAL_JPEG }
-    ]);
-
-    const dir = path.dirname(opts.outputPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    if (result.error) {
+      throw new Error(`Could not run the safe Moho compiler: ${result.error.message}`);
+    }
+    if (result.status !== 0) {
+      const details = result.stderr.trim() || result.stdout.trim() || `exit code ${result.status}`;
+      throw new Error(details);
+    }
+    if (!fs.existsSync(opts.outputPath)) {
+      throw new Error('Safe Moho compiler finished without creating the requested file');
     }
 
-    fs.writeFileSync(opts.outputPath, zipBuffer);
+    const fileSizeBytes = fs.statSync(opts.outputPath).size;
 
     const rootLayer = (docJson.layers as Array<Record<string, unknown>>)[0];
     const skel = (rootLayer.skeleton as Record<string, unknown>) ?? {};
@@ -333,7 +269,7 @@ export class MohoProjectCompiler {
 
     return {
       outputPath: opts.outputPath,
-      fileSizeBytes: zipBuffer.length,
+      fileSizeBytes,
       bonesCount: bones.length,
       smartDialsCount: opts.spec.smartDials.length
     };
