@@ -2,6 +2,8 @@ import path from 'path';
 import fs from 'fs';
 import { MohoNativeBridge } from '../mohoNativeBridge/index.js';
 import { MohoSmearSynthesizer } from '../mohoSmearSynthesizer/index.js';
+import { MohoAnatomyVectorSynthesizer } from '../mohoAnatomyVectorSynthesizer/index.js';
+import { MohoFootLockKinematics } from '../mohoFootLockKinematics/index.js';
 import { type VectorPoint, type MohoVectorShape } from '../mohoVectorSimplifier/index.js';
 import { type CompiledMohoProjectResult } from '../mohoProjectCompiler/index.js';
 
@@ -330,39 +332,28 @@ export class MohoStudioMasterRigGenerator {
       ]
     });
 
-    // 2. Pre-baked 24-Frame Walk Cycle
-    const walkWhen = [1, 4, 7, 10, 13, 16, 19, 22, 24];
+    // 2. Pre-baked 24-Frame Walk Cycle with Contact Foot-Locking (Zero-Slip Kinematics)
+    const footCycle = MohoFootLockKinematics.generateLockedFootCycle(90, -90, 24);
+
     actions.push({
       actionName: 'Walk Cycle',
       targetBone: 'Target_Leg_L',
       type: 'pos',
-      keyframes: [
-        { frame: 1, posX: -45, posY: -90 },
-        { frame: 4, posX: -35, posY: -90 },
-        { frame: 7, posX: -22, posY: -90 },
-        { frame: 10, posX: 0, posY: -90 },
-        { frame: 13, posX: 20, posY: -90 },
-        { frame: 16, posX: 5, posY: -70 },
-        { frame: 19, posX: -22, posY: -60 },
-        { frame: 22, posX: -38, posY: -75 },
-        { frame: 24, posX: -45, posY: -90 }
-      ]
+      keyframes: footCycle.leftFootTrack.map(k => ({
+        frame: k.frame,
+        posX: k.posX,
+        posY: k.posY
+      }))
     });
     actions.push({
       actionName: 'Walk Cycle',
       targetBone: 'Target_Leg_R',
       type: 'pos',
-      keyframes: [
-        { frame: 1, posX: 20, posY: -90 },
-        { frame: 4, posX: 5, posY: -70 },
-        { frame: 7, posX: -22, posY: -60 },
-        { frame: 10, posX: -38, posY: -75 },
-        { frame: 13, posX: -45, posY: -90 },
-        { frame: 16, posX: -35, posY: -90 },
-        { frame: 19, posX: -22, posY: -90 },
-        { frame: 22, posX: 0, posY: -90 },
-        { frame: 24, posX: 20, posY: -90 }
-      ]
+      keyframes: footCycle.rightFootTrack.map(k => ({
+        frame: k.frame,
+        posX: k.posX,
+        posY: k.posY
+      }))
     });
     actions.push({
       actionName: 'Walk Cycle',
@@ -396,16 +387,13 @@ export class MohoStudioMasterRigGenerator {
   }): Array<Record<string, unknown>> {
     const { skin, hair, shirt, pants, shoes, stroke, strokeWidth } = params;
 
-    // 1. Generate Real Shapes for Head, Limbs, Hands, Feet, Smears
-    const headShape = MohoNativeBridge.generateCapsuleShape({
+    // 1. Generate Real Anatomical Shapes for Head, Limbs, Hands, Feet, Eyes
+    const headShape = MohoAnatomyVectorSynthesizer.generateAnatomicalHead({
       name: 'Head_Base',
-      centerX: 0,
-      centerY: 225,
-      radiusX: 38,
-      radiusY: 42,
       fillRgba: skin,
+      strokeRgba: stroke,
       strokeWidth,
-      jointCapPadding: false
+      scale: 1.0
     });
 
     const torsoShape = MohoNativeBridge.generateCapsuleShape({
@@ -430,49 +418,44 @@ export class MohoStudioMasterRigGenerator {
       jointCapPadding: true
     });
 
-    const armUpperShape = MohoNativeBridge.generateCapsuleShape({
+    const armUpperShape = MohoAnatomyVectorSynthesizer.generateAnatomicalLimb({
       name: 'Arm_Upper',
-      centerX: 0,
-      centerY: 0,
-      radiusX: 14,
-      radiusY: 38,
+      limbType: 'upper_arm',
       fillRgba: shirt,
-      strokeWidth,
-      jointCapPadding: true
+      length: 76,
+      width: 28,
+      strokeWidth
     });
 
-    const armForeShape = MohoNativeBridge.generateCapsuleShape({
+    const armForeShape = MohoAnatomyVectorSynthesizer.generateAnatomicalLimb({
       name: 'Arm_Fore',
-      centerX: 0,
-      centerY: 0,
-      radiusX: 12,
-      radiusY: 36,
+      limbType: 'forearm',
       fillRgba: skin,
-      strokeWidth,
-      jointCapPadding: true
+      length: 72,
+      width: 24,
+      strokeWidth
     });
 
-    const legThighShape = MohoNativeBridge.generateCapsuleShape({
+    const legThighShape = MohoAnatomyVectorSynthesizer.generateAnatomicalLimb({
       name: 'Leg_Thigh',
-      centerX: 0,
-      centerY: 0,
-      radiusX: 16,
-      radiusY: 48,
+      limbType: 'thigh',
       fillRgba: pants,
-      strokeWidth,
-      jointCapPadding: true
+      length: 96,
+      width: 32,
+      strokeWidth
     });
 
-    const legShinShape = MohoNativeBridge.generateCapsuleShape({
+    const legShinShape = MohoAnatomyVectorSynthesizer.generateAnatomicalLimb({
       name: 'Leg_Shin',
-      centerX: 0,
-      centerY: 0,
-      radiusX: 14,
-      radiusY: 48,
+      limbType: 'shin',
       fillRgba: pants,
-      strokeWidth,
-      jointCapPadding: true
+      length: 96,
+      width: 28,
+      strokeWidth
     });
+
+    const handPosesL = MohoAnatomyVectorSynthesizer.generateHandPoses('Hand_L', skin, strokeWidth);
+    const detailedEye = MohoAnatomyVectorSynthesizer.generateDetailedEye('Eye_Front', 0, 0, 14);
 
     const footShape = MohoNativeBridge.generateCapsuleShape({
       name: 'Foot_Base',
