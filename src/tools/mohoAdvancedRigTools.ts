@@ -152,5 +152,60 @@ export const mohoAdvancedRigTools = [
       });
       return { status: 'success', cameraResult };
     }
+  },
+  {
+    name: 'moho.creature.build_bespoke_creature',
+    description:
+      'ГЕНЕРАТОР НЕСТАНДАРТНЫХ СУЩЕСТВ И МОНСТРОВ. Создает риги с произвольной анатомией: многоглазые гидры, многоножки, щупальца, аморфные слизни с радиальной Pin-сеткой сохранения объема и многослойные доспехи.',
+    inputSchema: z.object({
+      creatureName: z.string().default('TentacleHydra'),
+      bodyType: z.enum(['soft_body_slime', 'chitin_armor', 'multi_limb_hydra', 'hybrid']).default('multi_limb_hydra'),
+      limbs: z.array(
+        z.object({
+          name: z.string(),
+          type: z.enum(['tentacle', 'spider_leg', 'wing', 'tail', 'fin']),
+          segmentsCount: z.number().default(4),
+          rootX: z.number(),
+          rootY: z.number(),
+          lengthPerSegment: z.number().default(25),
+          angleDeg: z.number().default(90),
+          hasPhysics: z.boolean().default(true),
+          ikTarget: z.boolean().default(true)
+        })
+      ).default([]),
+      heads: z.array(
+        z.object({
+          name: z.string(),
+          rootBone: z.string().default('Body_Center'),
+          offsetX: z.number().default(0),
+          offsetY: z.number().default(120),
+          radius: z.number().default(30),
+          eyesCount: z.number().default(3),
+          hasMouth: z.boolean().default(true)
+        })
+      ).default([]),
+      softBodyPinsCount: z.number().default(8),
+      outputPath: z.string().optional()
+    }),
+    handler: async (args: any) => {
+      const { MohoBespokeCreatureBuilder } = await import('../services/mohoBespokeCreatureBuilder/index.js');
+      const result = MohoBespokeCreatureBuilder.buildCreature(args);
+      return { status: 'success', bespokeCreature: result };
+    }
+  },
+  {
+    name: 'moho.acting.parse_director_directives',
+    description:
+      'ПАРСЕР РЕЖИССЁРСКИХ РЕМАРОК И КОМЕДИЙНЫХ ГЭГОВ. Считывает указания из текста сценария в скобках (паузы, нервные подергивания, испуганные тейки, прищуры) и генерирует покадровые ключи комедийного тайминга.',
+    inputSchema: z.object({
+      scriptLine: z.string().describe('Строка сценария с ремарками, например: "МОРТИ: (пауза 3 сек, нервно дергает глазом) Ты уверен, Рик?"'),
+      speaker: z.string().default('Character'),
+      baseStartFrame: z.number().default(1)
+    }),
+    handler: async (args: any) => {
+      const { MohoDirectorDirectivesParser } = await import('../services/mohoDirectorDirectivesParser/index.js');
+      const result = MohoDirectorDirectivesParser.parseScriptLine(args.scriptLine, args.speaker, args.baseStartFrame);
+      return { status: 'success', directiveActing: result };
+    }
   }
 ];
