@@ -207,5 +207,20 @@ export const mohoAdvancedRigTools = [
       const result = MohoDirectorDirectivesParser.parseScriptLine(args.scriptLine, args.speaker, args.baseStartFrame);
       return { status: 'success', directiveActing: result };
     }
+  },
+  {
+    name: 'moho.rig.ingest_smart_psd',
+    description:
+      'УМНЫЙ PSD-ИНЖЕСТ И СЕМАНТИЧЕСКИЙ КЛАССИФИКАТОР СЛОЁВ. Распознает части тела из многослойных PSD художников (даже с грязными/неименованными слоями Layer 1/Layer 2), добавляет круглое перекрытие суставов (+15%), настраивает иерархию костей с IK и компилирует готовый к анимации .moho проект.',
+    inputSchema: z.object({
+      psdPath: z.string().describe('Абсолютный или относительный путь к исходному PSD файлу художника'),
+      characterName: z.string().optional().describe('Имя персонажа'),
+      outputMohoPath: z.string().optional().describe('Куда сохранить готовый .moho файл')
+    }),
+    handler: async (args: { psdPath: string; characterName?: string; outputMohoPath?: string }) => {
+      const { MohoSmartPsdSemanticParser } = await import('../services/mohoSmartPsdSemanticParser/index.js');
+      const result = MohoSmartPsdSemanticParser.ingestPsdToRig(args);
+      return { status: 'success', psdRigResult: result };
+    }
   }
 ];
