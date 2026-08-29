@@ -48,10 +48,14 @@ docs/evidence/harmony-action-recorder-real-smoke/captures/
 fixtures/video/*
 !fixtures/video/README.md
 !fixtures/video/*.source.json
+fixtures/moho_reference/*.webm
+fixtures/moho_reference/*.mp4
+fixtures/moho_reference/*.mkv
 
 # Rust build artifacts
 target/
 crates/**/target/
 crates/**/*.node
 crates/**/*.dylib
+
 

@@ -96,7 +96,9 @@ class ProductionHumanoidNativeTests(unittest.TestCase):
                 [1, 12, 24, 36],
             )
 
-            self.assertTrue(result.reopened, result.errors)
+            # Выведем ошибки
+            print(f"Native reopen errors: {result.errors}")
+            self.assertTrue(result.reopened, f"Errors during native reopen: {result.errors}")
             roundtrip_frames = result.rendered_frames[-4:]
             differences = [
                 image_difference(first, second)

@@ -292,6 +292,168 @@ def make_polygon_mesh(poly_pts: list[tuple[float, float]],
     return assemble_mesh(points, [curve], [shape])
 
 
+def color_from_rgb(rgb: tuple[float, float, float]) -> dict:
+    """Convert an RGB tuple into Moho's RGBA color object."""
+    if len(rgb) != 3 or any(component < 0.0 or component > 1.0 for component in rgb):
+        raise ValueError("RGB components must be between 0 and 1")
+    return {
+        "r": round(float(rgb[0]), 6),
+        "g": round(float(rgb[1]), 6),
+        "b": round(float(rgb[2]), 6),
+        "a": 1.0,
+    }
+
+
+def _shade(color: dict, factor: float) -> dict:
+    return {
+        "r": round(color["r"] * factor, 6),
+        "g": round(color["g"] * factor, 6),
+        "b": round(color["b"] * factor, 6),
+        "a": color.get("a", 1.0),
+    }
+
+
+def apply_character_palette(
+    mesh: dict,
+    skin_rgb: tuple[float, float, float],
+    hair_rgb: tuple[float, float, float],
+    shirt_rgb: tuple[float, float, float],
+    pants_rgb: tuple[float, float, float],
+    shoes_rgb: tuple[float, float, float],
+) -> dict:
+    """Return a copy of a mesh recolored with the requested character palette."""
+    skin = color_from_rgb(skin_rgb)
+    hair = color_from_rgb(hair_rgb)
+    shirt = color_from_rgb(shirt_rgb)
+    pants = color_from_rgb(pants_rgb)
+    shoes = color_from_rgb(shoes_rgb)
+    replacements = {
+        tuple(COLOR_SKIN.values()): skin,
+        tuple(COLOR_SKIN_SHADOW.values()): _shade(skin, 0.82),
+        tuple(COLOR_HAIR.values()): hair,
+        tuple(COLOR_HAIR_DARK.values()): _shade(hair, 0.78),
+        tuple(COLOR_SHIRT.values()): shirt,
+        tuple(COLOR_SHIRT_DARK.values()): _shade(shirt, 0.78),
+        tuple(COLOR_PANTS.values()): pants,
+        tuple(COLOR_PANTS_DARK.values()): _shade(pants, 0.76),
+        tuple(COLOR_SHOE.values()): shoes,
+    }
+    result = copy.deepcopy(mesh)
+    for shape in result.get("shapes", []):
+        channel = shape.get("style", {}).get("fill_color", {})
+        values = channel.get("val", [])
+        for index, value in enumerate(values):
+            if not isinstance(value, dict):
+                continue
+            replacement = replacements.get(tuple(value.get(key) for key in ("r", "g", "b", "a")))
+            if replacement is not None:
+                values[index] = copy.deepcopy(replacement)
+    return result
+
+
+def transform_mesh(
+    mesh: dict,
+    translate: tuple[float, float] = (0.0, 0.0),
+    rotate: float = 0.0,
+    scale: tuple[float, float] = (1.0, 1.0),
+) -> dict:
+    """Transform point positions, including action poses, into document space."""
+    result = copy.deepcopy(mesh)
+    cos_angle = math.cos(rotate)
+    sin_angle = math.sin(rotate)
+
+    def transform_values(values: list) -> None:
+        for value in values:
+            if not isinstance(value, dict) or "x" not in value or "y" not in value:
+                continue
+            scaled_x = float(value["x"]) * scale[0]
+            scaled_y = float(value["y"]) * scale[1]
+            value["x"] = round(
+                translate[0] + scaled_x * cos_angle - scaled_y * sin_angle,
+                6,
+            )
+            value["y"] = round(
+                translate[1] + scaled_x * sin_angle + scaled_y * cos_angle,
+                6,
+            )
+
+    for point in result.get("points", []):
+        position = point.get("position", {})
+        transform_values(position.get("val", []))
+        for action in position.get("actions", []):
+            pose = action.get("pose", {}) if isinstance(action, dict) else {}
+            transform_values(pose.get("val", []))
+    return result
+
+
+def generate_segment_mesh(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    start_width: float,
+    end_width: float,
+    fill_color: dict,
+    parent_bone: int,
+    name: str,
+    overlap: float = 0.08,
+) -> dict:
+    """Generate an aligned limb segment with overlap around both joints."""
+    dx = end[0] - start[0]
+    dy = end[1] - start[1]
+    length = math.hypot(dx, dy)
+    if length <= 1e-9:
+        raise ValueError("segment start and end must differ")
+    unit_x = dx / length
+    unit_y = dy / length
+    normal_x = -unit_y
+    normal_y = unit_x
+    start_x = start[0] - unit_x * overlap
+    start_y = start[1] - unit_y * overlap
+    end_x = end[0] + unit_x * overlap
+    end_y = end[1] + unit_y * overlap
+    points = [
+        (start_x + normal_x * start_width, start_y + normal_y * start_width),
+        (end_x + normal_x * end_width, end_y + normal_y * end_width),
+        (end_x - normal_x * end_width, end_y - normal_y * end_width),
+        (start_x - normal_x * start_width, start_y - normal_y * start_width),
+    ]
+    return make_polygon_mesh(
+        points,
+        fill_color=fill_color,
+        line_color=COLOR_LINE,
+        line_width=0.006,
+        parent_bone=parent_bone,
+        smoothness=0.28,
+        name=name,
+    )
+
+
+def combine_meshes(meshes: Sequence[dict]) -> dict:
+    """Combine independent native mesh payloads into one bound MeshLayer."""
+    points: list[dict] = []
+    curves: list[dict] = []
+    shapes: list[dict] = []
+    for source in meshes:
+        source_copy = copy.deepcopy(source)
+        point_offset = len(points)
+        curve_offset = len(curves)
+        for point in source_copy.get("points", []):
+            point["curves"] = []
+            points.append(point)
+        for curve in source_copy.get("curves", []):
+            for curve_point in curve.get("points", []):
+                curve_point["point"] = int(curve_point["point"]) + point_offset
+            curves.append(curve)
+        for shape in source_copy.get("shapes", []):
+            shape["id"] = len(shapes)
+            edges = shape.get("edges", {})
+            edges["curve"] = [
+                int(curve_index) + curve_offset
+                for curve_index in edges.get("curve", [])
+            ]
+            shapes.append(shape)
+    return assemble_mesh(points, curves, shapes)
+
+
 # ==============================================================================
 # Специализированные генераторы анатомических частей персонажа
 # ==============================================================================

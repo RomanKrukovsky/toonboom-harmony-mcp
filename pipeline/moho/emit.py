@@ -46,8 +46,21 @@ def _bone_dict(rig: Rig) -> list[dict]:
             d["hidden"] = True
         if b.shy:
             d["shy"] = True
-        if b.ignored_by_ik:
-            d["ignored_by_ik"] = True
+        d["angle_control_delay"] = 0
+        d["pos_control_delay"] = 0
+        d["scale_control_delay"] = 0
+        d["ignored_by_ik"] = b.ignored_by_ik
+        d["physics_radius"] = -1.0
+        d["physics_return_to_zero"] = False
+        d["bone_tags"] = 0
+        d["bone_label_showing"] = False
+        d["bone_enable_arc_solver"] = False
+        d["physics_torque"] = 10.0
+        d["physics_lock_tip"] = False
+        d["fixed_angle"] = False
+        d["scaling_mode"] = 0
+        d["squash_stretch_scaling"] = 1.0
+        d["max_auto_scaling"] = 1.0
         if b.target_bone:
             tidx = name_to_idx.get(b.target_bone, -1)
             d["target_bone"] = {"type": "Val", "ref": False, "mute": False,
