@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import util from 'util';
+import { z } from 'zod';
 
-const execPromise = util.promisify(exec);
+const execFilePromise = util.promisify(execFile);
 
 export const MohoQaRepairSpecSchema = z.object({
   projectId: z.string().describe('ID of the project to audit and repair'),
@@ -12,50 +12,50 @@ export const MohoQaRepairSpecSchema = z.object({
 
 export type MohoQaRepairSpec = z.infer<typeof MohoQaRepairSpecSchema>;
 
+export const MohoQaRepairResultSchema = z.object({
+  status: z.enum(['success', 'failed']),
+  projectId: z.string(),
+  is_certified: z.boolean(),
+  passes_executed: z.number().optional(),
+  log: z.array(z.record(z.any()))
+});
+
+export type MohoQaRepairResult = z.infer<typeof MohoQaRepairResultSchema>;
+
 export class MohoVisualQaRepairEngine {
   constructor(private options: { projectPath: string }) {}
 
-  async runRepairLoop(spec: MohoQaRepairSpec): Promise<any> {
-    // Simulated bridging to the Python engine
-    // In reality, this would invoke pipeline/moho/qa_repair.py via a CLI or IPC.
-    const pythonScript = `
-import json
-import sys
-from pipeline.moho.qa_repair import MohoVisualQARepairEngine
+  async runRepairLoop(spec: MohoQaRepairSpec): Promise<MohoQaRepairResult> {
+    const validated = MohoQaRepairSpecSchema.parse(spec);
+    const args: string[] = [
+      '-m',
+      'pipeline.tools.qa_repair_cli',
+      '--project-id',
+      validated.projectId,
+      '--max-passes',
+      String(validated.maxPasses ?? 5)
+    ];
 
-engine = MohoVisualQARepairEngine("${spec.projectId}", max_passes=${spec.maxPasses})
-
-def mock_get_frames(pass_num):
-    # For simulation, say pass 1 has an issue, pass 2 is clean
-    if pass_num == 1:
-        return [{"frame_number": 1, "z_order_error": True, "visible_pixels": 500000}]
-    else:
-        return [{"frame_number": 1, "z_order_error": False, "visible_pixels": 500000}]
-
-is_certified, log = engine.run_repair_loop(mock_get_frames)
-
-print(json.dumps({
-    "is_certified": is_certified,
-    "log": log
-}))
-    `;
+    if (validated.autoRepair) {
+      args.push('--auto-repair');
+    }
 
     try {
-      // Create a temporary script and run it
-      const tempScriptPath = `/tmp/moho_qa_repair_${Date.now()}.py`;
-      const fs = require('fs');
-      fs.writeFileSync(tempScriptPath, pythonScript);
-      
-      const { stdout } = await execPromise(`python3 ${tempScriptPath}`, {
-         env: { ...process.env, PYTHONPATH: process.cwd() }
+      const { stdout } = await execFilePromise('python3', args, {
+        cwd: process.cwd(),
+        env: { ...process.env, PYTHONPATH: process.cwd() }
       });
-      
-      fs.unlinkSync(tempScriptPath);
-      
-      return JSON.parse(stdout.trim());
+
+      const parsed = JSON.parse(stdout.trim());
+      return MohoQaRepairResultSchema.parse(parsed);
     } catch (e: any) {
-      console.error(e);
-      throw new Error(`Failed to run QA repair engine: ${e.message}`);
+      return {
+        status: 'failed',
+        projectId: validated.projectId,
+        is_certified: false,
+        passes_executed: 0,
+        log: [{ error: `Failed to run QA repair engine: ${e.message}` }]
+      };
     }
   }
 }

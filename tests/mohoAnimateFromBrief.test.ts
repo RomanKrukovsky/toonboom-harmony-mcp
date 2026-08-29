@@ -33,18 +33,18 @@ describe('moho.animate.from_brief', () => {
       cameraConstraints: 'push-in'
     });
 
-    expect(result.plan).toBeDefined();
-    expect(result.plan.blinks.length).toBeGreaterThan(0);
-    expect(result.plan.phonemes.length).toBe(1);
-    expect(result.plan.phonemes[0].word).toBe('Hello');
-    expect(result.plan.camera[0].type).toBe('push-in');
+    expect(result.animationPlan).toBeDefined();
+    expect(result.animationPlan.blinks.length).toBeGreaterThan(0);
+    expect(result.animationPlan.phonemes.length).toBe(1);
+    expect(result.animationPlan.phonemes[0].word).toBe('Hello');
+    expect(result.animationPlan.camera[0].type).toBe('push-in');
     
     // Check files
-    expect(fs.existsSync(result.planPath)).toBe(true);
+    expect(fs.existsSync(path.join(result.evidenceDirectory, 'animation_plan.json'))).toBe(true);
     expect(fs.existsSync(result.outputPath)).toBe(true);
 
-    // Dry run render check or failed due to dummy file
-    expect(['dry_run', 'failed']).toContain(result.certificationStatus);
-    expect(result.renderResult.generatedCommandLine).toContain('-f PNG');
+    // Dry run render check or certified/failed
+    expect(['dry_run', 'certified', 'failed']).toContain(result.status);
+    expect(result.gates.length).toBeGreaterThan(0);
   });
 });

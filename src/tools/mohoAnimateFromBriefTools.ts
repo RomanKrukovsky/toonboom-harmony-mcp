@@ -53,7 +53,7 @@ export const mohoAnimateFromBriefTools = [
         cameraConstraints: args.cameraConstraints ?? 'static'
       });
 
-      return { status: 'success', result };
+      return result;
     }
   }
 ];

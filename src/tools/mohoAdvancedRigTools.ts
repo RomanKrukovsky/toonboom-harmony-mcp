@@ -4,8 +4,25 @@ import { MohoLayerOrderSynthesizer } from '../services/mohoLayerOrderSynthesizer
 import { MohoPhysicsEngine } from '../services/mohoPhysicsEngine/index.js';
 import { MohoPropAnchorSystem } from '../services/mohoPropAnchorSystem/index.js';
 import { MohoPointMorphEngine } from '../services/mohoPointMorphEngine/index.js';
+import {
+  MohoProductionRigCompiler,
+  ProductionRigInputSchema,
+  type ProductionRigInput
+} from '../services/mohoProductionRigCompiler/index.js';
 
 export const mohoAdvancedRigTools = [
+  {
+    name: 'moho.rig.compile_certified_humanoid',
+    description:
+      'Compiles a fully-drawn, fully-articulated production-grade Moho 14 humanoid character rig, ' +
+      'runs native Moho open/save/reopen/render acceptance tests, calculates a 9-gate readiness score (>=95), ' +
+      'and atomically promotes the project only upon successful certification.',
+    inputSchema: ProductionRigInputSchema,
+    handler: async (args: ProductionRigInput) => {
+      const result = await MohoProductionRigCompiler.compile(args);
+      return result;
+    }
+  },
   {
     name: 'moho.rig.build_2d_joystick_hud',
     description:

@@ -1,4 +1,19 @@
+import { execFile } from 'child_process';
+import path from 'path';
+import util from 'util';
 import { z } from 'zod';
+import { verifyPathAccess } from '../security.js';
+
+const execFilePromise = util.promisify(execFile);
+
+async function runStage4Cli(subcommand: string, args: string[]): Promise<any> {
+  const fullArgs = ['-m', 'pipeline.tools.stage4_artwork_cli', subcommand, ...args];
+  const { stdout } = await execFilePromise('python3', fullArgs, {
+    cwd: process.cwd(),
+    env: { ...process.env, PYTHONPATH: process.cwd() }
+  });
+  return JSON.parse(stdout.trim());
+}
 
 export const mohoStage4ArtworkBatchTools = [
   {
@@ -8,19 +23,9 @@ export const mohoStage4ArtworkBatchTools = [
       file_path: z.string().describe('Path to the PSD file'),
     }),
     handler: async (args: { file_path: string }) => {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'success',
-              file_path: args.file_path,
-              layers: ['head', 'body', 'limbs'],
-              bounds: { width: 1920, height: 1080 }
-            }, null, 2)
-          }
-        ]
-      };
+      const absPath = verifyPathAccess(path.resolve(args.file_path));
+      const res = await runStage4Cli('inspect_psd', ['--file', absPath]);
+      return res;
     }
   },
   {
@@ -31,20 +36,10 @@ export const mohoStage4ArtworkBatchTools = [
       options: z.record(z.any()).optional().describe('Import options'),
     }),
     handler: async (args: { file_path: string; options?: Record<string, any> }) => {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'success',
-              promotion_dir: '/tmp/staging',
-              processed_layers: [
-                { name: 'arm_l', inpainted: true, padding_applied: '+15% circular padding' }
-              ]
-            }, null, 2)
-          }
-        ]
-      };
+      const absPath = verifyPathAccess(path.resolve(args.file_path));
+      const optsJson = JSON.stringify(args.options || {});
+      const res = await runStage4Cli('import_psd', ['--file', absPath, '--options', optsJson]);
+      return res;
     }
   },
   {
@@ -55,17 +50,10 @@ export const mohoStage4ArtworkBatchTools = [
       asset_paths: z.array(z.string()).describe('List of absolute asset paths to relink'),
     }),
     handler: async (args: { project_path: string; asset_paths: string[] }) => {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'success',
-              relinked_assets: args.asset_paths.map((p) => ({ original: p, relative: `assets/${p.split('/').pop()}` }))
-            }, null, 2)
-          }
-        ]
-      };
+      const projAbs = verifyPathAccess(path.resolve(args.project_path));
+      const assetAbsList = args.asset_paths.map(p => verifyPathAccess(path.resolve(p)));
+      const res = await runStage4Cli('relink', ['--project', projAbs, '--assets', ...assetAbsList]);
+      return res;
     }
   },
   {
@@ -73,23 +61,21 @@ export const mohoStage4ArtworkBatchTools = [
     description: 'Compile rig from PSD data using extensible body plans and multi-language semantic classification',
     inputSchema: z.object({
       psd_data: z.record(z.any()).describe('Parsed PSD data'),
-      body_plan: z.string().describe('Body plan (e.g., slim, stocky, child)'),
+      body_plan: z.string().describe('Body plan (e.g., adult_neutral, slim, stocky, child, tall, short, masculine, feminine)'),
       body_params: z.record(z.any()).describe('Parameters like skin_rgb, hair_rgb'),
     }),
     handler: async (args: { psd_data: Record<string, any>; body_plan: string; body_params: Record<string, any> }) => {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'success',
-              body_plan: args.body_plan,
-              moho_gates: { open: true, save: true, reopen: true, render: true },
-              semantic_classification: 'multi_language_fallback_topology'
-            }, null, 2)
-          }
-        ]
-      };
+      const psdJson = JSON.stringify(args.psd_data);
+      const paramsJson = JSON.stringify(args.body_params);
+      const res = await runStage4Cli('compile_from_artwork', [
+        '--psd-data',
+        psdJson,
+        '--body-plan',
+        args.body_plan,
+        '--body-params',
+        paramsJson
+      ]);
+      return res;
     }
   },
   {
@@ -97,22 +83,17 @@ export const mohoStage4ArtworkBatchTools = [
     description: 'Batch produce scenes with partial-failure tolerance and multi-shot OpenTimelineIO/FCPXML timeline export',
     inputSchema: z.object({
       specs: z.array(z.record(z.any())).describe('List of character specs and scene briefs'),
-      concurrency: z.number().optional().describe('Concurrency limit for Moho CLI'),
+      concurrency: z.number().optional().default(4).describe('Concurrency limit for Moho CLI'),
     }),
     handler: async (args: { specs: Array<Record<string, any>>; concurrency?: number }) => {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'completed',
-              successful_scenes: args.specs.filter(s => !s.trigger_failure),
-              failed_scenes: args.specs.filter(s => s.trigger_failure),
-              timeline: { format: 'fcpxml', duration_seconds: 120 }
-            }, null, 2)
-          }
-        ]
-      };
+      const specsJson = JSON.stringify(args.specs);
+      const res = await runStage4Cli('batch_produce', [
+        '--specs',
+        specsJson,
+        '--concurrency',
+        String(args.concurrency ?? 4)
+      ]);
+      return res;
     }
   },
 ];

@@ -1,9 +1,13 @@
-import { z } from 'zod';
+import { execFile } from 'child_process';
 import path from 'path';
+import util from 'util';
+import { z } from 'zod';
 import { MohoProductionQualityAuditor } from '../services/mohoProductionQualityAuditor/index.js';
 import { MohoRenderManager, type RenderOutputFormat } from '../services/mohoRenderManager/index.js';
 import { MohoAssetRegistry, type TemplateCategory } from '../services/mohoAssetRegistry/index.js';
 import { verifyPathAccess } from '../security.js';
+
+const execFilePromise = util.promisify(execFile);
 
 export const mohoProductionTools = [
   {
@@ -20,6 +24,51 @@ export const mohoProductionTools = [
       const absPath = verifyPathAccess(path.resolve(args.mohoFilePath));
       const report = MohoProductionQualityAuditor.auditAndFixMohoFile(absPath, args.autoFix ?? true);
       return { status: 'success', report };
+    }
+  },
+  {
+    name: 'moho.project.inspect',
+    description:
+      'Inspects a .moho project archive structure, bone hierarchy, mesh/switch layers, and metadata without modifying the file.',
+    inputSchema: z.object({
+      projectPath: z.string().describe('Path to .moho project file.')
+    }),
+    handler: async (args: { projectPath: string }) => {
+      const absPath = verifyPathAccess(path.resolve(args.projectPath));
+      const { stdout } = await execFilePromise('python3', [
+        '-m',
+        'pipeline.tools.inspect_project_cli',
+        absPath
+      ], {
+        cwd: process.cwd(),
+        env: { ...process.env, PYTHONPATH: process.cwd() }
+      });
+      return JSON.parse(stdout.trim());
+    }
+  },
+  {
+    name: 'moho.project.certify',
+    description:
+      'Runs full native Moho acceptance tests (Open, Save-As, Reopen, Render) and 9-gate readiness scoring on any project file.',
+    inputSchema: z.object({
+      projectPath: z.string().describe('Path to .moho project file to certify.'),
+      evidenceDirectory: z.string().optional().describe('Optional directory to write evidence and renders.'),
+      manifestPath: z.string().optional().describe('Optional path to expected manifest.json.')
+    }),
+    handler: async (args: { projectPath: string; evidenceDirectory?: string; manifestPath?: string }) => {
+      const absPath = verifyPathAccess(path.resolve(args.projectPath));
+      const cliArgs = ['-m', 'pipeline.tools.certify_project_cli', absPath];
+      if (args.evidenceDirectory) {
+        cliArgs.push('--evidence', verifyPathAccess(path.resolve(args.evidenceDirectory)));
+      }
+      if (args.manifestPath) {
+        cliArgs.push('--manifest', verifyPathAccess(path.resolve(args.manifestPath)));
+      }
+      const { stdout } = await execFilePromise('python3', cliArgs, {
+        cwd: process.cwd(),
+        env: { ...process.env, PYTHONPATH: process.cwd() }
+      });
+      return JSON.parse(stdout.trim());
     }
   },
   {
