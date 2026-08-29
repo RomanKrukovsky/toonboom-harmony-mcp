@@ -1,0 +1,9 @@
+local inputPath = [=[__SOURCE_PROJECT__]=]
+local outputPath = [=[__ROUNDTRIP_OUTPUT__]=]
+
+function MohoScript(moho)
+	moho:FileOpen(inputPath)
+	moho:FileSaveAs(outputPath)
+	print("MCP_ROUNDTRIP_SAVE_OK")
+	moho:Quit()
+end
