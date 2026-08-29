@@ -2,27 +2,29 @@ import path from 'path';
 import fs from 'fs';
 import { MohoAnimatorService } from '../src/services/mohoAnimatorEngine/index.js';
 
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const CERTIFIED_RIG = path.join(PROJECT_ROOT, 'docs/evidence/moho-stage1-humanoid/stage1_production_hero.moho');
+
 describe('moho.animate.from_brief', () => {
-  const tempDir = path.resolve(__dirname, '../temp_moho_anim');
-  const dummyRig = path.join(tempDir, 'dummy_rig.moho');
+  const tempDir = path.join(PROJECT_ROOT, 'temp_moho_anim');
   const outputPath = path.join(tempDir, 'output.moho');
 
   beforeAll(() => {
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
-    fs.writeFileSync(dummyRig, '{"dummy": true}', 'utf8');
   });
 
   afterAll(() => {
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    }
+    // Don't clean up so we can inspect the output
+    // if (fs.existsSync(tempDir)) {
+    //   fs.rmSync(tempDir, { recursive: true, force: true });
+    // }
   });
 
-  it('should generate an animation plan and copy the rig', async () => {
+  it('should generate an animation plan and animate the rig', async () => {
     const result = await MohoAnimatorService.animateFromBrief({
-      rigPath: dummyRig,
+      rigPath: CERTIFIED_RIG,
       briefText: 'Character walks in, blinks, says Hello, and camera pushes in',
       durationFrames: 60,
       fps: 24,
@@ -32,7 +34,7 @@ describe('moho.animate.from_brief', () => {
       outputPath: outputPath,
       cameraConstraints: 'push-in'
     });
-
+    
     expect(result.animationPlan).toBeDefined();
     expect(result.animationPlan.blinks.length).toBeGreaterThan(0);
     expect(result.animationPlan.phonemes.length).toBe(1);

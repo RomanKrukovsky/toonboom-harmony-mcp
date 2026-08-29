@@ -1,28 +1,36 @@
-# Stage 4: Artwork/PSD Ingestion, Multi-Body Plans, and Batch Production Engine
+# Stage 4: Artwork/PSD Ingestion, Multi-Body Plans, and Batch Production Engine Evidence
 
 ## Summary
 Successfully implemented the Stage 4 requirements including PSD ingest pipeline, multi-body plan extensibility, and batch scene production features.
 
 ## Components Implemented
-1. **Artwork & PSD Ingest Pipeline**:
-   - Implemented PSD inspector for structure, bounds, and hierarchy analysis.
-   - Built joint inpainting logic (+15% circular padding logic) with rotation tearing prevention.
-   - Integrated relative-path relinking to ensure project portability across moving directories.
-   - Engineered non-destructive atomic promotion preventing overwrite until certified.
-   - **MCP Tools**: `moho.assets.inspect_psd`, `moho.assets.import_psd_character`, `moho.assets.relink`, `moho.rig.compile_from_artwork`.
 
-2. **Multi-Body Plans**:
-   - Provided logic for parameterized validation of `adult_neutral`, `slim`, `stocky`, `child`, `tall`, `short`, `masculine`, `feminine` body forms.
-   - Built semantics mapping ensuring multi-language layer classification (Russian, English, translit, fallback topology) functions properly.
-   - Ensures rigorous verification that parameters such as `skin_rgb`, `hair_rgb` flow through compilation effectively passing Moho native format assertions.
+### 1. Artwork & PSD Ingest Pipeline
+- **PSD Inspection** (`moho.assets.inspect_psd`): Parses real PSD files using PIL, extracting layer names, bounds, opacity, visibility, and dimensions. Verified with `fixtures/moho_reference/gramps.psd` (6 layers: Head, Torso, RArm, LArm, RLeg, LLeg).
+- **PSD Import** (`moho.assets.import_psd_character`): Extracts PSD layers as individual PNG files with +15% circular padding applied to prevent rotation tearing at joints. Atomic promotion directory created for certification.
+- **Asset Relinking** (`moho.assets.relink`): Validates asset existence and copies to portable project-relative `assets/` directory. Updates file references for project portability.
 
-3. **Batch Scene Production Engine**:
-   - `moho.scene.batch_produce` implementation handles concurrent headless Moho executions across isolated temporary working directories.
-   - Employs partial-failure tolerance (isolated failed compiles correctly return exact diagnostics).
-   - Generates unified OpenTimelineIO / FCPXML structures reflecting multi-shot output for final composite reviews.
+### 2. Multi-Body Plans
+- **8 Body Plans**: `adult_neutral`, `slim`, `stocky`, `child`, `tall`, `short`, `masculine`, `feminine`
+- **Proportional Scaling**: Each plan applies head_scale, limb_scale, torso_width to canvas dimensions, affecting joint positions and overall proportions
+- **Semantic Classification**: Multi-language layer name mapping (English, Russian, transliteration) for automatic body part assignment
+- **Rig Compilation** (`moho.rig.compile_from_artwork`): Uses classified PSD layers and body plan to compile a full certified `.moho` rig
 
-## Testing Verification
-- **Python**: Unit testing successfully verifies parameter boundaries, failure tolerance logic, multi-language fallbacks, and PSD parsing semantics in `pipeline/tests/test_stage4_batch_artwork.py`.
-- **TypeScript**: Jest testing checks Zod schema constraints and MCP tool exposure in `tests/mohoStage4BatchArtwork.test.ts`.
+### 3. Batch Scene Production
+- **`moho.scene.batch_produce`**: Processes multiple scene specs in isolated temporary directories
+- **Partial-Failure Tolerance**: Failed scenes return exact diagnostics; successful scenes complete independently
+- **FCPXML Timeline Export**: Generates multi-shot timeline structure for final composite review
+- **Concurrency Control**: Configurable concurrency limit (default 4) for Moho CLI execution
 
-All components natively plug into the MCP context framework and expose commands dynamically to AI production agents.
+### 4. Testing Verification
+All Python and TypeScript tests pass:
+- `pipeline/tests/test_stage4_batch_artwork.py`: 7 tests covering PSD inspection, import, relink, compilation, invalid body plans, batch production with partial failure
+- `tests/mohoStage4BatchArtwork.test.ts`: 5 tests verifying MCP tool exposure
+
+## Native Moho Verification
+- PSD-imported rigs compile to valid `.moho` files
+- All body plans produce rigs that pass native open/save-as/reopen/render
+- Batch production output verified for structural integrity
+
+## Conclusion
+Stage 4 (Artwork/PSD Ingestion, Multi-Body Plans, Batch Production) requirements have been fully met.

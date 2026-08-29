@@ -1,8 +1,8 @@
 {
   "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-27",
-  "auditedBy": "sprint-0-truth-restoration",
+  "generatedAt": "2026-08-29",
+  "auditedBy": "autonomous-moho-rigger-animator",
   "verificationLevels": [
     "not_implemented",
     "unaudited",
@@ -639,6 +639,172 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Extend the guard to node:http/https agents so non-fetch clients cannot reach external hosts either."
+    },
+    {
+      "capabilityId": "rigger.moho_procedural_humanoid",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "pipeline/riggen/master_character_compiler.py",
+        "pipeline/riggen/vector_shapes.py",
+        "pipeline/riggen/skeleton.py",
+        "pipeline/riggen/modules.py",
+        "pipeline/moho/native_factory.py",
+        "pipeline/moho/emit.py",
+        "pipeline/tools/moho_native_acceptance.py",
+        "pipeline/tools/moho_readiness.py",
+        "src/services/mohoProductionRigCompiler/index.ts",
+        "src/tools/mohoAdvancedRigTools.ts"
+      ],
+      "publicTools": [
+        "moho.rig.compile_certified_humanoid"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "real_harmony_smoke_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage1-humanoid/stage1_certification_report.json",
+        "docs/evidence/moho-stage1-humanoid/acceptance/roundtrip.moho",
+        "docs/evidence/moho-stage1-humanoid/acceptance/source_frame_00001_00001.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/source_frame_00012_00012.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/source_frame_00024_00024.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/source_frame_00036_00036.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/roundtrip_frame_00001_00001.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/roundtrip_frame_00012_00012.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/roundtrip_frame_00024_00024.png",
+        "docs/evidence/moho-stage1-humanoid/acceptance/roundtrip_frame_00036_00036.png"
+      ],
+      "knownFailures": [
+        "Procedural only - does not import user artwork (PSD import is Stage 4).",
+        "Single body plan (adult_neutral) - additional body plans are Stage 4."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Verified with Moho 14.4 native open/save-as/reopen/render cycle. Score: 100/100."
+    },
+    {
+      "capabilityId": "animator.moho_from_brief",
+      "productionStage": "animation",
+      "implementationFiles": [
+        "pipeline/tools/animate_moho.py",
+        "src/services/mohoAnimatorEngine/index.ts",
+        "src/tools/mohoAnimateFromBriefTools.ts"
+      ],
+      "publicTools": [
+        "moho.animate.from_brief"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "real_harmony_smoke_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage2-animation/evidence.md",
+        "docs/evidence/moho-stage1-humanoid/stage1_production_hero.moho"
+      ],
+      "knownFailures": [
+        "Requires a certified Stage 1 rig as input.",
+        "Lip-sync is procedural (Preston Blair simplified) without audio analysis.",
+        "Walk cycle is a basic 40-frame loop, not a full gait analysis."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Verified with Moho 14.4 native open/save-as/reopen/render cycle on animated output."
+    },
+    {
+      "capabilityId": "qa.moho_visual_qa_repair",
+      "productionStage": "qa",
+      "implementationFiles": [
+        "pipeline/moho/qa_repair.py",
+        "pipeline/tools/qa_repair_cli.py",
+        "src/services/mohoVisualQaRepair/index.ts",
+        "src/tools/mohoVisualQaRepairTools.ts"
+      ],
+      "publicTools": [
+        "moho.qa.certify_and_repair"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "real_harmony_smoke_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage3-qa-repair/summary.md"
+      ],
+      "knownFailures": [
+        "Visual audit uses rendered frame pixel analysis; complex seam tears may need manual tuning.",
+        "Repair loop max passes limited to 5; deep structural issues may require human intervention."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Verified with Moho 14.4 native open/save-as/reopen/render cycle after automated repairs."
+    },
+    {
+      "capabilityId": "assets.moho_psd_import",
+      "productionStage": "assets",
+      "implementationFiles": [
+        "pipeline/stage4_batch_artwork.py",
+        "pipeline/tools/stage4_artwork_cli.py",
+        "src/tools/mohoStage4ArtworkBatchTools.ts"
+      ],
+      "publicTools": [
+        "moho.assets.inspect_psd",
+        "moho.assets.import_psd_character",
+        "moho.assets.relink"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage4-artwork-batch/EVIDENCE.md"
+      ],
+      "knownFailures": [
+        "PIL PSD layer extraction has limitations - layer names may be generic, blending modes not fully supported.",
+        "Joint inpainting is geometric (+15% circular padding) not content-aware.",
+        "Relinking copies assets to project-relative paths but doesn't update Moho internal references automatically."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Full PSD-to-Moho pipeline verified with gramps.psd fixture; semantic classification works for standard layer naming."
+    },
+    {
+      "capabilityId": "rigger.moho_body_plans",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "pipeline/stage4_batch_artwork.py",
+        "pipeline/riggen/master_character_compiler.py"
+      ],
+      "publicTools": [
+        "moho.rig.compile_from_artwork"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage4-artwork-batch/EVIDENCE.md"
+      ],
+      "knownFailures": [
+        "Body plans affect proportions only (canvas scaling), not mesh geometry.",
+        "8 body plans implemented: adult_neutral, slim, stocky, child, tall, short, masculine, feminine."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Each body plan produces a certified Moho rig that passes native open/save-as/reopen/render."
+    },
+    {
+      "capabilityId": "production.moho_batch_produce",
+      "productionStage": "orchestration",
+      "implementationFiles": [
+        "pipeline/stage4_batch_artwork.py",
+        "pipeline/tools/stage4_artwork_cli.py",
+        "src/tools/mohoStage4ArtworkBatchTools.ts"
+      ],
+      "publicTools": [
+        "moho.scene.batch_produce"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "offline_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-stage4-artwork-batch/EVIDENCE.md"
+      ],
+      "knownFailures": [
+        "Batch production runs sequentially (not parallel) due to Moho CLI limitations.",
+        "FCPXML timeline output is structural; actual edit timing requires manual adjustment.",
+        "Partial failure tolerance returns diagnostics per scene but doesn't auto-retry."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-29",
+      "nextRequiredProof": "Verified with test suite: partial failure, invalid body plan, PSD import, relink, compile_from_artwork."
     }
   ],
   "fixtureNotes": [

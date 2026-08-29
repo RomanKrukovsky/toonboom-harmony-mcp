@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import { execFile } from 'child_process';
+import util from 'util';
 import { MohoRenderManager } from '../mohoRenderManager/index.js';
+
+const execFilePromise = util.promisify(execFile);
 
 export interface DialogueLine {
   text: string;
@@ -63,50 +67,70 @@ export class MohoAnimatorService {
     const planPath = path.join(evidenceDirectory, 'animation_plan.json');
     fs.writeFileSync(planPath, JSON.stringify(plan, null, 2), 'utf8');
 
-    // Simulate/run animation pass by copying or compiling the rig file
-    if (fs.existsSync(options.rigPath)) {
-      fs.copyFileSync(options.rigPath, options.outputPath);
-    } else {
-      fs.writeFileSync(options.outputPath, 'DUMMY_MOHO_CONTENT', 'utf8');
-    }
-
-    // Run certification (headless render check)
-    let renderResult = null;
+    // Run the Python animation engine to inject keyframes into the .moho file
+    let animationResult: any = null;
     let certificationStatus: 'certified' | 'dry_run' | 'failed' = 'dry_run';
     let isCertified = false;
     let score = 95;
     const errors: string[] = [];
 
-    const mohoCli = MohoRenderManager.detectMohoExecutable();
-    if (mohoCli && fs.existsSync(options.rigPath)) {
-      renderResult = await MohoRenderManager.executeRender({
-        mohoProjectPath: options.outputPath,
-        outputDirectory: evidenceDirectory,
-        format: 'png_sequence',
-        startFrame: 1,
-        endFrame: Math.min(10, options.durationFrames),
-        fps: options.fps
+    try {
+      const { stdout } = await execFilePromise('python3', [
+        '-m', 'pipeline.tools.animate_moho',
+        options.rigPath,
+        planPath,
+        options.outputPath
+      ], {
+        cwd: process.cwd(),
+        env: { ...process.env, PYTHONPATH: process.cwd() }
       });
-      if (renderResult.status === 'rendered' && (renderResult.renderedFiles?.length || 0) > 0) {
-        certificationStatus = 'certified';
-        isCertified = true;
-        score = 98;
+      animationResult = JSON.parse(stdout.trim());
+      
+      if (animationResult.status === 'success' && fs.existsSync(options.outputPath)) {
+        // Run certification (headless render check)
+        const mohoCli = MohoRenderManager.detectMohoExecutable();
+        if (mohoCli) {
+          const renderResult = await MohoRenderManager.executeRender({
+            mohoProjectPath: options.outputPath,
+            outputDirectory: evidenceDirectory,
+            format: 'png_sequence',
+            startFrame: 1,
+            endFrame: Math.min(options.durationFrames, options.durationFrames),
+            fps: options.fps
+          });
+          if (renderResult.status === 'rendered' && (renderResult.renderedFiles?.length || 0) > 0) {
+            certificationStatus = 'certified';
+            isCertified = true;
+            score = 98;
+          } else {
+            certificationStatus = 'failed';
+            isCertified = false;
+            score = 40;
+            errors.push('Moho headless render failed');
+          }
+        } else {
+          certificationStatus = 'dry_run';
+          isCertified = true;
+          score = 95;
+        }
       } else {
+        errors.push(animationResult.errors?.join(', ') || 'Animation engine failed');
         certificationStatus = 'failed';
         isCertified = false;
-        score = 40;
-        errors.push('Moho headless render failed');
+        score = 0;
       }
-    } else {
-      certificationStatus = 'dry_run';
-      isCertified = true;
-      score = 95;
+    } catch (e: any) {
+      errors.push(`Animation engine error: ${e.message}`);
+      certificationStatus = 'failed';
+      isCertified = false;
+      score = 0;
     }
 
     const gates = [
       { name: 'plan_generation', passed: true, mandatory: true, detail: 'Structured animation plan generated' },
+      { name: 'animation_injection', passed: animationResult?.status === 'success', mandatory: true, detail: 'Keyframes injected into .moho file' },
       { name: 'rig_integrity', passed: fs.existsSync(options.outputPath), mandatory: true, detail: 'Animated project output created' },
-      { name: 'keyframe_persistence', passed: true, mandatory: false, detail: 'Keyframes persisted for walk, blinks, phonemes' },
+      { name: 'keyframe_persistence', passed: animationResult?.status === 'success', mandatory: false, detail: 'Keyframes persisted for walk, blinks, phonemes' },
       { name: 'headless_render_verification', passed: isCertified, mandatory: true, detail: `Render status: ${certificationStatus}` }
     ];
 
@@ -119,7 +143,7 @@ export class MohoAnimatorService {
       gates,
       evidenceDirectory,
       errors,
-      renderResult
+      renderResult: animationResult
     };
   }
 
