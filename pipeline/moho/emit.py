@@ -12,6 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 from ..pir.schema import Channel, Part, Rig
+from .native_factory import NativeMohoFactory
 
 _TPL_DIR = Path(__file__).parent / "templates"
 
@@ -106,18 +107,38 @@ def _bone_dict(rig: Rig) -> list[dict]:
     return out
 
 
-def _part_layer(part: Part, name_to_idx: dict[str, int]) -> dict:
+def _part_layer(
+    part: Part,
+    name_to_idx: dict[str, int],
+    factory: NativeMohoFactory,
+) -> dict:
     tpl_name = {"bone_container": "BoneLayer.json", "switch": "SwitchLayer.json",
                 "mesh": "MeshLayer.json", "image": "ImageLayer.json",
                 "group": "GroupLayer.json"}.get(part.type)
     if tpl_name is None:
         raise ValueError(f"unknown part type: {part.type}")
-    layer = _load_tpl(tpl_name)
+    parent_bone = (name_to_idx.get(part.bone, -1) if part.bone
+                   else part.parent_bone_raw)
+    if part.type == "mesh":
+        mesh = copy.deepcopy(part.geometry_raw or {
+            "type": "Mesh",
+            "points": [],
+            "curves": [],
+            "shapes": [],
+            "groups": [],
+            "next_shape_id": 0,
+            "curve_interpretation": 0,
+        })
+        for point in mesh.get("points", []):
+            if isinstance(point.get("parent"), str):
+                point["parent"] = name_to_idx.get(point["parent"], -1)
+        layer = factory.mesh_layer(part.name, mesh, parent_bone)
+    else:
+        layer = _load_tpl(tpl_name)
     layer["name"] = part.name
     layer["visible"] = part.visible
     layer["origin"] = {"x": part.origin[0], "y": part.origin[1]}
-    layer["parent_bone"] = (name_to_idx.get(part.bone, -1) if part.bone
-                            else part.parent_bone_raw)
+    layer["parent_bone"] = parent_bone
     layer["uuid"] = str(uuid.uuid4())
     layer["random_num"] = 0
     layer["masking"] = part.masking
@@ -130,21 +151,6 @@ def _part_layer(part: Part, name_to_idx: dict[str, int]) -> dict:
         _configure_image_layer(layer, part.image_ref)
     if part.transforms:
         layer["transforms"] = {k: _channel_dict(v) for k, v in part.transforms.items()}
-    if part.type == "mesh":
-        if part.geometry_raw:
-            m = copy.deepcopy(part.geometry_raw)
-            # Если parent_bone у точек указан как имя кости, сопоставляем с индексом
-            for pt in m.get("points", []):
-                if isinstance(pt.get("parent"), str):
-                    pt["parent"] = name_to_idx.get(pt["parent"], -1)
-            layer["mesh"] = m
-        else:
-            layer["mesh"] = {
-                "type": "Mesh", "points": [], "curves": [], "shapes": [],
-                "groups": [], "shape_order": [], "next_shape_id": 0,
-                "anim_shape_order": {"type": "Int", "ref": False, "mute": False,
-                                     "when": [0], "val": [0], "interp": []},
-                "curve_interpretation": 0}
     if part.type == "switch":
         if part.switch_channel is not None:
             ch = _channel_dict(part.switch_channel)
@@ -156,9 +162,15 @@ def _part_layer(part: Part, name_to_idx: dict[str, int]) -> dict:
                 "type": "String", "ref": False, "mute": False, "when": [0],
                 "val": [part.switch_states[0] if part.switch_states else ""],
                 "interp": [dict(_DEFAULT_INTERP[0])]}
-        layer["layers"] = [_part_layer(c, name_to_idx) for c in part.children]
+        layer["layers"] = [
+            _part_layer(child, name_to_idx, factory)
+            for child in part.children
+        ]
     elif part.type in ("group", "bone_container"):
-        layer["layers"] = [_part_layer(c, name_to_idx) for c in part.children]
+        layer["layers"] = [
+            _part_layer(child, name_to_idx, factory)
+            for child in part.children
+        ]
         if part.type == "bone_container" and part.children:
             pass
     return layer
@@ -193,7 +205,7 @@ def _configure_image_layer(layer: dict, image_ref: str) -> None:
 
 _DOUBLE_KEYS = {"x", "y", "z", "v1", "v2", "length", "strength", "angle",
                 "min_constraint", "max_constraint", "width", "height",
-                "noise_amp", "noise_interval", "noise_scale"}
+                "noise_amp", "noise_scale"}
 
 
 def _norm_float(v: float) -> float:
@@ -278,8 +290,9 @@ def build_doc(rig: Rig) -> dict:
         "when": [], "val": [], "interp": []})
     doc["layers"] = []
     name_to_idx = {b.id: i for i, b in enumerate(rig.bones)}
+    factory = NativeMohoFactory()
     for part in rig.root_parts:
-        layer = _part_layer(part, name_to_idx)
+        layer = _part_layer(part, name_to_idx, factory)
         if part.type == "bone_container":
             skel = {"type": "Skeleton",
                     "binding_mode": rig.extras.get("binding_mode", 1),
