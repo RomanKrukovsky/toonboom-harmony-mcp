@@ -1,52 +1,74 @@
-import path from 'path';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
+import path from 'path';
 import { MohoAnimatorService } from '../src/services/mohoAnimatorEngine/index.js';
 
-const PROJECT_ROOT = path.resolve(__dirname, '..');
-const CERTIFIED_RIG = path.join(PROJECT_ROOT, 'docs/evidence/moho-stage1-humanoid/stage1_production_hero.moho');
 
 describe('moho.animate.from_brief', () => {
-  const tempDir = path.join(PROJECT_ROOT, 'temp_moho_anim');
-  const outputPath = path.join(tempDir, 'output.moho');
+  let tempDir: string;
+  let rigPath: string;
 
   beforeAll(() => {
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    tempDir = path.resolve(__dirname, '../temp_moho_anim_test');
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    fs.mkdirSync(tempDir, { recursive: true });
+    rigPath = path.join(tempDir, 'source.moho');
+    execFileSync('python3', [
+      '-c',
+      'import sys; from pipeline.riggen.master_character_compiler import compile_master_character; compile_master_character(name="AnimatorSource", out_path=sys.argv[1], canvas_w=400, canvas_h=600)',
+      rigPath
+    ], {
+      cwd: path.resolve(__dirname, '..'),
+      env: { ...process.env, PYTHONPATH: path.resolve(__dirname, '..') }
+    });
   });
 
   afterAll(() => {
-    // Don't clean up so we can inspect the output
-    // if (fs.existsSync(tempDir)) {
-    //   fs.rmSync(tempDir, { recursive: true, force: true });
-    // }
+    fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it('should generate an animation plan and animate the rig', async () => {
+  it('injects animation and certifies distinct native Moho renders', async () => {
+    const outputPath = path.join(tempDir, 'animated.moho');
     const result = await MohoAnimatorService.animateFromBrief({
-      rigPath: CERTIFIED_RIG,
+      rigPath,
       briefText: 'Character walks in, blinks, says Hello, and camera pushes in',
       durationFrames: 60,
       fps: 24,
-      resolution: { width: 1920, height: 1080 },
+      resolution: { width: 400, height: 600 },
       emotion: 'happy',
       dialogueLines: [{ text: 'Hello', startFrame: 10, endFrame: 20 }],
-      outputPath: outputPath,
+      outputPath,
       cameraConstraints: 'push-in'
     });
-    
-    expect(result.animationPlan).toBeDefined();
-    expect(result.animationPlan.blinks.length).toBeGreaterThan(0);
-    expect(result.animationPlan.phonemes.length).toBe(1);
-    expect(result.animationPlan.phonemes[0].word).toBe('Hello');
-    expect(result.animationPlan.camera[0].type).toBe('push-in');
-    
-    // Check files
-    expect(fs.existsSync(path.join(result.evidenceDirectory, 'animation_plan.json'))).toBe(true);
-    expect(fs.existsSync(result.outputPath)).toBe(true);
 
-    // Dry run render check or certified/failed
-    expect(['dry_run', 'certified', 'failed']).toContain(result.status);
-    expect(result.gates.length).toBeGreaterThan(0);
+    expect(result.status).toBe('certified');
+    expect(result.certified).toBe(true);
+    expect(result.score).toBeGreaterThanOrEqual(95);
+    expect(result.errors).toEqual([]);
+    expect(result.gates.filter(gate => gate.mandatory).every(gate => gate.passed)).toBe(true);
+    expect(fs.existsSync(outputPath)).toBe(true);
+    expect(fs.existsSync(path.join(result.evidenceDirectory, 'animation-report.json'))).toBe(true);
+    expect(result.renderResult.frame_differences.every((value: number) => value > 0)).toBe(true);
+    expect(result.renderResult.applied).toContain('camera:push-in');
+    expect(result.renderResult.applied).toContain('hair-follow-through');
+  }, 45000);
+
+  it('fails closed when the input rig does not exist', async () => {
+    const outputPath = path.join(tempDir, 'missing-output.moho');
+    const result = await MohoAnimatorService.animateFromBrief({
+      rigPath: path.join(tempDir, 'missing.moho'),
+      briefText: 'Walk',
+      durationFrames: 30,
+      fps: 24,
+      resolution: { width: 400, height: 600 },
+      emotion: 'neutral',
+      dialogueLines: [],
+      outputPath,
+      cameraConstraints: 'static'
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.certified).toBe(false);
+    expect(fs.existsSync(outputPath)).toBe(false);
   });
 });

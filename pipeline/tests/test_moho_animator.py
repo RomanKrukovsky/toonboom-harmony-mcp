@@ -1,42 +1,113 @@
+"""Behavioral tests for the native Moho animation stage."""
+
+from __future__ import annotations
+
+import hashlib
 import os
-import json
 import tempfile
 import unittest
 from pathlib import Path
 
+from pipeline.moho.extract import extract_from_file
+from pipeline.riggen.master_character_compiler import compile_master_character
+from pipeline.tools.animate_moho import animate_and_certify
+
+
+MOHO = Path(os.environ.get(
+    "MOHO_EXECUTABLE",
+    "/Applications/Moho.app/Contents/MacOS/Moho",
+))
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _animation_plan() -> dict:
+    return {
+        "actions": [{"type": "walk", "startFrame": 1, "endFrame": 40}],
+        "keyPoses": [{"frame": 30, "pose": "happy"}],
+        "gaze": [{"target": "camera", "startFrame": 1, "endFrame": 60}],
+        "blinks": [{"frame": 15, "duration": 3}],
+        "phonemes": [{
+            "word": "Hello",
+            "startFrame": 10,
+            "endFrame": 20,
+            "phonemeSequence": ["rest", "A", "E", "O", "rest"],
+        }],
+        "gestures": [{"frame": 20, "type": "hand-swap", "newHand": "point"}],
+        "ikTargets": [{"bone": "Foot_L", "lock": True, "frame": 1}],
+        "secondaryMotion": [{"type": "hair-follow-through", "magnitude": 0.5}],
+        "camera": [{"type": "push-in", "startFrame": 1, "endFrame": 60, "scaleZ": 0.5}],
+        "inspectionFrames": [1, 30, 60],
+    }
+
 
 class MohoAnimatorTests(unittest.TestCase):
-    def test_moho_animator_plan_generation(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            plan_path = Path(tmp_dir) / "plan.json"
+    @unittest.skipUnless(MOHO.is_file(), "real Moho is not installed")
+    def test_applies_plan_and_certifies_distinct_native_frames(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source.moho"
+            output = root / "animated.moho"
+            evidence = root / "evidence"
+            compile_master_character(
+                name="AnimatedHero",
+                out_path=str(source),
+                canvas_w=400,
+                canvas_h=600,
+            )
+            source_hash = _sha256(source)
 
-            dummy_plan = {
-                "scenes": [{"id": 1, "duration": 120}],
-                "beats": [],
-                "actions": [{"type": "walk", "startFrame": 1, "endFrame": 40}],
-                "keyPoses": [],
-                "transitions": [],
-                "gaze": [],
-                "blinks": [{"frame": 15, "duration": 3}],
-                "phonemes": [{"word": "Hello", "phonemeSequence": ["rest", "A", "O", "rest"]}],
-                "gestures": [],
-                "ikTargets": [],
-                "secondaryMotion": [],
-                "camera": [{"type": "push-in", "startFrame": 1, "endFrame": 120, "scaleZ": 0.5}],
-                "inspectionFrames": [1, 60, 120]
-            }
+            result = animate_and_certify(
+                str(source),
+                _animation_plan(),
+                str(output),
+                str(evidence),
+            )
 
-            with open(plan_path, "w") as f:
-                json.dump(dummy_plan, f)
+            self.assertEqual(result["status"], "certified", result["errors"])
+            self.assertTrue(result["certified"])
+            self.assertTrue(output.is_file())
+            self.assertEqual(_sha256(source), source_hash)
+            self.assertTrue(all(
+                gate["passed"] for gate in result["gates"] if gate["mandatory"]
+            ))
+            self.assertTrue(all(value > 0 for value in result["frame_differences"]))
 
-            self.assertTrue(plan_path.exists())
+            animated = extract_from_file(str(output))
+            bones = {bone.id: bone for bone in animated.bones}
+            self.assertIn(15, bones["Eyes Switch"].angle_channel.when)
+            self.assertIn(10, bones["Mouth Switch"].angle_channel.when)
+            self.assertIn(30, bones["Hair Helper"].angle_channel.when)
+            self.assertGreaterEqual(
+                len(animated.extras["animatedValues"]["camera_zoom"]["when"]),
+                3,
+            )
+            hand_switch = next(
+                part for part in animated.walk_parts()
+                if part.type == "switch" and part.name == "Hand Switch L"
+            )
+            self.assertIn("Point", hand_switch.switch_channel.val)
 
-            with open(plan_path, "r") as f:
-                loaded_plan = json.load(f)
+    def test_missing_required_rig_controls_fails_without_output(self):
+        fixture = Path("fixtures/moho_reference/gramps_rig.moho.bak").resolve()
+        if not fixture.is_file():
+            self.skipTest("minimal Moho fixture is unavailable")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "must_not_exist.moho"
 
-            self.assertEqual(loaded_plan["camera"][0]["type"], "push-in")
-            self.assertEqual(len(loaded_plan["phonemes"]), 1)
-            self.assertEqual(loaded_plan["blinks"][0]["frame"], 15)
+            result = animate_and_certify(
+                str(fixture),
+                _animation_plan(),
+                str(output),
+                str(Path(temp_dir) / "evidence"),
+            )
+
+            self.assertEqual(result["status"], "failed")
+            self.assertFalse(result["certified"])
+            self.assertFalse(output.exists())
+            self.assertTrue(result["errors"])
 
 
 if __name__ == "__main__":
