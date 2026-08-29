@@ -1,26 +1,24 @@
-"""Real Moho Visual QA and Automated Project Repair Engine.
-
-Audits rendered frames and structural channels, diagnoses defects, applies targeted
-modifications directly to the .moho project archive, and re-certifies in Moho.
-"""
+"""Measured visual QA and deterministic repairs for Moho projects."""
 
 from __future__ import annotations
 
-import json
 import math
-import os
-import shutil
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
-from PIL import Image, ImageChops
+from PIL import Image
 
+from ..pir.schema import Bone, Channel, Rig
+from ..tools.moho_readiness import diagnostic_differences
 from .emit import emit
 from .extract import extract_from_file
-from ..pir.schema import Channel, Part, Rig
-from ..tools.moho_native_acceptance import accept_project
+
+
+INTERP = {
+    "im": 1, "v1": -1.0, "v2": -1.0,
+    "in": 1, "h": 0, "s": False, "t": 0,
+}
 
 
 @dataclass
@@ -31,218 +29,250 @@ class QADefect:
     description: str
     layer_id: Optional[str] = None
     bone_id: Optional[str] = None
-    meta: Optional[Dict[str, Any]] = None
+    meta: Optional[dict[str, Any]] = None
+
+
+def _frame_metrics(path: str) -> dict[str, Any]:
+    with Image.open(path) as source:
+        image = source.convert("RGB")
+    background = image.getpixel((0, 0))
+    foreground = [
+        max(
+            abs(channel - background[index])
+            for index, channel in enumerate(pixel)
+        ) > 12
+        for pixel in image.get_flattened_data()
+    ]
+    mask = Image.new("1", image.size)
+    mask.putdata(foreground)
+    bounds = mask.getbbox()
+    if bounds is None:
+        return {
+            "fraction": 0.0, "bounds": None,
+            "centroid": (0.5, 0.5), "width": image.width, "height": image.height,
+        }
+    total = sum(foreground)
+    x_sum = 0
+    y_sum = 0
+    for index, is_foreground in enumerate(foreground):
+        if is_foreground:
+            x_sum += index % image.width
+            y_sum += index // image.width
+    return {
+        "fraction": total / float(image.width * image.height),
+        "bounds": bounds,
+        "centroid": (
+            x_sum / float(total * image.width),
+            y_sum / float(total * image.height),
+        ),
+        "width": image.width,
+        "height": image.height,
+    }
+
+
+def _has_meaningful_keys(bone: Optional[Bone]) -> bool:
+    if bone is None or bone.angle_channel is None:
+        return False
+    positive_values = [
+        value for frame, value in zip(bone.angle_channel.when, bone.angle_channel.val)
+        if int(frame) > 0
+    ]
+    return len(positive_values) >= 2 and len({round(float(value), 6) for value in positive_values}) >= 2
+
+
+def _dial_value(bone: Bone, index: int, fallback: float) -> float:
+    for action in bone.dial_actions or []:
+        values = (action.get("pose") or {}).get("val", [])
+        if index < len(values):
+            return float(values[index])
+    return fallback
+
+
+def _merge_angle_keys(bone: Bone, values: dict[int, float]) -> None:
+    existing_when = list(bone.angle_channel.when) if bone.angle_channel else [0]
+    existing_val = list(bone.angle_channel.val) if bone.angle_channel else [bone.angle]
+    pairs = {int(frame): float(value) for frame, value in zip(existing_when, existing_val)}
+    pairs.update(values)
+    sorted_pairs = sorted(pairs.items())
+    bone.angle_channel = Channel(
+        type="Val",
+        when=[pair[0] for pair in sorted_pairs],
+        val=[pair[1] for pair in sorted_pairs],
+        interp=[dict(INTERP) for _ in sorted_pairs],
+    )
 
 
 class MohoVisualQARepairEngine:
+    """Audit measurable defects and apply only deterministic, verifiable fixes."""
+
     def __init__(self, project_path: str, max_passes: int = 5):
         self.project_path = str(Path(project_path).resolve())
         self.max_passes = max_passes
         self.current_pass = 0
-        self.defects: List[QADefect] = []
-        self.repair_log: List[Dict[str, Any]] = []
+        self.defects: list[QADefect] = []
+        self.repair_log: list[dict[str, Any]] = []
+
+    def _load_rig(self) -> tuple[Optional[Rig], list[QADefect]]:
+        if not Path(self.project_path).is_file():
+            return None, [QADefect(
+                "native_corruption", 0, "critical",
+                f"Project does not exist: {self.project_path}",
+            )]
+        try:
+            return extract_from_file(self.project_path), []
+        except (OSError, ValueError, KeyError) as error:
+            return None, [QADefect(
+                "native_corruption", 0, "critical", f"Unreadable Moho project: {error}",
+            )]
 
     def audit_project_and_frames(
         self,
-        frames_data: Optional[List[Dict[str, Any]]] = None,
-        rendered_frames: Optional[List[str]] = None,
-    ) -> List[QADefect]:
-        """Audit real .moho project structure and rendered frames for defects."""
-        defects: List[QADefect] = []
-
-        # 1. Structural audit of the .moho project
-        rig: Optional[Rig] = None
-        if os.path.isfile(self.project_path):
-            try:
-                rig = extract_from_file(self.project_path)
-            except Exception as e:
-                defects.append(QADefect("native_corruption", 0, "critical", f"Corrupt moho file: {e}"))
-
-        if rig:
-            # Check for control bone leaks (non-zero strength on dial bones)
+        frames_data: Optional[list[dict[str, Any]]] = None,
+        rendered_frames: Optional[list[str]] = None,
+        frame_numbers: Optional[list[int]] = None,
+    ) -> list[QADefect]:
+        defects: list[QADefect] = []
+        rig, load_defects = self._load_rig()
+        defects.extend(load_defects)
+        if rig is not None:
             for bone in rig.bones:
                 if bone.is_dial and bone.strength > 0.0:
                     defects.append(QADefect(
                         "control_bones_visible", 0, "high",
-                        f"Control dial bone '{bone.id}' has non-zero strength ({bone.strength})",
-                        bone_id=bone.id
+                        f"Control '{bone.id}' deforms artwork with strength {bone.strength}",
+                        bone_id=bone.id,
                     ))
-                if bone.is_dial and bone.hidden is False:
-                    # Dials with non-zero strength should be shy/clean
-                    pass
+            eyes = rig.bone_by_id("Eyes Switch")
+            mouth = rig.bone_by_id("Mouth Switch")
+            if not _has_meaningful_keys(eyes):
+                defects.append(QADefect(
+                    "missing_blink", 24, "medium", "Eyes Switch has no open/closed animation",
+                    bone_id="Eyes Switch",
+                ))
+            if not _has_meaningful_keys(mouth):
+                defects.append(QADefect(
+                    "frozen_mouth", 36, "medium", "Mouth Switch has no changing phoneme keys",
+                    bone_id="Mouth Switch",
+                ))
+            visible_meshes = [
+                part for part in rig.walk_parts() if part.type == "mesh" and part.visible
+            ]
+            if not visible_meshes:
+                defects.append(QADefect(
+                    "all_meshes_hidden", 0, "critical", "Every mesh layer is hidden",
+                ))
 
-            # Check for missing blinks in animations longer than 5 seconds (120 frames)
-            eyes_bone = next((b for b in rig.bones if "Eyes" in b.id), None)
-            if eyes_bone and eyes_bone.angle_channel:
-                keys = eyes_bone.angle_channel.when
-                if len(keys) <= 2:
-                    defects.append(QADefect("missing_blink", 24, "medium", "No eye blink keys found in animation"))
+        paths = rendered_frames or []
+        numbers = frame_numbers or list(range(1, len(paths) + 1))
+        measured: list[dict[str, Any]] = []
+        for frame, path in zip(numbers, paths):
+            try:
+                metrics = _frame_metrics(path)
+            except (OSError, ValueError) as error:
+                defects.append(QADefect(
+                    "invalid_render", frame, "critical", f"Cannot inspect rendered frame: {error}",
+                ))
+                continue
+            measured.append(metrics)
+            if metrics["fraction"] < 0.005:
+                defects.append(QADefect(
+                    "empty_frame", frame, "critical", "Character occupies less than 0.5% of frame",
+                    meta=metrics,
+                ))
+            bounds = metrics["bounds"]
+            if bounds is not None:
+                width = metrics["width"]
+                height = metrics["height"]
+                if bounds[0] <= 1 or bounds[1] <= 1 or bounds[2] >= width - 1:
+                    defects.append(QADefect(
+                        "character_clipping", frame, "high", "Character silhouette touches frame edge",
+                        meta=metrics,
+                    ))
 
-            # Check for frozen mouth during speech
-            mouth_bone = next((b for b in rig.bones if "Mouth" in b.id), None)
-            if mouth_bone and mouth_bone.angle_channel:
-                keys = mouth_bone.angle_channel.when
-                if len(keys) <= 2:
-                    defects.append(QADefect("frozen_mouth", 36, "medium", "Static/frozen mouth dial keys"))
+        for index in range(1, len(measured)):
+            previous = measured[index - 1]
+            current = measured[index]
+            frame = numbers[index]
+            previous_area = previous["fraction"]
+            current_area = current["fraction"]
+            if previous_area > 0 and (current_area / previous_area > 1.8 or current_area / previous_area < 0.55):
+                defects.append(QADefect(
+                    "silhouette_explosion", frame, "high", "Silhouette area changes beyond safe limits",
+                ))
+            distance = math.dist(previous["centroid"], current["centroid"])
+            if distance > 0.35:
+                defects.append(QADefect(
+                    "position_jump", frame, "high", "Character centroid jumps more than 35% of frame",
+                ))
 
-        # 2. Frame-level visual audit
-        if frames_data:
-            blink_tracker = 0
-            for idx, frame in enumerate(frames_data):
-                f_num = frame.get("frame_number", idx)
-                visible_pixels = frame.get("visible_pixels", 0)
-                canvas_area = frame.get("canvas_area", 1920 * 1080)
-                if canvas_area > 0 and (visible_pixels / canvas_area) < 0.005:
-                    defects.append(QADefect("empty_frame", f_num, "high", "Frame has <0.5% visible character pixels"))
+        if len(paths) >= 2:
+            differences = diagnostic_differences(paths)
+            average_area = sum(item["fraction"] for item in measured) / max(1, len(measured))
+            threshold = max(0.001, average_area * 0.01)
+            if differences and max(differences) < threshold:
+                defects.append(QADefect(
+                    "frozen_animation", numbers[-1], "high",
+                    f"Rendered frames do not change enough: {differences}",
+                ))
 
-                if frame.get("is_clipping", False):
-                    defects.append(QADefect("character_clipping", f_num, "medium", "Character is clipped at viewport bounds"))
-
-                if frame.get("z_order_error", False):
-                    defects.append(QADefect("z_order_error", f_num, "high", "Z-order sorting error on limbs/head"))
-
-                if frame.get("joint_seam_tear", False):
-                    defects.append(QADefect("joint_seam_tear", f_num, "high", "Joint seam tear/transparent gap detected", bone_id=frame.get("bone_id")))
-
-                if frame.get("missing_blink", False):
-                    defects.append(QADefect("missing_blink", f_num, "medium", "Missing eye blink"))
-
-                if frame.get("frozen_mouth", False):
-                    defects.append(QADefect("frozen_mouth", f_num, "medium", "Frozen mouth during dialogue line"))
-
-                if frame.get("control_bones_visible", False):
-                    defects.append(QADefect("control_bones_visible", f_num, "high", "Control bones visible in render"))
-
+        for frame in frames_data or []:
+            frame_number = int(frame.get("frame_number", 0))
+            if frame.get("missing_blink"):
+                defects.append(QADefect("missing_blink", frame_number, "medium", "Missing blink"))
+            if frame.get("frozen_mouth"):
+                defects.append(QADefect("frozen_mouth", frame_number, "medium", "Frozen mouth"))
+        self.defects = defects
         return defects
 
-    def apply_fixes_to_project(self, defects: List[QADefect]) -> int:
-        """Applies actual modifications to the .moho project archive on disk."""
-        if not os.path.isfile(self.project_path) or not defects:
+    def apply_fixes_to_project(self, defects: list[QADefect]) -> int:
+        rig, load_defects = self._load_rig()
+        if rig is None or load_defects:
             return 0
-
-        try:
-            rig = extract_from_file(self.project_path)
-        except Exception:
-            return 0
-
-        fixes_applied = 0
-        bone_map = {b.id: b for b in rig.bones}
-
+        applied = 0
+        bone_map = {bone.id: bone for bone in rig.bones}
+        repaired_types: set[tuple[str, Optional[str]]] = set()
         for defect in defects:
-            fix_action = None
-
+            identity = (defect.issue_type, defect.bone_id)
+            if identity in repaired_types:
+                continue
+            action: Optional[str] = None
             if defect.issue_type == "control_bones_visible":
-                target_bone = bone_map.get(defect.bone_id) if defect.bone_id else None
-                if target_bone:
-                    target_bone.strength = 0.0
-                    target_bone.shy = True
-                    fix_action = f"Reset strength to 0.0 and enabled shy for bone '{target_bone.id}'"
-                else:
-                    for b in rig.bones:
-                        if b.is_dial:
-                            b.strength = 0.0
-                            b.shy = True
-                    fix_action = "Reset strength to 0.0 for all dial/control bones"
-
+                bone = bone_map.get(defect.bone_id or "")
+                if bone is not None and bone.strength != 0.0:
+                    bone.strength = 0.0
+                    bone.shy = True
+                    action = f"Set '{bone.id}' strength to 0 and enabled shy"
             elif defect.issue_type == "missing_blink":
-                eyes_bone = next((b for b in rig.bones if "Eyes" in b.id), None)
-                if eyes_bone:
-                    frame = defect.frame if defect.frame > 0 else 24
-                    current_keys = list(eyes_bone.angle_channel.when) if eyes_bone.angle_channel else [0]
-                    current_vals = list(eyes_bone.angle_channel.val) if eyes_bone.angle_channel else [0.0]
-                    pairs = dict(zip(current_keys, current_vals))
-                    pairs[frame] = math.radians(-15)
-                    if (frame + 2) not in pairs:
-                        pairs[frame + 2] = 0.0
-                    sorted_pairs = sorted(pairs.items())
-                    eyes_bone.angle_channel = Channel(
-                        type="Val",
-                        when=[p[0] for p in sorted_pairs],
-                        val=[p[1] for p in sorted_pairs],
-                        interp=[{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0} for _ in sorted_pairs]
-                    )
-                    fix_action = f"Inserted natural blink keyframe at frame {frame}"
-
-            elif defect.issue_type == "frozen_mouth":
-                mouth_bone = next((b for b in rig.bones if "Mouth" in b.id), None)
-                if mouth_bone:
-                    frame = defect.frame if defect.frame > 0 else 36
-                    current_keys = list(mouth_bone.angle_channel.when) if mouth_bone.angle_channel else [0]
-                    current_vals = list(mouth_bone.angle_channel.val) if mouth_bone.angle_channel else [0.0]
-                    pairs = dict(zip(current_keys, current_vals))
-                    pairs[frame] = math.radians(36)
-                    if (frame + 4) not in pairs:
-                        pairs[frame + 4] = 0.0
-                    sorted_pairs = sorted(pairs.items())
-                    mouth_bone.angle_channel = Channel(
-                        type="Val",
-                        when=[p[0] for p in sorted_pairs],
-                        val=[p[1] for p in sorted_pairs],
-                        interp=[{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0} for _ in sorted_pairs]
-                    )
-                    fix_action = f"Inserted speech mouth keyframe at frame {frame}"
-
-            elif defect.issue_type == "z_order_error":
-                # Fix layer ordering in root parts
-                if rig.root_parts and rig.root_parts[0].children:
-                    children = rig.root_parts[0].children
-                    # Reorder so Head and Arms are properly layered around Torso
-                    head = [c for c in children if "head" in c.name.lower() or "head" in c.id.lower()]
-                    torso = [c for c in children if "torso" in c.name.lower() or "torso" in c.id.lower()]
-                    others = [c for c in children if c not in head and c not in torso]
-                    rig.root_parts[0].children = others + torso + head
-                    fix_action = f"Restored canonical Z-layer hierarchy (Head over Torso) at frame {defect.frame}"
-
-            elif defect.issue_type == "joint_seam_tear":
-                fix_action = f"Adjusted joint overlap geometry expansion (+15% circular padding) for {defect.bone_id or 'limbs'}"
-
-            elif defect.issue_type == "empty_frame":
-                fix_action = f"Restored layer visibility flags and reset frame 0 channels at frame {defect.frame}"
-
-            if fix_action:
-                self.repair_log.append({
-                    "pass": self.current_pass,
-                    "frame": defect.frame,
-                    "issue": defect.issue_type,
-                    "action": fix_action,
-                })
-                fixes_applied += 1
-
-        if fixes_applied > 0:
-            emit(rig, self.project_path)
-
-        return fixes_applied
-
-    def run_repair_loop(self, get_frames_cb: Optional[Callable[[int], List[Dict[str, Any]]]] = None) -> Tuple[bool, List[Dict[str, Any]]]:
-        """Runs iterative detection, repair, and re-certification."""
-        for self.current_pass in range(1, self.max_passes + 1):
-            frames_data = get_frames_cb(self.current_pass) if get_frames_cb else None
-            self.defects = self.audit_project_and_frames(frames_data=frames_data)
-
-            if not self.defects:
-                self.repair_log.append({
-                    "pass": self.current_pass,
-                    "status": "certified",
-                    "message": "All QA checks passed. Project certified.",
-                })
-                return True, self.repair_log
-
-            fixes_applied = self.apply_fixes_to_project(self.defects)
-            self.repair_log.append({
-                "pass": self.current_pass,
-                "defects_found": len(self.defects),
-                "fixes_applied": fixes_applied,
-            })
-
-            # Check if fixes resolved issues
-            if not get_frames_cb:
-                remaining = self.audit_project_and_frames()
-                if not remaining:
-                    self.repair_log.append({
-                        "pass": self.current_pass,
-                        "status": "certified",
-                        "message": "Project repaired and verified clean.",
+                eyes = bone_map.get("Eyes Switch")
+                if eyes is not None:
+                    _merge_angle_keys(eyes, {
+                        24: _dial_value(eyes, 1, eyes.angle + math.radians(15)),
+                        26: _dial_value(eyes, 0, eyes.angle),
                     })
-                    return True, self.repair_log
-
-        return False, self.repair_log
+                    action = "Inserted closed/open Eyes Switch keys at frames 24 and 26"
+            elif defect.issue_type == "frozen_mouth":
+                mouth = bone_map.get("Mouth Switch")
+                if mouth is not None:
+                    _merge_angle_keys(mouth, {
+                        36: _dial_value(mouth, 1, mouth.angle + math.radians(20)),
+                        40: _dial_value(mouth, 0, mouth.angle),
+                    })
+                    action = "Inserted A/rest Mouth Switch keys at frames 36 and 40"
+            elif defect.issue_type == "all_meshes_hidden":
+                hidden = [part for part in rig.walk_parts() if part.type == "mesh" and not part.visible]
+                if hidden:
+                    for part in hidden:
+                        part.visible = True
+                    action = f"Restored visibility for {len(hidden)} mesh layers"
+            if action is not None:
+                repaired_types.add(identity)
+                applied += 1
+                self.repair_log.append({
+                    "pass": self.current_pass,
+                    "issue": defect.issue_type,
+                    "frame": defect.frame,
+                    "action": action,
+                })
+        if applied:
+            emit(rig, self.project_path)
+        return applied
