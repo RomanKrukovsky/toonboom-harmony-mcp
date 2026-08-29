@@ -1,52 +1,204 @@
-"""Master Character Compiler — Assembles full-body vector character rigs for Moho 14.
+"""Compile a complete procedural biped into a native Moho project."""
 
-Guarantees:
-1. 100% Valid C++ Type-Compliant Moho JSON (via pipeline templates).
-2. Complete visible vector geometry attached to bone tree (Head 8-turn, Mouths, Eyes, Brows, Torso, Arms, Legs, Hands).
-3. Working Smart Dials (Head Switch, Mouth Switch, Eyes Switch, Hand Switches) and IK Target pins.
-4. Clean Frame 0 and zero console warnings.
-"""
 from __future__ import annotations
 
-import copy
+import json
 import math
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
-from ..pir.schema import Bone, Channel, Part, Rig
-from ..moho.emit import emit
-from .skeleton import BONE_TREE, add_leg_ik_targets, build_bones, to_moho_coords
-from .modules import (
-    HEAD_TURN_ANGLES, HEAD_TURN_CONSTRAINTS, PHONEMES_FULL, PHONEMES_COMPACT,
-    BASE_INTERP, DIAL_KEY_INTERP, DIAL_FIRST_INTERP, SWITCH_STEP_INTERP,
-    make_mesh_part, make_vector_switch, attach_simple_dial, wire_dial,
-    make_bone_group, head_turn_map
-)
-from .vector_shapes import (
-    generate_head_skull_mesh, generate_eye_mesh, generate_brow_mesh,
-    generate_mouth_mesh, generate_torso_mesh, generate_limb_mesh,
-    generate_hand_mesh, HAND_POSES, assemble_mesh, make_point, make_curve, make_shape
-)
-from .artgen import HEAD_VIEWS, MOUTH_VIEWS, FACE_VIEWS, PHONEMES, EYE_STATES, BROW_STATES
 from ..examples.build_dial_demo import JOINTS
+from ..moho.emit import emit
+from ..pir.schema import Bone, Channel, Part, Rig
+from .artgen import BROW_STATES, HEAD_VIEWS, PHONEMES
+from .humanoid_manifest import build_humanoid_manifest
+from .modules import (
+    BASE_INTERP,
+    HEAD_TURN_ANGLES,
+    HEAD_TURN_CONSTRAINTS,
+    dial_ensure_action,
+    head_turn_map,
+    make_mesh_part,
+    make_vector_switch,
+    simple_dial_vals,
+    wire_dial,
+)
+from .skeleton import add_leg_ik_targets, build_bones
+from .vector_shapes import (
+    HAND_POSES,
+    add_point_morph_action,
+    apply_character_palette,
+    color_from_rgb,
+    combine_meshes,
+    generate_brow_mesh,
+    generate_eye_mesh,
+    generate_hand_mesh,
+    generate_head_skull_mesh,
+    generate_mouth_mesh,
+    generate_segment_mesh,
+    make_polygon_mesh,
+    transform_mesh,
+)
+
+
+DESIGN_WIDTH = 400
+DESIGN_HEIGHT = 600
+DIAGNOSTIC_FRAMES = [1, 12, 24, 36]
+
+
+def _main_relative_position(
+    position: tuple[float, float],
+    main_position: tuple[float, float],
+    main_angle: float,
+) -> tuple[float, float]:
+    dx = position[0] - main_position[0]
+    dy = position[1] - main_position[1]
+    cos_angle = math.cos(-main_angle)
+    sin_angle = math.sin(-main_angle)
+    return (
+        round(dx * cos_angle - dy * sin_angle, 6),
+        round(dx * sin_angle + dy * cos_angle, 6),
+    )
+
+
+def _add_arm_ik_targets(
+    bones: list[Bone],
+    joint_world: dict[str, tuple[float, float]],
+    root_world: dict[str, tuple[float, float]],
+    absolute_angles: dict[str, float],
+) -> None:
+    for side in ("L", "R"):
+        lower_arm = next(bone for bone in bones if bone.id == f"LowerArm {side}")
+        target_name = f"Target Arm {side}"
+        lower_arm.constraints = True
+        lower_arm.min_constraint = -2.8
+        lower_arm.max_constraint = 2.8
+        lower_arm.target_bone = target_name
+        bones.append(Bone(
+            id=target_name,
+            parent="Main",
+            position=_main_relative_position(
+                joint_world[f"hand_{side}"],
+                root_world["Main"],
+                absolute_angles["Main"],
+            ),
+            angle=0.0,
+            length=0.2,
+            strength=0.0,
+            ignored_by_ik=True,
+        ))
+
+
+def _add_diagnostic_target_keys(bones: list[Bone]) -> None:
+    offsets = {
+        "Target Leg L": (0.34, 0.10),
+        "Target Leg R": (-0.24, -0.06),
+        "Target Arm L": (-0.20, 0.16),
+        "Target Arm R": (0.18, -0.14),
+    }
+    for target_name, (dx, dy) in offsets.items():
+        target = next(bone for bone in bones if bone.id == target_name)
+        x, y = target.position
+        target.pos_channel = Channel(
+            type="Vec2",
+            when=[0, 1, 12, 24, 36],
+            val=[
+                {"x": x, "y": y},
+                {"x": x, "y": y},
+                {"x": round(x + dx, 6), "y": round(y + dy, 6)},
+                {"x": x, "y": y},
+                {"x": x, "y": y},
+            ],
+            interp=[dict(BASE_INTERP) for _ in range(5)],
+        )
+
+
+def _mesh_part(name: str, mesh: dict, bone_name: str, z_order: int) -> Part:
+    part = make_mesh_part(
+        f"mesh_{name.lower().replace(' ', '_')}",
+        name,
+        mesh,
+        bone_name,
+        (0.0, 0.0),
+        (0.0, 0.0),
+        0.0,
+    )
+    part.z_order = z_order
+    return part
+
+
+def _vector_switch(
+    switch_id: str,
+    name: str,
+    states: dict[str, dict],
+    bone_name: str,
+    absolute_angles: dict[str, float],
+    z_order: int,
+) -> Part:
+    switch = make_vector_switch(
+        switch_id,
+        name,
+        states,
+        bone_name,
+        lambda _bone: (0.0, 0.0),
+        lambda _state: (0.0, 0.0),
+        absolute_angles,
+        z_start=z_order,
+    )
+    # Mesh points are already bound to the bone. Binding the parent SwitchLayer
+    # as well would apply the same transform twice.
+    switch.bone = None
+    switch.z_order = z_order
+    return switch
+
+
+def _correction_control(name: str, position: tuple[float, float]) -> Bone:
+    control = Bone(
+        id=name,
+        parent=None,
+        position=position,
+        angle=0.0,
+        length=0.22,
+        strength=0.0,
+        constraints=True,
+        min_constraint=-0.5,
+        max_constraint=0.5,
+        is_dial=True,
+    )
+    dial_ensure_action(control, name, [-0.5, 0.0, 0.5])
+    return control
+
+
+def _attach_joint_correction(mesh: dict, action_name: str, side: str) -> None:
+    direction = -1.0 if side == "L" else 1.0
+    add_point_morph_action(
+        mesh,
+        action_name,
+        {
+            0: [(-0.035 * direction, 0.0), (0.0, 0.0), (0.035 * direction, 0.0)],
+            3: [(0.035 * direction, 0.0), (0.0, 0.0), (-0.035 * direction, 0.0)],
+        },
+        frames=[0, 1, 2],
+    )
 
 
 def compile_master_character(
     name: str = "Summer_Smith",
     gender: str = "female",
     skin_rgb: tuple[float, float, float] = (0.95, 0.78, 0.67),
-    hair_rgb: tuple[float, float, float] = (0.90, 0.45, 0.18), # ginger
-    shirt_rgb: tuple[float, float, float] = (0.84, 0.31, 0.51), # pink/magenta
-    pants_rgb: tuple[float, float, float] = (0.94, 0.94, 0.94), # white
+    hair_rgb: tuple[float, float, float] = (0.90, 0.45, 0.18),
+    shirt_rgb: tuple[float, float, float] = (0.84, 0.31, 0.51),
+    pants_rgb: tuple[float, float, float] = (0.20, 0.22, 0.27),
     shoes_rgb: tuple[float, float, float] = (0.12, 0.12, 0.12),
     out_path: str = "./output/Summer_Smith.moho",
     canvas_w: int = 1920,
-    canvas_h: int = 1080
+    canvas_h: int = 1080,
 ) -> str:
-    """Compiles a complete, fully-drawn, fully-articulated .moho production character rig."""
-    
-    # 1. Initialize Rig with Gold Standard Document Metadata
+    """Build a visible, articulated and diagnostically animated humanoid."""
+    if not name.strip():
+        raise ValueError("character name must not be empty")
+    if canvas_w <= 0 or canvas_h <= 0:
+        raise ValueError("canvas dimensions must be positive")
+
     rig = Rig(
         name=name,
         source_program="moho",
@@ -56,322 +208,321 @@ def compile_master_character(
             "version": 1041,
             "major_version": 1,
             "rev_version": 0,
-            "doc_uuid": f"moho_{name.lower()}_{hash(name) & 0xffffffff}",
-            "comment": f"Production rig for {name}"
-        }
-    )
-    
-    rig.extras = {
-        "project_data": {
-            "width": int(canvas_w),
-            "height": int(canvas_h)
+            "comment": f"Production rig for {name} ({gender})",
         },
-        "binding_mode": 1
-    }
-
-    # 2. Build Connected Humanoid Skeleton
-    joints = dict(JOINTS)
-    bones, abs_angle, jw, root_world = build_bones(joints, int(canvas_w), int(canvas_h))
-    add_leg_ik_targets(bones, root_world, abs_angle)
-    
-    name_to_idx = {b.id: i for i, b in enumerate(bones)}
-    head_idx = name_to_idx.get("Head", 4)
-    body_idx = name_to_idx.get("Body", 2)
-    larm_idx = name_to_idx.get("UpperArm L", 5)
-    rarm_idx = name_to_idx.get("UpperArm R", 7)
-    lleg_idx = name_to_idx.get("Thigh L", 9)
-    rleg_idx = name_to_idx.get("Thigh R", 12)
-    lhand_idx = name_to_idx.get("LowerArm L", -1)
-    rhand_idx = name_to_idx.get("LowerArm R", -1)
-
-    # 3. Add Hair Bone
-    hair_bone = Bone(
-        id="Hair_Ponytail",
-        parent="Head",
-        position=(0.0, 0.45),
-        angle=math.radians(-45),
-        length=0.35,
-        strength=0.15
+        extras={
+            "project_data": {
+                "width": int(canvas_w),
+                "height": int(canvas_h),
+                "start_frame": 1,
+                "end_frame": 240,
+                "fps": 24.0,
+            },
+            "binding_mode": 2,
+        },
     )
-    bones.append(hair_bone)
-    name_to_idx["Hair_Ponytail"] = len(bones) - 1
 
-    # 4. Generate All Vector Art MeshLayers
-    head_states: Dict[str, dict] = {}
-    for v in HEAD_VIEWS:
-        head_states[v] = generate_head_skull_mesh(v, parent_bone=head_idx)
+    bones, absolute_angles, joint_world, root_world = build_bones(
+        dict(JOINTS),
+        DESIGN_WIDTH,
+        DESIGN_HEIGHT,
+    )
+    add_leg_ik_targets(bones, root_world, absolute_angles)
+    _add_arm_ik_targets(bones, joint_world, root_world, absolute_angles)
+    _add_diagnostic_target_keys(bones)
+    bones.append(Bone(
+        id="Hair Helper",
+        parent="Head",
+        position=(0.0, 0.42),
+        angle=math.radians(-45),
+        length=0.32,
+        strength=0.12,
+        hidden=True,
+        shy=True,
+        ignored_by_ik=True,
+    ))
+    bones.extend([
+        _correction_control("Elbow Correct L", (-1.35, 0.65)),
+        _correction_control("Elbow Correct R", (1.35, 0.65)),
+        _correction_control("Knee Correct L", (-1.35, 0.20)),
+        _correction_control("Knee Correct R", (1.35, 0.20)),
+    ])
+    bone_index = {bone.id: index for index, bone in enumerate(bones)}
 
-    mouth_states: Dict[str, dict] = {}
-    for p in PHONEMES:
-        mouth_states[p] = generate_mouth_mesh(p, parent_bone=head_idx)
+    def recolor(mesh: dict) -> dict:
+        return apply_character_palette(
+            mesh,
+            skin_rgb,
+            hair_rgb,
+            shirt_rgb,
+            pants_rgb,
+            shoes_rgb,
+        )
 
-    eyes_states: Dict[str, dict] = {}
-    for s in ["open", "blink", "squint", "wide"]:
-        eyes_states[s] = generate_eye_mesh("R", state=s, view="Front", parent_bone=head_idx)
+    head_origin = root_world["Head"]
+    head_states = {
+        view: recolor(transform_mesh(
+            generate_head_skull_mesh(view, parent_bone=bone_index["Head"]),
+            translate=head_origin,
+            scale=(1.25, 1.25),
+        ))
+        for view in HEAD_VIEWS
+    }
+    mouth_states = {
+        phoneme: recolor(transform_mesh(
+            generate_mouth_mesh(phoneme, parent_bone=bone_index["Head"]),
+            translate=head_origin,
+            scale=(1.25, 1.25),
+        ))
+        for phoneme in PHONEMES
+    }
+    eye_states: dict[str, dict] = {}
+    for state in ("open", "closed", "squint", "wide"):
+        eyes = combine_meshes([
+            generate_eye_mesh("L", state=state, parent_bone=bone_index["Head"]),
+            generate_eye_mesh("R", state=state, parent_bone=bone_index["Head"]),
+        ])
+        eye_states[state] = recolor(transform_mesh(
+            eyes,
+            translate=head_origin,
+            scale=(1.25, 1.25),
+        ))
+    brow_states: dict[str, dict] = {}
+    for state in BROW_STATES:
+        brows = combine_meshes([
+            generate_brow_mesh("L", state=state, parent_bone=bone_index["Head"]),
+            generate_brow_mesh("R", state=state, parent_bone=bone_index["Head"]),
+        ])
+        brow_states[state] = recolor(transform_mesh(
+            brows,
+            translate=head_origin,
+            scale=(1.25, 1.25),
+        ))
 
-    brows_states: Dict[str, dict] = {}
-    for s in BROW_STATES:
-        brows_states[s] = generate_brow_mesh("R", state=s, view="Front", parent_bone=head_idx)
+    hand_states: dict[str, dict[str, dict]] = {"L": {}, "R": {}}
+    hand_pose_names = HAND_POSES[:4]
+    for side in ("L", "R"):
+        for pose in hand_pose_names:
+            hand_states[side][pose] = recolor(transform_mesh(
+                generate_hand_mesh(
+                    side,
+                    pose=pose,
+                    parent_bone=bone_index[f"LowerArm {side}"],
+                ),
+                translate=joint_world[f"hand_{side}"],
+                scale=(1.35, 1.35),
+            ))
 
-    hands_l_states = {s: generate_hand_mesh("L", pose=s, parent_bone=lhand_idx) for s in ["default", "fist", "open", "point"]}
-    hands_r_states = {s: generate_hand_mesh("R", pose=s, parent_bone=rhand_idx) for s in ["default", "fist", "open", "point"]}
+    skin = color_from_rgb(skin_rgb)
+    shirt = color_from_rgb(shirt_rgb)
+    pants = color_from_rgb(pants_rgb)
+    shoes = color_from_rgb(shoes_rgb)
+    shoulder_factor = 0.94 if gender.lower() in {"female", "woman"} else 1.0
+    torso_mesh = make_polygon_mesh(
+        [
+            (joint_world["shoulder_L"][0] * shoulder_factor - 0.08,
+             joint_world["shoulder_L"][1] + 0.12),
+            (joint_world["hip_L"][0] - 0.14, joint_world["hip_L"][1] - 0.10),
+            (joint_world["hip_R"][0] + 0.14, joint_world["hip_R"][1] - 0.10),
+            (joint_world["shoulder_R"][0] * shoulder_factor + 0.08,
+             joint_world["shoulder_R"][1] + 0.12),
+        ],
+        fill_color=shirt,
+        parent_bone=bone_index["Body"],
+        smoothness=0.24,
+        name="Torso",
+    )
+    pelvis_mesh = generate_segment_mesh(
+        joint_world["hip_L"], joint_world["hip_R"],
+        0.24, 0.24, pants, bone_index["Pelvis"], "Pelvis", overlap=0.12,
+    )
+    neck_mesh = generate_segment_mesh(
+        joint_world["neck_base"], joint_world["head_base"],
+        0.12, 0.12, skin, bone_index["Neck"], "Neck", overlap=0.06,
+    )
 
-    torso_mesh = generate_torso_mesh(parent_bone=body_idx)
-    larm_mesh = generate_limb_mesh("LArm", parent_bone=larm_idx)
-    rarm_mesh = generate_limb_mesh("RArm", parent_bone=rarm_idx)
-    lleg_mesh = generate_limb_mesh("LLeg", parent_bone=lleg_idx)
-    rleg_mesh = generate_limb_mesh("RLeg", parent_bone=rleg_idx)
+    body_parts = [
+        _mesh_part("Torso", torso_mesh, "Body", 20),
+        _mesh_part("Pelvis", pelvis_mesh, "Pelvis", 19),
+        _mesh_part("Neck", neck_mesh, "Neck", 21),
+    ]
+    segment_specs = [
+        ("UpperArm L", "shoulder_L", "elbow_L", 0.16, 0.13, shirt, "Elbow Correct L"),
+        ("LowerArm L", "elbow_L", "hand_L", 0.14, 0.11, skin, "Elbow Correct L"),
+        ("UpperArm R", "shoulder_R", "elbow_R", 0.16, 0.13, shirt, "Elbow Correct R"),
+        ("LowerArm R", "elbow_R", "hand_R", 0.14, 0.11, skin, "Elbow Correct R"),
+        ("Thigh L", "hip_L", "knee_L", 0.19, 0.16, pants, "Knee Correct L"),
+        ("Shin L", "knee_L", "ankle_L", 0.17, 0.13, pants, "Knee Correct L"),
+        ("Thigh R", "hip_R", "knee_R", 0.19, 0.16, pants, "Knee Correct R"),
+        ("Shin R", "knee_R", "ankle_R", 0.17, 0.13, pants, "Knee Correct R"),
+        ("Foot L", "ankle_L", "toe_L", 0.14, 0.18, shoes, None),
+        ("Foot R", "ankle_R", "toe_R", 0.14, 0.18, shoes, None),
+    ]
+    for z_order, (bone_name, start_joint, end_joint, start_width, end_width,
+                  fill_color, correction) in enumerate(segment_specs, start=1):
+        mesh = generate_segment_mesh(
+            joint_world[start_joint],
+            joint_world[end_joint],
+            start_width,
+            end_width,
+            fill_color,
+            bone_index[bone_name],
+            bone_name,
+        )
+        if correction is not None:
+            _attach_joint_correction(mesh, correction, bone_name[-1])
+        body_parts.append(_mesh_part(bone_name, mesh, bone_name, z_order))
 
-    # 5. Assemble Parts Hierarchy
-    def origin_fn(bone_id: str) -> tuple[float, float]:
-        return jw.get(bone_id.lower().replace(" ", "_"), (0.0, 0.0))
-
-    def center_fn(view_name: str) -> tuple[float, float]:
-        return (0.0, 0.0)
-
-    head_switch = make_vector_switch(
-        "sw_head", "Head", head_states,
-        "Head", origin_fn, center_fn, abs_angle, z_start=10
+    head_switch = _vector_switch(
+        "sw_head", "Head", head_states, "Head", absolute_angles, 40,
     )
     head_switch.is_head_turn = True
     head_switch.head_turn_views = list(HEAD_VIEWS)
-
-    mouth_switch = make_vector_switch(
-        "sw_mouth", "Mouth", mouth_states,
-        "Head", origin_fn, center_fn, abs_angle, z_start=20
+    mouth_switch = _vector_switch(
+        "sw_mouth", "Mouth", mouth_states, "Head", absolute_angles, 43,
+    )
+    eyes_switch = _vector_switch(
+        "sw_eyes", "Eyes", eye_states, "Head", absolute_angles, 42,
+    )
+    brows_switch = _vector_switch(
+        "sw_brows", "Brows", brow_states, "Head", absolute_angles, 41,
+    )
+    hand_left_switch = _vector_switch(
+        "sw_hand_l", "Hand Switch L", hand_states["L"],
+        "LowerArm L", absolute_angles, 30,
+    )
+    hand_right_switch = _vector_switch(
+        "sw_hand_r", "Hand Switch R", hand_states["R"],
+        "LowerArm R", absolute_angles, 31,
     )
 
-    eyes_switch = make_vector_switch(
-        "sw_eyes", "Eyes", eyes_states,
-        "Head", origin_fn, center_fn, abs_angle, z_start=30
-    )
-
-    brows_switch = make_vector_switch(
-        "sw_brows", "Brows", brows_states,
-        "Head", origin_fn, center_fn, abs_angle, z_start=40
-    )
-
-    hands_l_switch = make_vector_switch(
-        "sw_hand_l", "Hand Switch L", hands_l_states,
-        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
-    )
-    hands_r_switch = make_vector_switch(
-        "sw_hand_r", "Hand Switch R", hands_r_states,
-        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
-    )
-
-    head_group = Part(
-        id="grp_head",
-        name="Head Structure",
-        type="group",
-        parent=None,
-        bone="Head",
-        children=[head_switch, brows_switch, eyes_switch, mouth_switch],
-        z_order=50
-    )
-
-    hands_l_group = Part(
-        id="grp_hand_l",
-        name="Hand L",
-        type="group",
-        parent=None,
-        bone="LowerArm L",
-        children=[hands_l_switch],
-        z_order=25
-    )
-
-    hands_r_group = Part(
-        id="grp_hand_r",
-        name="Hand R",
-        type="group",
-        parent=None,
-        bone="LowerArm R",
-        children=[hands_r_switch],
-        z_order=25
-    )
-
-    torso_part = make_mesh_part("mesh_torso", "Torso", torso_mesh, "Body", (0.0, 0.0), (0.0, 0.0), 0.0)
-    torso_part.z_order = 5
-
-    larm_part = make_mesh_part("mesh_larm", "LArm", larm_mesh, "UpperArm L", (0.0, 0.0), (0.0, 0.0), 0.0)
-    larm_part.z_order = 8
-
-    rarm_part = make_mesh_part("mesh_rarm", "RArm", rarm_mesh, "UpperArm R", (0.0, 0.0), (0.0, 0.0), 0.0)
-    rarm_part.z_order = 2
-
-    lleg_part = make_mesh_part("mesh_lleg", "LLeg", lleg_mesh, "Thigh L", (0.0, 0.0), (0.0, 0.0), 0.0)
-    lleg_part.z_order = 4
-
-    rleg_part = make_mesh_part("mesh_rleg", "RLeg", rleg_mesh, "Thigh R", (0.0, 0.0), (0.0, 0.0), 0.0)
-    rleg_part.z_order = 3
-
-    # 6. Container Root
-    root_container = Part(
-        id="char_container",
-        name=name,
-        type="bone_container",
-        parent=None,
-        children=[rarm_part, rleg_part, lleg_part, torso_part, larm_part, head_group, hands_l_group, hands_r_group],
-        z_order=0
-    )
-
-    # 7. Add Smart Dials to Skeleton
     head_dial = Bone(
         id="Head Switch",
         parent=None,
-        position=(1.2, 0.8),
-        angle=math.radians(90),
+        position=(1.30, 0.90),
+        angle=HEAD_TURN_ANGLES[0],
         length=0.25,
         strength=0.0,
         constraints=True,
         min_constraint=HEAD_TURN_CONSTRAINTS[1],
         max_constraint=HEAD_TURN_CONSTRAINTS[2],
-        is_dial=True
+        is_dial=True,
     )
-    bones.append(head_dial)
-    wire_dial(head_dial, "Head Switch", HEAD_TURN_ANGLES, head_switch, head_turn_map(list(HEAD_VIEWS)))
-
-    mouth_dial = Bone(
-        id="Mouth Switch",
-        parent=None,
-        position=(1.2, 0.4),
-        angle=math.radians(90),
-        length=0.25,
-        strength=0.0,
-        constraints=True,
-        min_constraint=math.radians(-60),
-        max_constraint=math.radians(60),
-        is_dial=True
+    wire_dial(
+        head_dial,
+        "Head Switch",
+        HEAD_TURN_ANGLES,
+        head_switch,
+        head_turn_map(list(HEAD_VIEWS)),
     )
-    bones.append(mouth_dial)
-    mouth_angles = [math.radians(ang) for ang in [-60, -36, -12, 12, 36, 60]]
-    wire_dial(mouth_dial, "Mouth Switch", mouth_angles, mouth_switch, PHONEMES)
-
-    eyes_dial = Bone(
-        id="Eyes Switch",
-        parent=None,
-        position=(1.2, 0.0),
-        angle=math.radians(90),
-        length=0.25,
-        strength=0.0,
-        constraints=True,
-        min_constraint=math.radians(-60),
-        max_constraint=math.radians(60),
-        is_dial=True
-    )
-    bones.append(eyes_dial)
-    eye_angles = [math.radians(ang) for ang in [-45, -15, 15, 45]]
-    wire_dial(eyes_dial, "Eyes Switch", eye_angles, eyes_switch, ["open", "blink", "squint", "wide"])
-
-    hands_l_dial = Bone(
-        id="Hand Switch L",
-        parent=None,
-        position=(1.2, -0.4),
-        angle=math.radians(90),
-        length=0.25,
-        strength=0.0,
-        constraints=True,
-        min_constraint=math.radians(-60),
-        max_constraint=math.radians(60),
-        is_dial=True
-    )
-    bones.append(hands_l_dial)
-    wire_dial(hands_l_dial, "Hand Switch L", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_l_switch, ["default", "fist", "open", "point"])
-
-    hands_r_dial = Bone(
-        id="Hand Switch R",
-        parent=None,
-        position=(1.2, -0.8),
-        angle=math.radians(90),
-        length=0.25,
-        strength=0.0,
-        constraints=True,
-        min_constraint=math.radians(-60),
-        max_constraint=math.radians(60),
-        is_dial=True
-    )
-    bones.append(hands_r_dial)
-    wire_dial(hands_r_dial, "Hand Switch R", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_r_switch, ["default", "fist", "open", "point"])
-
-    rig.bones = bones
-    rig.root_parts = [root_container]
-
-    # 8. Diagnostic Animation with Distinct Keyframe Posings
-    # Frame 1: Neutral
-    # Frame 12: Walk / Leg step + Arm swing
-    # Frame 24: Head turn + Blink
-    # Frame 36: Speech / Mouth Phoneme + Hand Gesture
-    thigh_l = next((b for b in bones if b.id == "Thigh L"), None)
-    if thigh_l:
-        thigh_l.angle_channel = Channel(
-            type="Val",
-            when=[0, 1, 12, 24, 36],
-            val=[thigh_l.angle, thigh_l.angle, thigh_l.angle + math.radians(35), thigh_l.angle, thigh_l.angle],
-            interp=[dict(BASE_INTERP) for _ in range(5)]
-        )
-
-    upper_arm_l = next((b for b in bones if b.id == "UpperArm L"), None)
-    if upper_arm_l:
-        upper_arm_l.angle_channel = Channel(
-            type="Val",
-            when=[0, 1, 12, 24, 36],
-            val=[upper_arm_l.angle, upper_arm_l.angle, upper_arm_l.angle - math.radians(45), upper_arm_l.angle, upper_arm_l.angle],
-            interp=[dict(BASE_INTERP) for _ in range(5)]
-        )
-
-    target_leg_l = next((b for b in bones if b.id == "Target Leg L"), None)
-    if target_leg_l:
-        target_leg_l.pos_channel = Channel(
-            type="Vec2",
-            when=[0, 1, 12, 24, 36],
-            val=[
-                target_leg_l.position,
-                target_leg_l.position,
-                (target_leg_l.position[0] + 0.3, target_leg_l.position[1] + 0.2),
-                target_leg_l.position,
-                target_leg_l.position
-            ],
-            interp=[dict(BASE_INTERP) for _ in range(5)]
-        )
-
-    # Dial animations across diagnostic frames
     head_dial.angle_channel = Channel(
         type="Val",
         when=[0, 1, 12, 24, 36],
-        val=[math.radians(90), math.radians(90), math.radians(90), math.radians(180), math.radians(90)],
-        interp=[dict(BASE_INTERP) for _ in range(5)]
+        val=[HEAD_TURN_ANGLES[0], HEAD_TURN_ANGLES[0], HEAD_TURN_ANGLES[0],
+             HEAD_TURN_ANGLES[4], HEAD_TURN_ANGLES[0]],
+        interp=[dict(BASE_INTERP) for _ in range(5)],
     )
 
-    eyes_dial.angle_channel = Channel(
-        type="Val",
-        when=[0, 1, 12, 24, 36],
-        val=[0.0, 0.0, 0.0, math.radians(-15), 0.0],
-        interp=[dict(BASE_INTERP) for _ in range(5)]
+    mouth_values, mouth_min, mouth_max = simple_dial_vals(len(PHONEMES))
+    mouth_dial = Bone(
+        id="Mouth Switch",
+        parent=None,
+        position=(1.30, 0.55),
+        angle=mouth_values[0],
+        length=0.25,
+        strength=0.0,
+        constraints=True,
+        min_constraint=mouth_min,
+        max_constraint=mouth_max,
+        is_dial=True,
     )
-
+    wire_dial(mouth_dial, "Mouth Switch", mouth_values, mouth_switch, list(PHONEMES))
     mouth_dial.angle_channel = Channel(
         type="Val",
         when=[0, 1, 12, 24, 36],
-        val=[0.0, 0.0, 0.0, 0.0, math.radians(36)],
-        interp=[dict(BASE_INTERP) for _ in range(5)]
+        val=[mouth_values[0], mouth_values[0], mouth_values[0], mouth_values[0], mouth_values[2]],
+        interp=[dict(BASE_INTERP) for _ in range(5)],
     )
 
-    hands_l_dial.angle_channel = Channel(
+    eye_values, eye_min, eye_max = simple_dial_vals(len(eye_states))
+    eyes_dial = Bone(
+        id="Eyes Switch",
+        parent=None,
+        position=(1.30, 0.20),
+        angle=eye_values[0],
+        length=0.25,
+        strength=0.0,
+        constraints=True,
+        min_constraint=eye_min,
+        max_constraint=eye_max,
+        is_dial=True,
+    )
+    wire_dial(eyes_dial, "Eyes Switch", eye_values, eyes_switch, list(eye_states))
+    eyes_dial.angle_channel = Channel(
         type="Val",
         when=[0, 1, 12, 24, 36],
-        val=[0.0, 0.0, 0.0, 0.0, math.radians(45)],
-        interp=[dict(BASE_INTERP) for _ in range(5)]
+        val=[eye_values[0], eye_values[0], eye_values[0], eye_values[1], eye_values[0]],
+        interp=[dict(BASE_INTERP) for _ in range(5)],
     )
 
-    # 9. Emit Production-Ready .moho Archive
-    out = emit(rig, out_path)
-    return out
+    hand_dials: list[Bone] = []
+    for side, switch, x_position in (
+        ("L", hand_left_switch, -1.30),
+        ("R", hand_right_switch, 1.30),
+    ):
+        hand_values, hand_min, hand_max = simple_dial_vals(len(hand_pose_names))
+        dial = Bone(
+            id=f"Hand Switch {side}",
+            parent=None,
+            position=(x_position, -0.20),
+            angle=hand_values[0],
+            length=0.25,
+            strength=0.0,
+            constraints=True,
+            min_constraint=hand_min,
+            max_constraint=hand_max,
+            is_dial=True,
+        )
+        wire_dial(dial, dial.id, hand_values, switch, hand_pose_names)
+        diagnostic_pose = 1 if side == "L" else 2
+        dial.angle_channel = Channel(
+            type="Val",
+            when=[0, 1, 12, 24, 36],
+            val=[hand_values[0], hand_values[0], hand_values[diagnostic_pose],
+                 hand_values[0], hand_values[3]],
+            interp=[dict(BASE_INTERP) for _ in range(5)],
+        )
+        hand_dials.append(dial)
+
+    bones.extend([head_dial, mouth_dial, eyes_dial, *hand_dials])
+    root = Part(
+        id="char_container",
+        name=name,
+        type="bone_container",
+        children=[
+            *body_parts,
+            hand_left_switch,
+            hand_right_switch,
+            Part(
+                id="grp_head",
+                name="Head Structure",
+                type="group",
+                children=[head_switch, brows_switch, eyes_switch, mouth_switch],
+                z_order=50,
+            ),
+        ],
+    )
+    rig.bones = bones
+    rig.root_parts = [root]
+
+    output = emit(rig, out_path)
+    Path(output).with_suffix(".manifest.json").write_text(
+        json.dumps(build_humanoid_manifest(rig), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return output
 
 
 if __name__ == "__main__":
-    out_file = compile_master_character(
-        name="Summer_Smith",
-        gender="female",
-        out_path="./output/Summer_Smith.moho"
-    )
-    print(f"MASTER CHARACTER COMPILED TO: {out_file}")
+    output_file = compile_master_character()
+    print(f"MASTER CHARACTER COMPILED TO: {output_file}")

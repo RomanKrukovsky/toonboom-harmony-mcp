@@ -16,6 +16,23 @@ from ..riggen.master_character_compiler import compile_master_character
 from .moho_readiness import score_project
 
 
+def _atomic_promote(source: Path, target: Path) -> None:
+    """Replace the target only after a complete copy exists beside it."""
+    with tempfile.NamedTemporaryFile(
+        dir=target.parent,
+        prefix=f".{target.name}.",
+        suffix=".promoting",
+        delete=False,
+    ) as pending_file:
+        pending_path = Path(pending_file.name)
+    try:
+        shutil.copyfile(source, pending_path)
+        os.replace(pending_path, target)
+    finally:
+        if pending_path.exists():
+            pending_path.unlink()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compile and certify a Moho humanoid rig")
     parser.add_argument("--name", default="Stage1Hero", help="Character name")
@@ -71,10 +88,18 @@ def main() -> None:
             is_certified = report.certified and (report.score >= args.min_score)
 
             if is_certified:
-                shutil.copyfile(temp_moho, target_output)
+                _atomic_promote(temp_moho, target_output)
                 status = "certified"
             else:
                 status = "failed"
+
+            result_errors = list(report.errors)
+            if report.score < args.min_score:
+                result_errors.append(
+                    f"Readiness score {report.score} is below required {args.min_score}"
+                )
+            if not report.certified and not report.errors:
+                result_errors.append("Mandatory production readiness gates did not pass")
 
             result = {
                 "status": status,
@@ -84,7 +109,7 @@ def main() -> None:
                 "mandatoryPassed": report.mandatory_passed,
                 "gates": report.gates,
                 "evidenceDirectory": str(evidence_dir),
-                "errors": report.errors,
+                "errors": result_errors,
             }
             print(json.dumps(result, indent=2))
         except Exception as e:

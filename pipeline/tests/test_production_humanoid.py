@@ -35,6 +35,23 @@ def image_difference(first_path: str, second_path: str) -> float:
     return changed / float(first.width * first.height)
 
 
+def foreground_coverage(image_path: str) -> tuple[float, float]:
+    with Image.open(image_path) as source:
+        image = source.convert("RGB")
+    background = image.getpixel((0, 0))
+    foreground = Image.new("1", image.size)
+    foreground.putdata([
+        max(abs(channel - background[index]) for index, channel in enumerate(pixel)) > 12
+        for pixel in image.get_flattened_data()
+    ])
+    bounds = foreground.getbbox()
+    if bounds is None:
+        return 0.0, 0.0
+    width = (bounds[2] - bounds[0]) / image.width
+    height = (bounds[3] - bounds[1]) / image.height
+    return width, height
+
+
 class ProductionHumanoidStructureTests(unittest.TestCase):
     def test_full_humanoid_has_required_production_controls(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -63,6 +80,8 @@ class ProductionHumanoidStructureTests(unittest.TestCase):
                 "Foot R",
                 "Target Leg L",
                 "Target Leg R",
+                "Target Arm L",
+                "Target Arm R",
                 "Head Switch",
                 "Mouth Switch",
                 "Eyes Switch",
@@ -77,6 +96,28 @@ class ProductionHumanoidStructureTests(unittest.TestCase):
             self.assertGreaterEqual(len(manifest["switches"]["Hand Switch R"]), 4)
             self.assertEqual(manifest["diagnosticFrames"], [1, 12, 24, 36])
             self.assertGreaterEqual(manifest["boundMeshCount"], 15)
+            required_meshes = {
+                "Torso",
+                "Pelvis",
+                "Neck",
+                "UpperArm L",
+                "LowerArm L",
+                "UpperArm R",
+                "LowerArm R",
+                "Thigh L",
+                "Shin L",
+                "Foot L",
+                "Thigh R",
+                "Shin R",
+                "Foot R",
+            }
+            self.assertLessEqual(required_meshes, set(manifest["meshLayers"]))
+            self.assertTrue({
+                "Elbow Correct L",
+                "Elbow Correct R",
+                "Knee Correct L",
+                "Knee Correct R",
+            }.issubset(manifest["actions"]))
 
 
 @unittest.skipUnless(MOHO.is_file(), "real Moho is not installed")
@@ -100,6 +141,9 @@ class ProductionHumanoidNativeTests(unittest.TestCase):
             print(f"Native reopen errors: {result.errors}")
             self.assertTrue(result.reopened, f"Errors during native reopen: {result.errors}")
             roundtrip_frames = result.rendered_frames[-4:]
+            width_coverage, height_coverage = foreground_coverage(roundtrip_frames[0])
+            self.assertGreater(width_coverage, 0.25)
+            self.assertGreater(height_coverage, 0.55)
             differences = [
                 image_difference(first, second)
                 for first, second in zip(roundtrip_frames, roundtrip_frames[1:])

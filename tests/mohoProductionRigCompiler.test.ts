@@ -20,16 +20,21 @@ describe('MohoProductionRigCompiler', () => {
   });
 
   it('fails closed when minimumScore is set impossibly high (>100)', async () => {
+    const protectedOutput = path.join(tempDir, 'protected.moho');
+    const originalContents = 'existing project must survive a failed compile';
+    fs.writeFileSync(protectedOutput, originalContents);
+
     const result = await MohoProductionRigCompiler.compile({
       characterName: 'UncertifiableHero',
-      outputPath: path.join(tempDir, 'fail.moho'),
+      outputPath: protectedOutput,
       evidenceDirectory: path.join(tempDir, 'evidence_fail'),
       minimumScore: 101
     });
 
     expect(result.status).toBe('failed');
     expect(result.certified).toBe(false);
-    expect(fs.existsSync(path.join(tempDir, 'fail.moho'))).toBe(false);
+    expect(result.errors.some(error => error.includes('below required 101'))).toBe(true);
+    expect(fs.readFileSync(protectedOutput, 'utf8')).toBe(originalContents);
   }, 45000);
 
   it('successfully compiles and certifies a production humanoid rig (score >= 95)', async () => {
