@@ -77,26 +77,19 @@ def _bone_dict(rig: Rig) -> list[dict]:
                 type="Vec2", when=[0], val=[{"x": b.position[0], "y": b.position[1]}],
                 interp=[dict(_DEFAULT_INTERP[0])]))
         if b.angle_channel is not None:
-            ch = _channel_dict(b.angle_channel)
-            if b.dial_actions:
-                ch["actions"] = copy.deepcopy(b.dial_actions)
-            d["anim_angle"] = ch
-        elif b.dial_actions:
-            ch = _channel_dict(Channel(
-                type="Val", when=[0], val=[b.angle],
-                interp=[{"im": 3, "v1": -1.0, "v2": -1.0, "in": 1,
-                         "h": 0, "s": False, "t": 0}]))
-            ch["actions"] = copy.deepcopy(b.dial_actions)
-            d["anim_angle"] = ch
+            angle_channel = _channel_dict(b.angle_channel)
         elif b.angle_keys:
-            d["anim_angle"] = _channel_dict(Channel(
+            angle_channel = _channel_dict(Channel(
                 type="Val", when=[f for f, _ in b.angle_keys],
                 val=[a for _, a in b.angle_keys],
                 interp=[dict(_DEFAULT_INTERP[0]) for _ in b.angle_keys]))
         else:
-            d["anim_angle"] = _channel_dict(Channel(
+            angle_channel = _channel_dict(Channel(
                 type="Val", when=[0], val=[b.angle],
                 interp=[dict(_DEFAULT_INTERP[0])]))
+        if b.dial_actions:
+            angle_channel["actions"] = copy.deepcopy(b.dial_actions)
+        d["anim_angle"] = angle_channel
         if b.pos_channel_raw is not None:
             d["anim_pos"] = copy.deepcopy(b.pos_channel_raw)
         if b.scale_channel_raw is not None:
@@ -175,6 +168,7 @@ def _part_layer(
         ]
         if part.type == "bone_container" and part.children:
             pass
+    _set_layer_action_registry(layer)
     return layer
 
 
@@ -260,6 +254,49 @@ def _coerce_val_list(vals, channel_type):
     return out
 
 
+def _collect_action_names(value) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+
+    def visit(node) -> None:
+        if isinstance(node, dict):
+            actions = node.get("actions")
+            if isinstance(actions, list):
+                for action in actions:
+                    if not isinstance(action, dict):
+                        continue
+                    name = action.get("name")
+                    if isinstance(name, str) and name and name not in seen:
+                        seen.add(name)
+                        names.append(name)
+            for child in node.values():
+                visit(child)
+        elif isinstance(node, list):
+            for child in node:
+                visit(child)
+
+    visit(value)
+    return names
+
+
+def _set_layer_action_registry(layer: dict) -> None:
+    action_names = _collect_action_names(layer)
+    if not action_names:
+        return
+    existing = layer.get("actions")
+    actions = copy.deepcopy(existing) if isinstance(existing, list) else []
+    registered = {
+        action.get("name")
+        for action in actions
+        if isinstance(action, dict)
+    }
+    for action_name in action_names:
+        if action_name not in registered:
+            actions.append({"name": action_name, "pose": 0})
+            registered.add(action_name)
+    layer["actions"] = actions
+
+
 def build_doc(rig: Rig) -> dict:
     doc = _load_tpl("_doc_skeleton.json")
     doc["mime_type"] = "application/x-vnd.lm_mohodoc"
@@ -303,9 +340,20 @@ def build_doc(rig: Rig) -> dict:
             if bg:
                 skel["bones_groups"] = copy.deepcopy(bg)
             layer["skeleton"] = skel
-            actions = getattr(part, "actions_raw", None) or rig.extras.get("actions")
+            explicit_actions = (getattr(part, "actions_raw", None)
+                                or rig.extras.get("actions") or [])
+            actions = copy.deepcopy(explicit_actions)
+            registered = {
+                action.get("name")
+                for action in actions
+                if isinstance(action, dict)
+            }
+            for action_name in _collect_action_names(layer):
+                if action_name not in registered:
+                    actions.append({"name": action_name, "pose": 0})
+                    registered.add(action_name)
             if actions:
-                layer["actions"] = copy.deepcopy(actions)
+                layer["actions"] = actions
         doc["layers"].append(layer)
     doc = _coerce_doubles(doc)
     # project_data.width/height — нативные ЦЕЛЫЕ числа (число кадров/пиксели),

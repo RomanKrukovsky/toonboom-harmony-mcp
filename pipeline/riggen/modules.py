@@ -27,6 +27,12 @@ PHONEMES_FULL = ["A", "B", "C", "D", "E", "F", "G", "I", "K", "L", "M",
 PHONEMES_COMPACT = ["Closed", "A", "E", "I", "O", "U", "F", "L", "MBP", "WQ"]
 
 
+def _action_frames(key_count: int) -> list[int]:
+    if key_count < 1:
+        raise ValueError("smart action must contain at least one key")
+    return [0, 2] if key_count == 2 else list(range(key_count))
+
+
 def make_image_part(part_id: str, name: str, image_path: str, bone_id: str,
                     origin_moho: tuple[float, float],
                     center_moho: tuple[float, float],
@@ -135,10 +141,11 @@ def dial_ensure_action(dial: Bone, action_name: str,
     if any(a.get("name") == action_name for a in dial.dial_actions):
         return
     n = len(dial_vals)
+    frames = _action_frames(n)
     dial.dial_actions.append({
         "name": action_name,
         "pose": {"type": "Val", "ref": False, "mute": False,
-                 "when": list(range(n)),
+                 "when": frames,
                  "val": list(dial_vals),
                  "interp": [dict(DIAL_FIRST_INTERP)] +
                            [dict(DIAL_KEY_INTERP) for _ in range(n - 1)]},
@@ -149,21 +156,87 @@ def switch_attach_action(switch_part: Part, action_name: str,
                          state_vals: list[str]) -> None:
     """Привязать свитч к экшену диала по имени — формула Girl."""
     n = len(state_vals)
+    frames = _action_frames(n)
     switch_part.switch_dial_actions = switch_part.switch_dial_actions or []
     switch_part.switch_dial_actions.append({
         "name": action_name,
         "pose": {"type": "String", "ref": False, "mute": False,
-                 "when": list(range(n)),
+                 "when": frames,
                  "val": list(state_vals),
-                 "interp": [dict(SWITCH_STEP_INTERP) for _ in range(n)]},
+                 "interp": ([dict(BASE_INTERP)] +
+                            [dict(SWITCH_STEP_INTERP) for _ in range(n - 1)])},
     })
+
+
+def make_smart_action(
+    name: str,
+    dial_when: list[int],
+    dial_val: list[float],
+    target_when: list[int],
+    target_val: list,
+    target_type: str,
+) -> tuple[dict, dict]:
+    """Build the paired driver and target records required by Moho actions."""
+    if len(dial_when) != len(dial_val):
+        raise ValueError("dial action frames and values must have equal lengths")
+    if len(target_when) != len(target_val):
+        raise ValueError("target action frames and values must have equal lengths")
+    dial_interp = ([dict(DIAL_FIRST_INTERP)] +
+                   [dict(DIAL_KEY_INTERP) for _ in range(len(dial_when) - 1)])
+    target_interp = ([dict(BASE_INTERP)] +
+                     [dict(SWITCH_STEP_INTERP)
+                      for _ in range(len(target_when) - 1)])
+    return (
+        {
+            "name": name,
+            "pose": {
+                "type": "Val",
+                "ref": False,
+                "mute": False,
+                "when": list(dial_when),
+                "val": list(dial_val),
+                "interp": dial_interp,
+            },
+        },
+        {
+            "name": name,
+            "pose": {
+                "type": target_type,
+                "ref": False,
+                "mute": False,
+                "when": list(target_when),
+                "val": list(target_val),
+                "interp": target_interp,
+            },
+        },
+    )
 
 
 def wire_dial(dial: Bone, action_name: str, dial_vals: list[float],
               switch_part: Part, state_vals: list[str]) -> None:
     """Связь один-к-одному: диал получает экшен, свитч привязывается."""
-    dial_ensure_action(dial, action_name, dial_vals)
-    switch_attach_action(switch_part, action_name, state_vals)
+    if len(dial_vals) != len(state_vals):
+        raise ValueError("dial values and switch states must have equal lengths")
+    # Moho recognizes a two-key action with duration 1 as a Smart Bone action,
+    # but does not evaluate its target channels on the main timeline. Keep the
+    # same one-frame spacing for larger actions and give the two-state case a
+    # real interpolation span.
+    frames = _action_frames(len(dial_vals))
+    dial_action, switch_action = make_smart_action(
+        action_name,
+        frames,
+        dial_vals,
+        frames,
+        state_vals,
+        "String",
+    )
+    dial.dial_actions = dial.dial_actions or []
+    if not any(action.get("name") == action_name
+               for action in dial.dial_actions):
+        dial.dial_actions.append(dial_action)
+    dial.is_dial = True
+    switch_part.switch_dial_actions = switch_part.switch_dial_actions or []
+    switch_part.switch_dial_actions.append(switch_action)
 
 
 def head_turn_map(available: list[str]) -> list[str]:
