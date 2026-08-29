@@ -50,10 +50,10 @@ def compile_master_character(
     rig = Rig(
         name=name,
         source_program="moho",
-        source_version="1045",
+        source_version="1041",
         canvas={
             "mime_type": "application/x-vnd.lm_mohodoc",
-            "version": 1045,
+            "version": 1041,
             "major_version": 1,
             "rev_version": 0,
             "doc_uuid": f"moho_{name.lower()}_{hash(name) & 0xffffffff}",
@@ -150,9 +150,21 @@ def compile_master_character(
     )
 
     eyes_switch = make_vector_switch(
-        "sw_eyes", "Eyes", eyes_states,
+        "sw_eyes", "Eyes", {s: {} for s in EYE_STATES},
         "Head", origin_fn, center_fn, abs_angle, z_start=30
     )
+
+    hands_l_switch = make_vector_switch(
+        "sw_hand_l", "Hand Switch L", {s: {} for s in ["default", "fist", "open", "point"]},
+        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
+    )
+    hands_r_switch = make_vector_switch(
+        "sw_hand_r", "Hand Switch R", {s: {} for s in ["default", "fist", "open", "point"]},
+        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
+    )
+
+    # Добавляем в группу головы, если нужно, или в root
+    # Пока добавим в список для проверки, а потом wire_dial
 
     brows_switch = make_vector_switch(
         "sw_brows", "Brows", brows_states,
@@ -165,8 +177,28 @@ def compile_master_character(
         type="group",
         parent=None,
         bone="Head",
-        children=[head_switch, brows_switch, eyes_switch, mouth_switch],
+        children=[head_switch, brows_switch, eyes_switch, mouth_switch, hands_l_switch, hands_r_switch],
         z_order=50
+    )
+
+    hands_l_group = Part(
+        id="grp_hand_l",
+        name="Hand L",
+        type="group",
+        parent=None,
+        bone="LowerArm L",
+        children=[hands_l_switch],
+        z_order=25
+    )
+
+    hands_r_group = Part(
+        id="grp_hand_r",
+        name="Hand R",
+        type="group",
+        parent=None,
+        bone="LowerArm R",
+        children=[hands_r_switch],
+        z_order=25
     )
 
     torso_part = make_mesh_part("mesh_torso", "Torso", torso_mesh, "Body", (0.0, 0.0), (0.0, 0.0), 0.0)
@@ -190,7 +222,7 @@ def compile_master_character(
         name=name,
         type="bone_container",
         parent=None,
-        children=[rarm_part, rleg_part, lleg_part, torso_part, larm_part, head_group],
+        children=[rarm_part, rleg_part, lleg_part, torso_part, larm_part, head_group, hands_l_group, hands_r_group],
         z_order=0
     )
 
@@ -227,8 +259,86 @@ def compile_master_character(
     mouth_angles = [math.radians(ang) for ang in [-60, -36, -12, 12, 36, 60]]
     wire_dial(mouth_dial, "Mouth Switch", mouth_angles, mouth_switch, PHONEMES)
 
+    eyes_dial = Bone(
+        id="Eyes Switch",
+        parent=None,
+        position=(1.2, 0.0),
+        angle=math.radians(90),
+        length=0.25,
+        strength=0.0,
+        constraints=True,
+        min_constraint=math.radians(-60),
+        max_constraint=math.radians(60),
+        is_dial=True
+    )
+    bones.append(eyes_dial)
+    # Используем 8 состояний, чтобы соответствовать EYE_STATES
+    eye_angles = [math.radians(ang) for ang in [-60, -42, -24, -6, 6, 24, 42, 60]]
+    wire_dial(eyes_dial, "Eyes Switch", eye_angles, eyes_switch, EYE_STATES)
+
+    hands_l_dial = Bone(
+        id="Hand Switch L",
+        parent=None,
+        position=(1.2, -0.4),
+        angle=math.radians(90),
+        length=0.25,
+        strength=0.0,
+        constraints=True,
+        min_constraint=math.radians(-60),
+        max_constraint=math.radians(60),
+        is_dial=True
+    )
+    bones.append(hands_l_dial)
+
+    hands_r_dial = Bone(
+        id="Hand Switch R",
+        parent=None,
+        position=(1.2, -0.8),
+        angle=math.radians(90),
+        length=0.25,
+        strength=0.0,
+        constraints=True,
+        min_constraint=math.radians(-60),
+        max_constraint=math.radians(60),
+        is_dial=True
+    )
+    bones.append(hands_r_dial)
+
+    hands_l_switch = make_vector_switch(
+        "sw_hand_l", "Hand Switch L", {s: {} for s in ["default", "fist", "open", "point"]},
+        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
+    )
+    hands_r_switch = make_vector_switch(
+        "sw_hand_r", "Hand Switch R", {s: {} for s in ["default", "fist", "open", "point"]},
+        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
+    )
+
+    bones.append(hands_r_dial)
+    wire_dial(hands_l_dial, "Hand Switch L", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_l_switch, ["default", "fist", "open", "point"])
+    wire_dial(hands_r_dial, "Hand Switch R", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_r_switch, ["default", "fist", "open", "point"])
+
     rig.bones = bones
     rig.root_parts = [root_container]
+
+    # 9. Add Diagnostic Animation
+    # Кадр 12: Поза ходьбы
+    # Кадр 24: Поворот головы и моргание
+    # Кадр 36: Рот и эмоция
+    from ..pir.schema import Channel
+
+    # Добавляем ключи для анимации (пример для Main кости или другой)
+    # Нужно убедиться, что _mainline_frames их увидит.
+
+    # Добавим для примера несколько ключей для Head кости
+    head_bone = next(b for b in bones if b.id == "Head")
+    if head_bone.angle_channel is None:
+        head_bone.angle_channel = Channel(type="Float", when=[], val=[], interp=[])
+
+    # Добавляем ключевые кадры (в Moho обычно when и val - списки)
+    for frame in [1, 12, 24, 36]:
+        head_bone.angle_channel.when.append(int(frame))
+        head_bone.angle_channel.val.append(0.0)
+        head_bone.angle_channel.interp.append({"type": "Linear"})
 
     # 8. Emit Production-Ready .moho Archive
     out = emit(rig, out_path)
