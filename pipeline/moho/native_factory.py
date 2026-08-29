@@ -117,6 +117,15 @@ def _shape_order_channel(shapes: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def bind_mesh_points(raw_mesh: dict[str, Any], bone_index: int) -> dict[str, Any]:
+    """Bind every mesh point to one bone without dropping point metadata."""
+    mesh = copy.deepcopy(raw_mesh)
+    parent = int(bone_index)
+    for point in mesh.get("points", []):
+        point["parent"] = parent
+    return mesh
+
+
 def normalize_native_mesh(raw_mesh: dict[str, Any]) -> dict[str, Any]:
     """Keep only the Mesh schema accepted by the bundled native references."""
     raw_points = raw_mesh.get("points", [])
@@ -129,7 +138,12 @@ def normalize_native_mesh(raw_mesh: dict[str, Any]) -> dict[str, Any]:
     mesh["next_shape_id"] = int(raw_mesh.get("next_shape_id", len(raw_shapes)))
     mesh["anim_shape_order"] = False
     mesh["shape_order"] = _shape_order_channel(raw_shapes)
-    mesh["points"] = [_keep(point, POINT_KEYS) for point in raw_points]
+    points = []
+    for raw_point in raw_points:
+        point = _keep(raw_point, POINT_KEYS)
+        point["parent"] = int(raw_point.get("parent", -1))
+        points.append(point)
+    mesh["points"] = points
 
     curves = []
     for raw_curve in raw_curves:
@@ -198,6 +212,7 @@ class NativeMohoFactory:
         self.reference_path = Path(reference_path)
         document, _ = load_mohoproj(str(self.reference_path))
         self.mesh_layer_template = _find_first_layer(document, "MeshLayer")
+        self.switch_layer_template = _find_first_layer(document, "SwitchLayer")
         self.mesh_schema_template = self.mesh_layer_template["mesh"]
 
     def mesh_layer(
@@ -218,6 +233,25 @@ class NativeMohoFactory:
         layer["layer_ref_path"] = ""
         layer["layer_ref_fileref"] = {"relativeTo": "Absolute", "path": ""}
         layer["mesh"] = normalize_native_mesh(mesh)
+        return layer
+
+    def switch_layer(
+        self,
+        name: str,
+        children: list[dict[str, Any]],
+        switch_channel: dict[str, Any],
+    ) -> dict[str, Any]:
+        layer = copy.deepcopy(self.switch_layer_template)
+        layer["name"] = name
+        layer["uuid"] = str(uuid.uuid4())
+        layer["random_num"] = 0
+        layer["follow_layer_uuid"] = ""
+        layer["distortion_layer_uuid"] = ""
+        layer["layer_ref_uuid"] = ""
+        layer["layer_ref_path"] = ""
+        layer["layer_ref_fileref"] = {"relativeTo": "Absolute", "path": ""}
+        layer["layers"] = copy.deepcopy(children)
+        layer["switch_keys"] = copy.deepcopy(switch_channel)
         return layer
 
     def mesh_schema_difference(self, mesh: dict[str, Any]) -> str | None:

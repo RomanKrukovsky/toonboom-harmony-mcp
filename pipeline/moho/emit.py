@@ -133,6 +133,8 @@ def _part_layer(
             if isinstance(point.get("parent"), str):
                 point["parent"] = name_to_idx.get(point["parent"], -1)
         layer = factory.mesh_layer(part.name, mesh, parent_bone)
+    elif part.type == "switch":
+        layer = factory.switch_layer(part.name, [], {})
     else:
         layer = _load_tpl(tpl_name)
     layer["name"] = part.name
