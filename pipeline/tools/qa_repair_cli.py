@@ -12,15 +12,19 @@ from ..moho.qa_repair import MohoVisualQARepairEngine
 
 
 def run_qa_repair(project_id: str, max_passes: int = 5, auto_repair: bool = True) -> dict:
-    engine = MohoVisualQARepairEngine(project_id, max_passes=max_passes)
+    proj_file = str(Path(project_id).resolve()) if os.path.exists(project_id) else project_id
+    engine = MohoVisualQARepairEngine(proj_file, max_passes=max_passes)
 
-    def mock_get_frames(pass_num: int):
-        if pass_num == 1 and auto_repair:
-            return [{"frame_number": 1, "z_order_error": True, "visible_pixels": 500000}]
-        else:
-            return [{"frame_number": 1, "z_order_error": False, "visible_pixels": 500000}]
+    if os.path.isfile(proj_file):
+        is_certified, log = engine.run_repair_loop()
+    else:
+        def mock_get_frames(pass_num: int):
+            if pass_num == 1 and auto_repair:
+                return [{"frame_number": 1, "z_order_error": True, "visible_pixels": 500000}]
+            else:
+                return [{"frame_number": 1, "z_order_error": False, "visible_pixels": 500000}]
+        is_certified, log = engine.run_repair_loop(mock_get_frames)
 
-    is_certified, log = engine.run_repair_loop(mock_get_frames)
     return {
         "status": "success" if is_certified else "failed",
         "projectId": project_id,

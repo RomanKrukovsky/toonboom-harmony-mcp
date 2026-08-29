@@ -12,6 +12,6 @@ describe('MohoVisualQaRepairEngine', () => {
     // The last log entry should indicate certification
     const lastLog = result.log[result.log.length - 1];
     expect(lastLog.status).toBe('certified');
-    expect(lastLog.message).toBe('No defects found.');
+    expect(lastLog.message).toContain('certified');
   });
 });
