@@ -62,7 +62,7 @@ def _bone_dict(rig: Rig) -> list[dict]:
         d["physics_radius"] = -1.0
         d["physics_return_to_zero"] = False
         d["bone_tags"] = 0
-        d["bone_label_showing"] = False
+        d["bone_label_showing"] = True if b.is_dial else False
         d["bone_enable_arc_solver"] = False
         d["physics_torque"] = 10.0
         d["physics_lock_tip"] = False
@@ -126,6 +126,7 @@ def _part_layer(
     part: Part,
     name_to_idx: dict[str, int],
     factory: NativeMohoFactory,
+    project_dir: Path | None = None,
 ) -> dict:
     tpl_name = {"bone_container": "BoneLayer.json", "switch": "SwitchLayer.json",
                 "mesh": "MeshLayer.json", "image": "ImageLayer.json",
@@ -165,9 +166,9 @@ def _part_layer(
         layer["blend_mode"] = part.blend_mode
 
     if part.type == "image" and part.image_ref:
-        _configure_image_layer(layer, part.image_ref)
+        _configure_image_layer(layer, part.image_ref, project_dir)
     if part.transforms:
-        layer["transforms"] = {k: _channel_dict(v) for k, v in part.transforms.items()}
+        layer.setdefault("transforms", {}).update({k: _channel_dict(v) for k, v in part.transforms.items()})
     if part.type == "switch":
         if part.switch_channel is not None:
             ch = _channel_dict(part.switch_channel)
@@ -180,12 +181,12 @@ def _part_layer(
                 "val": [part.switch_states[0] if part.switch_states else ""],
                 "interp": [dict(_DEFAULT_INTERP[0])]}
         layer["layers"] = [
-            _part_layer(child, name_to_idx, factory)
+            _part_layer(child, name_to_idx, factory, project_dir)
             for child in part.children
         ]
     elif part.type in ("group", "bone_container"):
         layer["layers"] = [
-            _part_layer(child, name_to_idx, factory)
+            _part_layer(child, name_to_idx, factory, project_dir)
             for child in part.children
         ]
         if part.type == "bone_container" and part.children:
@@ -194,7 +195,11 @@ def _part_layer(
     return layer
 
 
-def _configure_image_layer(layer: dict, image_ref: str) -> None:
+def _configure_image_layer(
+    layer: dict,
+    image_ref: str,
+    project_dir: Path | None = None,
+) -> None:
     path = Path(image_ref)
     layer["image_path"] = image_ref
     layer["image_fileref"] = {
@@ -213,12 +218,17 @@ def _configure_image_layer(layer: dict, image_ref: str) -> None:
             "bottom": 0,
         }
         layer["distortion_layer_uuid"] = ""
-    if path.is_file():
-        with Image.open(path) as image:
-            width, height = image.size
+        if "transforms" in layer and "translation" in layer["transforms"]:
+            trans = layer["transforms"]["translation"]
+            if "val" in trans and trans["val"]:
+                trans["val"] = [{"x": 0.0, "y": 0.0, "z": 0.0}]
+    resolved = path if path.is_absolute() else (project_dir / path if project_dir else path)
+    if resolved.is_file():
+        with Image.open(resolved) as source:
+            width, height = source.size
         layer["width"] = width / 72.0
         layer["height"] = height / 72.0
-        layer["modification_date"] = int(path.stat().st_mtime)
+        layer["modification_date"] = int(resolved.stat().st_mtime)
 
 
 _DOUBLE_KEYS = {"x", "y", "z", "v1", "v2", "length", "strength", "angle",
@@ -319,7 +329,7 @@ def _set_layer_action_registry(layer: dict) -> None:
     layer["actions"] = actions
 
 
-def build_doc(rig: Rig) -> dict:
+def build_doc(rig: Rig, project_dir: Path | None = None) -> dict:
     doc = _load_tpl("_doc_skeleton.json")
     doc["mime_type"] = "application/x-vnd.lm_mohodoc"
     doc["comment"] = rig.name
@@ -353,7 +363,7 @@ def build_doc(rig: Rig) -> dict:
     name_to_idx = {b.id: i for i, b in enumerate(rig.bones)}
     factory = NativeMohoFactory()
     for part in rig.root_parts:
-        layer = _part_layer(part, name_to_idx, factory)
+        layer = _part_layer(part, name_to_idx, factory, project_dir)
         if part.type == "bone_container":
             skel = {"type": "Skeleton",
                     "binding_mode": rig.extras.get("binding_mode", 1),
@@ -388,7 +398,7 @@ def build_doc(rig: Rig) -> dict:
     return doc
 
 
-def _preview_bytes(doc: dict) -> bytes | None:
+def _preview_bytes(doc: dict, project_dir: Path | None = None) -> bytes | None:
     """Сгенерировать preview.jpg из первого ImageLayer или синтезировать из меша."""
     try:
         from PIL import Image, ImageDraw
@@ -402,7 +412,7 @@ def _preview_bytes(doc: dict) -> bytes | None:
                 if ref:
                     p = Path(ref)
                     if not p.is_absolute():
-                        p = Path(__file__).parent.parent.parent / p
+                        p = (project_dir / p) if project_dir else Path(__file__).parent.parent.parent / p
                     if p.exists():
                         return Image.open(p).convert("RGB")
             r = first_image(l.get("layers", []))
@@ -431,12 +441,12 @@ def _preview_bytes(doc: dict) -> bytes | None:
 
 
 def emit(rig: Rig, out_path: str) -> str:
-    doc = build_doc(rig)
     out = Path(out_path)
+    doc = build_doc(rig, out.parent)
     out.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("Project.mohoproj", json.dumps(doc))
-        pv = _preview_bytes(doc)
+        pv = _preview_bytes(doc, out.parent)
         if pv:
             z.writestr("preview.jpg", pv)
     return str(out)

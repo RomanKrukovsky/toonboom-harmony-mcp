@@ -192,6 +192,8 @@ def compile_master_character(
     out_path: str = "./output/Summer_Smith.moho",
     canvas_w: int = 1920,
     canvas_h: int = 1080,
+    body_proportions: dict[str, float] | None = None,
+    joints_override: dict[str, tuple[float, float]] | None = None,
 ) -> str:
     """Build a visible, articulated and diagnostically animated humanoid."""
     if not name.strip():
@@ -222,10 +224,50 @@ def compile_master_character(
         },
     )
 
+    proportions = body_proportions or {}
+    torso_width = float(proportions.get("torso_width", 1.0))
+    limb_scale = float(proportions.get("limb_scale", 1.0))
+    head_scale = float(proportions.get("head_scale", 1.0))
+    if not 0.5 <= torso_width <= 1.6:
+        raise ValueError("torso_width must be between 0.5 and 1.6")
+    if not 0.5 <= limb_scale <= 1.6:
+        raise ValueError("limb_scale must be between 0.5 and 1.6")
+    if not 0.5 <= head_scale <= 1.6:
+        raise ValueError("head_scale must be between 0.5 and 1.6")
+    base_joints = joints_override or JOINTS
+    missing_joints = set(JOINTS) - set(base_joints)
+    if missing_joints:
+        raise ValueError("joints_override is missing: " + ", ".join(sorted(missing_joints)))
+    center_x = float(base_joints["hip"][0])
+    joints = {
+        joint: (center_x + (float(x) - center_x) * torso_width, float(y))
+        for joint, (x, y) in base_joints.items()
+    }
+    for side in ("L", "R"):
+        shoulder = joints[f"shoulder_{side}"]
+        for joint in (f"elbow_{side}", f"hand_{side}"):
+            x, y = joints[joint]
+            joints[joint] = (
+                shoulder[0] + (x - shoulder[0]) * limb_scale,
+                shoulder[1] + (y - shoulder[1]) * limb_scale,
+            )
+        hip = joints[f"hip_{side}"]
+        for joint in (f"knee_{side}", f"ankle_{side}", f"toe_{side}"):
+            x, y = joints[joint]
+            joints[joint] = (
+                hip[0] + (x - hip[0]) * limb_scale,
+                hip[1] + (y - hip[1]) * limb_scale,
+            )
+    head_base_px = joints["head_base"]
+    head_top_px = joints["head_top"]
+    joints["head_top"] = (
+        head_base_px[0] + (head_top_px[0] - head_base_px[0]) * head_scale,
+        head_base_px[1] + (head_top_px[1] - head_base_px[1]) * head_scale,
+    )
     bones, absolute_angles, joint_world, root_world = build_bones(
-        dict(JOINTS),
-        DESIGN_WIDTH,
-        DESIGN_HEIGHT,
+        joints,
+        canvas_w if joints_override else DESIGN_WIDTH,
+        canvas_h if joints_override else DESIGN_HEIGHT,
     )
     add_leg_ik_targets(bones, root_world, absolute_angles)
     _add_arm_ik_targets(bones, joint_world, root_world, absolute_angles)
@@ -264,7 +306,7 @@ def compile_master_character(
         view: recolor(transform_mesh(
             generate_head_skull_mesh(view, parent_bone=bone_index["Head"]),
             translate=head_origin,
-            scale=(1.25, 1.25),
+            scale=(1.25 * head_scale, 1.25 * head_scale),
         ))
         for view in HEAD_VIEWS
     }
@@ -272,7 +314,7 @@ def compile_master_character(
         phoneme: recolor(transform_mesh(
             generate_mouth_mesh(phoneme, parent_bone=bone_index["Head"]),
             translate=head_origin,
-            scale=(1.25, 1.25),
+            scale=(1.25 * head_scale, 1.25 * head_scale),
         ))
         for phoneme in PHONEMES
     }
@@ -285,7 +327,7 @@ def compile_master_character(
         eye_states[state] = recolor(transform_mesh(
             eyes,
             translate=head_origin,
-            scale=(1.25, 1.25),
+            scale=(1.25 * head_scale, 1.25 * head_scale),
         ))
     brow_states: dict[str, dict] = {}
     for state in BROW_STATES:
@@ -296,7 +338,7 @@ def compile_master_character(
         brow_states[state] = recolor(transform_mesh(
             brows,
             translate=head_origin,
-            scale=(1.25, 1.25),
+            scale=(1.25 * head_scale, 1.25 * head_scale),
         ))
 
     hand_states: dict[str, dict[str, dict]] = {"L": {}, "R": {}}

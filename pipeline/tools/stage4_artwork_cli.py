@@ -4,11 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import sys
-from pathlib import Path
 
-from ..stage4_batch_artwork import PSDParser, RigCompiler, BatchProducer
+from ..stage4_batch_artwork import BatchProducer, PSDParser, RigCompiler
 
 
 def main() -> None:
@@ -34,6 +31,7 @@ def main() -> None:
     p_compile.add_argument("--psd-data", default="{}", help="JSON psd data")
     p_compile.add_argument("--body-plan", default="adult_neutral", help="Body plan")
     p_compile.add_argument("--body-params", default="{}", help="JSON body params")
+    p_compile.add_argument("--output", required=True, help="Certified output .moho path")
 
     # batch_produce
     p_batch = subparsers.add_parser("batch_produce")
@@ -52,7 +50,9 @@ def main() -> None:
     elif args.command == "compile_from_artwork":
         psd_data = json.loads(args.psd_data)
         body_params = json.loads(args.body_params)
-        res = RigCompiler.compile_from_artwork(psd_data, args.body_plan, body_params)
+        res = RigCompiler.compile_from_artwork(
+            psd_data, args.body_plan, body_params, args.output,
+        )
     elif args.command == "batch_produce":
         specs = json.loads(args.specs)
         res = BatchProducer.batch_produce(specs, args.concurrency)
