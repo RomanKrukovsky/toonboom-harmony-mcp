@@ -3,7 +3,7 @@
 Guarantees:
 1. 100% Valid C++ Type-Compliant Moho JSON (via pipeline templates).
 2. Complete visible vector geometry attached to bone tree (Head 8-turn, Mouths, Eyes, Brows, Torso, Arms, Legs, Hands).
-3. Working Smart Dials (Head Switch, Mouth Switch) and IK Target pins.
+3. Working Smart Dials (Head Switch, Mouth Switch, Eyes Switch, Hand Switches) and IK Target pins.
 4. Clean Frame 0 and zero console warnings.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from .modules import (
     HEAD_TURN_ANGLES, HEAD_TURN_CONSTRAINTS, PHONEMES_FULL, PHONEMES_COMPACT,
     BASE_INTERP, DIAL_KEY_INTERP, DIAL_FIRST_INTERP, SWITCH_STEP_INTERP,
     make_mesh_part, make_vector_switch, attach_simple_dial, wire_dial,
-    make_bone_group
+    make_bone_group, head_turn_map
 )
 from .vector_shapes import (
     generate_head_skull_mesh, generate_eye_mesh, generate_brow_mesh,
@@ -61,42 +61,37 @@ def compile_master_character(
         }
     )
     
-    from ..moho.emit import _load_tpl
-    doc_tpl = _load_tpl("_doc_skeleton.json")
-    doc_tpl["project_data"]["width"] = int(canvas_w)
-    doc_tpl["project_data"]["height"] = int(canvas_h)
-    doc_tpl["project_data"]["start_frame"] = 1
-    doc_tpl["project_data"]["end_frame"] = 240
-    doc_tpl["project_data"]["fps"] = 24
-    
     rig.extras = {
-        "styles": doc_tpl.get("styles", []),
-        "project_data": doc_tpl["project_data"],
-        "metadata": doc_tpl.get("metadata", {}),
-        "layercomps": doc_tpl.get("layercomps", []),
+        "project_data": {
+            "width": int(canvas_w),
+            "height": int(canvas_h)
+        },
         "binding_mode": 1
     }
 
     # 2. Build Connected Humanoid Skeleton
     joints = dict(JOINTS)
-    bones, abs_angle, jw, root_world = build_bones(joints, 400, 600)
+    bones, abs_angle, jw, root_world = build_bones(joints, int(canvas_w), int(canvas_h))
     add_leg_ik_targets(bones, root_world, abs_angle)
     
-    # 3. Add Hair Physics Bones & Smart Dials
     name_to_idx = {b.id: i for i, b in enumerate(bones)}
     head_idx = name_to_idx.get("Head", 4)
-    head_pos = jw.get("head_base", (0.0, 1.0))
-    
+    body_idx = name_to_idx.get("Body", 2)
+    larm_idx = name_to_idx.get("UpperArm L", 5)
+    rarm_idx = name_to_idx.get("UpperArm R", 7)
+    lleg_idx = name_to_idx.get("Thigh L", 9)
+    rleg_idx = name_to_idx.get("Thigh R", 12)
+    lhand_idx = name_to_idx.get("LowerArm L", -1)
+    rhand_idx = name_to_idx.get("LowerArm R", -1)
+
+    # 3. Add Hair Bone
     hair_bone = Bone(
         id="Hair_Ponytail",
         parent="Head",
         position=(0.0, 0.45),
         angle=math.radians(-45),
         length=0.35,
-        strength=0.15,
-        extra_channels_raw={
-            "bone_dynamics": {"type": "Bool", "when": [0], "val": [True], "interp": [dict(BASE_INTERP)]}
-        }
+        strength=0.15
     )
     bones.append(hair_bone)
     name_to_idx["Hair_Ponytail"] = len(bones) - 1
@@ -118,11 +113,8 @@ def compile_master_character(
     for s in BROW_STATES:
         brows_states[s] = generate_brow_mesh("R", state=s, view="Front", parent_bone=head_idx)
 
-    body_idx = name_to_idx.get("Body", 2)
-    larm_idx = name_to_idx.get("UpperArm L", 5)
-    rarm_idx = name_to_idx.get("UpperArm R", 7)
-    lleg_idx = name_to_idx.get("Thigh L", 9)
-    rleg_idx = name_to_idx.get("Thigh R", 12)
+    hands_l_states = {s: generate_hand_mesh("L", pose=s, parent_bone=lhand_idx) for s in ["default", "fist", "open", "point"]}
+    hands_r_states = {s: generate_hand_mesh("R", pose=s, parent_bone=rhand_idx) for s in ["default", "fist", "open", "point"]}
 
     torso_mesh = generate_torso_mesh(parent_bone=body_idx)
     larm_mesh = generate_limb_mesh("LArm", parent_bone=larm_idx)
@@ -150,25 +142,22 @@ def compile_master_character(
     )
 
     eyes_switch = make_vector_switch(
-        "sw_eyes", "Eyes", {s: {} for s in EYE_STATES},
+        "sw_eyes", "Eyes", eyes_states,
         "Head", origin_fn, center_fn, abs_angle, z_start=30
     )
-
-    hands_l_switch = make_vector_switch(
-        "sw_hand_l", "Hand Switch L", {s: {} for s in ["default", "fist", "open", "point"]},
-        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
-    )
-    hands_r_switch = make_vector_switch(
-        "sw_hand_r", "Hand Switch R", {s: {} for s in ["default", "fist", "open", "point"]},
-        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
-    )
-
-    # Добавляем в группу головы, если нужно, или в root
-    # Пока добавим в список для проверки, а потом wire_dial
 
     brows_switch = make_vector_switch(
         "sw_brows", "Brows", brows_states,
         "Head", origin_fn, center_fn, abs_angle, z_start=40
+    )
+
+    hands_l_switch = make_vector_switch(
+        "sw_hand_l", "Hand Switch L", hands_l_states,
+        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
+    )
+    hands_r_switch = make_vector_switch(
+        "sw_hand_r", "Hand Switch R", hands_r_states,
+        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
     )
 
     head_group = Part(
@@ -177,7 +166,7 @@ def compile_master_character(
         type="group",
         parent=None,
         bone="Head",
-        children=[head_switch, brows_switch, eyes_switch, mouth_switch, hands_l_switch, hands_r_switch],
+        children=[head_switch, brows_switch, eyes_switch, mouth_switch],
         z_order=50
     )
 
@@ -240,7 +229,6 @@ def compile_master_character(
         is_dial=True
     )
     bones.append(head_dial)
-    from .modules import head_turn_map
     wire_dial(head_dial, "Head Switch", HEAD_TURN_ANGLES, head_switch, head_turn_map(list(HEAD_VIEWS)))
 
     mouth_dial = Bone(
@@ -272,9 +260,8 @@ def compile_master_character(
         is_dial=True
     )
     bones.append(eyes_dial)
-    # Используем 8 состояний, чтобы соответствовать EYE_STATES
-    eye_angles = [math.radians(ang) for ang in [-60, -42, -24, -6, 6, 24, 42, 60]]
-    wire_dial(eyes_dial, "Eyes Switch", eye_angles, eyes_switch, EYE_STATES)
+    eye_angles = [math.radians(ang) for ang in [-45, -15, 15, 45]]
+    wire_dial(eyes_dial, "Eyes Switch", eye_angles, eyes_switch, ["open", "blink", "squint", "wide"])
 
     hands_l_dial = Bone(
         id="Hand Switch L",
@@ -289,6 +276,7 @@ def compile_master_character(
         is_dial=True
     )
     bones.append(hands_l_dial)
+    wire_dial(hands_l_dial, "Hand Switch L", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_l_switch, ["default", "fist", "open", "point"])
 
     hands_r_dial = Bone(
         id="Hand Switch R",
@@ -303,44 +291,79 @@ def compile_master_character(
         is_dial=True
     )
     bones.append(hands_r_dial)
-
-    hands_l_switch = make_vector_switch(
-        "sw_hand_l", "Hand Switch L", {s: {} for s in ["default", "fist", "open", "point"]},
-        "LowerArm L", origin_fn, center_fn, abs_angle, z_start=20
-    )
-    hands_r_switch = make_vector_switch(
-        "sw_hand_r", "Hand Switch R", {s: {} for s in ["default", "fist", "open", "point"]},
-        "LowerArm R", origin_fn, center_fn, abs_angle, z_start=20
-    )
-
-    bones.append(hands_r_dial)
-    wire_dial(hands_l_dial, "Hand Switch L", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_l_switch, ["default", "fist", "open", "point"])
     wire_dial(hands_r_dial, "Hand Switch R", [math.radians(-45), math.radians(-15), math.radians(15), math.radians(45)], hands_r_switch, ["default", "fist", "open", "point"])
 
     rig.bones = bones
     rig.root_parts = [root_container]
 
-    # 9. Add Diagnostic Animation
-    # Кадр 12: Поза ходьбы
-    # Кадр 24: Поворот головы и моргание
-    # Кадр 36: Рот и эмоция
-    from ..pir.schema import Channel
+    # 8. Diagnostic Animation with Distinct Keyframe Posings
+    # Frame 1: Neutral
+    # Frame 12: Walk / Leg step + Arm swing
+    # Frame 24: Head turn + Blink
+    # Frame 36: Speech / Mouth Phoneme + Hand Gesture
+    thigh_l = next((b for b in bones if b.id == "Thigh L"), None)
+    if thigh_l:
+        thigh_l.angle_channel = Channel(
+            type="Val",
+            when=[0, 1, 12, 24, 36],
+            val=[thigh_l.angle, thigh_l.angle, thigh_l.angle + math.radians(35), thigh_l.angle, thigh_l.angle],
+            interp=[dict(BASE_INTERP) for _ in range(5)]
+        )
 
-    # Добавляем ключи для анимации (пример для Main кости или другой)
-    # Нужно убедиться, что _mainline_frames их увидит.
+    upper_arm_l = next((b for b in bones if b.id == "UpperArm L"), None)
+    if upper_arm_l:
+        upper_arm_l.angle_channel = Channel(
+            type="Val",
+            when=[0, 1, 12, 24, 36],
+            val=[upper_arm_l.angle, upper_arm_l.angle, upper_arm_l.angle - math.radians(45), upper_arm_l.angle, upper_arm_l.angle],
+            interp=[dict(BASE_INTERP) for _ in range(5)]
+        )
 
-    # Добавим для примера несколько ключей для Head кости
-    head_bone = next(b for b in bones if b.id == "Head")
-    if head_bone.angle_channel is None:
-        head_bone.angle_channel = Channel(type="Float", when=[], val=[], interp=[])
+    target_leg_l = next((b for b in bones if b.id == "Target Leg L"), None)
+    if target_leg_l:
+        target_leg_l.pos_channel = Channel(
+            type="Vec2",
+            when=[0, 1, 12, 24, 36],
+            val=[
+                target_leg_l.position,
+                target_leg_l.position,
+                (target_leg_l.position[0] + 0.3, target_leg_l.position[1] + 0.2),
+                target_leg_l.position,
+                target_leg_l.position
+            ],
+            interp=[dict(BASE_INTERP) for _ in range(5)]
+        )
 
-    # Добавляем ключевые кадры (в Moho обычно when и val - списки)
-    for frame in [1, 12, 24, 36]:
-        head_bone.angle_channel.when.append(int(frame))
-        head_bone.angle_channel.val.append(0.0)
-        head_bone.angle_channel.interp.append({"type": "Linear"})
+    # Dial animations across diagnostic frames
+    head_dial.angle_channel = Channel(
+        type="Val",
+        when=[0, 1, 12, 24, 36],
+        val=[math.radians(90), math.radians(90), math.radians(90), math.radians(180), math.radians(90)],
+        interp=[dict(BASE_INTERP) for _ in range(5)]
+    )
 
-    # 8. Emit Production-Ready .moho Archive
+    eyes_dial.angle_channel = Channel(
+        type="Val",
+        when=[0, 1, 12, 24, 36],
+        val=[0.0, 0.0, 0.0, math.radians(-15), 0.0],
+        interp=[dict(BASE_INTERP) for _ in range(5)]
+    )
+
+    mouth_dial.angle_channel = Channel(
+        type="Val",
+        when=[0, 1, 12, 24, 36],
+        val=[0.0, 0.0, 0.0, 0.0, math.radians(36)],
+        interp=[dict(BASE_INTERP) for _ in range(5)]
+    )
+
+    hands_l_dial.angle_channel = Channel(
+        type="Val",
+        when=[0, 1, 12, 24, 36],
+        val=[0.0, 0.0, 0.0, 0.0, math.radians(45)],
+        interp=[dict(BASE_INTERP) for _ in range(5)]
+    )
+
+    # 9. Emit Production-Ready .moho Archive
     out = emit(rig, out_path)
     return out
 

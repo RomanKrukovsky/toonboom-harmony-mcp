@@ -47,11 +47,14 @@ import { factoryFoundationTools } from './tools/factoryFoundationTools.js';
 import { factoryCompilerTools } from './tools/factoryCompilerTools.js';
 import { fullRigTools } from './tools/fullRigTools.js';
 import { mohoRigTools } from './tools/mohoRigTools.js';
+import { mohoQaTools } from './tools/mohoQaTools.js';
 import { mohoAiCharacterTools } from './tools/mohoAiCharacterTools.js';
 import { mohoAdvancedRigTools } from './tools/mohoAdvancedRigTools.js';
 import { mohoSpecializedRigTools } from './tools/mohoSpecializedRigTools.js';
 import { universalStudioTools } from './tools/universalStudioTools.js';
 import { mohoProductionTools } from './tools/mohoProductionTools.js';
+import { mohoAnimateFromBriefTools } from './tools/mohoAnimateFromBriefTools.js';
+import { mohoStage4ArtworkBatchTools } from './tools/mohoStage4ArtworkBatchTools.js';
 import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
 import { mlTools } from './tools/mlTools.js';
 
@@ -124,11 +127,14 @@ const allTools = [
   ...factoryCompilerTools,
   ...fullRigTools,
   ...mohoRigTools,
+  ...mohoQaTools,
   ...mohoAiCharacterTools,
   ...mohoAdvancedRigTools,
   ...mohoSpecializedRigTools,
   ...universalStudioTools,
   ...mohoProductionTools,
+  ...mohoAnimateFromBriefTools,
+  ...mohoStage4ArtworkBatchTools,
   ...harmonyNativePhase2Tools,
   ...mlTools,
   ...capabilityTools,

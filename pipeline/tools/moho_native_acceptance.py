@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -52,29 +53,35 @@ def _moho_executable() -> Path:
 
 
 def _run(command: list[str], timeout: int = 45) -> ProcessEvidence:
-    try:
-        completed = subprocess.run(
-            command,
-            capture_output=True,
-            check=False,
-            text=True,
-            timeout=timeout,
-        )
-        return ProcessEvidence(
-            command=command,
-            returncode=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
-        )
-    except subprocess.TimeoutExpired as error:
-        stdout = error.stdout.decode() if isinstance(error.stdout, bytes) else (error.stdout or "")
-        stderr = error.stderr.decode() if isinstance(error.stderr, bytes) else (error.stderr or "")
-        return ProcessEvidence(
-            command=command,
-            returncode=124,
-            stdout=stdout,
-            stderr=f"{stderr}\nMoho command timed out after {timeout} seconds".strip(),
-        )
+    import fcntl
+    lock_path = Path(tempfile.gettempdir()) / "moho_cli_process.lock"
+    with open(lock_path, "w") as lock_file:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            completed = subprocess.run(
+                command,
+                capture_output=True,
+                check=False,
+                text=True,
+                timeout=timeout,
+            )
+            return ProcessEvidence(
+                command=command,
+                returncode=completed.returncode,
+                stdout=completed.stdout,
+                stderr=completed.stderr,
+            )
+        except subprocess.TimeoutExpired as error:
+            stdout = error.stdout.decode() if isinstance(error.stdout, bytes) else (error.stdout or "")
+            stderr = error.stderr.decode() if isinstance(error.stderr, bytes) else (error.stderr or "")
+            return ProcessEvidence(
+                command=command,
+                returncode=124,
+                stdout=stdout,
+                stderr=f"{stderr}\nMoho command timed out after {timeout} seconds".strip(),
+            )
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
 def _is_png(path: Path) -> bool:

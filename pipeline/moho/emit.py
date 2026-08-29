@@ -22,8 +22,17 @@ def _load_tpl(name: str) -> dict:
 
 
 def _channel_dict(c: Channel) -> dict:
+    val = []
+    for v in c.val:
+        if c.type == "Vec2" and isinstance(v, (tuple, list)):
+            val.append({"x": float(v[0]), "y": float(v[1])})
+        elif c.type == "Vec3" and isinstance(v, (tuple, list)):
+            val.append({"x": float(v[0]), "y": float(v[1]), "z": float(v[2])})
+        else:
+            val.append(v)
     return {"type": c.type, "ref": False, "mute": False,
-            "when": list(c.when), "val": list(c.val), "interp": list(c.interp)}
+            "when": list(c.when), "val": val, "interp": list(c.interp)}
+
 
 
 _DEFAULT_INTERP = [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}]
