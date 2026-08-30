@@ -1,0 +1,394 @@
+{
+  "score": 100,
+  "certified": true,
+  "mandatory_passed": true,
+  "gates": [
+    {
+      "name": "open_save_reopen",
+      "weight": 15,
+      "earned": 15,
+      "mandatory": true,
+      "passed": true,
+      "detail": "opened=True, saved=True, reopened=True, errors=0"
+    },
+    {
+      "name": "visible_figure",
+      "weight": 15,
+      "earned": 15,
+      "mandatory": true,
+      "passed": true,
+      "detail": "requiredMeshes=13/13, silhouette={'fraction': 0.17768333333333333, 'width': 0.39, 'height': 0.7216666666666667}, minimumWidth=0.2500"
+    },
+    {
+      "name": "connected_skeleton_binding",
+      "weight": 15,
+      "earned": 15,
+      "mandatory": true,
+      "passed": true,
+      "detail": "hierarchy=14/14, boundMeshes=39"
+    },
+    {
+      "name": "working_ik",
+      "weight": 10,
+      "earned": 10,
+      "mandatory": false,
+      "passed": true,
+      "detail": "targets={'LowerArm L': 'Target Arm L', 'LowerArm R': 'Target Arm R', 'Shin L': 'Target Leg L', 'Shin R': 'Target Leg R'}, movingTargets=['Target Arm L', 'Target Arm R', 'Target Leg L', 'Target Leg R']"
+    },
+    {
+      "name": "switches",
+      "weight": 15,
+      "earned": 15,
+      "mandatory": false,
+      "passed": true,
+      "detail": "states={'Hand Switch L': 4, 'Hand Switch R': 4, 'Head': 8, 'Brows': 4, 'Eyes': 4, 'Mouth': 6}"
+    },
+    {
+      "name": "smart_actions",
+      "weight": 15,
+      "earned": 15,
+      "mandatory": false,
+      "passed": true,
+      "detail": "linked=['Eyes Switch', 'Hand Switch L', 'Hand Switch R', 'Head Switch', 'Mouth Switch'], pointActions={'Elbow Correct L': 4, 'Elbow Correct R': 4, 'Knee Correct L': 4, 'Knee Correct R': 4, 'Eyes Look X': 48, 'Eyes Look Y': 48}"
+    },
+    {
+      "name": "clean_controls_frame_zero",
+      "weight": 5,
+      "earned": 5,
+      "mandatory": false,
+      "passed": true,
+      "detail": "controls=13/13, helperHidden=True, frameZero=True"
+    },
+    {
+      "name": "diagnostic_animation",
+      "weight": 5,
+      "earned": 5,
+      "mandatory": false,
+      "passed": true,
+      "detail": "adjacentDifferences=[0.05169, 0.06224, 0.0635], threshold=0.00711"
+    },
+    {
+      "name": "real_renders",
+      "weight": 5,
+      "earned": 5,
+      "mandatory": true,
+      "passed": true,
+      "detail": "source=4/4, roundtrip=4/4"
+    }
+  ],
+  "evidence": {
+    "roundtrip_path": "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/roundtrip.moho",
+    "rendered_frames": [
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/source_frame_00001_00001.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/source_frame_00012_00012.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/source_frame_00024_00024.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/source_frame_00036_00036.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/roundtrip_frame_00001_00001.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/roundtrip_frame_00012_00012.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/roundtrip_frame_00024_00024.png",
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/roundtrip_frame_00036_00036.png"
+    ],
+    "preview_frames": [
+      "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/native-dab88a74/embedded_preview.jpg"
+    ],
+    "render_status": "rendered",
+    "stdout_path": "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/moho-stdout.txt",
+    "stderr_path": "/private/var/folders/gg/mvmnmwn10djc5tb7zvnq3pq00000gn/T/tmpeayepl0x/evidence/moho-stderr.txt",
+    "actual_structure": {
+      "name": "Stage1Hero",
+      "bones": [
+        "Main",
+        "Pelvis",
+        "Body",
+        "Neck",
+        "Head",
+        "UpperArm L",
+        "LowerArm L",
+        "UpperArm R",
+        "LowerArm R",
+        "Thigh L",
+        "Shin L",
+        "Foot L",
+        "Thigh R",
+        "Shin R",
+        "Foot R",
+        "Target Leg L",
+        "Target Leg R",
+        "Target Arm L",
+        "Target Arm R",
+        "Hair Helper",
+        "Elbow Correct L",
+        "Elbow Correct R",
+        "Knee Correct L",
+        "Knee Correct R",
+        "Head Switch",
+        "Mouth Switch",
+        "Eyes Switch",
+        "Hand Switch L",
+        "Hand Switch R"
+      ],
+      "boneParents": {
+        "Main": null,
+        "Pelvis": "Main",
+        "Body": "Pelvis",
+        "Neck": "Body",
+        "Head": "Neck",
+        "UpperArm L": "Body",
+        "LowerArm L": "UpperArm L",
+        "UpperArm R": "Body",
+        "LowerArm R": "UpperArm R",
+        "Thigh L": "Pelvis",
+        "Shin L": "Thigh L",
+        "Foot L": "Shin L",
+        "Thigh R": "Pelvis",
+        "Shin R": "Thigh R",
+        "Foot R": "Shin R",
+        "Target Leg L": "Main",
+        "Target Leg R": "Main",
+        "Target Arm L": "Main",
+        "Target Arm R": "Main",
+        "Hair Helper": "Head",
+        "Elbow Correct L": null,
+        "Elbow Correct R": null,
+        "Knee Correct L": null,
+        "Knee Correct R": null,
+        "Head Switch": null,
+        "Mouth Switch": null,
+        "Eyes Switch": null,
+        "Hand Switch L": null,
+        "Hand Switch R": null
+      },
+      "ikTargets": {
+        "LowerArm L": "Target Arm L",
+        "LowerArm R": "Target Arm R",
+        "Shin L": "Target Leg L",
+        "Shin R": "Target Leg R"
+      },
+      "switches": {
+        "Hand Switch L": [
+          "Relaxed",
+          "Fist",
+          "Open",
+          "Point"
+        ],
+        "Hand Switch R": [
+          "Relaxed",
+          "Fist",
+          "Open",
+          "Point"
+        ],
+        "Head": [
+          "Front",
+          "3/4 R",
+          "Side R",
+          "1/4 R",
+          "Back",
+          "1/4 L",
+          "Side L",
+          "3/4 L"
+        ],
+        "Brows": [
+          "neutral",
+          "angry",
+          "raised",
+          "sad"
+        ],
+        "Eyes": [
+          "open",
+          "closed",
+          "squint",
+          "wide"
+        ],
+        "Mouth": [
+          "Closed",
+          "A",
+          "O",
+          "I",
+          "U",
+          "E"
+        ]
+      },
+      "actions": [
+        "Elbow Correct L",
+        "Elbow Correct R",
+        "Eyes Switch",
+        "Hand Switch L",
+        "Hand Switch R",
+        "Head Switch",
+        "Knee Correct L",
+        "Knee Correct R",
+        "Mouth Switch"
+      ],
+      "controls": [
+        "Elbow Correct L",
+        "Elbow Correct R",
+        "Eyes Switch",
+        "Hand Switch L",
+        "Hand Switch R",
+        "Head Switch",
+        "Knee Correct L",
+        "Knee Correct R",
+        "Mouth Switch",
+        "Target Arm L",
+        "Target Arm R",
+        "Target Leg L",
+        "Target Leg R"
+      ],
+      "meshLayers": [
+        "Torso",
+        "Pelvis",
+        "Neck",
+        "UpperArm L",
+        "LowerArm L",
+        "UpperArm R",
+        "LowerArm R",
+        "Thigh L",
+        "Shin L",
+        "Thigh R",
+        "Shin R",
+        "Foot L",
+        "Foot R",
+        "Relaxed",
+        "Fist",
+        "Open",
+        "Point",
+        "Relaxed",
+        "Fist",
+        "Open",
+        "Point",
+        "Front",
+        "3/4 R",
+        "Side R",
+        "1/4 R",
+        "Back",
+        "1/4 L",
+        "Side L",
+        "3/4 L",
+        "neutral",
+        "angry",
+        "raised",
+        "sad",
+        "open",
+        "closed",
+        "squint",
+        "wide",
+        "Closed",
+        "A",
+        "O",
+        "I",
+        "U",
+        "E"
+      ],
+      "boundMeshCount": 43,
+      "diagnosticFrames": [
+        1,
+        12,
+        24,
+        36
+      ],
+      "boundMeshNames": [
+        "Torso",
+        "Pelvis",
+        "Neck",
+        "UpperArm L",
+        "LowerArm L",
+        "UpperArm R",
+        "LowerArm R",
+        "Thigh L",
+        "Shin L",
+        "Thigh R",
+        "Shin R",
+        "Foot L",
+        "Foot R",
+        "Relaxed",
+        "Fist",
+        "Open",
+        "Point",
+        "Relaxed",
+        "Fist",
+        "Open",
+        "Point",
+        "Front",
+        "3/4 R",
+        "Side R",
+        "1/4 R",
+        "Back",
+        "1/4 L",
+        "Side L",
+        "3/4 L",
+        "neutral",
+        "angry",
+        "raised",
+        "sad",
+        "open",
+        "closed",
+        "squint",
+        "wide",
+        "Closed",
+        "A",
+        "O",
+        "I",
+        "U",
+        "E"
+      ],
+      "pointActionCounts": {
+        "Elbow Correct L": 4,
+        "Elbow Correct R": 4,
+        "Knee Correct L": 4,
+        "Knee Correct R": 4,
+        "Eyes Look X": 48,
+        "Eyes Look Y": 48
+      },
+      "dialLinks": [
+        [
+          "Eyes Switch",
+          "Eyes Switch",
+          "part_40_Eyes"
+        ],
+        [
+          "Hand Switch L",
+          "Hand Switch L",
+          "part_15_Hand_Switch_L"
+        ],
+        [
+          "Hand Switch R",
+          "Hand Switch R",
+          "part_20_Hand_Switch_R"
+        ],
+        [
+          "Head Switch",
+          "Head Switch",
+          "part_26_Head"
+        ],
+        [
+          "Mouth Switch",
+          "Mouth Switch",
+          "part_45_Mouth"
+        ]
+      ],
+      "helpers": [
+        "Hair Helper"
+      ],
+      "frameZeroReady": true
+    },
+    "manifest_matches": true,
+    "manifest_mismatches": [],
+    "diagnostic_frames": [
+      1,
+      12,
+      24,
+      36
+    ],
+    "diagnostic_differences": [
+      0.051691666666666664,
+      0.06224166666666667,
+      0.0635
+    ],
+    "neutral_silhouette": {
+      "fraction": 0.17768333333333333,
+      "width": 0.39,
+      "height": 0.7216666666666667
+    }
+  },
+  "errors": []
+}

@@ -1,9 +1,16 @@
 local inputPath = [=[__SOURCE_PROJECT__]=]
-local outputPath = [=[__ROUNDTRIP_OUTPUT__]=]
+local roundtripPath = [=[__ROUNDTRIP_OUTPUT__]=]
 
 function MohoScript(moho)
-	moho:FileOpen(inputPath)
-	moho:FileSaveAs(outputPath)
-	print("MCP_ROUNDTRIP_SAVE_OK")
-	moho:Quit()
+    moho:FileOpen(inputPath)
+    moho:FileSaveAs(roundtripPath)
+    local f = io.open("__MARKER_PATH__", "w")
+    if f then
+        f:write("MCP_ROUNDTRIP_SAVE_OK\n")
+        f:close()
+    end
+    -- The trial build of Moho 14 leaves the license manager spinning after
+    -- FileSaveAs, so writing the completion marker and exiting the Lua
+    -- process explicitly is faster than waiting for Moho's graceful Quit.
+    os.exit(0)
 end

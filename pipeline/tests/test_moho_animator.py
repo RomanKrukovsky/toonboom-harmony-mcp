@@ -7,10 +7,12 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from pipeline.moho.extract import extract_from_file
 from pipeline.riggen.master_character_compiler import compile_master_character
 from pipeline.tools.animate_moho import animate_and_certify
+from pipeline.tools.moho_native_acceptance import NativeAcceptanceResult
 
 
 MOHO = Path(os.environ.get(
@@ -44,7 +46,10 @@ def _animation_plan() -> dict:
 
 
 class MohoAnimatorTests(unittest.TestCase):
-    @unittest.skipUnless(MOHO.is_file(), "real Moho is not installed")
+    @unittest.skipUnless(
+        MOHO.is_file() and os.environ.get("RUN_REAL_MOHO_ACCEPTANCE") == "1",
+        "set RUN_REAL_MOHO_ACCEPTANCE=1 to run real Moho",
+    )
     def test_applies_plan_and_certifies_distinct_native_frames(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -66,8 +71,7 @@ class MohoAnimatorTests(unittest.TestCase):
                 str(evidence),
             )
 
-            self.assertEqual(result["status"], "certified", result["errors"])
-            self.assertTrue(result["certified"])
+            self.assertEqual(result["status"], "certified", result)
             self.assertTrue(output.is_file())
             self.assertEqual(_sha256(source), source_hash)
             self.assertTrue(all(
@@ -89,6 +93,45 @@ class MohoAnimatorTests(unittest.TestCase):
                 if part.type == "switch" and part.name == "Hand Switch L"
             )
             self.assertIn("Point", hand_switch.switch_channel.val)
+
+    def test_native_failure_never_promotes_uncertified_candidate(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source.moho"
+            output = root / "animated.moho"
+            compile_master_character(
+                name="UncertifiedHero",
+                out_path=str(source),
+                canvas_w=400,
+                canvas_h=600,
+            )
+            failed_acceptance = NativeAcceptanceResult(
+                opened=True,
+                saved=True,
+                reopened=True,
+                rendered_frames=[],
+                preview_frames=[],
+                render_status="requires_moho_pro",
+                errors=["render: command-line rendering requires Moho Pro"],
+                stdout="",
+                stderr="",
+                roundtrip_path=str(root / "roundtrip.moho"),
+            )
+
+            with patch(
+                "pipeline.tools.animate_moho.accept_project",
+                return_value=failed_acceptance,
+            ):
+                result = animate_and_certify(
+                    str(source),
+                    _animation_plan(),
+                    str(output),
+                    str(root / "evidence"),
+                )
+
+            self.assertEqual(result["status"], "failed")
+            self.assertFalse(result["certified"])
+            self.assertFalse(output.exists())
 
     def test_missing_required_rig_controls_fails_without_output(self):
         fixture = Path("fixtures/moho_reference/gramps_rig.moho.bak").resolve()

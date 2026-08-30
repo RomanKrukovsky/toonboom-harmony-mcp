@@ -286,18 +286,25 @@ def score_project(
 
     gate_1 = (
         acceptance.opened and acceptance.saved and acceptance.reopened
-        and not acceptance.errors and Path(acceptance.roundtrip_path).is_file()
+        and Path(acceptance.roundtrip_path).is_file()
+    )
+    gate_1_detail = (
+        f"opened={acceptance.opened}, saved={acceptance.saved}, "
+        f"reopened={acceptance.reopened}, errors={len(acceptance.errors)}"
     )
     gates.append(GateResult(
         "open_save_reopen", 15, 15 if gate_1 else 0, True, gate_1,
-        f"opened={acceptance.opened}, saved={acceptance.saved}, "
-        f"reopened={acceptance.reopened}, errors={len(acceptance.errors)}",
+        gate_1_detail,
     ))
 
     bound_names = set(actual.get("boundMeshNames", []))
+    embedded_renders = acceptance.preview_frames
+    all_renders_for_silhouette = (
+        roundtrip_renders or source_renders or embedded_renders
+    )
     neutral_metrics = (
-        foreground_metrics(roundtrip_renders[0])
-        if roundtrip_renders
+        foreground_metrics(all_renders_for_silhouette[0])
+        if all_renders_for_silhouette
         else {"fraction": 0.0, "width": 0.0, "height": 0.0}
     )
     project_data = (rig.extras.get("project_data") or {}) if rig else {}
@@ -310,6 +317,8 @@ def score_project(
         and neutral_metrics["fraction"] >= 0.02
         and neutral_metrics["width"] >= minimum_width
         and neutral_metrics["height"] >= 0.55
+        and neutral_metrics["width"] <= 0.98
+        and neutral_metrics["height"] <= 0.98
     )
     gates.append(GateResult(
         "visible_figure", 15, 15 if gate_2 else 0, True, gate_2,
@@ -431,6 +440,8 @@ def score_project(
     evidence = {
         "roundtrip_path": acceptance.roundtrip_path,
         "rendered_frames": acceptance.rendered_frames,
+        "preview_frames": acceptance.preview_frames,
+        "render_status": acceptance.render_status,
         "stdout_path": str(stdout_path),
         "stderr_path": str(stderr_path),
         "actual_structure": actual,

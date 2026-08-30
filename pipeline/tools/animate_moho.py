@@ -465,7 +465,7 @@ def animate_and_certify(
 
         score = sum(gate["earned"] for gate in gates)
         certified = all(gate["passed"] for gate in gates if gate["mandatory"]) and score >= 95
-        if certified:
+        if certified and candidate.is_file():
             os.replace(candidate, output)
         elif not errors:
             errors.append("animation certification gates did not pass")

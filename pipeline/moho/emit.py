@@ -12,7 +12,8 @@ from pathlib import Path
 from PIL import Image
 
 from ..pir.schema import Channel, Part, Rig
-from .native_factory import NativeMohoFactory
+from ..riggen.skeleton import MOHO_CAMERA_HEIGHT
+from .native_factory import NativeMohoFactory, DEFAULT_MESH_REFERENCE
 
 _TPL_DIR = Path(__file__).parent / "templates"
 
@@ -55,15 +56,9 @@ def _bone_dict(rig: Rig) -> list[dict]:
             d["hidden"] = True
         if b.shy:
             d["shy"] = True
-        d["angle_control_delay"] = 0
-        d["pos_control_delay"] = 0
-        d["scale_control_delay"] = 0
         d["ignored_by_ik"] = b.ignored_by_ik
         d["physics_radius"] = -1.0
         d["physics_return_to_zero"] = False
-        d["bone_tags"] = 0
-        d["bone_label_showing"] = True if b.is_dial else False
-        d["bone_enable_arc_solver"] = False
         d["physics_torque"] = 10.0
         d["physics_lock_tip"] = False
         d["fixed_angle"] = False
@@ -127,6 +122,7 @@ def _part_layer(
     name_to_idx: dict[str, int],
     factory: NativeMohoFactory,
     project_dir: Path | None = None,
+    canvas_height: int = 1080,
 ) -> dict:
     tpl_name = {"bone_container": "BoneLayer.json", "switch": "SwitchLayer.json",
                 "mesh": "MeshLayer.json", "image": "ImageLayer.json",
@@ -150,7 +146,18 @@ def _part_layer(
                 point["parent"] = name_to_idx.get(point["parent"], -1)
         layer = factory.mesh_layer(part.name, mesh, parent_bone)
     elif part.type == "switch":
-        layer = factory.switch_layer(part.name, [], {})
+        children = [
+            _part_layer(child, name_to_idx, factory, project_dir, canvas_height)
+            for child in part.children
+        ]
+        ch = _channel_dict(part.switch_channel) if part.switch_channel else {
+            "type": "String", "ref": False, "mute": False, "when": [0],
+            "val": [part.switch_states[0] if part.switch_states else ""],
+            "interp": [dict(_DEFAULT_INTERP[0])]}
+        if part.switch_dial_actions:
+            ch["actions"] = copy.deepcopy(part.switch_dial_actions)
+
+        layer = factory.switch_layer(part.name, children, ch)
     else:
         layer = _load_tpl(tpl_name)
     layer["name"] = part.name
@@ -166,27 +173,14 @@ def _part_layer(
         layer["blend_mode"] = part.blend_mode
 
     if part.type == "image" and part.image_ref:
-        _configure_image_layer(layer, part.image_ref, project_dir)
+        _configure_image_layer(layer, part.image_ref, project_dir, canvas_height)
     if part.transforms:
         layer.setdefault("transforms", {}).update({k: _channel_dict(v) for k, v in part.transforms.items()})
     if part.type == "switch":
-        if part.switch_channel is not None:
-            ch = _channel_dict(part.switch_channel)
-            if part.switch_dial_actions:
-                ch["actions"] = copy.deepcopy(part.switch_dial_actions)
-            layer["switch_keys"] = ch
-        else:
-            layer["switch_keys"] = {
-                "type": "String", "ref": False, "mute": False, "when": [0],
-                "val": [part.switch_states[0] if part.switch_states else ""],
-                "interp": [dict(_DEFAULT_INTERP[0])]}
-        layer["layers"] = [
-            _part_layer(child, name_to_idx, factory, project_dir)
-            for child in part.children
-        ]
+        pass
     elif part.type in ("group", "bone_container"):
         layer["layers"] = [
-            _part_layer(child, name_to_idx, factory, project_dir)
+            _part_layer(child, name_to_idx, factory, project_dir, canvas_height)
             for child in part.children
         ]
         if part.type == "bone_container" and part.children:
@@ -199,6 +193,7 @@ def _configure_image_layer(
     layer: dict,
     image_ref: str,
     project_dir: Path | None = None,
+    canvas_height: int = 1080,
 ) -> None:
     path = Path(image_ref)
     layer["image_path"] = image_ref
@@ -207,10 +202,12 @@ def _configure_image_layer(
         "path": image_ref,
     }
     if path.suffix.lower() != ".psd":
-        for key in ("psd_layer", "psd_layer_identifier", "psd_trim_alpha",
-                    "psd_layer_translation"):
-            layer.pop(key, None)
+        layer.pop("psd_layer", None)
         layer["psd_layerid"] = -2
+        layer["psd_layer_identifier"] = ""
+        layer["psd_trim_alpha"] = True
+        layer["psd_layer_translation"] = {"x": 1000000.0, "y": 1000000.0}
+        layer["quality_flags"] = 45054
         layer["psd_layer_bounds"] = {
             "top": 0,
             "left": 0,
@@ -218,16 +215,22 @@ def _configure_image_layer(
             "bottom": 0,
         }
         layer["distortion_layer_uuid"] = ""
+        marker = layer.get("timeline_markers", {}).get("interp", [])
+        if marker:
+            marker[0]["im"] = 10
         if "transforms" in layer and "translation" in layer["transforms"]:
             trans = layer["transforms"]["translation"]
             if "val" in trans and trans["val"]:
                 trans["val"] = [{"x": 0.0, "y": 0.0, "z": 0.0}]
     resolved = path if path.is_absolute() else (project_dir / path if project_dir else path)
     if resolved.is_file():
+        if canvas_height <= 0:
+            raise ValueError("canvas height must be positive")
         with Image.open(resolved) as source:
             width, height = source.size
-        layer["width"] = width / 72.0
-        layer["height"] = height / 72.0
+        scale = MOHO_CAMERA_HEIGHT / float(canvas_height)
+        layer["width"] = width * scale
+        layer["height"] = height * scale
         layer["modification_date"] = int(resolved.stat().st_mtime)
 
 
@@ -345,6 +348,129 @@ def build_doc(rig: Rig, project_dir: Path | None = None) -> dict:
         doc["rev_version"] = rig.canvas["rev_version"]
     if rig.extras.get("styles") is not None:
         doc["styles"] = copy.deepcopy(rig.extras["styles"])
+    else:
+        # Use a minimal but Moho-compatible style set. The reference build
+        # of Moho 14 requires at least one well-formed "Style" entry with
+        # fill_color, line_color and brush metadata that match the schema
+        # produced by the bundled reference document; brush-style templates
+        # from older builds hang the CLI renderer on this host.
+        doc["styles"] = [
+            {
+                "type": "Style",
+                "name": "Skin",
+                "uuid": str(uuid.uuid4()),
+                "define_fill_color": True,
+                "fill_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.980392, "g": 0.835294, "b": 0.690196, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "define_line_width": False, "line_width": 0.004167,
+                "define_line_col": False,
+                "line_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "line_caps": 0, "brush_name": "", "brush_align": False,
+                "brush_jitter": 6.283185, "brush_spacing": 0.25, "brush_angle_drift": 0.0,
+                "brush_randomize": True, "brush_merged_alpha": True, "brush_tint": True, "brush_rand_order": True,
+            },
+            {
+                "type": "Style",
+                "name": "Outline",
+                "uuid": str(uuid.uuid4()),
+                "define_fill_color": False,
+                "fill_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "define_line_width": True, "line_width": 0.004167,
+                "define_line_col": False,
+                "line_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "line_caps": 0, "brush_name": "", "brush_align": False,
+                "brush_jitter": 6.283185, "brush_spacing": 0.25, "brush_angle_drift": 0.0,
+                "brush_randomize": True, "brush_merged_alpha": True, "brush_tint": True, "brush_rand_order": True,
+            },
+            {
+                "type": "Style",
+                "name": "Hair",
+                "uuid": str(uuid.uuid4()),
+                "define_fill_color": True,
+                "fill_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.30, "g": 0.18, "b": 0.10, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "define_line_width": True, "line_width": 0.004167,
+                "define_line_col": False,
+                "line_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "line_caps": 0, "brush_name": "", "brush_align": False,
+                "brush_jitter": 6.283185, "brush_spacing": 0.25, "brush_angle_drift": 0.0,
+                "brush_randomize": True, "brush_merged_alpha": True, "brush_tint": True, "brush_rand_order": True,
+            },
+            {
+                "type": "Style",
+                "name": "Shirt",
+                "uuid": str(uuid.uuid4()),
+                "define_fill_color": True,
+                "fill_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.84, "g": 0.31, "b": 0.51, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "define_line_width": True, "line_width": 0.004167,
+                "define_line_col": False,
+                "line_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "line_caps": 0, "brush_name": "", "brush_align": False,
+                "brush_jitter": 6.283185, "brush_spacing": 0.25, "brush_angle_drift": 0.0,
+                "brush_randomize": True, "brush_merged_alpha": True, "brush_tint": True, "brush_rand_order": True,
+            },
+            {
+                "type": "Style",
+                "name": "Pants",
+                "uuid": str(uuid.uuid4()),
+                "define_fill_color": True,
+                "fill_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.20, "g": 0.22, "b": 0.27, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "define_line_width": True, "line_width": 0.004167,
+                "define_line_col": False,
+                "line_color": {
+                    "type": "Color", "ref": False, "mute": False,
+                    "when": [0],
+                    "val": [{"r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0}],
+                    "interp": [{"im": 1, "v1": -1.0, "v2": -1.0, "in": 1, "h": 0, "s": False, "t": 0}],
+                },
+                "line_caps": 0, "brush_name": "", "brush_align": False,
+                "brush_jitter": 6.283185, "brush_spacing": 0.25, "brush_angle_drift": 0.0,
+                "brush_randomize": True, "brush_merged_alpha": True, "brush_tint": True, "brush_rand_order": True,
+            },
+        ]
     if rig.extras.get("project_data") is not None:
         doc["project_data"] = copy.deepcopy(rig.extras["project_data"])
     if rig.extras.get("metadata") is not None:
@@ -361,9 +487,12 @@ def build_doc(rig: Rig, project_dir: Path | None = None) -> dict:
         "when": [], "val": [], "interp": []})
     doc["layers"] = []
     name_to_idx = {b.id: i for i, b in enumerate(rig.bones)}
-    factory = NativeMohoFactory()
+    factory = NativeMohoFactory(DEFAULT_MESH_REFERENCE)
+    canvas_height = int(doc.get("project_data", {}).get("height", 1080))
     for part in rig.root_parts:
-        layer = _part_layer(part, name_to_idx, factory, project_dir)
+        layer = _part_layer(
+            part, name_to_idx, factory, project_dir, canvas_height,
+        )
         if part.type == "bone_container":
             skel = {"type": "Skeleton",
                     "binding_mode": rig.extras.get("binding_mode", 1),

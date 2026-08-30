@@ -10,7 +10,7 @@ import math
 
 from ..pir.schema import Bone
 
-DPI = 72.0
+MOHO_CAMERA_HEIGHT = 6.0
 
 BONE_TREE = [
     ("Main", None, "hip", "chest"),
@@ -32,7 +32,16 @@ BONE_TREE = [
 
 
 def to_moho_coords(px: float, py: float, width: int, height: int) -> tuple[float, float]:
-    return (px / DPI - width / (2 * DPI), height / (2 * DPI) - py / DPI)
+    """Convert canvas pixels to Moho's height-normalized world space.
+
+    The default Moho camera spans six world units vertically.  Using a fixed
+    72-DPI conversion made portrait artwork too large and pushed it outside the
+    camera frame.
+    """
+    if width <= 0 or height <= 0:
+        raise ValueError("canvas dimensions must be positive")
+    scale = MOHO_CAMERA_HEIGHT / float(height)
+    return ((px - width / 2.0) * scale, (height / 2.0 - py) * scale)
 
 
 def build_bones(joints_px: dict[str, tuple[float, float]], width: int,

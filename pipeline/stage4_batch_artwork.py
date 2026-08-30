@@ -177,6 +177,10 @@ class RigCompiler:
             root = next((part for part in rig.root_parts if part.type == "bone_container"), None)
             if root is None:
                 raise ValueError("Compiled rig has no bone container")
+            # The procedural vector layers provide controls and certification
+            # structure.  The imported artwork is the actual visible puppet.
+            for child in root.children:
+                child.visible = False
             for index, layer in enumerate(processed_layers):
                 source = Path(str(layer["file_path"])).resolve()
                 filename = f"{index:02d}_{_safe_name(str(layer.get('layer_name', source.stem)))}.png"
@@ -198,8 +202,7 @@ class RigCompiler:
                     id=f"artwork_{index}_{_safe_name(semantic_part)}",
                     name=f"Artwork {semantic_part}",
                     type="image",
-                    bone=None,
-                    parent_bone_raw=-3,
+                    bone=bone_name,
                     image_ref=relative_ref,
                     origin=(0.0, 0.0),
                     z_order=100 + index,
@@ -230,7 +233,7 @@ class RigCompiler:
                 json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8",
             )
             report = score_project(str(candidate), str(manifest_file), str(evidence))
-            if not report.certified or report.score < 95:
+            if not report.certified or report.score < 100:
                 return {
                     "status": "failed", "certified": False, "score": report.score,
                     "output_path": str(target), "errors": report.errors or ["Artwork rig certification failed"],

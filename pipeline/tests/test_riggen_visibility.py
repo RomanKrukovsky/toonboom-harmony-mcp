@@ -56,11 +56,15 @@ class RiggenVisibilityTests(unittest.TestCase):
             })
             self.assertEqual(layer["distortion_layer_uuid"], "")
             self.assertNotIn("psd_layer", layer)
-            self.assertNotIn("psd_layer_identifier", layer)
-            self.assertNotIn("psd_trim_alpha", layer)
-            self.assertNotIn("psd_layer_translation", layer)
-            self.assertAlmostEqual(layer["width"], 400 / 72, places=6)
-            self.assertAlmostEqual(layer["height"], 600 / 72, places=6)
+            self.assertEqual(layer["psd_layer_identifier"], "")
+            self.assertTrue(layer["psd_trim_alpha"])
+            self.assertEqual(
+                layer["psd_layer_translation"],
+                {"x": 1000000.0, "y": 1000000.0},
+            )
+            self.assertEqual(layer["quality_flags"], 45054)
+            self.assertAlmostEqual(layer["width"], 4.0, places=6)
+            self.assertAlmostEqual(layer["height"], 6.0, places=6)
 
 
 if __name__ == "__main__":

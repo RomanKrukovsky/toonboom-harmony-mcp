@@ -106,7 +106,10 @@ def _add_diagnostic_target_keys(bones: list[Bone]) -> None:
                 {"x": x, "y": y},
                 {"x": round(x + dx, 6), "y": round(y + dy, 6)},
                 {"x": x, "y": y},
-                {"x": x, "y": y},
+                {
+                    "x": round(x - dx * 0.55, 6),
+                    "y": round(y - dy * 0.45, 6),
+                },
             ],
             interp=[dict(BASE_INTERP) for _ in range(5)],
         )
