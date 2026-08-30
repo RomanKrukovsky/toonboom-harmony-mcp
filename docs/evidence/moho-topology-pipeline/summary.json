@@ -1,0 +1,62 @@
+[
+  {
+    "case": "default_biped",
+    "description": "standard biped rig",
+    "moho_bytes": 35091,
+    "moho_sha256": "0f94d1b5eaa1ad64fc4c05b7ca220a2022cf61f7b63cfe22d05025532755cff8",
+    "spec_sha256": "f0b508cda54a7e10953f6e70b7aa8531cc046461842f303bd41c9bd53cda64f7",
+    "manifest_sha256": "d37efcea8459be7540a4a049513a3795476398d1e05008d50a1dfa18c9b5dbdb",
+    "bone_count": 15,
+    "part_count": 1
+  },
+  {
+    "case": "with_tail",
+    "description": "biped + 6-bone tail",
+    "moho_bytes": 35585,
+    "moho_sha256": "233f71d74e58f50afde514403c9b8b1b59b7c72cb496bcbfd426c9c630a71873",
+    "spec_sha256": "185147d460ec120cdedcf812ca165068dbb06d0eb21e5d8974d00f8a80ac28fd",
+    "manifest_sha256": "0a274e552b69f7c8bc07bb876b936cf10228aaec1f8cf2d0bb918a13fda99a76",
+    "bone_count": 21,
+    "part_count": 1
+  },
+  {
+    "case": "with_wings",
+    "description": "biped + 4-bone wings each side",
+    "moho_bytes": 35646,
+    "moho_sha256": "3f60c013538ac7c6253241d6aa7cbd2a45bd6d33749abc71d284d45f6aa4a5df",
+    "spec_sha256": "c38b1226b357ef7b05add22fce23386663a163b5c245d5b1e54a07ef1ce451e8",
+    "manifest_sha256": "e2826cbb33a75ebea3f61839d2cc1fe820a17116706c387c6e0162e2bcfe22a1",
+    "bone_count": 23,
+    "part_count": 1
+  },
+  {
+    "case": "with_cape",
+    "description": "biped + cape",
+    "moho_bytes": 35439,
+    "moho_sha256": "44438640d8df6c5c790463c021e1672936cb2a0a0fda4e692de5eb64d6926f28",
+    "spec_sha256": "9186e51bafca61d5a07327c108decce0c817e69c357e77969a94fbaa320b1669",
+    "manifest_sha256": "557518bfc9f8de49751d29121559f636950e8b264e37f2b219c427be05673456",
+    "bone_count": 19,
+    "part_count": 1
+  },
+  {
+    "case": "with_six_fingers",
+    "description": "biped + 6-finger hands",
+    "moho_bytes": 35217,
+    "moho_sha256": "07d1b05bb36bde6168dbea9dcf46972440e6914474eb4cc2c56eed2c36633fbd",
+    "spec_sha256": "f87f91a605aa411908f841e1bf8ab133f04f0900a1c9a81a8040ef3d9d05c8c5",
+    "manifest_sha256": "0c0c7537b13136fb782f45b3d02a7d0d770f66f00c363a5d11bad344aa63206b",
+    "bone_count": 17,
+    "part_count": 1
+  },
+  {
+    "case": "compound",
+    "description": "slim biped + tail + cape + horns",
+    "moho_bytes": 36090,
+    "moho_sha256": "b6ad507594a98227d4db99ef824daeae10918389151656e9e70109c1710f6366",
+    "spec_sha256": "cf451c3304d1c1a532410c6a3402bf318522c99e77c8cc4cc9d1508a738c12b8",
+    "manifest_sha256": "25af5a752698d910153ac62644ba29b798eb9130aa704f3b21cbe34d4c711ae8",
+    "bone_count": 29,
+    "part_count": 1
+  }
+]

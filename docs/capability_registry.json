@@ -2,8 +2,7 @@
   "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
   "schemaVersion": "1.0.0",
   "generatedAt": "2026-08-30",
-  "auditedBy": "autonomous-moho-rigger-animator",
-  "verificationLevels": [
+  "auditedBy": "autonomous-moho-rigger-animator",  "verificationLevels": [
     "not_implemented",
     "unaudited",
     "contract_verified",
@@ -641,6 +640,44 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-07-27",
       "nextRequiredProof": "Extend the guard to node:http/https agents so non-fetch clients cannot reach external hosts either."
+    },
+    {
+      "capabilityId": "rigger.declarative_topology",
+      "productionStage": "rigging",
+      "implementationFiles": [
+        "pipeline/riggen/topology_spec.py",
+        "pipeline/riggen/topology_solver.py",
+        "pipeline/riggen/secondary_motion.py",
+        "pipeline/riggen/mesh_composer.py",
+        "pipeline/riggen/topology_translator.py",
+        "pipeline/riggen/topology_compiler.py",
+        "pipeline/tests/test_topology_pipeline.py",
+        "pipeline/tests/test_topology_native_acceptance.py"
+      ],
+      "publicTools": [
+        "moho.rig.compile_from_topology"
+      ],
+      "backendType": "deterministic_offline",
+      "verificationLevel": "real_moho_smoke_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-topology-pipeline/default_biped.moho",
+        "docs/evidence/moho-topology-pipeline/with_tail.moho",
+        "docs/evidence/moho-topology-pipeline/with_wings.moho",
+        "docs/evidence/moho-topology-pipeline/with_cape.moho",
+        "docs/evidence/moho-topology-pipeline/with_six_fingers.moho",
+        "docs/evidence/moho-topology-pipeline/compound.moho",
+        "docs/evidence/moho-topology-pipeline/summary.json",
+        "docs/evidence/moho-topology-pipeline/README.md"
+      ],
+      "knownFailures": [
+        "LLM-friendly translator is regex-based: works for the documented keywords (with tail/wings/cape/horns/ears/six fingers, slim/stocky/tall/short/child/muscular, named/called). Anything outside that vocabulary is ignored, not hallucinated.",
+        "Secondary motion is generated procedurally (sine + ease) and may need per-character tuning for stylized animation.",
+        "Weighted binding is supported by the spec and validator but the current MeshLayerSpec emitter still writes rigid binding to the dominant bone in the moho archive. True weighted binding round-trip is the next stage.",
+        "Translated joints are placed on a 400x600 reference canvas; non-square canvases need canvas overrides in the description."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-30",
+      "nextRequiredProof": "Drive the translator from a live LLM (OpenRouter :free model) and prove that the produced TopologySpec compiles into a certified humanoid rig. The current evidence uses hand-written descriptions, not LLM-generated ones."
     },
     {
       "capabilityId": "rigger.moho_procedural_humanoid",

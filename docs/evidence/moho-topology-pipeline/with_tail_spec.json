@@ -1,0 +1,454 @@
+{
+  "name": "Custom Character",
+  "canvas": {
+    "width": 400,
+    "height": 600
+  },
+  "bones": [
+    {
+      "id": "Main",
+      "parent": null,
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "hip",
+      "tipJoint": "crotch"
+    },
+    {
+      "id": "Pelvis",
+      "parent": "Main",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "hip",
+      "tipJoint": "crotch"
+    },
+    {
+      "id": "Body",
+      "parent": "Pelvis",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "hip",
+      "tipJoint": "neck_base"
+    },
+    {
+      "id": "Neck",
+      "parent": "Body",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "neck_base",
+      "tipJoint": "head_base"
+    },
+    {
+      "id": "Head",
+      "parent": "Neck",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "head_base",
+      "tipJoint": "head_top"
+    },
+    {
+      "id": "UpperArm L",
+      "parent": "Body",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "shoulder_L",
+      "tipJoint": "elbow_L"
+    },
+    {
+      "id": "LowerArm L",
+      "parent": "UpperArm L",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "elbow_L",
+      "tipJoint": "hand_L"
+    },
+    {
+      "id": "UpperArm R",
+      "parent": "Body",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "shoulder_R",
+      "tipJoint": "elbow_R"
+    },
+    {
+      "id": "LowerArm R",
+      "parent": "UpperArm R",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "elbow_R",
+      "tipJoint": "hand_R"
+    },
+    {
+      "id": "Thigh L",
+      "parent": "Pelvis",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "hip_L",
+      "tipJoint": "knee_L"
+    },
+    {
+      "id": "Shin L",
+      "parent": "Thigh L",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "knee_L",
+      "tipJoint": "ankle_L"
+    },
+    {
+      "id": "Foot L",
+      "parent": "Shin L",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "ankle_L",
+      "tipJoint": "toe_L"
+    },
+    {
+      "id": "Thigh R",
+      "parent": "Pelvis",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "hip_R",
+      "tipJoint": "knee_R"
+    },
+    {
+      "id": "Shin R",
+      "parent": "Thigh R",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "knee_R",
+      "tipJoint": "ankle_R"
+    },
+    {
+      "id": "Foot R",
+      "parent": "Shin R",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.4,
+      "angle": 0.0,
+      "strength": 1.0,
+      "rootJoint": "ankle_R",
+      "tipJoint": "toe_R"
+    },
+    {
+      "id": "Tail 0",
+      "parent": "Pelvis",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "crotch",
+      "tipJoint": "tail_joint_0"
+    },
+    {
+      "id": "Tail 1",
+      "parent": "Tail 0",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "tail_joint_0",
+      "tipJoint": "tail_joint_1"
+    },
+    {
+      "id": "Tail 2",
+      "parent": "Tail 1",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "tail_joint_1",
+      "tipJoint": "tail_joint_2"
+    },
+    {
+      "id": "Tail 3",
+      "parent": "Tail 2",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "tail_joint_2",
+      "tipJoint": "tail_joint_3"
+    },
+    {
+      "id": "Tail 4",
+      "parent": "Tail 3",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "tail_joint_3",
+      "tipJoint": "tail_joint_4"
+    },
+    {
+      "id": "Tail 5",
+      "parent": "Tail 4",
+      "px": 0.0,
+      "py": 0.0,
+      "length": 0.2,
+      "angle": 1.5707963267948966,
+      "strength": 1.0,
+      "rootJoint": "tail_joint_4",
+      "tipJoint": "tail_joint_5"
+    }
+  ],
+  "joints": [
+    {
+      "id": "hip",
+      "px": 200,
+      "py": 320,
+      "side": "C"
+    },
+    {
+      "id": "crotch",
+      "px": 200,
+      "py": 380,
+      "side": "C"
+    },
+    {
+      "id": "chest",
+      "px": 200,
+      "py": 240,
+      "side": "C"
+    },
+    {
+      "id": "neck_base",
+      "px": 200,
+      "py": 200,
+      "side": "C"
+    },
+    {
+      "id": "head_base",
+      "px": 200,
+      "py": 180,
+      "side": "C"
+    },
+    {
+      "id": "head_top",
+      "px": 200,
+      "py": 80,
+      "side": "C"
+    },
+    {
+      "id": "shoulder_L",
+      "px": 148,
+      "py": 215,
+      "side": "L"
+    },
+    {
+      "id": "elbow_L",
+      "px": 140,
+      "py": 285,
+      "side": "L"
+    },
+    {
+      "id": "hand_L",
+      "px": 135,
+      "py": 340,
+      "side": "L"
+    },
+    {
+      "id": "shoulder_R",
+      "px": 252,
+      "py": 215,
+      "side": "R"
+    },
+    {
+      "id": "elbow_R",
+      "px": 260,
+      "py": 285,
+      "side": "R"
+    },
+    {
+      "id": "hand_R",
+      "px": 265,
+      "py": 340,
+      "side": "R"
+    },
+    {
+      "id": "hip_L",
+      "px": 180,
+      "py": 340,
+      "side": "L"
+    },
+    {
+      "id": "knee_L",
+      "px": 178,
+      "py": 450,
+      "side": "L"
+    },
+    {
+      "id": "ankle_L",
+      "px": 176,
+      "py": 545,
+      "side": "L"
+    },
+    {
+      "id": "toe_L",
+      "px": 150,
+      "py": 558,
+      "side": "L"
+    },
+    {
+      "id": "hip_R",
+      "px": 220,
+      "py": 340,
+      "side": "R"
+    },
+    {
+      "id": "knee_R",
+      "px": 222,
+      "py": 450,
+      "side": "R"
+    },
+    {
+      "id": "ankle_R",
+      "px": 224,
+      "py": 545,
+      "side": "R"
+    },
+    {
+      "id": "toe_R",
+      "px": 250,
+      "py": 558,
+      "side": "R"
+    },
+    {
+      "id": "tail_joint_0",
+      "px": 200,
+      "py": 582,
+      "side": "C"
+    },
+    {
+      "id": "tail_joint_1",
+      "px": 206,
+      "py": 606,
+      "side": "C"
+    },
+    {
+      "id": "tail_joint_2",
+      "px": 212,
+      "py": 630,
+      "side": "C"
+    },
+    {
+      "id": "tail_joint_3",
+      "px": 218,
+      "py": 654,
+      "side": "C"
+    },
+    {
+      "id": "tail_joint_4",
+      "px": 224,
+      "py": 678,
+      "side": "C"
+    },
+    {
+      "id": "tail_joint_5",
+      "px": 230,
+      "py": 702,
+      "side": "C"
+    }
+  ],
+  "meshLayers": [],
+  "switches": [],
+  "dials": [],
+  "secondaryMotion": [
+    {
+      "name": "Tail",
+      "rootBone": "Tail 0",
+      "chainBones": [
+        "Tail 0",
+        "Tail 1",
+        "Tail 2",
+        "Tail 3",
+        "Tail 4",
+        "Tail 5"
+      ],
+      "keyframeCount": 8,
+      "lag": 0.7,
+      "cycleFrames": 24,
+      "amplitude": 0.4
+    }
+  ],
+  "palette": {
+    "skin": [
+      0.95,
+      0.78,
+      0.67
+    ],
+    "hair": [
+      0.3,
+      0.18,
+      0.1
+    ],
+    "shirt": [
+      0.84,
+      0.31,
+      0.51
+    ],
+    "pants": [
+      0.2,
+      0.22,
+      0.27
+    ],
+    "shoes": [
+      0.12,
+      0.12,
+      0.12
+    ]
+  },
+  "metadata": {
+    "raw_description": "with tail 6 bones",
+    "proportion": "default",
+    "body_type": "biped",
+    "notes": [
+      "with tail 6 bones"
+    ]
+  }
+}
