@@ -1,0 +1,8058 @@
+{
+  "type": "MeshLayer",
+  "noisy_shapes": false,
+  "noisy_lines": false,
+  "animated_noise": false,
+  "extra_sketchy": false,
+  "noise_amp": 0.033333,
+  "noise_scale": 0.133333,
+  "noise_interval": 1,
+  "extra_lines": 0,
+  "gap_filling": false,
+  "exclude_lines_from_mask": false,
+  "antialiasing": true,
+  "fill_texture_fileref": {
+    "relativeTo": "Absolute",
+    "path": ""
+  },
+  "fill_texture_path": "",
+  "line_texture_fileref": {
+    "relativeTo": "Absolute",
+    "path": ""
+  },
+  "line_texture_path": "",
+  "3d_mode": 0,
+  "3d_options": {
+    "type": "Mesh3DOptions",
+    "3d_shading_mode": 1,
+    "3d_shading_density": 50,
+    "3d_shading_color": {
+      "r": 64,
+      "g": 64,
+      "b": 64,
+      "a": 255
+    },
+    "3d_silhouette_edges": true,
+    "3d_material_edges": true,
+    "3d_crease_edges": true,
+    "3d_crease_angle": 1.047198,
+    "3d_edge_extension": 0.0,
+    "3d_backface_removal": false,
+    "3d_reset_z": false
+  },
+  "mesh": {
+    "type": "Mesh",
+    "curve_interpretation": 0,
+    "next_shape_id": 3,
+    "anim_shape_order": false,
+    "shape_order": {
+      "type": "String",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        "0|1|2"
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "points": [
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.100724,
+              "y": 1.148887
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 0
+          },
+          {
+            "curve": 1,
+            "curve_points": 0
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.033939,
+              "y": 1.317605
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 1
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.932005,
+              "y": 1.28597
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 2
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.89334,
+              "y": 1.131312
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 3
+          },
+          {
+            "curve": 1,
+            "curve_points": 3
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.050211,
+              "y": 1.119797
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 5
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.043583,
+              "y": 1.159832
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 1,
+            "curve_points": 1
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.942832,
+              "y": 1.151634
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 1,
+            "curve_points": 2
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.95321,
+              "y": 1.110121
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 0,
+            "curve_points": 4
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.028203,
+              "y": 1.212083
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 12
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.07563,
+              "y": 0.877045
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 14
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.179564,
+              "y": 0.665617
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 16
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.947526,
+              "y": 1.208415
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 11
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.987864,
+              "y": 0.904355
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 10
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.002533,
+              "y": 0.823366
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 8
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.128311,
+              "y": 0.631677
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 7
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -0.968691,
+              "y": 0.855951
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 9
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.16323,
+              "y": 0.490203
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 6
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.188028,
+              "y": 0.557348
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 5
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.235911,
+              "y": 0.468137
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 4
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.225751,
+              "y": 0.572097
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 3
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.300894,
+              "y": 0.522965
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 2
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.240662,
+              "y": 0.626051
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 1
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.300284,
+              "y": 0.681432
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 0
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.069207,
+              "y": 1.027389
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 13
+          }
+        ]
+      },
+      {
+        "type": "Point",
+        "position": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": -1.130563,
+              "y": 0.723928
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": -1.0,
+              "v2": -1.0,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "width": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "parent": -2,
+        "selected": true,
+        "colored": false,
+        "color": {
+          "type": "Color",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "color_strength": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "curves": [
+          {
+            "curve": 2,
+            "curve_points": 15
+          }
+        ]
+      }
+    ],
+    "curves": [
+      {
+        "type": "Curve",
+        "num_points": 6,
+        "closed": true,
+        "profile_layer_uuid": "",
+        "profile_curve_id": -1,
+        "profile_repeat": 16,
+        "points": [
+          {
+            "point": 0,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 1,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 2,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 3,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 7,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 4,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          }
+        ],
+        "start_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            -0.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "end_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Curve",
+        "num_points": 4,
+        "closed": false,
+        "profile_layer_uuid": "",
+        "profile_curve_id": -1,
+        "profile_repeat": 16,
+        "points": [
+          {
+            "point": 0,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 5,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 6,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 3,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          }
+        ],
+        "start_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            -0.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "end_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        }
+      },
+      {
+        "type": "Curve",
+        "num_points": 17,
+        "closed": true,
+        "profile_layer_uuid": "",
+        "profile_curve_id": -1,
+        "profile_repeat": 16,
+        "points": [
+          {
+            "point": 22,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 21,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 20,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 19,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 18,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 17,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 16,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 14,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 13,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 15,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.575824
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 12,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 11,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 8,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 23,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 9,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.01978
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 24,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.3
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          },
+          {
+            "point": 10,
+            "segments_on": true,
+            "smoothness": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.001
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": -1.0,
+                  "v2": -1.0,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "weight_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                1.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_in": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            },
+            "offset_out": {
+              "type": "Val",
+              "ref": false,
+              "mute": false,
+              "when": [
+                0
+              ],
+              "val": [
+                0.0
+              ],
+              "interp": [
+                {
+                  "im": 1,
+                  "v1": 0.1,
+                  "v2": 0.5,
+                  "in": 1,
+                  "h": 0,
+                  "s": false,
+                  "t": 0
+                }
+              ]
+            }
+          }
+        ],
+        "start_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            -0.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "end_percent": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.1
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        }
+      }
+    ],
+    "shapes": [
+      {
+        "type": "Shape",
+        "name": "",
+        "id": 0,
+        "selected": false,
+        "has_fill": true,
+        "has_outline": true,
+        "fill_allowed": true,
+        "effect_scale": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_rotation": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_offset": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "3d_thickness": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.125
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "edges": {
+          "curve": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "segment": [
+            3,
+            4,
+            5,
+            0,
+            1,
+            2
+          ],
+          "flag": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "style": {
+          "type": "Style",
+          "name": "",
+          "uuid": "a888b4f1-d5dd-4642-a288-74379c018c8d",
+          "define_fill_color": false,
+          "fill_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 0.25098,
+                "g": 0.458824,
+                "b": 0.172549,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "define_line_width": false,
+          "line_width": 0.004167,
+          "define_line_col": false,
+          "line_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "line_caps": 0,
+          "brush_name": "",
+          "brush_align": false,
+          "brush_jitter": 6.283185,
+          "brush_spacing": 0.25,
+          "brush_angle_drift": 0.0,
+          "brush_randomize": true,
+          "brush_merged_alpha": true,
+          "brush_tint": true,
+          "brush_rand_order": true
+        },
+        "inherited_style_uuid": "af8275d9-f929-46ee-81f5-52cf3ee6ac09",
+        "inherited_style2_name": ""
+      },
+      {
+        "type": "Shape",
+        "name": "",
+        "id": 1,
+        "selected": false,
+        "has_fill": true,
+        "has_outline": true,
+        "fill_allowed": true,
+        "effect_scale": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_rotation": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_offset": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "3d_thickness": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.125
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "edges": {
+          "curve": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "segment": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "flag": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "style": {
+          "type": "Style",
+          "name": "",
+          "uuid": "28a0524a-6826-4900-b36c-58cb77980f2d",
+          "define_fill_color": false,
+          "fill_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "define_line_width": false,
+          "line_width": 0.004167,
+          "define_line_col": false,
+          "line_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "line_caps": 0,
+          "brush_name": "",
+          "brush_align": false,
+          "brush_jitter": 6.283185,
+          "brush_spacing": 0.25,
+          "brush_angle_drift": 0.0,
+          "brush_randomize": true,
+          "brush_merged_alpha": true,
+          "brush_tint": true,
+          "brush_rand_order": true
+        },
+        "inherited_style_uuid": "f684241b-06ac-4d07-8e95-25cb69968408",
+        "inherited_style2_uuid": "af8275d9-f929-46ee-81f5-52cf3ee6ac09"
+      },
+      {
+        "type": "Shape",
+        "name": "",
+        "id": 2,
+        "selected": false,
+        "has_fill": true,
+        "has_outline": true,
+        "fill_allowed": true,
+        "effect_scale": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            1.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_rotation": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.0
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "effect_offset": {
+          "type": "Vec2",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            }
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "3d_thickness": {
+          "type": "Val",
+          "ref": false,
+          "mute": false,
+          "when": [
+            0
+          ],
+          "val": [
+            0.125
+          ],
+          "interp": [
+            {
+              "im": 1,
+              "v1": 0.1,
+              "v2": 0.5,
+              "in": 1,
+              "h": 0,
+              "s": false,
+              "t": 0
+            }
+          ]
+        },
+        "edges": {
+          "curve": [
+            0,
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "segment": [
+            0,
+            1,
+            2,
+            0,
+            1,
+            2
+          ],
+          "flag": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "style": {
+          "type": "Style",
+          "name": "",
+          "uuid": "982d487e-cc31-462d-9abb-6e0eca32497c",
+          "define_fill_color": false,
+          "fill_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "define_line_width": false,
+          "line_width": 0.004167,
+          "define_line_col": false,
+          "line_color": {
+            "type": "Color",
+            "ref": false,
+            "mute": false,
+            "when": [
+              0
+            ],
+            "val": [
+              {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            ],
+            "interp": [
+              {
+                "im": 1,
+                "v1": -1.0,
+                "v2": -1.0,
+                "in": 1,
+                "h": 0,
+                "s": false,
+                "t": 0
+              }
+            ]
+          },
+          "line_caps": 0,
+          "brush_name": "",
+          "brush_align": false,
+          "brush_jitter": 6.283185,
+          "brush_spacing": 0.25,
+          "brush_angle_drift": 0.0,
+          "brush_randomize": true,
+          "brush_merged_alpha": true,
+          "brush_tint": true,
+          "brush_rand_order": true
+        },
+        "inherited_style_uuid": "ca8ac4c5-2941-4e6e-8bee-224f1a4545ca",
+        "inherited_style2_uuid": "af8275d9-f929-46ee-81f5-52cf3ee6ac09"
+      }
+    ],
+    "groups": []
+  },
+  "name": "L Arm",
+  "uuid": "e7f0cb9e-6fd7-4253-a003-1b322605c94f",
+  "label_col": 0,
+  "quality_flags": 2044,
+  "animated_layer_effects": true,
+  "origin": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "parent_bone": -1,
+  "visible": true,
+  "shown_in_timeline": false,
+  "consolidated_channels": false,
+  "render_only": false,
+  "edit_only": false,
+  "scale_compensation": true,
+  "scale_normalization": 1.0,
+  "rotate_to_follow": false,
+  "face_camera": false,
+  "face_camera_mode": 2,
+  "masking": 0,
+  "mask_expansion": false,
+  "blend_mode": 0,
+  "camera_immune": false,
+  "dof_immune": false,
+  "layer_ref_uuid": "",
+  "layer_ref_fileref": {
+    "relativeTo": "Absolute",
+    "path": ""
+  },
+  "layer_ref_path": "",
+  "layer_ref_same_doc": false,
+  "layer_ref_mod_date": 0,
+  "flexi_bone_subset": "",
+  "flexi_bone_elbow": false,
+  "timing_offset": 0,
+  "follow_layer_uuid": "",
+  "follow_curve": -1,
+  "follow_bending": false,
+  "distortion_layer_uuid": "",
+  "random_num": 6334,
+  "transforms": {
+    "translation": {
+      "type": "Vec3",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "x": 0.0,
+          "y": -0.2,
+          "z": 0.0
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "scale": {
+      "type": "Vec3",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "x": 0.8,
+          "y": 0.8,
+          "z": 0.8
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "rotation_x": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "rotation_y": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "rotation_z": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "flip_h": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "flip_v": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "shear": {
+      "type": "Vec3",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": -1.0,
+          "v2": -1.0,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "following": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "physics_nudge": {
+      "type": "Vec2",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "layer_effects": {
+    "visibility": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        true
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "blur": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "alpha": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        1.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "ambient_occlusion": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "threshold": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "noise": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "pixelation": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "layer_shadow": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "angle": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        5.497787
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "offset": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.033333
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "blur": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.00823
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "expansion": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "color": {
+      "type": "Color",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "r": 0.0,
+          "g": 0.0,
+          "b": 0.0,
+          "a": 0.501961
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "noise_amp": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "noise_scale": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        64.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "threshold": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "clip_to_group": false
+  },
+  "layer_shading": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "angle": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        5.497787
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "offset": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.033333
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "blur": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.016461
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "contraction": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "color": {
+      "type": "Color",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "r": 0.0,
+          "g": 0.0,
+          "b": 0.0,
+          "a": 0.501961
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "noise_amp": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "noise_scale": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        64.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "threshold": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "perspective_shadow": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "blur": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.012346
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "scale": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        1.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "shear": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "color": {
+      "type": "Color",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "r": 0.0,
+          "g": 0.0,
+          "b": 0.0,
+          "a": 0.501961
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "threshold": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "motion_blur": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "sub_frames": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        true
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "frames": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        20.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "skip": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        1.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "alpha_start": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.3
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "alpha_end": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.1
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "radius": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.008333
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "frame_percentage": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        1.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "extended_frames": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.0
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "layer_outline": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "width": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        0.004115
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "color": {
+      "type": "Color",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "r": 0.0,
+          "g": 0.0,
+          "b": 0.0,
+          "a": 1.0
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "layer_color": {
+    "on": {
+      "type": "Bool",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        false
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "color": {
+      "type": "Color",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "r": 0.388235,
+          "g": 0.709804,
+          "b": 0.87451,
+          "a": 0.501961
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "timeline_markers": {
+    "type": "String",
+    "ref": false,
+    "mute": false,
+    "when": [
+      -1000000
+    ],
+    "val": [
+      ""
+    ],
+    "interp": [
+      {
+        "im": 1,
+        "v1": 0.1,
+        "v2": 0.5,
+        "in": 1,
+        "h": 0,
+        "s": false,
+        "t": 0
+      }
+    ]
+  },
+  "physics": {
+    "enabled": true,
+    "static": false,
+    "sleeping": false,
+    "respawn": 0,
+    "velocity": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "density": 1.0,
+    "friction": 0.3,
+    "restitution": 0.5,
+    "pivot": false,
+    "enable_motor": false,
+    "motor_speed": {
+      "type": "Val",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        3.141593
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    },
+    "motor_torque": 10000.0,
+    "force_field": false,
+    "force_field_vector": {
+      "type": "Vec2",
+      "ref": false,
+      "mute": false,
+      "when": [
+        0
+      ],
+      "val": [
+        {
+          "x": 0.0,
+          "y": 1.0
+        }
+      ],
+      "interp": [
+        {
+          "im": 1,
+          "v1": 0.1,
+          "v2": 0.5,
+          "in": 1,
+          "h": 0,
+          "s": false,
+          "t": 0
+        }
+      ]
+    }
+  },
+  "layer_user_comments": "",
+  "layer_user_tags": ""
+}

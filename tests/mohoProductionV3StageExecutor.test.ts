@@ -79,6 +79,16 @@ describe('Moho Production v3 stage executor', () => {
     });
     expect(result.confidence).toBe(0.92);
     expect(result.modelCalls).toHaveLength(3);
+    expect(result.checkpoint).toMatchObject({
+      characterCount: 1,
+      generatedPartCount: 2,
+      provenance: {
+        provider: 'openai',
+        model: 'vision-test',
+        requestSha256: 'a'.repeat(64),
+        responseSha256: 'b'.repeat(64)
+      }
+    });
     expect(result.artifacts.filter(item => item.mediaType === 'image/png')).toHaveLength(2);
     for (const part of result.artifacts.filter(item => item.mediaType === 'image/png')) {
       expect(fs.readFileSync(part.path).subarray(0, 8)).toEqual(PNG_SIGNATURE);

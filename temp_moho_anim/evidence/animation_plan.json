@@ -1,0 +1,103 @@
+{
+  "scenes": [
+    {
+      "id": 1,
+      "duration": 60
+    }
+  ],
+  "beats": [
+    {
+      "beat": 1,
+      "description": "Enter",
+      "frame": 10
+    },
+    {
+      "beat": 2,
+      "description": "Action",
+      "frame": 30
+    },
+    {
+      "beat": 3,
+      "description": "Exit",
+      "frame": 50
+    }
+  ],
+  "actions": [
+    {
+      "type": "walk",
+      "startFrame": 1,
+      "endFrame": 40
+    }
+  ],
+  "keyPoses": [
+    {
+      "frame": 10,
+      "pose": "neutral"
+    },
+    {
+      "frame": 50,
+      "pose": "happy"
+    }
+  ],
+  "transitions": [],
+  "gaze": [
+    {
+      "target": "camera",
+      "startFrame": 1,
+      "endFrame": 60
+    }
+  ],
+  "blinks": [
+    {
+      "frame": 15,
+      "duration": 3
+    }
+  ],
+  "phonemes": [
+    {
+      "word": "Hello",
+      "startFrame": 10,
+      "endFrame": 20,
+      "phonemeSequence": [
+        "rest",
+        "A",
+        "E",
+        "O",
+        "rest"
+      ]
+    }
+  ],
+  "gestures": [
+    {
+      "frame": 20,
+      "type": "hand-swap",
+      "newHand": "point"
+    }
+  ],
+  "ikTargets": [
+    {
+      "bone": "Foot_L",
+      "lock": true,
+      "frame": 1
+    }
+  ],
+  "secondaryMotion": [
+    {
+      "type": "hair-follow-through",
+      "magnitude": 0.5
+    }
+  ],
+  "camera": [
+    {
+      "type": "push-in",
+      "startFrame": 1,
+      "endFrame": 60,
+      "scaleZ": 0.5
+    }
+  ],
+  "inspectionFrames": [
+    1,
+    30,
+    60
+  ]
+}
