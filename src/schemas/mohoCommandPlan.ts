@@ -26,9 +26,15 @@ export const mohoOperationSchema = z.enum([
   'add_bone',
   'set_bone_parent',
   'bind_layer_to_bone',
+  'bind_layer_flexi',
   'create_switch_layer',
   'add_switch_choice',
+  'add_switch_image_choice',
+  'set_switch_key',
+  'set_camera_key',
+  'set_bone_channel_key',
   'create_vector_layer',
+  'import_image_layer',
   'rename_layer',
   'create_smart_bone',
   'wire_smart_bone_channel',
@@ -80,7 +86,8 @@ export const mohoCommandPlanSchema = z.object({
   acceptanceGates: z.array(z.string()).min(6),
   provenance: z.object({
     compiler: z.literal('MohoRigPlanCompiler v1'),
-    source: z.string()
+    source: z.string(),
+    characterName: z.string().min(1).optional()
   })
 }).strict();
 

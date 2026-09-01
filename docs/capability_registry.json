@@ -1,7 +1,7 @@
 {
   "$comment": "Machine-readable capability status. Every level below was established by running the referenced command in this repository. Entries not personally re-verified in a session carry verificationLevel 'unaudited' rather than an optimistic guess. Markdown must not contradict this file.",
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-08-30",
+  "generatedAt": "2026-08-31",
   "auditedBy": "autonomous-moho-rigger-animator",  "verificationLevels": [
     "not_implemented",
     "unaudited",
@@ -324,12 +324,12 @@
       "evidencePaths": [],
       "knownFailures": [
         "Moho automates via in-app Lua only: no headless daemon exists, so execution = running the generated idempotent Lua inside Moho Pro (Scripts > Run Lua Script); the script prints per-step [OK]/[FAIL] verification and a final audit.",
-        "Smart-bone action wiring is emitted as recorded [WIRE] intents: final dial authoring is interactive in the Moho UI.",
-        "Never executed inside a real Moho install on this host; Lua API usage follows Moho Pro 13+ documented bindings and is UNVERIFIED in-app."
+        "Smart Actions, Smart Warp, populated mesh geometry, projected shadows and layer binding now emit native Moho API calls; this specific emitter revision remains contract_verified until a fresh native evidence run is captured.",
+        "The reference-template compiler has not passed the 30-shot production benchmark and must not be described as a complete rigger replacement."
       ],
       "blockingReason": null,
-      "lastVerifiedAt": "2026-08-23",
-      "nextRequiredProof": "Run the generated Lua inside a real Moho Pro install and capture the [AUDIT] bones count plus saved document hash."
+      "lastVerifiedAt": "2026-08-31",
+      "nextRequiredProof": "Run the current native Lua emitter in Moho Pro 14 and retain open/save/reopen, structure, render and SHA-256 evidence."
     },
     {
       "capabilityId": "rigger.full_production_rig",
@@ -815,6 +815,45 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-08-29",
       "nextRequiredProof": "Each body plan produces a certified Moho rig that passes native open/save-as/reopen/render."
+    },
+    {
+      "capabilityId": "production.moho_v3_autonomous_shot",
+      "productionStage": "end_to_end_production",
+      "implementationFiles": [
+        "src/schemas/mohoProductionV3.ts",
+        "src/orchestrators/mohoProductionV3/index.ts",
+        "src/services/mohoProductionV3StageExecutor/index.ts",
+        "src/services/mohoProductionV3Compiler/index.ts",
+        "src/services/mohoProductionV3NativeBackend/index.ts",
+        "src/services/mohoProductionV3Certification/index.ts",
+        "src/adapters/mohoProductionProviders/index.ts",
+        "src/services/mohoForcedAlignmentV3/index.ts",
+        "src/tools/mohoProductionV3Tools.ts"
+      ],
+      "publicTools": [
+        "moho.production.v3.start",
+        "moho.production.v3.status",
+        "moho.production.v3.resume",
+        "moho.production.v3.cancel",
+        "moho.production.v3.approve",
+        "moho.production.v3.inspect_stage",
+        "moho.production.v3.rerun_stage"
+      ],
+      "backendType": "stateful_cloud_and_native_moho",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [
+        "docs/evidence/moho-production-v3/native-live-test-2026-08-31.md"
+      ],
+      "knownFailures": [
+        "Production execution uses OPENROUTER_API_KEY with a hard :free-only policy, plus Rhubarb Lip Sync for dialogue shots, ffmpeg/ffprobe and a licensed Moho Pro 14 command-line renderer; there is no mock fallback.",
+        "Live OpenRouter planning and vision probes passed on free models, but OpenRouter currently lists no :free image-generation model, so flat artwork requiring reconstruction blocks instead of using paid generation.",
+        "The installed Moho reports that command-line rendering is a Pro-only feature; v3 now fails fast with MOHO_PRO_REQUIRED before Lua build, so local native certification cannot proceed until a Pro license is activated.",
+        "The required 30/30 benchmark has not been run, so this capability is not certified as a full replacement for a 2D rigger or animator.",
+        "PSD remains intentionally unsupported in v3."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-08-31",
+      "nextRequiredProof": "Run one real layered, one flat-character and one flat-scene shot end to end, then complete the specified 30-shot benchmark with valid .moho/.mp4 evidence and at most two total retakes per shot."
     },
     {
       "capabilityId": "production.moho_batch_produce",

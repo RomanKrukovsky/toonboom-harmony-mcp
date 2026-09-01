@@ -3,8 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { MohoVisualQaRepairEngine } from '../src/services/mohoVisualQaRepair/index.js';
 
+const describeWithLicensedMoho = process.env.RUN_REAL_MOHO_TESTS === '1'
+  && fs.existsSync('/Applications/Moho.app/Contents/MacOS/Moho') ? describe : describe.skip;
 
-describe('MohoVisualQaRepairEngine', () => {
+describeWithLicensedMoho('MohoVisualQaRepairEngine', () => {
   const tempDir = path.resolve(__dirname, '../temp_moho_qa_test');
   const projectPath = path.join(tempDir, 'defective.moho');
 

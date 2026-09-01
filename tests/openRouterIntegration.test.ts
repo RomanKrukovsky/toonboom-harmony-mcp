@@ -33,7 +33,8 @@ describe('OpenRouter Nemotron Integration', () => {
       json: async () => mockResponse
     });
 
-    const client = new OpenRouterClient('sk-or-v1-testkey', 'nvidia/nemotron-3-super:free');
+    const apiKey = 'test-openrouter-key';
+    const client = new OpenRouterClient(apiKey, 'nvidia/nemotron-3-super:free');
     const result = await client.complete({
       prompt: 'Write a quick scene description',
       systemPrompt: 'You are an animation scriptwriter.'
@@ -42,7 +43,7 @@ describe('OpenRouter Nemotron Integration', () => {
     expect(global.fetch).toHaveBeenCalledWith('https://openrouter.ai/api/v1/chat/completions', expect.objectContaining({
       method: 'POST',
       headers: expect.objectContaining({
-        'Authorization': 'Bearer sk-or-v1-testkey'
+        Authorization: `Bearer ${apiKey}`
       }),
       body: JSON.stringify({
         model: 'nvidia/nemotron-3-super:free',

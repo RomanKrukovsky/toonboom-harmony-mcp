@@ -1,0 +1,317 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "speaker",
+  "name": "Speaker",
+  "role": "protagonist",
+  "rigType": "humanoid_2leg",
+  "rigPath": "./rigs/speaker.moho",
+  "turnaroundViews": [
+    "front",
+    "front_3q_left",
+    "side_left",
+    "front_3q_right",
+    "side_right"
+  ],
+  "proportions": {
+    "headHeightRatio": 0.25,
+    "armSpanRatio": 1.0
+  },
+  "lineRules": {
+    "lineThicknessPt": 2.5,
+    "lineColourId": "char_line"
+  },
+  "controllers": [
+    {
+      "controllerId": "HEAD_ROT",
+    "boneId": 1,
+    "boneName": "head_bone",
+    "parentBoneName": "neck_bone",
+    "restPose": { "xPixels": 0, "yPixels": 28, "lengthPixels": 50, "angleDeg": 0 },
+      "purpose": "Head rotation and tilt",
+      "range": {
+        "min": -45,
+        "max": 45,
+        "units": "degrees"
+      },
+      "channel": "rotation"
+    },
+    {
+      "controllerId": "BODY_TRANSLATE",
+    "boneId": 0,
+    "boneName": "root_bone",
+    "restPose": { "xPixels": 0, "yPixels": 0, "lengthPixels": 90, "angleDeg": 90 },
+      "purpose": "Body translation in screen space",
+      "range": {
+        "min": -500,
+        "max": 500,
+        "units": "pixels"
+      },
+      "channel": "translation"
+    },
+    {
+      "controllerId": "LEFT_ARM_ROT",
+    "boneId": 3,
+    "boneName": "left_arm_bone",
+    "parentBoneName": "root_bone",
+    "restPose": { "xPixels": 0, "yPixels": 68, "lengthPixels": 72, "angleDeg": 180 },
+      "purpose": "Left arm rotation for gestures",
+      "range": {
+        "min": -90,
+        "max": 180,
+        "units": "degrees"
+      },
+      "channel": "rotation"
+    },
+    {
+      "controllerId": "RIGHT_ARM_ROT",
+    "boneId": 6,
+    "boneName": "right_arm_bone",
+    "parentBoneName": "root_bone",
+    "restPose": { "xPixels": 0, "yPixels": 68, "lengthPixels": 72, "angleDeg": 0 },
+      "purpose": "Right arm rotation for gestures",
+      "range": {
+        "min": -90,
+        "max": 180,
+        "units": "degrees"
+      },
+      "channel": "rotation"
+    },
+    {
+      "controllerId": "MOUTH_DIAL",
+    "boneId": 12,
+    "boneName": "jaw_bone",
+    "parentBoneName": "head_bone",
+    "restPose": { "xPixels": 0, "yPixels": 18, "lengthPixels": 24, "angleDeg": -90 },
+      "purpose": "Mouth/jaw open-close for lip-sync",
+      "range": {
+        "min": 0,
+        "max": 1,
+        "units": "normalized"
+      },
+      "channel": "rotation"
+    },
+    {
+      "controllerId": "EYE_BLINK",
+    "boneId": 10,
+    "boneName": "eye_lid_bone",
+    "layerName": "eye_switch_layer",
+    "parentBoneName": "head_bone",
+    "restPose": { "xPixels": 0, "yPixels": 24, "lengthPixels": 16, "angleDeg": 0 },
+      "purpose": "Eye blink control",
+      "range": {
+        "min": 0,
+        "max": 1,
+        "units": "normalized"
+      },
+      "channel": "rotation"
+    },
+    {
+      "controllerId": "NECK_TURN",
+    "boneId": 2,
+    "boneName": "neck_bone",
+    "parentBoneName": "root_bone",
+    "restPose": { "xPixels": 0, "yPixels": 82, "lengthPixels": 28, "angleDeg": 0 },
+      "purpose": "Neck yaw for head turning",
+      "range": {
+        "min": -60,
+        "max": 60,
+        "units": "degrees"
+      },
+      "channel": "rotation"
+    }
+  ],
+  "switchLayers": [
+    {
+      "switchId": "mouth_switch",
+      "layerName": "mouth_switch_layer",
+      "choices": [
+        {
+          "choiceId": "rest",
+          "drawingName": "mouth_rest"
+        },
+        {
+          "choiceId": "a",
+          "drawingName": "mouth_a"
+        },
+        {
+          "choiceId": "b",
+          "drawingName": "mouth_b"
+        },
+        {
+          "choiceId": "c",
+          "drawingName": "mouth_c"
+        },
+        {
+          "choiceId": "d",
+          "drawingName": "mouth_d"
+        },
+        {
+          "choiceId": "e",
+          "drawingName": "mouth_e"
+        },
+        {
+          "choiceId": "f",
+          "drawingName": "mouth_f"
+        },
+        {
+          "choiceId": "g",
+          "drawingName": "mouth_g"
+        },
+        {
+          "choiceId": "l",
+          "drawingName": "mouth_l"
+        },
+        {
+          "choiceId": "o",
+          "drawingName": "mouth_o"
+        },
+        {
+          "choiceId": "smile",
+          "drawingName": "mouth_smile"
+        },
+        {
+          "choiceId": "frown",
+          "drawingName": "mouth_frown"
+        }
+      ]
+    },
+    {
+      "switchId": "eye_switch",
+      "layerName": "eye_switch_layer",
+      "choices": [
+        {
+          "choiceId": "open",
+          "drawingName": "eye_open"
+        },
+        {
+          "choiceId": "half",
+          "drawingName": "eye_half"
+        },
+        {
+          "choiceId": "closed",
+          "drawingName": "eye_closed"
+        }
+      ]
+    }
+  ],
+  "mouthShapes": [
+    {
+      "shapeId": "Rest",
+      "drawingName": "mouth_rest",
+      "phonemes": ["sil"]
+    },
+    {
+      "shapeId": "A",
+      "drawingName": "mouth_a",
+      "phonemes": ["AA", "AE", "AH"]
+    },
+    {
+      "shapeId": "B",
+      "drawingName": "mouth_b",
+      "phonemes": ["B", "M", "P"]
+    },
+    {
+      "shapeId": "C",
+      "drawingName": "mouth_c",
+      "phonemes": ["CH", "J", "SH"]
+    },
+    {
+      "shapeId": "D",
+      "drawingName": "mouth_d",
+      "phonemes": ["D", "L", "N", "T"]
+    },
+    {
+      "shapeId": "E",
+      "drawingName": "mouth_e",
+      "phonemes": ["EH", "ER"]
+    },
+    {
+      "shapeId": "F",
+      "drawingName": "mouth_f",
+      "phonemes": ["F", "V"]
+    },
+    {
+      "shapeId": "G",
+      "drawingName": "mouth_g",
+      "phonemes": ["G", "K", "NG"]
+    },
+    {
+      "shapeId": "L",
+      "drawingName": "mouth_l",
+      "phonemes": ["L"]
+    },
+    {
+      "shapeId": "O",
+      "drawingName": "mouth_o",
+      "phonemes": ["OW", "OY"]
+    },
+    {
+      "shapeId": "Smile",
+      "drawingName": "mouth_smile",
+      "phonemes": ["IY"]
+    },
+    {
+      "shapeId": "Frown",
+      "drawingName": "mouth_frown",
+      "phonemes": ["UW"]
+    }
+  ],
+  "expressions": [
+    {
+      "expressionId": "neutral",
+      "drawingName": "expr_neutral",
+      "controllerOverrides": []
+    },
+    {
+      "expressionId": "happy",
+      "drawingName": "expr_happy",
+      "controllerOverrides": [
+        {
+          "controllerId": "MOUTH_DIAL",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "expressionId": "surprise",
+      "drawingName": "expr_surprise",
+      "controllerOverrides": [
+        {
+          "controllerId": "MOUTH_DIAL",
+          "value": 0.8
+        },
+        {
+          "controllerId": "EYE_BLINK",
+          "value": 1.0
+        }
+      ]
+    }
+  ],
+  "gestureLibrary": [
+    {
+      "gestureId": "nod",
+      "durationFrames": 18,
+      "targetControllerId": "HEAD_ROT",
+      "controllerTrackRef": "./gestures/speaker_nod.lua"
+    },
+    {
+      "gestureId": "head_shake",
+      "durationFrames": 24,
+      "targetControllerId": "HEAD_ROT",
+      "controllerTrackRef": "./gestures/speaker_head_shake.lua"
+    },
+    {
+      "gestureId": "hand_raise",
+      "durationFrames": 36,
+      "targetControllerId": "RIGHT_ARM_ROT",
+      "controllerTrackRef": "./gestures/speaker_hand_raise.lua"
+    }
+  ],
+  "paletteRef": "demo_palette",
+  "provenance": {
+    "approver": "demo-rigger",
+    "approvedAt": "2026-01-01T00:00:00.000Z",
+    "rigAuthor": "demo",
+    "licensePath": "./asset_license.json"
+  }
+}

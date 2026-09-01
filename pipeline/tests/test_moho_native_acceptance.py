@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from pipeline.tools.moho_native_acceptance import (
     ProcessEvidence,
+    _process_errors,
     _run,
     accept_project,
 )
@@ -46,6 +47,24 @@ class NativeMohoAcceptanceTests(unittest.TestCase):
         result = ProcessEvidence(["moho"], 124, "", "timed out")
 
         self.assertTrue(result.has_moho_error)
+
+    def test_pro_license_message_is_a_failure_even_when_moho_returns_zero(self):
+        result = ProcessEvidence(
+            ["moho", "-r"],
+            0,
+            "",
+            "Unable to launch the command-line renderer as it is a Pro level feature only. You must upgrade.",
+        )
+
+        self.assertTrue(result.has_moho_error)
+        self.assertTrue(result.requires_moho_pro)
+        self.assertEqual(
+            _process_errors("render", [result]),
+            [
+                "render: command-line rendering requires Moho Pro",
+                "render: Moho did not create expected output",
+            ],
+        )
 
     def test_embedded_preview_is_not_reported_as_a_rendered_frame(self):
         with tempfile.TemporaryDirectory() as temp_dir:

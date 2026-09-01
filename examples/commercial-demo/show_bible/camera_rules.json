@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "rulesId": "demo_humanoid_speaker_v1_camera_rules",
+  "allowedShotSizes": [
+    "medium_shot",
+    "medium_close_up",
+    "close_up"
+  ],
+  "allowedCameraMoves": [
+    "static",
+    "dolly_in",
+    "pan_right"
+  ],
+  "defaultShotSize": "medium_close_up",
+  "safeMargins": {
+    "top": 0.05,
+    "bottom": 0.05,
+    "left": 0.05,
+    "right": 0.05
+  },
+  "forbiddenMoves": [
+    "roll",
+    "whip_pan",
+    "handheld_shake"
+  ],
+  "mohoCameraRigType": "perspective",
+  "maxFieldOfViewDeg": 45,
+  "allowCameraShake": false,
+  "provenance": {
+    "approver": "demo-cinematographer",
+    "approvedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

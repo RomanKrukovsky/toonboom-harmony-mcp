@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "assetId": "demo_speaker_rig_v1",
+  "creator": "Demo Artist",
+  "source": "commission",
+  "license": "exclusive commercial assignment",
+  "commercialUse": true,
+  "modificationAllowed": true,
+  "datasetUseAllowed": true,
+  "redistributionAllowed": false,
+  "contractPath": "./contracts/speaker.pdf",
+  "forbiddenTags": [],
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

@@ -1,65 +1,53 @@
 {
-  "production": "DemoSeries",
+  "schemaVersion": "1.0",
+  "planId": "demo_humanoid_speaker_v1",
+  "production": "MohoDemoSeries",
   "episode": "EP_001",
-  "sceneName": "SC_001",
+  "sceneName": "humanoid_speaker_demo",
   "resolution": {
     "width": 1920,
     "height": 1080
   },
   "fps": 24,
-  "durationFrames": 192,
-  "workspaceTemplate": "default_scene_template",
+  "durationFrames": 72,
   "background": {
-    "file": "assets/backgrounds/lab.png",
-    "layerName": "BG_Lab",
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "scale": 1
+    "file": "assets/backgrounds/office.png",
+    "layerName": "BG_Office"
   },
   "characters": [
     {
-      "name": "Scientist",
-      "rig": "assets/rigs/scientist.tpl",
-      "positionPreset": "left",
+      "characterId": "speaker",
+      "positionPreset": "center",
       "startFrame": 1,
-      "endFrame": 192,
+      "endFrame": 72,
       "actions": [
         {
           "type": "idle",
-          "frames": [1, 48]
+          "frames": [1, 24]
         },
         {
           "type": "talk",
-          "frames": [49, 150],
-          "audio": "audio/sc_001.wav",
+          "frames": [25, 60],
+          "audio": "assets/audio/hello.wav",
           "mouthChart": "standard_mouth_chart"
         },
         {
           "type": "gesture",
-          "name": "hand_raise",
-          "frames": [120, 150]
+          "frames": [60, 72],
+          "gestureName": "wave"
         }
       ]
     }
   ],
   "camera": {
-    "preset": "slow_push_in",
+    "preset": "static",
     "startFrame": 1,
-    "endFrame": 192
+    "endFrame": 72,
+    "mohoCameraRigType": "perspective"
   },
-  "effects": [
-    {
-      "type": "glow",
-      "target": "Portal_FX",
-      "frames": [150, 192]
-    }
-  ],
   "render": {
     "preview": true,
     "format": "mp4",
-    "quality": "low"
+    "quality": "draft"
   }
 }

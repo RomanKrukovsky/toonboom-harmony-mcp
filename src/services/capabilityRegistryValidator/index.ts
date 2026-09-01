@@ -30,6 +30,7 @@ export const VERIFICATION_LEVELS = [
   'contract_verified',
   'offline_verified',
   'simulator_verified',
+  'real_moho_smoke_verified',
   'real_model_verified',
   'real_harmony_smoke_verified',
   'real_harmony_repeatably_verified',

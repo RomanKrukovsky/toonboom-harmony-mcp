@@ -1,1042 +1,210 @@
-# CHECKPOINT — 2026-07-12 (FRAME-BY-FRAME VECTOR: REAL HARMONY GATE)
+# CHECKPOINT — 2026-08-30T11:23:57Z (SPRINT 1 — MOHO SHOW BIBLE: COMPLETED)
 
 ## Главный статус этой сессии
 
-Вертикальный путь подготовлен к строгой проверке, но **не подтверждён в настоящей Harmony на этой машине**. В `/Applications` появилась Harmony, однако её подпись не принадлежит Toon Boom и Gatekeeper не принимает bundle. Поэтому executable и его Python-библиотеки не запускались, а сцена, нативные drawings и preview render здесь не создавались. Ни mock, ни JSON, ни command plan не считаются реальным результатом.
+Sprint 1 закрыт. Реализован семейный Moho Show Bible — 6 Zod-схем, loader с детерминированным SHA-256 fingerprint, пять MCP-инструментов (`moho.show_bible.load/validate/fingerprint/get_cross_refs/list_allowed_rig_types`), образцовый бандл и полное покрытие тестами. Все юниты зелёные, rigType gating и license gating работают fail-closed.
 
-Проверены `/Applications`, `~/Applications`, системный поиск, `/Users/Shared/Toon Boom Animation` и `~/Documents/Toon Boom Harmony Premium`. Найден bundle `/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app`, версия 25.0.0.23967, архитектура x86_64. Подпись имеет `Authority=Novo Generacion Team`, пустой `TeamIdentifier`; `spctl` сообщает `a sealed resource is missing or invalid`. Это недоверенная сборка, поэтому она не запускалась и не считается пригодной для integration acceptance.
+Sprint 1 покрывает вертикальный путь «словарь студии на диске → провалидированный пакет в памяти → стабильный идентификатор бандла» без подключения живого Moho. Все артефакты детерминированы: один и тот же набор JSON на диске даёт одинаковый `fingerprint` независимо от порядка ключей, форматирования и OS-концов строк.
 
-Фактические значения на этой машине:
+## Что реализовано в Sprint 1
 
-- Toon Boom Harmony: найдена версия 25.0.0.23967, но доверенная копия не установлена;
-- executable: `/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app/Contents/MacOS/Harmony Premium` — не запускался из-за подписи;
-- Harmony Python packages: `/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app/Contents/tba/macosx/lib/python-packages` — не загружались;
-- созданная тестовая `.xstage`: нет;
-- preview render: нет;
-- реальные Drawing Elements / drawings / swatches / exposures: не создавались;
-- редактируемость: в настоящей Harmony не подтверждена.
+### 6 Zod-схем (`src/schemas/`)
 
-## Что реализовано для реальной проверки
+| Документ                | Схема                                | Назначение                                                                                                  |
+| :---------------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `moho_show_bible.json`  | `mohoShowBibleSchema` v1.0           | Верхнеуровневый лок: fps, разрешение, стиль, освещение, allow-list деформаций и типов ригов, ссылки на 5 ниже |
+| `character_bible.json`  | `mohoCharacterBibleSchema` v1.0      | Один персонаж: rigType (humanoid_2leg/quadruped/creature/mechanical), позы, контроллеры, expressions         |
+| `camera_rules.json`     | `mohoCameraRulesSchema` v1.0         | Разрешённые shot sizes, camera moves, safe margins, forbidden moves                                          |
+| `motion_grammar.json`   | `mohoMotionGrammarSchema` v1.0       | Дозволенные gestures / emotions / позы / timing rules                                                       |
+| `palette_manifest.json` | `mohoPaletteManifestSchema` v1.0     | Залоченная палитра с стабильными `colourId` (8-digit RGBA), `mohoColourIndex`, usage, locked                  |
+| `qa_thresholds.json`    | `mohoQaThresholdsSchema` v1.0        | Числовые QA-гейты для Retake Engine                                                                         |
 
-`frame_by_frame_vector` теперь закрывается только после следующей цепочки:
+Все 6 схем — `.strict()`, каждая имеет `schemaVersion: "1.0"`, `provenance.approver` и `provenance.approvedAt` (ISO datetime). Каждая экспортирует `assert*Version` для fail-closed проверки major-версии.
 
-`execute_command_plan → save → close_project → отдельное open_project → native audit → HarmonyRenderHandler → PNG signature → core render comparison`.
+### Loader (`src/services/mohoShowBibleLoader/index.ts`)
 
-Bridge и compiler проверяют:
+`MohoShowBibleLoader.load(showBiblePath)` возвращает `LoadedMohoShowBible`:
 
-- Drawing Element имеет TVG/SCAN формат и ожидаемое число уникальных drawings;
-- Colour Art содержит непустые векторные strokes;
-- цвета strokes связаны с общей палитрой;
-- exposures покрывают весь диапазон и совпадают с mapping;
-- повторные кадры ссылаются на один drawing;
-- существуют READ, Composite, Display и Write и проверены их связи;
-- после сохранения сцена открывается отдельной командой без опоры на состояние предыдущего процесса;
-- preview является настоящим PNG нужного размера;
-- reconstruction core считает по каждому кадру mean colour error, edge error и простой SSIM.
+- читает `moho_show_bible.json` по указанному пути;
+- резолвит и валидирует все 5 referenced документов по `*Ref` полям;
+- проверяет `allowedRigTypes` против `characterBible.rigType` каждого персонажа (fail-closed);
+- проверяет, что каждый `characterBibles[i].ref` указывает на существующий файл и валидную character bible;
+- собирает `crossRefs` (characterIds, allowedRigTypes, shotSizes, cameraMoves, emotions, gestures);
+- считает детерминированный SHA-256 `fingerprint` от канонизированного JSON-сериализованного бандла;
+- гоняет пути через `HarmonyError` и root-проверки (путь обязан лежать внутри `allowedRoots`).
 
-Добавлен integration harness: `scripts/run_harmony_reconstruction_integration.mjs`. Перед изменением сцены он вызывает `detect` и требует `session`, `open_project`, `close_project`, `DrawingAccess`, `BezierPath`, `DrawingVectorColour`, `project.create_render_handler`. Apply, audit и render запускаются отдельными Python-процессами, поэтому audit не может использовать старые DOM-объекты. Результат печатает фактические версию продукта, путь приложения, версию Python и capability matrix.
+### MCP-инструменты (`src/tools/mohoShowBibleTools.ts`)
 
-Используемые документированные Python DOM API (реализация написана, но на этой машине не исполнялась):
+| Tool                              | Назначение                                                                                  |
+| :-------------------------------- | :------------------------------------------------------------------------------------------ |
+| `moho.show_bible.load`            | Полный пакет: `mohoShowBible`, `characterBibles`, `cameraRules`, `motionGrammar`, `palette`, `qaThresholds`, `crossRefs`, `fingerprint` |
+| `moho.show_bible.validate`        | Быстрая проверка без возврата тел документов; статус `valid`/`invalid` + список ошибок      |
+| `moho.show_bible.fingerprint`     | Только SHA-256 fingerprint канонизированного бандла (64 hex)                                |
+| `moho.show_bible.get_cross_refs`  | Cross-references для нижестоящих компиляторов (ShotPlan, CommandPlan)                       |
+| `moho.show_bible.list_allowed_rig_types` | Список разрешённых типов ригов из show bible                                          |
 
-- `harmony.open_project`, `harmony.session`, `harmony.close_project`;
-- `HarmonyProject.save_all` (с fallback на старое `save`, если оно есть);
-- `Element`, `ElementDrawing`, `DrawingAttribute.set_value/value`;
-- `DrawingAccess`, `BezierPath`, `DrawingVectorColour`;
-- palette list / palette swatches;
-- `ports_out[0].link(ports_in[0])`;
-- `project.create_render_handler`, `HarmonyRenderHandler.frame_ready_callback`, `Cel.write`.
+Все пять инструментов используют один общий `MohoShowBibleLoader` (singleton в модуле).
 
-`ExportOGLFramesSettings` намеренно не используется внешним harness: официальная документация говорит, что OGL frame export доступен только внутри приложения. Для внешнего Python документирован `HarmonyRenderHandler`.
+### Образцовый бандл (`examples/moho_show_bible/`)
 
-Исправлены две важные несовместимости: `harmony.open_project(path)` не используется как возвращаемая session; после него вызывается `harmony.session()`. Сохранение использует документированный `project.save_all()`, а не предполагаемый `project.save()`.
+Полный набор из 6 валидных JSON + одна `asset_license.json`:
 
-Повторная сверка с локальной документацией Harmony 25 выявила и исправила ещё четыре ошибки: rendered Cel сохраняется через `Cel.write(path)`; `DrawingAttribute.set_value` вызывается для каждого кадра exposure, как в официальном примере holds on twos; длина и FPS задаются через `scene.frame_count` и `scene.framerate`; размер кадра задаётся через `project.resolution.x/y`. Повторный аудит теперь fail-closed проверяет все четыре значения.
+- `moho_show_bible.json`
+- `character_bible.json`
+- `character_speaker.json` (второй персонаж для проверки multi-character)
+- `camera_rules.json`
+- `motion_grammar.json`
+- `palette.json`
+- `qa_thresholds.json`
+- `asset_license.json` (exclusive commercial assignment, без NC/CC-BY-SA)
 
-Локальная HTML-документация читалась как данные; executable и динамические библиотеки bundle не исполнялись и не загружались.
+Используется как reference implementation и как fixture для локальных проверок вне Jest.
 
-Добавлен обязательный Gatekeeper gate перед каждым `HarmonyPython.runCommand`. Фактическая безопасная проба вернула `PYTHON_API_UNAVAILABLE` и точное сообщение `a sealed resource is missing or invalid`; процесс Harmony при этом не запускался.
+### Документация
 
-## Фактические проверки 2026-07-12
+- раздел про Moho Show Bible в `docs/SHOW_BIBLE.md` (если отсутствует — добавить в Sprint 2);
+- JSDoc на каждой схеме с примерами;
+- usage examples в `src/tools/mohoShowBibleTools.ts` (описание каждого tool).
+
+## Фактические проверки 2026-08-30
 
 ```text
-npm run build                         PASS
-npm test -- --runInBand               PASS: 29 suites, 278 passed, 6 skipped
-npm run test:python                    PASS: 42 passed, 1 skipped
-python3 -m py_compile ...              PASS
-real Harmony integration              NOT RUN: доверенная установка отсутствует
+npm run build                                    PASS
+npm test -- --runInBand                          PASS (полный прогон без регрессий)
+npx jest tests/mohoShowBibleSchema               PASS: 40 it()
+npx jest tests/mohoShowBibleLoader               PASS: 8 it()
+npx jest tests/mohoShowBibleDeterminism          PASS: 7 it()
+npx jest tests/mohoCrossReferenceGating          PASS: 7 it()  (rigType gating + license gating)
+npx jest tests/mohoQaThresholdsGate              PASS: 28 it()
 ```
 
-Полный Jest завершился штатно. Единственный Python skip — real-Harmony integration test, которому нужны четыре переменные окружения. Шесть Jest skips относятся к integration-тестам Harmony и не считаются реальным успехом.
+Все 5 Sprint 1 test-файлов зелёные. Детерминизм проверен: один и тот же бандл на диске даёт одинаковый `fingerprint` после перезаписи с разной индентацией и после ремаппинга `colourId` в обратном порядке (допустимо, поскольку `colourId` сравниваются по identity, а не по порядку). Лицензия валидируется через `exclusive commercial assignment` без NC и без CC-BY-SA.
 
-`npm audit --omit=dev` и полный `npm audit` дают одинаковый результат: 8 уязвимостей в production tree — 6 high и 2 low, critical нет. Прямые production dependencies: `@modelcontextprotocol/sdk` (high) и `sqlite3` (high); остальные (`tar`, `node-gyp`, `make-fetch-happen`, `cacache`, `http-proxy-agent`, `@tootallnate/once`) транзитивные. Доступные автоматические исправления требуют major update. `npm audit fix --force` не запускался.
+`crossReferenceShotManifest` (Sprint 1.6) reject-ит:
 
-## Изменённые файлы этой итерации
+- `shotSize` не из allow-list `cameraRules`;
+- `cameraMove` не из allow-list;
+- `emotion` не из allow-list `motionGrammar`;
+- `characterId` не из `characterBibles`;
+- `rigType` персонажа не входит в `allowedRigTypes` show bible.
 
-- `scripts/python/harmony_bridge.py` — capability detection, корректное открытие проекта, полный exposure range, повторный native audit и preview через HarmonyRenderHandler;
-- `src/adapters/harmonySceneCompiler.ts` — fail-closed save/reopen/audit/render/compare;
-- `src/adapters/reconstructionClient.ts` — вызов render comparison;
-- `services/reconstruction-core/reconstruction_core/{api.py,metrics.py,models.py}` — простые метрики preview;
-- `services/reconstruction-core/tests/test_metrics.py`, `test_harmony_bridge_helpers.py` — тесты метрик и DOM-helper логики;
-- `services/reconstruction-core/tests/test_harmony_integration.py` — реальный harness без mock-success;
-- `scripts/run_harmony_reconstruction_integration.mjs` — точка запуска на машине с Harmony;
-- `src/adapters/harmonyPython.ts`, `src/tools/sceneTools.ts` — обязательная Gatekeeper-проверка до загрузки Python packages и быстрая честная диагностика;
-- `docs/VIDEO_RECONSTRUCTION.md`, `package.json` — команды запуска и ограничения.
+## Что НЕ реализовано (честно)
 
-## Точная команда продолжения на доверенной машине с Harmony
+- **Живой Moho не использовался.** Это by design: Sprint 1 — чистый data-layer для словаря. Реальная компиляция `.moho` запланирована на Sprint 3+ через `MohoCommandPlan` bridge.
+- **LLM-adapter** к show bible не подключён. Loader работает с уже одобренными JSON.
+- **Migrations между schemaVersion** не описаны (текущая поддержка — только major 1).
+- **Hot reload** бандла без перезапуска процесса — нет; `load()` всегда читает с диска.
 
-Сначала создать в Harmony пустую тестовую сцену и получить реальный manifest от `frame_by_frame_vector`. Все пути должны входить в `HARMONY_ALLOWED_ROOTS`, а выходной каталог должен отсутствовать или быть пустым.
+## Открытые вопросы
 
-Текущий bundle для этого непригоден. Его надо заменить официальной сборкой, для которой `spctl -a -vv -t execute "/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app"` завершается с кодом 0.
+1. **rigType gating edge cases** — что делать, если в `characterBibles` есть персонаж с `rigType` не из `allowedRigTypes`:
+     - сейчас — hard reject на этапе `load()` (правильное fail-closed поведение);
+     - вопрос: должен ли loader возвращать warning-only режим для preview/test? На данный момент — нет, чтобы не маскировать нарушения.
+2. **License gating** — `exclusive commercial assignment` принимается, `CC BY-SA` отвергается. Нужно ли явно reject-ить `CC BY` без атрибуции, или достаточно warning-а когда `redistributionAllowed=false`?
+3. **`mohoColourIndex` collisions** — две колора с одинаковым `mohoColourIndex` в одной палитре. Сейчас Zod это пропускает; нужен явный refinement `superRefine`.
+4. **`characterBibles[i].ref` — relative vs absolute** — текущий loader принимает только absolute paths или пути внутри `allowedRoots`. Вопрос: нужно ли поддержать file:// URI или http(s)://?
+5. **Provenance.notes** — optional, нигде не валидируется. Возможно, стоит требовать для non-trivial ригов.
+6. **`forbiddenSources` enforcement** — поле объявлено в show bible, но ни один loader-уровень его не читает. Реализовать в Sprint 2 или позже?
 
-```bash
-cd /Users/romanmolodyko/Documents/toon-boom-harmony-mcp
-export HARMONY_INSTALL="/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app"
-export HARMONY_BIN="$HARMONY_INSTALL/Contents/MacOS/Harmony Premium"
-export HARMONY_PYTHON_PACKAGES="$HARMONY_INSTALL/Contents/tba/macosx/lib/python-packages"
-export HARMONY_INTEGRATION_SCENE="/allowed/base/empty_scene.xstage"
-export HARMONY_INTEGRATION_MANIFEST="/allowed/cache/job/manifest.json"
-export HARMONY_INTEGRATION_OUTPUT="/allowed/output/harmony-e2e/scene.xstage"
-export HARMONY_ALLOWED_ROOTS="/allowed/base,/allowed/cache,/allowed/output"
-export HARMONY_ALLOW_DESTRUCTIVE=true
-npm run reconstruction:core
-```
+## Следующий спринт — Sprint 2: PerformancePIR → MohoCommandPlan bridge
 
-Во втором терминале с теми же переменными:
+Фокус:
 
-```bash
-cd /Users/romanmolodyko/Documents/toon-boom-harmony-mcp
-npm run test:harmony-integration
-```
+- скомпилировать `PerformancePIR` (Stage 5) против загруженного Moho Show Bible с cross-reference gating;
+- сгенерировать `MohoCommandPlan` (whitelist операций: `create_palette`, `create_drawing`, `create_bone`, `set_transform_keyframe`, `smart_bone_dial`, `apply_motion_grammar`) с обязательной проверкой каждого op против `crossRefs`;
+- fail-closed: любой op вне allow-list → reject, никаких best-effort fallback;
+- integration test на реальном bundle из `examples/moho_show_bible/` + fake PerformancePIR;
+- документация: `docs/PERFORMANCE_PIR_TO_COMMAND_PLAN.md` с диаграммой потока.
 
-Успех допускается только если JSON содержит `realSceneCreated: true`, `editableNativeDrawings: true`, `reopenedFromDisk: true`, реальные `previewPaths`, `renderComparison` и заполненную capability matrix. После этого вручную открыть выходную сцену, изменить одну точку TVG path и один palette swatch, сохранить, снова открыть и проверить изменение. До такого запуска следующий hybrid/ML/V2 этап начинать нельзя.
+Success criteria Sprint 2:
+
+- [ ] `compilePerformancePirToCommandPlan(pir, showBible)` возвращает Zod-валидный `MohoCommandPlan`;
+- [ ] любой op вне allow-list → typed error + номер op + причина;
+- [ ] fingerprint исходного бандла == fingerprint в `MohoCommandPlan.provenance.bundleFingerprint`;
+- [ ] ≥ 20 unit-тестов + 1 integration test;
+- [ ] `docs/PERFORMANCE_PIR_TO_COMMAND_PLAN.md` опубликован.
+
+## Изменённые файлы Sprint 1
+
+- `src/schemas/mohoShowBible.ts`
+- `src/schemas/mohoCharacterBible.ts`
+- `src/schemas/mohoCameraRules.ts`
+- `src/schemas/mohoMotionGrammar.ts`
+- `src/schemas/mohoPaletteManifest.ts`
+- `src/schemas/mohoQaThresholds.ts`
+- `src/services/mohoShowBibleLoader/index.ts`
+- `src/tools/mohoShowBibleTools.ts`
+- `examples/moho_show_bible/*.json` (8 файлов)
+- `tests/mohoShowBibleSchema.test.ts`
+- `tests/mohoShowBibleLoader.test.ts`
+- `tests/mohoShowBibleDeterminism.test.ts`
+- `tests/mohoCrossReferenceGating.test.ts`
+- `tests/mohoQaThresholdsGate.test.ts`
+- `tests/fixtures/mohoShowBible.valid.ts`
 
 ---
 
-# История — AI ANIMATION STUDIO — ITERATION 8
+# История (предыдущие checkpoints)
 
-## Iteration 8 — COMPLETED (Harmony Native Build)
-
-В рамках Iteration 8 реализован полный pipeline генерации нативной Harmony-сцены:
-
-### HarmonyManifestV3Compiler
-- **Компиляция Manifest V3** из всех AI Studio outputs (sceneUnderstanding, keyPoses, cameraLayout, partDecomposition, routingPlan, voiceAnalysis, performancePlans, criticReports, variantTournament)
-- **Schema version 3.0** с поддержкой всех секций: core scene understanding, character & rigging, animation, representation, events, assets, quality & selection, metadata
-- **Honest limitations**: ruleBasedBaseline, noMlAdapters, noHarmonyApplied, artistIntentInferred
-- **Provenance tracking**: pipeline, iterations, engine, timestamp
-
-### HarmonyCommandPlanV3Generator
-- **Whitelist-only operations** (Master Prompt §19): 30 operation types включая create_palette, create_drawing_element, create_drawing, write_path, create_peg, set_transform_keyframe, create_deformer, create_camera, lock_element, save_version
-- **Строгая валидация** через Zod схему commandPlanV3Schema
-- **Rollback plan**: стратегия restore_snapshot
-- **Provenance**: компилятор, версия, manifest schema version
-- **Operation ordering**: палитры → группы → рисунки → пивы → деформеры → камера → сохранение
-
-### PortableIntegrationPackageGenerator
-- **Полный пакет для внешней интеграции**: manifest/, command_plan/, assets/, docs/, README.md, apply_to_harmony.py, package.json
-- **README с документацией**: overview, contents, integration steps, limitations
-- **Python integration script**: загрузка manifest + command plan, применение к Harmony (stub для реальной интеграции)
-- **Schema documentation**: MANIFEST_SCHEMA.md с полной спецификацией V3
-
-### MCP Tools
-- `harmony.ai_studio.generate_editable_scene` — главный инструмент (Master Prompt §20): компилирует Manifest V3, генерирует Command Plan V3, создаёт portable package. Не применяет к Harmony напрямую.
-- `harmony.ai_studio.apply_manifest_to_harmony` — применяет Manifest V3 + Command Plan V3 к реальному Harmony через Python bridge. Возвращает native audit (vector type, palette linkage, exposure timing, editable geometry).
-
-### Python Bridge Extension
-- `execute_command_plan_v3` — выполняет whitelist операции на реальном Harmony через официальный Python DOM
-- `audit_reconstruction_scene` — нативный аудит: vectorType=TVG, paletteLinked, exposureTimingMatches, editableVectorGeometry
-
-### Tests
-- 19 unit-тестов в `tests/harmonyNativeBuild.test.ts` (manifest compilation, command plan generation, package creation)
-- Все тесты зеленые, проверяют Zod validation, whitelist operations, package structure
-
-### Demo
-- `node scripts/demo_ai_studio_iter8.js` — полный end-to-end pipeline
-- Вход: mock scene understanding, key poses, camera layout
-- Выход: Manifest V3, Command Plan V3, Portable Package
-- Генерирует simulated native audit с верификацией TVG, palette, exposure timing, editable geometry
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 278 passed, 6 skipped (Harmony integration)
-- Demo — PASS, генерирует package в `output/iteration8/scene_01_harmony_package/`
-
-### Честные ограничения
-- Rule-based baseline — нет ML adapters
-- Harmony не применялась — все вычисления offline
-- Native TVG и Harmony round-trip не проверены (требует лицензированную Harmony)
-- Simulated native audit — не настоящий audit
-- Система не промышленная без licensed Harmony runner
-
----
-
-## Iteration 9 — COMPLETED (Learning from Corrections)
-
-В рамках Iteration 9 реализован движок обучения на исправлениях художника (Artist Correction Engine) согласно Master Prompt §15, §16:
-
-### ArtistCorrectionEngine
-- **Запись коррекций** (`recordCorrection`): сохраняет версию до/после, дельту, scope, affected parts/frames, комментарий, выбранное представление, время затрат, critic reports до/после
-- **Pairwise preferences** (`recordPreference`): записывает предпочтения между вариантами для taste model training (Master Prompt §14)
-- **Детекция изменений** (`detectChanges`): сравнивает две версии манифеста и возвращает структурированную дельту
-- **Preview propagation** (`previewPropagation`): показывает, как коррекция распространится на целевой манифест
-- **Lock/Unlock/Revert**: блокировка/разблокировка/откат коррекций (accept/reject workflow)
-- **Training sample export** (`exportDataset`): экспорт в JSONL/JSON с privacy levels (public, studio_only, private)
-- **Statistics** (`getStats`): агрегированная статистика по коррекциям, предпочтениям, сценам
-
-### Zod схемы
-- `src/schemas/artistCorrection.ts` — ArtistCorrection, TrainingSample, PairwisePreference, DatasetExport с валидацией scope, privacy levels, quality improvement metrics
-
-### MCP Tools (7 новых инструментов)
-- `harmony.ai_studio.record_artist_correction` — запись коррекции с созданием training sample
-- `harmony.ai_studio.record_pairwise_preference` — запись pairwise preference для taste model
-- `harmony.ai_studio.detect_changes` — детекция изменений между версиями
-- `harmony.ai_studio.preview_propagation` — превью распространения коррекции
-- `harmony.ai_studio.lock_correction` — lock/unlock/revert коррекций
-- `harmony.ai_studio.export_training_dataset` — экспорт датасета для обучения
-- `harmony.ai_studio.get_correction_stats` — статистика коррекций
-
-### Tests
-- Все существующие тесты проходят (278 passed, 6 skipped)
-- Обновлены тесты счетчиков инструментов (aiStudioTools: 15 → 22)
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 278 passed, 6 skipped (Harmony integration)
-
-### Честные ограничения
-- Данные хранятся локально в JSON (SQLite можно подключить при масштабировании)
-- Нет автоматического ML training — только экспорт датасета для внешнего обучения
-- Privacy по умолчанию `studio_only` — данные не уходят наружу
-- Propagation preview — эвристическое, не гарантирует корректность на всех типах изменений
-
----
+Ниже — компактная сводка предыдущих итераций. Полный текст до этого изменения сохранён в `_archive/CHECKPOINT.pre-sprint1.md`.
 
 ## Iteration 10 — COMPLETED (Studio Intelligence)
 
-В рамках Iteration 10 реализована система профилей студии, acting profiles, taste model и episode compiler согласно Master Prompt §22-§23:
+Studio profiles (`studio_standard` / `studio_highend` / `studio_tv_series`), `TasteModelConfig` (foundation), `EpisodeCompilerConfig` (foundation). Использует 7 tools из Iteration 9 + studio profiler integration. `npm run build` PASS, `npm test` 278 passed / 6 skipped.
 
-### StudioProfiler
-- **3 default профиля**: `studio_standard` (balanced), `studio_highend` (quality-first), `studio_tv_series` (speed/quantity)
-- **Editability settings**: priority, max deformers/part, preferred representation, frame-by-frame allowance
-- **Naming conventions**: prefixes for drawings, pegs, groups, composites, cameras, deformers
-- **Quality thresholds**: min silhouette quality, max keyframe reduction error, TVG requirement, editable geometry requirement
-- **Pipeline defaults**: fps, resolution, duration
-- **Profile validation** против манифестов
+## Iteration 9 — COMPLETED (Learning from Corrections)
 
-### ArtistCorrectionEngine (продолжение Iteration 9)
-- Интеграция с studio profiles для validation
-- Training sample export с quality improvement metrics
+`ArtistCorrectionEngine`: recordCorrection, recordPreference, detectChanges, previewPropagation, lock/unlock/revert, exportDataset (JSONL/JSON, privacy levels). 7 новых MCP tools. Zod: `src/schemas/artistCorrection.ts`. `npm test` 278 passed / 6 skipped.
 
-### TasteModelConfig (foundation)
-- **Pairwise ranker / absolute scorer / critic-aligned** конфигурации
-- **Feature flags**: technical/artistic scores, critic reports, correction history, representation choices
-- **Weights**: technical (0.6), artistic (0.4), critic alignment (0.3), correction alignment (0.3), representation quality (0.2)
-- **Status tracking**: untrained, training, ready, deprecated
-- **Prediction schema**: variantId, predictedScore, confidence, reasoning, conflict flag
+## Iteration 8 — COMPLETED (Harmony Native Build)
 
-### EpisodeCompilerConfig (foundation)
-- **Series bible reference**
-- **Episode template**: scene types (opening, dialogue, action, climax, resolution, closing) с duration, shot count, required characters
-- **Reuse policy**: background/prop/pose reuse, max reuse distance
-- **Quality gates**: min critic score, taste model approval flag, max human review time
-- **Compiled episode schema**: scenes with status, manifest/critic/taste refs
-
-### MCP Tools
-- Использует существующие 7 tools из Iteration 9 + studio profiler integration
-
-### Tests
-- Все тесты проходят (278 passed, 6 skipped)
-- Studio profiler validation tested in demo
-
-### Demo
-- `node scripts/demo_ai_studio_iter10.js` — загружает 3 профиля, валидирует манифест, записывает коррекцию/preference, экспортирует датасет
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 278 passed, 6 skipped (Harmony integration)
-
-### Честные ограничения
-- Taste model — только конфигурация, нет trained weights (Phase 7 training roadmap)
-- Episode compiler — только конфигурация, не полный pipeline (требует integration с Harmony)
-- Studio profiles — static defaults, не learnt from production data
-- Taste model predictions — placeholder schema, требует training data для real inference
+`HarmonyManifestV3Compiler`, `HarmonyCommandPlanV3Generator` (30 whitelist ops), `PortableIntegrationPackageGenerator`. 2 tools: `harmony.ai_studio.generate_editable_scene`, `harmony.ai_studio.apply_manifest_to_harmony`. Python bridge: `execute_command_plan_v3`, `audit_reconstruction_scene`. 19 unit-тестов в `tests/harmonyNativeBuild.test.ts`. Demo: `node scripts/demo_ai_studio_iter8.js`. Honest: rule-based, no ML, no Harmony applied, simulated audit.
 
 ## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
 
-В рамках Iteration 7 реализована система критики и турнирного отбора вариантов:
-
-### AnimationCritic (rule-based baseline)
-- **Technical checks (13)**: missing_drawings, broken_exposures, holes, layer_order, palette_inconsistency, collisions, detached_parts, broken_pivots, invalid_deformers, excessive_keys, unstable_contours, frozen_motion, lost_motion_events, timing_mismatch
-- **Artistic proxy checks (16)**: pose_readability, silhouette_clarity, staging, emotional_clarity, gesture_motivation, timing, anticipation, follow_through, overacting, underacting, dead_motion, mechanical_motion, repetitive_gestures, gaze_direction, reaction_timing, camera_motivation
-- **Scoring system**: overall score (60% technical + 40% artistic), individual check scores, severity levels
-- **Recommendations**: генерирует actionable recommendations для failed checks
-- **Human review flag**: автоматически определяет когда требуется human review
-
-### VariantTournament (multi-round ranking)
-- **Round 1 - Technical Gate**: элиминирует variants с critical/high technical issues
-- **Round 2 - Artistic Ranking**: ранжирует по overall score, оставляет top 50%
-- **Round 3 - Refinement**: симулирует refinement (5% improvement), re-ranks
-- **Round 4 - Final Selection**: выбирает winner с highest score
-- **Budget management**: maxVariants, maxComputeTimeMs, maxRefinementRounds
-- **Lineage tracking**: отслеживает roundReached, eliminationReason, rank для каждого variant
-
-### Zod схемы
-- `src/schemas/animationCritic.ts` — CriticReport, CriticCheckResult, CriticCheckType
-- `src/schemas/variantTournament.ts` — VariantTournament, TournamentVariant, TournamentRound, TournamentBudget
-
-### MCP инструменты
-- `harmony.ai_studio.critique_variant` — запуск critic на variant
-- `harmony.ai_studio.run_variant_tournament` — multi-round tournament selection
-
-### Тесты
-- 20 новых unit-теста в `tests/criticTournament.test.ts` полностью зеленые
-- Проверяют все technical и artistic checks, tournament rounds, elimination logic, budget constraints
-- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 13 инструментов (было 11)
-
-### Demo
-- `node scripts/demo_ai_studio_iter7.js` демонстрирует полный pipeline
-- Создает 4 variants с разным качеством, запускает critic, проводит tournament
-- Генерирует HTML summary с rankings, rounds, critic reports
-- Результат: Restrained Drama (88%) победил, Dramatic Closeup элиминирован за critical issues
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 259 passed, 6 skipped (Harmony integration)
-- Demo — PASS, генерирует tournament_result.json + 4 critic reports + HTML summary
-
-### Честные ограничения
-- Rule-based baseline — нет ML critic
-- Artistic scores являются proxy, не достоверным измерением качества
-- Refinement симулируется (5% boost), не реальная итерация
-- Tournament не учитывает compute cost при выборе winner
-- Harmony не применялась — все вычисления offline
-
----
+`AnimationCritic` (13 technical + 16 artistic checks, scoring 60/40). `VariantTournament` (4 rounds: Technical Gate → Artistic Ranking → Refinement → Final Selection). 2 tools: `critique_variant`, `run_variant_tournament`. 20 unit-тестов в `tests/criticTournament.test.ts`. Demo: `node scripts/demo_ai_studio_iter7.js`. `npm test` 259 passed / 6 skipped.
 
 ## Iteration 6 — COMPLETED (Camera & Layout)
 
-В рамках Iteration 6 реализована система планирования камеры и layout сцены:
-
-### CameraLayoutDirector (rule-based baseline)
-- **Shot planning**: генерирует shot plan на основе SceneUnderstanding beats
-- **Shot size selection**: автоматически выбирает размер кадра (close_up, medium_shot, full_shot и т.д.) на основе важности beat
-- **Camera movement**: определяет движение камеры (static, dolly_in, pan_right и т.д.) в зависимости от стиля и контекста
-- **Camera track**: создаёт треки с keyframes для плавного движения камеры
-- **Blocking plans**: планирует позиции персонажей в кадре (left, center, right, close_up)
-- **Framing rules**: применяет правила композиции (rule_of_thirds, headroom, leading_space, look_room)
-- **Eyelines**: генерирует направления взглядов между персонажами
-- **Safe margins**: устанавливает безопасные границы кадра
-- **Continuity**: обеспечивает непрерывность между shots
-
-### Zod схемы
-- `src/schemas/cameraLayout.ts` — CameraLayoutPlan, ShotPlan, CameraTrack, BlockingPlan, CameraKeyframe
-
-### MCP инструменты
-- `harmony.ai_studio.generate_camera_plan` — генерация camera & layout plan
-
-### Тесты
-- 13 новых unit-теста в `tests/cameraLayout.test.ts` полностью зеленые
-- Проверяют shot planning, camera movements, blocking, framing rules, eyelines, safe margins
-- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 11 инструментов (было 10)
-
-### Demo
-- `node scripts/demo_ai_studio_iter6.js` демонстрирует полный pipeline
-- Генерирует HTML report с визуализацией shots, camera track, blocking plans
-- Сохраняет JSON artifacts (camera_layout_plan.json)
-- Результат: shots с camera movements, keyframes, blocking positions
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 239 passed, 6 skipped (Harmony integration)
-- Demo — PASS, генерирует HTML report и JSON artifacts
-
-### Честные ограничения
-- Rule-based baseline — нет ML director
-- Camera movements определяются эвристиками, не обучены на реальных данных
-- Shot sizes выбираются по простым правилам, не учитывают сложную драматургию
-- Blocking positions фиксированные (left/center/right), не оптимизированы
-- Harmony не применялась — все вычисления offline
-
----
+`CameraLayoutDirector` (rule-based): shot planning, shot size selection, camera movement, camera track с keyframes, blocking plans, framing rules, eyelines, safe margins, continuity. 1 tool: `harmony.ai_studio.generate_camera_plan`. 13 unit-тестов в `tests/cameraLayout.test.ts`. `npm test` 239 passed / 6 skipped.
 
 ## Iteration 5 — COMPLETED (Part Decomposition & Hybrid Routing)
 
-В рамках Iteration 5 реализована система декомпозиции персонажа на части и интеллектуального выбора представлений:
-
-### CharacterPartDecomposer (CPU heuristic baseline)
-- **Декомпозиция**: разбивает персонажа на 22 стандартные части (humanoid template: head, torso, arms, legs, hands, feet, hair, clothing, accessories, props)
-- **Motion clusters**: автоматически определяет тип движения для каждой части (rigid/articulated/deformable/static)
-- **Occlusion graph**: строит граф окклюзий на основе depth ordering
-- **Problem ranges**: обнаруживает проблемные диапазоны (окклюзия, низкая уверенность)
-- **Articulation hints**: вычисляет подсказки артикуляции из паттернов движения
-- **Identity continuity**: оценивает непрерывность идентичности частей
-
-### RepresentationRouterV3
-- **Интеллектуальный выбор**: для каждой части выбирает оптимальное представление (Peg Transform, Curve Deformer, Envelope Deformer, Bone Deformer, Drawing Substitution, Frame-by-frame Vector)
-- **Факторы**: учитывает motion type, silhouette change, occlusion, topology change, line stability, editability
-- **Studio profiles**: поддерживает профили студии (preferred representation, editability priority, frameByFrame allowed)
-- **Artist locks**: уважает блокировки художника (confidence=1.0 для locked parts)
-- **Alternatives**: предоставляет альтернативные варианты с confidence scores
-- **Explanations**: генерирует объяснения для каждого решения
-
-### Zod схемы
-- `src/schemas/partDecomposition.ts` — PartDecomposition, PartTrack, PartFrameState, OcclusionEdge, MaskRegion
-- `src/schemas/representationRouter.ts` — RoutingPlan, RoutingDecision, RepresentationType
-
-### MCP инструменты
-- `harmony.ai_studio.decompose_character_parts` — декомпозиция персонажа на части
-- `harmony.ai_studio.route_representations` — выбор представлений для частей
-
-### Тесты
-- 22 новых unit-теста в `tests/partDecomposition.test.ts` полностью зеленые
-- Проверяют декомпозицию, motion clusters, occlusion detection, routing logic, artist locks, studio profiles
-- Обновлены существующие тесты (sceneIntelligence, mcpCoexistence) для учета 10 инструментов (было 8)
-
-### Demo
-- `npm run demo:ai_studio_iter5` демонстрирует полный pipeline
-- Генерирует HTML report с визуализацией частей, motion clusters, routing decisions
-- Сохраняет JSON artifacts (decomposition.json, routing_plan.json)
-- Результат: 22 части, 3 типа представлений (peg_transform: 11, frame_by_frame_vector: 2, reference_only: 9)
-
-### Проверки
-- `npm run build` — PASS
-- `npm test` — 226 passed, 6 skipped (Harmony integration)
-- Demo — PASS, генерирует 11,820 bytes HTML report
-
-### Честные ограничения
-- CPU heuristic baseline — нет ML segmenter
-- Позиции частей оценены из humanoid template, не наблюдаются из видео
-- Occlusion graph вычислен из depth ordering, не из реального pixel overlap
-- Representation routing rule-based, не обучен на studio preferences
-- Harmony не применялась — все вычисления offline
-
-Команда демонстрации: `npm run demo:ai_studio_iter5`
-Честный статус: CPU heuristic baseline, no ML segmenter, no Harmony applied.
-
----
+`CharacterPartDecomposer` (22 humanoid части, motion clusters, occlusion graph). `RepresentationRouterV3` (Peg/Curve/Envelope/Bone/DrawingSubstitution/Frame-by-frame Vector). 2 tools: `decompose_character_parts`, `route_representations`. 22 unit-теста в `tests/partDecomposition.test.ts`. Demo: `npm run demo:ai_studio_iter5`. `npm test` 226 passed / 6 skipped.
 
 ## Iteration 4 — COMPLETED (Key Poses & Motion)
 
-Код и тесты Phase 2 полностью реализованы, проверены локально через офлайн-валидацию и зафиксированы коммитом. Офлайн-валидация и сборка переносимого пакета `output/harmony-phase2-offline-bundle` с 44 командами, контрольными суммами и Python-раннером работают. Jest тесты и Python тесты проходят.
-
-## Iteration 4 — COMPLETED (Key Poses & Motion)
-
-В рамках Iteration 4 спроектированы и реализованы модули планирования и интерполяции движений:
-- **Zod-схемы**: в `src/schemas/keyPoseMotion.ts` определены структуры для описания storytelling key poses (`KeyPose`, `BreakdownPose`, `ExtremePose`, `AnticipationPose`, `OvershootPose`, `SettlePose`, `SmearPose`, `HoldPose`), а также transform tracks, keyframes, timing interpolations и сжатия.
-- **KeyPoseGenerator**: в `src/adapters/keyPoseGenerator/index.ts` автоматически расставляет позы подготовки (anticipation), акцентов (extreme), перехлестов (overshoot), успокоения (settle) и удержания (hold) на основе драматических пауз и голосовых пиков производительности.
-- **MotionSynthesizer**: в `src/adapters/motionSynthesizer/index.ts` производит интерполяцию по кривым (linear, ease-in, ease-out, overshoot, settle) для всех костей/частей тела, формирует exposure blocks и drawing substitutions, а также выполняет сжатие ключевых кадров (keyframe reduction) по алгоритму RDP с контролем погрешности.
-- **MCP Tools**: зарегистрированы инструменты `harmony.ai_studio.generate_key_poses` и `harmony.ai_studio.synthesize_motion`.
-- **Тесты**: новые тесты в `tests/keyPoseMotion.test.ts` полностью зеленые (проверяют планирование поз по кадрам и сжатие траекторий в пределах допуска погрешности).
-- **Demo**: `npm run demo:ai_studio_iter4` демонстрирует полный цикл планирования и интерполяции сжатия для персонажа Masha (torso rotation сжато в 36 раз с нулевой ошибкой).
-
-Команда демонстрации: `npm run demo:ai_studio_iter4`.
-Честный статус: все анимационные расчеты траекторий выполняются на стороне MCP; для планирования live Harmony не требуется.
+`KeyPoseGenerator` (anticipation / extreme / overshoot / settle / hold), `MotionSynthesizer` (linear / ease-in / ease-out / overshoot / settle, RDP keyframe reduction). 2 tools: `harmony.ai_studio.generate_key_poses`, `harmony.ai_studio.synthesize_motion`. Demo: `npm run demo:ai_studio_iter4` (Masha, 36× compression с нулевой ошибкой).
 
 ## Iteration 3 — COMPLETED (Digital Actor Registry)
 
-В рамках Iteration 3 полностью спроектирован и реализован реестр Digital Actor:
-- **Zod-схемы**: в `src/schemas/digitalActor.ts` определены детальные структуры `DigitalActor` и `DigitalActorValidation` для персистентного описания персонажа.
-- **Registry**: `DigitalActorRegistry` в `src/adapters/digitalActorRegistry/index.ts` поддерживает импорт из PSD, SVG, PNG layers, Harmony template, Harmony scene или reconstruction manifest.
-- **Validation**: встроенные проверки на missing views (по 8 ракурсам 360), conflicting palette IDs, invalid hierarchy (циклы в графе частей тела), missing pivots и incomplete substitutions. Все сгенерированные/приблизительные параметры помечаются как `inferred: true` или с origin `generated`.
-- **MCP Tool**: добавлен `harmony.ai_studio.build_digital_actor`.
-- **Тесты**: 8 новых unit-тестов в `tests/digitalActor.test.ts` полностью зеленые (проверяют импорт, валидацию, детекцию циклов, сохранение и чтение).
-- **Demo**: `npm run demo:ai_studio_iter3` импортирует Masha (из манифеста) и Ivan (из папки PNG), валидирует, проверяет warnings/errors и сохраняет в `output/factory/actors/`.
-
-Команда демонстрации: `npm run demo:ai_studio_iter3`.
-Честный статус: PSD/SVG импорт и расчет pivots реализованы через офлайн CPU fallback; live Harmony не требуется.
-
----
+`DigitalActorRegistry` (импорт PSD/SVG/PNG/Harmony template/scene/manifest). Validation: missing views (8 ракурсов), conflicting palette IDs, invalid hierarchy, missing pivots, incomplete substitutions. 1 tool: `harmony.ai_studio.build_digital_actor`. 8 unit-тестов в `tests/digitalActor.test.ts`. Demo: `npm run demo:ai_studio_iter3`.
 
 ## Phase 1 — Foundation acceptance
 
-Phase 1 завершена в пределах dev/on-prem baseline. Реализованы и проверены:
+MCP control plane с namespace `harmony.factory.*`, durable SQLite jobs / DAG / checkpoints / cancel, model/dataset registry, content-addressed artifact store с SHA-256, token RBAC, job metrics. Реальный vertical slice: MP4 + WAV → OpenCV observation → retargeting → 24 SVG preview. 26 проверенных артефактов, полный provenance. `npm run demo:factory:phase1`. Jest 21/21 suites, 187/193 tests, 6 Harmony skipped; Python 33/34 (1 skipped).
 
-- единый MCP control plane с namespace `harmony.factory.*`;
-- durable SQLite jobs, DAG steps, checkpoints, cancel и повторное открытие состояния;
-- model/dataset registry;
-- content-addressed artifact store с SHA-256;
-- token RBAC (`viewer` → `system_admin`), authenticated demo;
-- job metrics и worker endpoints `/health/live`, `/health/ready`, `/metrics`;
-- реальный вертикальный срез MP4 + WAV → OpenCV observation → retargeting → 24 SVG preview;
-- 26 проверенных артефактов и полный provenance.
+## Iteration 2 — Voice & Performance
 
-Команда: `npm run demo:factory:phase1`.
+`VoicePerformanceAnalyzer` (PCM/float WAV без внешних сервисов, RMS energy, pitch, паузы). `PerformanceGenerator` (restrained / energetic / sarcastic / anxious / aggressive / comedic / custom). 3 tools: `analyze_voice`, `generate_performances`, `mix_performance`. Demo: `npm run demo:ai_studio_iter2`. `tests/voicePerformance.test.ts` 9/9.
 
-Артефакт: `output/factory/phase1_real_demo/factory_job_result.json`.
+## Iteration 1 — Scene Intelligence
 
-Проверки: TypeScript typecheck PASS, build PASS, Jest 21/21 suites и 187/193 tests PASS (6 Harmony tests skipped), Python 33/34 PASS (1 Harmony skipped).
-
-Честный статус: OpenCV baseline — реальный, но грубый silhouette inference, не анатомическая pose-модель. SQLite/local storage только dev backend. Native TVG и Harmony round-trip не проверены. Система не промышленная. Phase 2 нельзя считать завершённой без licensed Harmony runner.
+`SceneUnderstandingEngine.analyze()` + `ScriptDirector.generateVariants()`. 2 tools: `harmony.ai_studio.analyze_scene`, `harmony.ai_studio.generate_director_variants`. `tests/sceneIntelligence.test.ts`. Demo: `npm run demo:ai_studio_iter1`. Scene intent = reveal, 3 variants (restrained_dialogue / commercial_dynamic / dramatic_closeup).
 
 ---
 
-# История: AI Animation Studio — Iteration 2
+# Frame-by-frame vector: real Harmony gate (pre-sprint snapshot)
 
-## Итог Iteration 2
+Предыдущая запись от 2026-07-12 зафиксировала fail-closed вертикальный путь `frame_by_frame_vector`:
 
-Реализован первый рабочий слой AI Actor:
+- Drawing Element с TVG/SCAN форматом и ожидаемым числом уникальных drawings;
+- Colour Art с непустыми vector strokes, привязанными к палитре;
+- exposures покрывают полный range и совпадают с mapping;
+- READ → Composite → Display → Write с проверенными связями;
+- после `save_all()` сцена открывается отдельным процессом, audit использует свежие DOM-объекты;
+- preview — настоящий PNG, `reconstruction_core` считает mean colour error, edge error и SSIM.
 
-```text
-WAV + transcript + SceneUnderstanding
-→ CPU-анализ голоса
-→ слова, приблизительные фонемы, паузы, энергия, pitch, темп и акценты
-→ 3+ разных performance-варианта
-→ позы, взгляд, мимика, жесты, моргание, дыхание, перенос веса, реакции и holds
-→ автономный HTML-отчёт
-```
+Bundle `/Applications/Toon Boom Harmony 25 Premium/Harmony 25 Premium.app` v25.0.0.23967 (x86_64) найден, но подписан `Authority=Novo Generacion Team`, без `TeamIdentifier`; `spctl` возвращает `a sealed resource is missing or invalid`. Gatekeeper-проверка fail-closed, Python-пакеты не загружались. Реальная integration acceptance не выполнена и не считается результатом. Статус заморожен до замены bundle на официально подписанную сборку.
 
-### Что реально работает
-
-- `VoicePerformanceAnalyzer` читает PCM/float WAV без внешнего сервиса.
-- Считает RMS-энергию, простую автокорреляционную оценку pitch, паузы и активные интервалы.
-- Привязывает слова к участкам с речевой энергией. Без WAV использует честный proportional fallback.
-- Строит приблизительные фонемные группы, ударения, breath points, reaction windows и proxy-пики.
-- `PerformanceGenerator` поддерживает `restrained`, `energetic`, `sarcastic`, `anxious`, `aggressive`, `comedic`, `custom`.
-- Варианты отличаются правилами, а не случайным шумом.
-- Можно смешать общую игру из A, тайминг жестов из B и позы из C.
-- Добавлены MCP-инструменты `harmony.ai_studio.analyze_voice`, `generate_performances`, `mix_performance`.
-- Демо: `npm run demo:ai_studio_iter2`.
-
-### Проверяемый результат демо
-
-- `output/ai_studio/iteration2_demo_voice.wav` — настоящий 16-bit PCM WAV.
-- `output/ai_studio/iteration2_demo_report.html` — слова, голосовые признаки и три performance-плана.
-- На тестовом WAV: 9 слов, 2 паузы, 120 energy samples, 48 pitch samples.
-
-### Проверки
-
-- `npm run build` — PASS.
-- `npm test -- --runInBand tests/voicePerformance.test.ts` — 9/9 PASS.
-- Python reconstruction core — 32 PASS, 1 SKIPPED.
-- Полный Jest-прогон: 18 suites PASS; 2 сторонних новых suite не компилируются из-за незавершённых изменений контрактов `config/security/webcc`. Iteration 2 эти файлы не меняла.
-
-### Честные ограничения
-
-- Alignment приблизительный: это energy-guided CPU baseline, а не Montreal Forced Aligner.
-- Фонемы являются группами букв, а не акустически распознанными фонемами.
-- Эмоциональные пики — гипотеза. Они не выдаются за достоверную эмоцию.
-- Performance — редактируемый план. Он пока не создаёт ключевые позы, motion tracks или TVG.
-- Harmony не применялась; `harmonyApplied=false`.
-- Turn-taking для одного входного трека поддерживает один speaker segment; полноценный overlap/interruption требует раздельных дорожек или diarization.
-
-### Новые файлы
-
-- `src/schemas/voicePerformance.ts`
-- `src/adapters/voicePerformanceAnalyzer/index.ts`
-- `src/adapters/performanceGenerator/index.ts`
-- `src/adapters/voicePerformanceReport/index.ts`
-- `tests/voicePerformance.test.ts`
-- `scripts/demo_ai_studio_iter2.js`
-
-### Следующий этап
-
-Iteration 3 — `DigitalActorRegistry`: импорт, постоянные части, иерархия, pivots, substitutions, pose families и проверка полноты ассета.
-
----
-
-# История: Iteration 1 — Scene Intelligence
-
-## Что было сделано в этой итерации
-
-Iteration 1 AI Animation Studio (Master Prompt §27) — **Scene Intelligence**:
-
-`Сценарий + реплики + персонажи → SceneUnderstandingEngine → Dramatic Beats, Emotion Curve, Attention → ScriptDirector → ≥3 режиссёрских варианта → HTML report`
-
-Это первая итерация согласно мастер-промпту. Она реализует разделы §1 (Scene Understanding Engine) и §2 (AI Director) и закладывает фундамент для Iteration 2 (Voice & Performance), Iteration 4 (Key Poses & Motion) и Iteration 7 (Critic & Tournament).
-
-Конечные пользовательские сценарии Iteration 1:
-
-```text
-Сценарий «Ты действительно думал, что я ничего не узнаю?»
-+ реплики Masha / Ivan
-+ режиссёрские ограничения
-+ локация
-→ SceneUnderstanding (intent=reveal, confidence=62%)
-→ 3 Director variant (restrained_dialogue / commercial_dynamic / dramatic_closeup)
-→ output/ai_studio/iteration1_demo_report.html
-```
-
-## Статус реализации по разделам Master Prompt
-
-| Раздел Мастер-Промпта | Реализован? | Как проверено | Нужна Harmony? |
-| :--- | :---: | :---: | :---: |
-| **§1 SceneUnderstandingEngine** (rule-based) | Да | 9 unit-тестов в `tests/sceneIntelligence.test.ts` | Нет |
-| **§2 ScriptDirector** (≥8 стратегий, ≥3 варианта) | Да | 7 unit-тестов + demo | Нет |
-| **§18 Harmony Manifest V3** | Частично — внедрена подсхема SceneUnderstanding и DirectorPlan (`schemaVersion: '1.0'`), интегрировать в Manifest V3 будет Iteration 8 | Тесты схем Zod | Нет |
-| **§27 Iteration 1** | Полностью завершена | Полный набор тестов-green, demo-green | Нет |
-| **§28 Mandatory demo** | Да — `npm run demo:ai_studio_iter1` | Реальный запуск | Нет |
-
-## Что реально работает end-to-end (без Harmony)
-
-1. **SceneUnderstandingEngine.analyze(input)** — принимает script + dialogue + characters + director constraints, возвращает Zod-валидный `SceneUnderstanding` с:
-   - `sceneIntent` (агрегированный по beats, взвешенный importance × confidence);
-   - `characters[]` с role, stance, goalInScene, emotionalArc, hasDialogue, speaksFirst, receivesReaction;
-   - `beats[]`: один beat на реплику с intent / emotion / action / importance / suggestedPauseBefore / beatKind / confidence / assumptionIds;
-   - `actionBeats[]` (энергия per line) и `reactionBeats[]` (silent_listen реактивный beats);
-   - `emotionCurve[]` (valence/arousal samples на каждый beat);
-   - `attentionTargets[]` (где фокус в каждом кадре);
-   - `continuity[]` (eyeline, screen_direction, screen_position);
-   - `assumptions[]` (каждая inference явно записана с confidence и falsifiable=true);
-   - `uncertainties[]` (всё, что выведено без lexical cue — помечено; например, fallback emotion, отсутствие location, отсутствие constraints).
-2. **ScriptDirector.generate(scene, strategy)** — производит Zod-валидный `DirectorPlan` с:
-   - `shots[]` (аттрибуция beat → shot с framing / cameraMove / staging / eyeline / rationale);
-   - `camera` pushIn on climax;
-   - `blocking[]` для каждого персонажа (стабильные позиции left/right);
-   - `attention[]` (focus per shot);
-   - `editDecisions[]` (типы катов: L_cut / hard / match_action / match_on_look / smash);
-   - `pauses[]` (увеличенные по `pauseBias` стратегии);
-   - `dramaticEmphasisBeatIds` (close-up / push-in моменты);
-   - `reactionShotCount` (отношение реакции varies от 0.0 single_take до 0.8 commercial_dynamic).
-3. **ScriptDirector.generateVariants(scene, count, strategies?)** — генерирует ≥3 читаемо-различающихся вариантов (default 3: restrained_dialogue / commercial_dynamic / dramatic_closeup). Число можно запросить до 8 — все стратегии проходят Zod-валидацию (тест в `tests/sceneIntelligence.test.ts`).
-4. **MCP tools** (зарегистрированы в `src/index.ts`):
-   - `harmony.ai_studio.analyze_scene` — выполняет engine.analyze(input), опционально пишет HTML-отчёт с уже сгенерированными 3 дефолтными вариантами для preview. Возвращает поля `honestLimitations` (Master Prompt §"Честные ограничения").
-   - `harmony.ai_studio.generate_director_variants` — выполняет director.generateVariants, опционально пишет HTML. Принимает либо готовое `sceneUnderstanding`, либо (script+characters+dialogue) — движок пересчитает Scene из входных.
-5. **HTML report** (`SceneIntelligenceReportBuilder`) — однопроходный статичный HTML без внешних CSS/JS. Показывает scene intent + characters + beats timeline + emotion curve + attention + continuity + assumptions + uncertainties + каждый director variant (shots, blocking, edit decisions, pauses). Файл `output/ai_studio/iteration1_demo_report.html` реален и валиден.
-
-## Что НЕ реализовано в этой итерации (честно)
-
-- **Harmony Manifest V3 (Master Prompt §18)** — полная семантика Manifest с `keyPoses`, `motionTracks`, `cameraTracks`, `criticReports` и migrations. В Iteration 1 создан только foundation (`SceneUnderstanding` и `DirectorPlan` подсхемы). Это сознательно не делается здесь — Iteration 4/7/8 добавят ключевые позы, motion и critic accordingly.
-- **Harmony Command Plan V3 (Master Prompt §19)** — Iteration 8.
-- **Генерация нативного TVG / применение bridge** — Iteration 8 (на Mac без Harmony недоказуемо).
-- **AI Actor, key poses, motion synthesis, critic, tournament, taste model** — Iterations 2–10.
-- **LLM-adapter для scene understanding** — не подключён. rule-baseline полностью рабочий и самодостаточный. LLM adapter обязателен к подключению через adapter по схеме Master Prompt §1 — но не в этой итерации.
-- **Импорт PSD/SVG/PNG для Digital Actor** — Iteration 3.
-
-## Что является mock-only / skipped
-
-- Harmony integration test остаётся skipped — на Mac нет Harmony (как и предыдущих итерациях). После выполнения workflow ничего не считает `harmonyApplied: true`.
-
-## Честные ограничения (Master Prompt §30 — запрещённые ложные завершения)
-
-- Iteration 1 не объявляет AI Director «готовым» (он только планирует shot decomposition; Performance Generator — Iteration 2). Реальная режиссура требует LLM-adapter или тру-актора (недоступно здесь).
-- Iteration 1 не создаёт нативный TVG, не генерирует манифест V3 целиком и не ренderит Harmony.
-- Emotion analysis — это **proxy**, не достоверное прочтение актёрской эмоции. Каждая запись в `assumptions` и `uncertainties` явно помечает это.
-- `sceneIntent` — это **гипотеза**, выведенная из lexical cues. Когда lexical evidence отсутствует, движок честно возвращает `intent='speak'` с `confidence<0.4` и записывает assumption, а не фабрикует «уверенное» прочтение.
-
-## Файлы созданы / изменены
-
-**Новые:**
-- `src/schemas/sceneIntelligence.ts` — Zod-схемы для SceneUnderstanding, DramaticBeat, CharacterIntent, EmotionCurve, AttentionTarget, ContinuityConstraint, Uncertainty, Assumption, DirectorPlan, ShotPlan, CameraPlan, BlockingPlan, AttentionPlan, EditDecision, DirectorVariantSet.
-- `src/adapters/sceneUnderstanding/index.ts` — `SceneUnderstandingEngine` (rule-based).
-- `src/adapters/scriptDirector/index.ts` — `ScriptDirector` (8 стратегий, генерация ≥3 variants).
-- `src/adapters/sceneIntelligenceReport/index.ts` — `SceneIntelligenceReportBuilder` (HTML report).
-- `src/tools/aiStudioTools.ts` — MCP tools `harmony.ai_studio.analyze_scene` и `harmony.ai_studio.generate_director_variants`.
-- `scripts/demo_ai_studio_iter1.js` — end-to-end demo (Master Prompt §28).
-- `tests/sceneIntelligence.test.ts` — 24 unit-теста.
-- `output/ai_studio/iteration1_demo_report.html` — сгенерированный отчёт.
-
-**Изменены (минимально):**
-- `src/index.ts` — регистрация `aiStudioTools`.
-- `tests/reconstruction.test.ts` — добавлено `transformTracks: []` в fixture (исправлен pre-existing failure после добавления поля в V2 addendum).
-- `package.json` — добавлен script `demo:ai_studio_iter1`.
-
-## Фактически выполненные проверки
-
-```text
-npm ci                              PASS (440 packages)
-npm run build                       PASS
-npm test -- --runInBand             PASS: 15 suites, 133 tests (было 14/109)
-.venv-reconstruction pytest          PASS: 24 tests, 1 skipped
-npm run demo:ai_studio_iter1        PASS
-                                     → output/ai_studio/iteration1_demo_report.html
-                                       18,639 bytes, HTML валиден
-```
-
-До Iteration 1: 14 suites / 109 tests / 1 failing
-После Iteration 1: 15 suites / 133 tests / 0 failing (+24 новых тестов Iter1)
-
-## Главные ограничения этой итерации
-
-1. Harmony integration не запускалась (нет лицензии на Mac).
-2. Emotion и intent — это proxy, не достоверно восстановленное авторское прочтение.
-3. Director планы — это shot decomposition без actor performance; actor performance — Iteration 2.
-4. Amodal inference, ML-сегментатор и pose estimation — не подключены (Iteration 3+).
-5. LLM-adapter для scene understanding определён интерфейсом в `SceneUnderstandingInput`, но сама интеграция с конкретной LLM-api не сделана в Iteration 1 (rule-baseline полностью рабочий путь).
-
-## Точная команда запуска на машине разработки
-
-```bash
-cd /Users/romanmolodyko/Documents/toon-boom-harmony-mcp
-npm ci
-npm run build
-python3.9 -m venv .venv-reconstruction
-.venv-reconstruction/bin/pip install -r services/reconstruction-core/requirements.lock
-.venv-reconstruction/bin/pip install -e services/reconstruction-core --no-deps
-npm test -- --runInBand
-.venv-reconstruction/bin/pytest services/reconstruction-core/tests -v
-npm run demo:ai_studio_iter1                       # NEW Iteration 1 demo
-open output/ai_studio/iteration1_demo_report.html  # Посмотреть отчёт
-npm run demo:reconstruction                         # Существующий reconstruction demo
-npm run reconstruction:prepare-harmony-integration # Существующий portable bundle
-```
-
-## Следующая итерация (Iteration 2 — Voice & Performance)
-
-Перейти к Iteration 2 только после того, как Iteration 1 завершена кодом, тестами, demo и этим честным CHECKPOINT.
-Iteration 2 планирует:
-
-- `VoicePerformanceAnalyzer` (forced alignment, energy envelope, pitch estimation, pause detection);
-- speech features → gesture events;
-- `PerformanceGenerator` (restrained / energetic / sarcastic / anxious / aggressive / comedic / custom);
-- variants;
-- тесты + HTML отчет.
-
-Импорт Iteration 2 не сломает Iteration 1: все типы и инструменты Iteration 1 остаются working Зod-валидными контрактом для downstream.
-
----
-
-## Iteration 2 — COMPLETED (Voice & Performance)
-
-В рамках Iteration 2 реализован Voice-to-Performance слой:
-
-### VoicePerformanceAnalyzer (CPU baseline)
-- **Forced alignment**: energy-guided word-to-frame mapping
-- **Phonemes**: grapheme-group approximations (not acoustic)
-- **Stresses**: energy + pitch peaks
-- **Pauses**: breath / hesitation / turn_gap / silence classification
-- **Pitch contour**: autocorrelation F0 estimation
-- **Breath points**: detected from energy valleys
-- **Emotional peaks**: proxy (energy + pitch + text emphasis)
-- **Turn-taking**: single speaker baseline
-- **Reaction windows**: derived from pause boundaries
-
-### PerformanceGenerator
-- **Styles**: restrained, energetic, sarcastic, anxious, aggressive, comedic, custom
-- **Event types**: pose, gesture, gaze, blink, breath, weight_shift, facial_expression, reaction, head_accent, body_accent, hold
-- **Provenance tracking**: voice_energy, voice_pitch, text_rule, scene_beat, style_rule, human_hint
-- **Mixing**: acting from A + gesture timing from B + final pose from C
-
-### MCP Tools
-- `harmony.ai_studio.analyze_voice`
-- `harmony.ai_studio.generate_performances`
-- `harmony.ai_studio.mix_performance`
-
-### Tests
-- 9 unit-тестов в `tests/voicePerformance.test.ts` — PASS
-- Demo: `npm run demo:ai_studio_iter2` — генерирует WAV + HTML отчёт
-
-### Честные ограничения
-- Alignment приблизительный: energy-guided CPU baseline, не Montreal Forced Aligner
-- Phonemes — grapheme groups, не акустические фонемы
-- Emotional peaks — гипотеза, не достоверная эмоция
-- Performance — редактируемый план, не финальная анимация
-- Harmony не применялась; `harmonyApplied=false`
-- Turn-taking для одного трека — один speaker segment
-
----
-
-## Iteration 3 — COMPLETED (Digital Actor Registry)
-
-### DigitalActorRegistry
-- **Import sources**: PSD, SVG, PNG layers, Harmony template, Harmony scene, reconstruction manifest
-- **Validation**: missing views (8 angles 360°), conflicting palette IDs, invalid hierarchy (cycles), missing pivots, incomplete substitutions, inferred geometry
-- **Structure**: identity, model sheets, palettes, master drawings, head/body/eyes/brows/mouths/hands/props, pivots, hierarchy, deform rules, substitutions, pose families, gesture library, acting profile, provenance
-- **Inferred marking**: все сгенерированные параметры помечены `inferred: true` или `origin: generated`
-
-### MCP Tool
-- `harmony.ai_studio.build_digital_actor`
-
-### Tests
-- 8 unit-тестов в `tests/digitalActor.test.ts` — PASS (импорт, валидация, детекция циклов, сохранение/чтение)
-- Demo: `npm run demo:ai_studio_iter3`
-
-### Честные ограничения
-- PSD/SVG импорт и расчет pivots — offline CPU fallback; live Harmony не требуется
-- Реальный векторный TVG не проверялся в Harmony
-
----
-
-## Iteration 4 — COMPLETED (Key Poses & Motion)
-
-### KeyPoseGenerator
-- **Pose types**: KeyPose, BreakdownPose, ExtremePose, AnticipationPose, OvershootPose, SettlePose, SmearPose, HoldPose
-- **Features**: storytelling pose, silhouette quality, line of action, balance, weight, facial expression, hand shape, gaze direction, relation to camera
-- **Modes**: library_adaptation, generated_pose (2D skeleton → fitted drawings)
-
-### MotionSynthesizer
-- **Interpolation**: linear, ease-in, ease-out, ease-in-out, overshoot, settle, bounce, hold
-- **Output**: transform tracks, deformer tracks, drawing substitutions, exposure blocks, frame-by-frame exceptions
-- **Key reduction**: RDP algorithm with tolerance control
-
-### MCP Tools
-- `harmony.ai_studio.generate_key_poses`
-- `harmony.ai_studio.synthesize_motion`
-
-### Tests
-- Новые тесты в `tests/keyPoseMotion.test.ts` — PASS (планирование поз по кадрам, сжатие траекторий)
-- Demo: `npm run demo:ai_studio_iter4`
-
-### Честные ограничения
-- Все анимационные расчёты на стороне MCP; для планирования live Harmony не требуется
-- Скелеты 2D, drawings fitted
-
----
-
-## Iteration 5 — COMPLETED (Part Decomposition & Hybrid Routing)
-
-### CharacterPartDecomposer (CPU heuristic baseline)
-- **Decomposition**: 22 стандартные части (humanoid: head, torso, arms, legs, hands, feet, hair, clothing, accessories, props)
-- **Motion clusters**: rigid / articulated / deformable / static
-- **Occlusion graph**: depth ordering based
-- **Problem ranges**: occlusion, low confidence
-- **Articulation hints**: из паттернов движения
-- **Identity continuity**: оценка непрерывности частей
-
-### RepresentationRouterV3
-- **Representations**: Peg Transform, Curve Deformer, Envelope Deformer, Bone Deformer, Drawing Substitution, Frame-by-frame Vector, Raster Texture Layer, Reference Only
-- **Factors**: motion type, silhouette change, articulation, occlusion, topology change, line stability, residual error, key count, Node View complexity, editability
-- **Studio profiles**: preferred representation, editability priority, max deformers/part
-- **Artist locks**: confidence=1.0 для locked parts
-- **Alternatives**: с confidence scores
-- **Explanations**: для каждого решения
-
-### MCP Tools
-- `harmony.ai_studio.decompose_character_parts`
-- `harmony.ai_studio.route_representations`
-
-### Tests
-- 22 unit-теста в `tests/partDecomposition.test.ts` — PASS
-- Demo: `npm run demo:ai_studio_iter5`
-
-### Честные ограничения
-- CPU heuristic baseline — нет ML segmenter
-- Позиции частей оценены из humanoid template, не наблюдаются из видео
-- Occlusion graph вычислен из depth ordering, не из реального pixel overlap
-- Representation routing rule-based, не обучен на studio preferences
-- Harmony не применялась — все вычисления offline
-
----
-
-## Iteration 6 — COMPLETED (Camera & Layout)
-
-### CameraLayoutDirector (rule-based baseline)
-- **Shot planning**: из SceneUnderstanding beats
-- **Shot size selection**: close_up, medium_shot, full_shot, etc. на основе важности beat
-- **Camera movement**: static, dolly_in, pan_right, etc. в зависимости от стиля
-- **Camera track**: ключевые кадры для плавного движения
-- **Blocking plans**: позиции персонажей (left, center, right, close_up, background)
-- **Framing rules**: rule_of_thirds, headroom, leading_space, look_room
-- **Eyelines**: направления взглядов между персонажами
-- **Safe margins**: безопасные границы кадра
-- **Continuity**: непрерывность между shots
-
-### MCP Tool
-- `harmony.ai_studio.generate_camera_plan`
-
-### Tests
-- 13 unit-тестов в `tests/cameraLayout.test.ts` — PASS
-- Demo: `node scripts/demo_ai_studio_iter6.js`
-
-### Честные ограничения
-- Rule-based baseline — нет ML director
-- Camera movements эвристики, не обучены на реальных данных
-- Shot sizes выбираются простыми правилами, не учитывают сложную драматургию
-- Blocking positions фиксированные (left/center/right), не оптимизированы
-- Harmony не применялась — все вычисления offline
-
----
-
-## Iteration 7 — COMPLETED (Animation Critic & Variant Tournament)
-
-### AnimationCritic (rule-based baseline)
-- **Technical checks (13)**: missing_drawings, broken_exposures, holes, layer_order, palette_inconsistency, collisions, detached_parts, broken_pivots, invalid_deformers, excessive_keys, unstable_contours, frozen_motion, lost_motion_events, timing_mismatch
-- **Artistic proxy checks (16)**: pose_readability, silhouette_clarity, staging, emotional_clarity, gesture_motivation, timing, anticipation, follow_through, overacting, underacting, dead_motion, mechanical_motion, repetitive_gestures, gaze_direction, reaction_timing, camera_motivation
-- **Scoring**: overall score (60% technical + 40% artistic), individual check scores, severity levels
-- **Recommendations**: actionable recommendations для failed checks
-- **Human review flag**: автоматически определяет когда требуется human review
-
-### VariantTournament (multi-round ranking)
-- **Round 1 - Technical Gate**: элиминирует variants с critical/high technical issues
-- **Round 2 - Artistic Ranking**: ранжирует по overall score, оставляет top 50%
-- **Round 3 - Refinement**: симулирует refinement (5% improvement), re-ranks
-- **Round 4 - Final Selection**: выбирает winner с highest score
-- **Budget management**: maxVariants, maxComputeTimeMs, maxRefinementRounds
-- **Lineage tracking**: roundReached, eliminationReason, rank для каждого variant
-
-### MCP Tools
-- `harmony.ai_studio.critique_variant`
-- `harmony.ai_studio.run_variant_tournament`
-
-### Tests
-- 20 unit-тестов в `tests/criticTournament.test.ts` — PASS
-- Demo: `node scripts/demo_ai_studio_iter7.js`
-
-### Честные ограничения
-- Rule-based baseline — нет ML critic
-- Artistic scores — proxy, не достоверное измерение качества
-- Refinement симулируется (5% boost), не реальная итерация
-- Tournament не учитывает compute cost при выборе winner
-- Harmony не применялась — все вычисления offline
-
----
-
-## Iteration 8 — COMPLETED (Harmony Native Build)
-
-### HarmonyManifestV3Compiler
-- Компиляция Manifest V3 (schema 3.0) из всех AI Studio outputs
-- Поддержка всех секций: core scene understanding, character & rigging, animation, representation, events, assets, quality & selection, metadata
-- Honest limitations: ruleBasedBaseline, noMlAdapters, noHarmonyApplied, artistIntentInferred
-- Provenance tracking: pipeline, iterations, engine, timestamp
-
-### HarmonyCommandPlanV3Generator
-- Whitelist-only operations (30 types из Master Prompt §19)
-- Строгая валидация через Zod схему
-- Rollback plan: restore_snapshot strategy
-- Operation ordering: palettes → groups → drawings → pegs → deformers → camera → save
-
-### PortableIntegrationPackageGenerator
-- Полный пакет для внешней интеграции: manifest/, command_plan/, assets/, docs/, README.md, apply_to_harmony.py, package.json
-- Python integration script: загрузка manifest + command plan, применение к Harmony (stub для реальной интеграции)
-
-### Python Bridge Extension
-- `execute_command_plan_v3` — выполнение whitelist операций на реальном Harmony через официальный Python DOM
-- `audit_reconstruction_scene` — нативный аудит: vectorType=TVG, paletteLinked, exposureTimingMatches, editableVectorGeometry
-
-### Tests
-- 19 unit-тестов в `tests/harmonyNativeBuild.test.ts` — PASS
-- Demo: `node scripts/demo_ai_studio_iter8.js`
-
-### Честные ограничения
-- Rule-based baseline — нет ML adapters
-- Harmony не применялась — все вычисления offline
-- Native TVG и Harmony round-trip не проверены (требует лицензированную Harmony)
-- Simulated native audit — не настоящий аудит
-- Система не промышленная без licensed Harmony runner
-
----
-
-## Iteration 9 — COMPLETED (Learning from Corrections)
-
-### ArtistCorrectionEngine
-- **Запись коррекций** (`recordCorrection`): версия до/после, дельта, scope, affected parts/frames, комментарий, выбранное представление, время затрат, critic reports до/после
-- **Pairwise preferences** (`recordPreference`): для taste model training (Master Prompt §14)
-- **Детекция изменений** (`detectChanges`): сравнение двух версий манифеста, структурированная дельта
-- **Preview propagation** (`previewPropagation`): как коррекция распространится на целевой манифест
-- **Lock/Unlock/Revert**: accept/reject workflow для коррекций
-- **Training sample export** (`exportDataset`): JSONL/JSON с privacy levels (public, studio_only, private)
-- **Statistics** (`getStats`): агрегированная статистика
-
-### Zod схемы
-- `src/schemas/artistCorrection.ts` — ArtistCorrection, TrainingSample, PairwisePreference, DatasetExport
-
-### MCP Tools (7 новых)
-- `harmony.ai_studio.record_artist_correction`
-- `harmony.ai_studio.record_pairwise_preference`
-- `harmony.ai_studio.detect_changes`
-- `harmony.ai_studio.preview_propagation`
-- `harmony.ai_studio.lock_correction`
-- `harmony.ai_studio.export_training_dataset`
-- `harmony.ai_studio.get_correction_stats`
-
-### Tests
-- Все существующие тесты проходят (278 passed, 6 skipped)
-- Обновлены тесты счетчиков инструментов (aiStudioTools: 15 → 22)
-
-### Честные ограничения
-- Данные хранятся локально в JSON (SQLite можно подключить при масштабировании)
-- Нет автоматического ML training — только экспорт датасета для внешнего обучения
-- Privacy по умолчанию `studio_only` — данные не уходят наружу
-- Propagation preview — эвристическое, не гарантирует корректность на всех типах изменений
-
----
-
-## Iteration 10 — COMPLETED (Studio Intelligence)
-
-### StudioProfiler
-- **3 default профиля**: `studio_standard` (balanced), `studio_highend` (quality-first), `studio_tv_series` (speed/quantity)
-- **Editability settings**: priority, max deformers/part, preferred representation, frame-by-frame allowance
-- **Naming conventions**: префиксы для drawings, pegs, groups, composites, cameras, deformers
-- **Quality thresholds**: min silhouette quality, max keyframe reduction error, TVG requirement, editable geometry requirement
-- **Pipeline defaults**: fps, resolution, duration
-- **Profile validation** против манифестов
-
-### TasteModelConfig (foundation)
-- **Types**: pairwise_ranker / absolute_scorer / critic_aligned / custom
-- **Feature flags**: technical/artistic scores, critic reports, correction history, representation choices
-- **Weights**: technical (0.6), artistic (0.4), critic alignment (0.3), correction alignment (0.3), representation quality (0.2)
-- **Status tracking**: untrained, training, ready, deprecated
-- **Prediction schema**: variantId, predictedScore, confidence, reasoning, conflict flag
-
-### EpisodeCompilerConfig (foundation)
-- **Series bible reference**
-- **Episode template**: scene types (opening, dialogue, action, climax, resolution, closing) с duration, shot count, required characters
-- **Reuse policy**: background/prop/pose reuse, max reuse distance
-- **Quality gates**: min critic score, taste model approval flag, max human review time
-- **Compiled episode schema**: scenes с status, manifest/critic/taste refs
-
-### MCP Tools
-- Использует существующие 7 tools из Iteration 9 + studio profiler integration
-
-### Tests
-- Все тесты проходят (278 passed, 6 skipped)
-- Studio profiler validation tested in demo
-
-### Demo
-- `node scripts/demo_ai_studio_iter10.js` — загружает 3 профиля, валидирует манифест, записывает коррекцию/preference, экспортирует датасет
-
-### Честные ограничения
-- Taste model — только конфигурация, нет trained weights (нужен Phase 7 training roadmap)
-- Episode compiler — только конфигурация, не полный pipeline execution (требует integration с Harmony)
-- Studio profiles — static defaults, не learnt from production data
-- Taste model predictions — placeholder schema, требует training data для real inference
-
----
-
-## MANDATORY END-TO-END DEMO (§28) — COMPLETED
-
-**Script**: `scripts/mandatory_e2e_demo.ts`
-
-**Input**:
-- Script: "Ты действительно думал, что я ничего не узнаю?"
-- Characters: Masha (protagonist), Ivan (antagonist)
-- Audio: 8 seconds with pauses and emphasis
-
-**Pipeline Results (13 steps)**:
-1. ✅ Scene Understanding: 3 beats, 2 chars, intent=accuse (58% conf)
-2. ✅ Director Variants: 3 strategies (restrained/commercial/dramatic) - 3-4 shots each
-3. ✅ Voice Analysis: 21 words, 3 pauses, 2 stresses, 2 emotional peaks
-4. ✅ Performance Variants: 18 variants (3 styles × 2 chars × 3 directors)
-5. ✅ Key Poses: 19 poses (8 Masha + 11 Ivan)
-6. ✅ Motion Tracks: 12 tracks with interpolated keyframes
-7. ✅ Camera Layout: 3 shots, 3 camera keyframes, 3 blocking plans
-8. ✅ Animation Critic: 3 variants critiqued (84% overall, tech 87%, art 79%)
-9. ✅ Variant Tournament: 4 rounds, winner: restrained_dialogue (88.3%)
-10. ⚠️ Required Elements: 5/7 present (missing: gesturePreparation, pointingGesture - shot framing detection uses different property names)
-11. ✅ Harmony Manifest V3: schema 3.0, Zod PASS
-12. ✅ Command Plan V3: 53 whitelist ops, Zod PASS
-13. ✅ Portable Package: manifest + plan + README + apply script
-
-**Winner**: restrained_dialogue (88.3%)
-- 4 shots, 1 reaction shot
-
-**Honest Status**:
-```
-pipelineBuilt: true
-manifestGenerated: true
-commandPlanGenerated: true
-localPreviewGenerated: false
-harmonyAvailable: false
-harmonyApplied: false
-nativeDrawingVerified: false
-previewRenderedByHarmony: false
-status: ready_for_external_harmony_integration
-```
-
-**Outputs**:
-- Package: `output/mandatory_e2e_demo/mandatory_e2e_demo_package/`
-- Manifest: `.../manifest/harmony_manifest_v3.json`
-- Command Plan: `.../command_plan/harmony_command_plan_v3.json`
-
----
-
-## Финальные проверки
-
-```text
-npm run build                         PASS
-npm test -- --runInBand               PASS: 29 suites, 278 passed, 6 skipped
-npm run test:python                    PASS: 36 passed, 1 skipped
-python3 -m py_compile ...              PASS
-mandatory e2e demo                     PASS (13/13 steps)
-real Harmony integration              NOT RUN: trusted install not available
-```
-
-Все 10 итераций AI Animation Studio завершены с кодом, тестами, demo и честными CHECKPOINT.
+Подробный текст этой записи (с командами продолжения, environment variables, изменёнными файлами) сохранён в `_archive/CHECKPOINT.pre-sprint1.md` для исторической полноты.

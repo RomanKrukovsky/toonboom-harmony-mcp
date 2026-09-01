@@ -38,15 +38,25 @@
     "test:week1": "jest tests/integration/week1SmokeGate.test.ts",
     "test:registry": "jest tests/capabilityRegistryGate.test.ts",
     "test:evidence": "jest tests/evidenceIntegrity.test.ts",
-    "test:gates": "jest tests/capabilityRegistryGate.test.ts tests/evidenceIntegrity.test.ts"
+    "test:gates": "jest tests/capabilityRegistryGate.test.ts tests/evidenceIntegrity.test.ts",
+    "test:moho_factory": "jest tests/mohoShowBibleSchema.test.ts tests/mohoShowBibleLoader.test.ts tests/mohoCrossReferenceGating.test.ts tests/mohoScenePlanSchema.test.ts tests/mohoRetakeManifestSchema.test.ts tests/mohoPerformancePirSchema.test.ts tests/mohoShowBibleDeterminism.test.ts tests/integration/mohoShowBibleEndToEnd.test.ts",
+    "test:moho_factory:watch": "jest --watch tests/mohoShowBibleSchema.test.ts tests/mohoShowBibleLoader.test.ts tests/mohoCrossReferenceGating.test.ts",
+    "demo:moho_factory_scaffold": "node --experimental-strip-types --no-warnings -e \"import('./src/tools/mohoShowBibleScaffold.js').then(m => console.log('Use mcp tool moho.show_bible.scaffold'))\"",
+    "demo:moho_factory": "node scripts/demo_moho_factory.js",
+    "test:moho_factory:acceptance": "jest tests/mohoAcceptance95.test.ts",
+    "test:moho:v3": "jest --runInBand tests/mohoProductionV3Schemas.test.ts tests/mohoProductionV3Store.test.ts tests/mohoProductionV3Orchestrator.test.ts tests/mohoProductionV3Providers.test.ts tests/mohoProductionV3Alignment.test.ts tests/mohoProductionV3Compiler.test.ts tests/mohoProductionV3NativeBackend.test.ts tests/mohoProductionV3StageExecutor.test.ts tests/mohoProductionV3Tools.test.ts tests/mohoProductionV3Certification.test.ts",
+    "moho:v3:certify": "npm run build && node scripts/certify_moho_v3_benchmark.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.122.0",
     "@modelcontextprotocol/sdk": "^0.6.0",
     "canonicalize": "^3.0.0",
     "dotenv": "^16.4.5",
     "fast-json-stable-stringify": "^2.1.0",
+    "openai": "^7.8.0",
     "sqlite3": "^5.1.7",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

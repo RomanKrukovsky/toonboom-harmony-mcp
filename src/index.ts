@@ -53,8 +53,22 @@ import { mohoAdvancedRigTools } from './tools/mohoAdvancedRigTools.js';
 import { mohoSpecializedRigTools } from './tools/mohoSpecializedRigTools.js';
 import { universalStudioTools } from './tools/universalStudioTools.js';
 import { mohoProductionTools } from './tools/mohoProductionTools.js';
+import { mohoProductionV3Tools } from './tools/mohoProductionV3Tools.js';
 import { mohoAnimateFromBriefTools } from './tools/mohoAnimateFromBriefTools.js';
 import { mohoStage4ArtworkBatchTools } from './tools/mohoStage4ArtworkBatchTools.js';
+import { mohoShowBibleTools } from './tools/mohoShowBibleTools.js';
+import { mohoShowBibleScaffoldTools } from './tools/mohoShowBibleScaffold.js';
+import { mohoRetargetingTools } from './tools/mohoRetargetingTools.js';
+import { mohoRetakeManifestTools } from './tools/mohoRetakeManifestTools.js';
+import { mohoScenePlanTools } from './tools/mohoScenePlanTools.js';
+import { mohoCompilerTools } from './tools/mohoCompilerTools.js';
+import { mohoRenderTools } from './tools/mohoRenderTools.js';
+import { mohoActionRecorderTools } from './tools/mohoActionRecorderTools.js';
+import { mohoQaGateTools } from './tools/mohoQaGateTools.js';
+import { mohoReferenceRigTemplateTools } from './tools/mohoReferenceRigTemplateTools.js';
+import { mohoRetakeDatasetTools } from './tools/mohoRetakeDatasetTools.js';
+import { mohoFactoryTools } from './tools/mohoFactoryTools.js';
+import { mohoTimeSavingsTools } from './tools/mohoTimeSavingsTools.js';
 import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
 import { mlTools } from './tools/mlTools.js';
 
@@ -84,6 +98,7 @@ import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.j
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const allTools = [
   ...harmonyActionRecorderTools,
@@ -133,8 +148,22 @@ const allTools = [
   ...mohoSpecializedRigTools,
   ...universalStudioTools,
   ...mohoProductionTools,
+  ...mohoProductionV3Tools,
   ...mohoAnimateFromBriefTools,
   ...mohoStage4ArtworkBatchTools,
+  ...mohoShowBibleTools,
+  ...mohoShowBibleScaffoldTools,
+  ...mohoRetargetingTools,
+  ...mohoRetakeManifestTools,
+  ...mohoScenePlanTools,
+  ...mohoCompilerTools,
+  ...mohoRenderTools,
+  ...mohoActionRecorderTools,
+  ...mohoQaGateTools,
+  ...mohoReferenceRigTemplateTools,
+  ...mohoRetakeDatasetTools,
+  ...mohoFactoryTools,
+  ...mohoTimeSavingsTools,
   ...harmonyNativePhase2Tools,
   ...mlTools,
   ...capabilityTools,
@@ -180,6 +209,23 @@ function zodFieldToJsonSchema(schema: any): any {
   if (typeName === 'ZodEnum') return { type: 'string', enum: schema._def.values, ...(description ? { description } : {}) };
   if (typeName === 'ZodLiteral') return { const: schema._def.value, ...(description ? { description } : {}) };
   if (typeName === 'ZodArray') return { type: 'array', items: zodFieldToJsonSchema(schema._def.type), ...(description ? { description } : {}) };
+  if (typeName === 'ZodUnion' || typeName === 'ZodDiscriminatedUnion') {
+    const options = Array.isArray(schema._def.options)
+      ? schema._def.options
+      : Array.from(schema._def.options?.values?.() ?? []);
+    return {
+      oneOf: options.map((option: any) => zodFieldToJsonSchema(option)),
+      ...(description ? { description } : {})
+    };
+  }
+  if (typeName === 'ZodRecord') {
+    return {
+      type: 'object',
+      additionalProperties: zodFieldToJsonSchema(schema._def.valueType),
+      ...(description ? { description } : {})
+    };
+  }
+  if (typeName === 'ZodAny' || typeName === 'ZodUnknown') return description ? { description } : {};
   if (typeName === 'ZodObject') {
     const shape = schema.shape as Record<string, any>;
     return {
@@ -221,7 +267,10 @@ class HarmonyMcpServer {
         tools: allTools.map(t => ({
           name: t.name,
           description: t.description,
-          inputSchema: zodFieldToJsonSchema(t.inputSchema)
+          inputSchema: zodToJsonSchema(t.inputSchema, {
+            target: 'jsonSchema7',
+            $refStrategy: 'none'
+          })
         }))
       };
     });

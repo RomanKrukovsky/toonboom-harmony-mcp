@@ -206,6 +206,8 @@ describe('capability registry gate', () => {
     it('orders verification levels monotonically', () => {
       expect(levelRank('not_implemented')).toBeLessThan(levelRank('offline_verified'));
       expect(levelRank('offline_verified')).toBeLessThan(levelRank('real_model_verified'));
+      expect(levelRank('simulator_verified')).toBeLessThan(levelRank('real_moho_smoke_verified'));
+      expect(levelRank('real_moho_smoke_verified')).toBeLessThan(levelRank('real_model_verified'));
       expect(levelRank('real_model_verified')).toBeLessThan(levelRank('real_harmony_smoke_verified'));
       expect(levelRank('real_harmony_smoke_verified')).toBeLessThan(levelRank('shot_verified'));
     });

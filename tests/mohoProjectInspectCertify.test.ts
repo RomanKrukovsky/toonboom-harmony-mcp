@@ -5,6 +5,7 @@ import { mohoProductionTools } from '../src/tools/mohoProductionTools.js';
 describe('moho.project.inspect and moho.project.certify tools', () => {
   const inspectTool = mohoProductionTools.find(t => t.name === 'moho.project.inspect');
   const certifyTool = mohoProductionTools.find(t => t.name === 'moho.project.certify');
+  const instantiateTemplateTool = mohoProductionTools.find(t => t.name === 'moho.assets.instantiate_template');
   const referenceProject = path.resolve(process.cwd(), 'fixtures/moho_reference/gramps_rig.moho.bak');
   const tempEvidenceDir = path.resolve(process.cwd(), 'temp_certify_evidence');
 
@@ -45,4 +46,14 @@ describe('moho.project.inspect and moho.project.certify tools', () => {
     expect(typeof result.score).toBe('number');
     expect(Array.isArray(result.gates)).toBe(true);
   }, 45000);
+
+  it('does not report legacy template data as a verified production success', async () => {
+    expect(instantiateTemplateTool).toBeDefined();
+    const handler = instantiateTemplateTool!.handler as (args: any) => Promise<any>;
+    const result = await handler({ templateId: 'quad_pioneer_dog' });
+
+    expect(result.status).toBe('implemented_unverified');
+    expect(result.replacement).toBe('moho.production.v3.start');
+    expect(result.verifiedNativeMoho).toBe(false);
+  });
 });

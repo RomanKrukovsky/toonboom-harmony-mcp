@@ -2,7 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { MohoProductionRigCompiler } from '../src/services/mohoProductionRigCompiler/index.js';
 
-describe('MohoProductionRigCompiler', () => {
+const installedMoho = '/Applications/Moho.app/Contents/MacOS/Moho';
+const describeWithLicensedMoho = process.env.RUN_REAL_MOHO_TESTS === '1'
+  && process.platform === 'darwin' && fs.existsSync(installedMoho)
+  ? describe
+  : describe.skip;
+
+describeWithLicensedMoho('MohoProductionRigCompiler native certification', () => {
   const tempDir = path.resolve(__dirname, '../temp_production_rig');
   const outputPath = path.join(tempDir, 'hero.moho');
   const evidenceDir = path.join(tempDir, 'evidence');

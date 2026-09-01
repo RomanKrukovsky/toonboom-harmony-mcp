@@ -66,6 +66,12 @@ function isHarmonyPresent(): boolean {
   return true;
 }
 
+function isLicenseUnavailable(result: unknown): boolean {
+  return /invalid license|license.*(?:missing|unavailable|not found)|no flexnet/i.test(
+    JSON.stringify(result)
+  );
+}
+
 function writeReport(report: SmokeReport): void {
   const outDir = path.resolve(process.cwd(), 'output', 'week1_smoke');
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
@@ -79,6 +85,7 @@ function writeReport(report: SmokeReport): void {
 describe('Week-1 smoke gate: open → edit → save → reopen → render', () => {
   const requireHarmony = process.env.HARMONY_SMOKE_REQUIRE === '1';
   const harmonyAvailable = isHarmonyPresent();
+  let harmonyUsable = harmonyAvailable;
 
   let report: SmokeReport;
 
@@ -143,6 +150,13 @@ describe('Week-1 smoke gate: open → edit → save → reopen → render', () =
       // Step 2: open the project in real Harmony.
       const openRes = await HarmonyPython.runCommand('open_project', { projectPath: xstagePath });
       if (openRes.status !== 'success') {
+        if (!requireHarmony && isLicenseUnavailable(openRes)) {
+          harmonyUsable = false;
+          report.terminalStatus = 'SKIPPED';
+          report.reason = 'Harmony is installed but no valid runtime license is available on this host.';
+          stepTrace.push({ step: 2, description: 'open_project via Harmony Python', status: 'SKIPPED', details: openRes });
+          return;
+        }
         stepTrace.push({ step: 2, description: 'open_project via Harmony Python', status: 'FAILED', details: openRes });
         throw new Error(`open_project failed: ${openRes.message ?? JSON.stringify(openRes)}`);
       }
@@ -230,8 +244,14 @@ describe('Week-1 smoke gate: open → edit → save → reopen → render', () =
 
       report.terminalStatus = 'PASSED';
     } catch (err: any) {
-      report.terminalStatus = 'FAILED';
-      report.reason = err?.message ?? String(err);
+      if (!requireHarmony && isLicenseUnavailable(err?.message ?? err)) {
+        harmonyUsable = false;
+        report.terminalStatus = 'SKIPPED';
+        report.reason = 'Harmony is installed but no valid runtime license is available on this host.';
+      } else {
+        report.terminalStatus = 'FAILED';
+        report.reason = err?.message ?? String(err);
+      }
     } finally {
       try { await HarmonyPython.shutdownDaemon(); } catch { /* ignore */ }
       report.completedAt = new Date().toISOString();
@@ -253,7 +273,7 @@ describe('Week-1 smoke gate: open → edit → save → reopen → render', () =
   });
 
   it('passes the full round-trip when Harmony is present', () => {
-    if (!harmonyAvailable) return; // skip-on-absent
+    if (!harmonyUsable) return; // skip-on-absent-or-unlicensed
     expect(report.terminalStatus).toBe('PASSED');
     expect(report.reopenedSuccessfully).toBe(true);
     expect(report.nodesReadBack.length).toBeGreaterThan(0);

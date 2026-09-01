@@ -51,6 +51,21 @@ export interface MohoAuditReport {
   repairedMohoPath?: string;
 }
 
+function flattenMohoLayers(layers: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const flattened: Array<Record<string, unknown>> = [];
+  const visit = (items: Array<Record<string, unknown>>): void => {
+    for (const layer of items) {
+      flattened.push(layer);
+      const nested = layer.layers ?? layer.layer_list;
+      if (Array.isArray(nested)) {
+        visit(nested.filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object'));
+      }
+    }
+  };
+  visit(layers);
+  return flattened;
+}
+
 /**
  * MohoProductionQualityAuditor — Automated QC engine that inspects Moho projects
  * against 10 studio criteria (Borsch / Industry Standard) and automatically repairs issues.
@@ -58,7 +73,7 @@ export interface MohoAuditReport {
 export class MohoProductionQualityAuditor {
   public static auditDocumentJson(docJson: Record<string, unknown>, projectName = 'Project'): MohoAuditReport {
     const issues: MohoQCIssue[] = [];
-    const layers = (docJson.layers as Array<Record<string, unknown>>) || [];
+    const layers = flattenMohoLayers((docJson.layers as Array<Record<string, unknown>>) || []);
     let totalBones = 0;
 
     for (const layer of layers) {
@@ -129,7 +144,7 @@ export class MohoProductionQualityAuditor {
 
       // 4. SWITCH_INCONSISTENCY: SwitchLayers must contain at least 1 sublayer
       if (layer.type === 'SwitchLayer') {
-        const sublayers = (layer.layer_list as unknown[]) || [];
+        const sublayers = (layer.layers as unknown[]) || (layer.layer_list as unknown[]) || [];
         if (sublayers.length === 0) {
           issues.push({
             ruleId: 'SWITCH_INCONSISTENCY',
@@ -165,7 +180,7 @@ export class MohoProductionQualityAuditor {
     fixesAppliedCount: number;
   } {
     let fixesCount = 0;
-    const layers = (docJson.layers as Array<Record<string, unknown>>) || [];
+    const layers = flattenMohoLayers((docJson.layers as Array<Record<string, unknown>>) || []);
 
     for (const layer of layers) {
       const skel = layer.skeleton as Record<string, unknown> | undefined;

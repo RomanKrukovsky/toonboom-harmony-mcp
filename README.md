@@ -115,3 +115,18 @@ HARMONY_ALLOW_DESTRUCTIVE=false
 - [Решение проблем (Troubleshooting)](docs/TROUBLESHOOTING.md)
 - [Ограничения версий и совместимости](docs/LIMITATIONS.md)
 - [Реконструкция видео в редактируемую сцену](docs/VIDEO_RECONSTRUCTION.md)
+
+### Moho AI Factory — коммерческий слой
+
+- [ROADMAP.md](ROADMAP.md) — статус спринтов 1–8 и стратегия
+- [MOHO_FACTORY_v2.md](docs/MOHO_FACTORY_v2.md) — техническое описание фабрики
+- [MOHO_ACTING_INTEGRATION.md](docs/MOHO_ACTING_INTEGRATION.md) — Sprint 8 acting bridge (lip-sync, gestures, breathing, squash/stretch)
+- [HONEST_REPLACEMENT_STATUS.md](docs/HONEST_REPLACEMENT_STATUS.md) — honest analysis замены профессий (60–77% после Sprint 8 correction)
+- [SALES_OFFER.md](docs/SALES_OFFER.md) — коммерческое предложение (Starter / Studio / Pro)
+- [MONETIZATION.md](docs/MONETIZATION.md) — pricing tiers, unit economics, go-to-market
+- [COMPETITIVE_ANALYSIS.md](docs/COMPETITIVE_ANALYSIS.md) — vs Cavalry / Character Animator / TB Producer / Plask
+- [CASE_STUDY.md](docs/CASE_STUDY.md) — synthetic baseline + план real case studies
+- [COMMERCIAL_DEMO.md](docs/COMMERCIAL_DEMO.md) — сценарий коммерческого демо
+- [CLIENT_ONBOARDING.md](docs/CLIENT_ONBOARDING.md) — гайд по подключению студии-клиента
+- [PILOT_INTERVIEW_GUIDE.md](docs/PILOT_INTERVIEW_GUIDE.md) — script для первых 3 pilot-интервью
+- [QUICKSTART.md](docs/QUICKSTART.md) — Hello World шот за 30 минут

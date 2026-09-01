@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "thresholdsId": "demo_humanoid_speaker_v1_qa_thresholds",
+  "silhouetteQualityMin": 0.7,
+  "lipsyncDriftMaxMs": 80,
+  "continuityMaxDeltaFrames": 2,
+  "lineThicknessTolerancePt": 0.5,
+  "paletteDeltaMax": 0.02,
+  "poseLibraryMatchMin": 0.85,
+  "autoFixableSeverityMax": "medium",
+  "requireHumanApprovalFor": [
+    "key_pose",
+    "camera_move",
+    "dialogue_timing"
+  ],
+  "boneAngleToleranceDeg": 2.0,
+  "meshWarpMaxPointsMoved": 8,
+  "switchLayerMaxChangesPerSecond": 6,
+  "forbidOrphanBones": true,
+  "provenance": {
+    "approver": "demo-qa-lead",
+    "approvedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

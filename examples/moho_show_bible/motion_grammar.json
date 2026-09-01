@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0",
+  "grammarId": "demo_humanoid_speaker_v1_motion_grammar",
+  "rules": [
+    {
+      "ruleId": "general_dialogue",
+      "description": "Default dialogue motion: subtle idle sway, controlled head/eye motion, mouth driven by lip-sync.",
+      "allowedGestures": [
+        "nod",
+        "head_shake",
+        "hand_raise"
+      ],
+      "forbiddenGestures": [
+        "full_body_jump",
+        "spin"
+      ],
+      "allowedEmotions": [
+        "neutral",
+        "happy",
+        "surprise"
+      ],
+      "poseLibraryRefs": [
+        "./poses/speaker_idle_01.png"
+      ],
+      "timing": {
+        "minHoldFrames": 2,
+        "maxHoldFrames": 48,
+        "anticipationFrames": 4,
+        "followThroughFrames": 6
+      },
+      "boneConstraints": [
+        {
+          "boneName": "head_bone",
+          "minAngleDeg": -30,
+          "maxAngleDeg": 30
+        },
+        {
+          "boneName": "left_arm_bone",
+          "minAngleDeg": -90,
+          "maxAngleDeg": 180
+        }
+      ],
+      "physicsChannels": [
+        "spring",
+        "damping"
+      ]
+    }
+  ],
+  "defaultTiming": {
+    "fps": 24,
+    "minBeatFrames": 2,
+    "maxBeatFrames": 96
+  },
+  "defaultEasing": "ease_in_out",
+  "provenance": {
+    "approver": "demo-animator",
+    "approvedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

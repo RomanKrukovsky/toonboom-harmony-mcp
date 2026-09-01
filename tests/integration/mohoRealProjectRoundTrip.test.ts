@@ -11,7 +11,8 @@ import { MohoStudioMasterRigGenerator } from '../../src/services/mohoStudioMaste
 import type { MohoProductionRigSpec } from '../../src/schemas/mohoProductionRig.js';
 
 const installedMoho = '/Applications/Moho.app/Contents/MacOS/Moho';
-const describeWithRealMoho = process.platform === 'darwin' && fs.existsSync(installedMoho)
+const describeWithRealMoho = process.env.RUN_REAL_MOHO_TESTS === '1'
+  && process.platform === 'darwin' && fs.existsSync(installedMoho)
   ? describe
   : describe.skip;
 

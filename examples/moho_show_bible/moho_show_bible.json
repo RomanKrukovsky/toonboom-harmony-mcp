@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "showId": "demo_humanoid_speaker_v1",
+  "title": "Demo Humanoid Speaker",
+  "logLine": "A friendly humanoid character delivers a 5-second line with full lip-sync",
+  "fps": 24,
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "visualStyle": "Stylized 2D broadcast cut-out, clean Bezier linework, 5-color palette",
+  "lineRules": {
+    "defaultThicknessPt": 2.5,
+    "lineColourId": "char_line",
+    "fillColourId": "char_skin_base"
+  },
+  "lighting": {
+    "type": "soft_top_left",
+    "shadowColourId": "char_shadow"
+  },
+  "allowedDeformations": [
+    "peg_transform",
+    "bone_deformer",
+    "drawing_substitution",
+    "smart_bone_dial",
+    "mesh_warp",
+    "vitruvian_group"
+  ],
+  "allowedRigTypes": [
+    "humanoid_2leg"
+  ],
+  "characterBibles": [
+    {
+      "characterId": "speaker",
+      "ref": "./character_speaker.json"
+    }
+  ],
+  "paletteManifestRef": "./palette.json",
+  "cameraRulesRef": "./camera_rules.json",
+  "motionGrammarRef": "./motion_grammar.json",
+  "qaThresholdsRef": "./qa_thresholds.json",
+  "forbiddenSources": [
+    "third_party_NC_licensed"
+  ],
+  "provenance": {
+    "approver": "demo-artist",
+    "approvedAt": "2026-01-01T00:00:00.000Z",
+    "notes": "Demo frozen show"
+  }
+}

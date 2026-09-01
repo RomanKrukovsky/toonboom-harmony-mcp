@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "paletteId": "demo_palette",
+  "name": "Demo Speaker Palette",
+  "colours": [
+    {
+      "colourId": "char_skin_base",
+      "name": "Character Skin Base",
+      "rgba": "#F2C6A0FF",
+      "usage": "skin",
+      "locked": true,
+      "mohoColourIndex": 0
+    },
+    {
+      "colourId": "char_hair",
+      "name": "Character Hair",
+      "rgba": "#3A2A1FFF",
+      "usage": "hair",
+      "locked": true,
+      "mohoColourIndex": 1
+    },
+    {
+      "colourId": "char_line",
+      "name": "Character Line",
+      "rgba": "#1A1A1AFF",
+      "usage": "line",
+      "locked": true,
+      "mohoColourIndex": 2
+    },
+    {
+      "colourId": "char_shadow",
+      "name": "Character Shadow",
+      "rgba": "#7A4A3AFF",
+      "usage": "shadow",
+      "locked": true,
+      "mohoColourIndex": 3
+    },
+    {
+      "colourId": "char_eye",
+      "name": "Character Eye",
+      "rgba": "#2C5F8DFF",
+      "usage": "eye",
+      "locked": true,
+      "mohoColourIndex": 4
+    }
+  ],
+  "paletteType": "rgb",
+  "maxColours": 256,
+  "provenance": {
+    "approver": "demo-artist",
+    "approvedAt": "2026-01-01T00:00:00.000Z",
+    "notes": "Demo 5-color locked palette"
+  }
+}

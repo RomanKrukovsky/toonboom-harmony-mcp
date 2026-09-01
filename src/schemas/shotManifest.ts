@@ -87,6 +87,7 @@ export const shotManifestSchema = z.object({
   production: z.string().min(1),
   episode: z.string().min(1),
   sceneName: z.string().min(1),
+  rigType: z.enum(['humanoid_2leg', 'quadruped', 'creature', 'mechanical']).optional(),
   description: z.string().min(1).describe('Human-readable shot description from the script.'),
   staging: stagingSchema,
   timing: shotTimingSchema,
@@ -138,10 +139,11 @@ export interface ShowBibleCrossRefs {
   cameraRules?: { allowedShotSizes?: string[]; allowedCameraMoves?: string[] };
   motionGrammar?: { allowedEmotions?: string[]; allowedGestures?: string[] };
   characterIds?: string[];
+  allowedRigTypes?: string[];
 }
 
 export interface CrossReferenceViolation {
-  kind: 'unknown_shot_size' | 'unknown_camera_move' | 'unknown_emotion' | 'unknown_character';
+  kind: 'unknown_shot_size' | 'unknown_camera_move' | 'unknown_emotion' | 'unknown_character' | 'unknown_rig_type';
   ref: string;
   beatId?: string;
 }
@@ -178,6 +180,10 @@ export function crossReferenceShotManifest(
         violations.push({ kind: 'unknown_emotion', ref: beat.emotion, beatId: beat.beatId });
       }
     }
+  }
+  if (refs.allowedRigTypes && manifest.rigType &&
+      !refs.allowedRigTypes.includes(manifest.rigType)) {
+    violations.push({ kind: 'unknown_rig_type', ref: manifest.rigType });
   }
   return violations;
 }

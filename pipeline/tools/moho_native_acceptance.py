@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import fcntl
 import json
 import os
@@ -9,7 +10,7 @@ import re
 import subprocess
 import tempfile
 import zipfile
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
@@ -37,7 +38,11 @@ class ProcessEvidence:
     @property
     def has_moho_error(self) -> bool:
         combined = f"{self.stdout}\n{self.stderr}"
-        return self.returncode != 0 or bool(MOHO_ERROR.search(combined))
+        return (
+            self.returncode != 0
+            or bool(MOHO_ERROR.search(combined))
+            or bool(MOHO_PRO_REQUIRED.search(combined))
+        )
 
     @property
     def requires_moho_pro(self) -> bool:
@@ -372,3 +377,25 @@ def accept_project(
         stderr="\n".join(run.stderr for run in all_runs if run.stderr),
         roundtrip_path=str(roundtrip_path),
     )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Run fail-closed native Moho acceptance")
+    parser.add_argument("--project", required=True)
+    parser.add_argument("--evidence-dir", required=True)
+    parser.add_argument("--frames", nargs="+", required=True, type=int)
+    args = parser.parse_args()
+    try:
+        result = accept_project(args.project, args.evidence_dir, args.frames)
+        print(json.dumps(asdict(result), ensure_ascii=False))
+        return 0
+    except FileNotFoundError as error:
+        print(json.dumps({"fatal_error": "MOHO_NOT_FOUND", "message": str(error)}))
+        return 3
+    except Exception as error:
+        print(json.dumps({"fatal_error": "NATIVE_ACCEPTANCE_FAILED", "message": str(error)}))
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

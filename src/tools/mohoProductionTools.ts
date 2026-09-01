@@ -119,7 +119,7 @@ export const mohoProductionTools = [
   {
     name: 'moho.assets.instantiate_template',
     description:
-      'ИНСТАНЦИРОВАНИЕ ШАБЛОНА В MOHO. Создает и компилирует готовый к анимации проект из каталога шаблонов с полной структурой костей, Smart Actions и материалами.',
+      'Устаревшая генерация данных шаблонного рига. Результат не считается готовым .moho без нативного open/save/reopen и render; для production используйте moho.production.v3.start.',
     inputSchema: z.object({
       templateId: z.string().describe('ID шаблона (например, "char_rick_sanchez", "quad_pioneer_dog", "mech_hydraulic_robot").'),
       outputPath: z.string().optional().describe('Путь для сохранения скомпилированного .moho файла.')
@@ -127,7 +127,13 @@ export const mohoProductionTools = [
     handler: async (args: { templateId: string; outputPath?: string }) => {
       const outAbs = args.outputPath ? verifyPathAccess(path.resolve(args.outputPath)) : undefined;
       const instantiated = MohoAssetRegistry.instantiateTemplate(args.templateId, outAbs);
-      return { status: 'success', instantiated };
+      return {
+        status: 'implemented_unverified',
+        code: 'NATIVE_MOHO_EVIDENCE_REQUIRED',
+        replacement: 'moho.production.v3.start',
+        verifiedNativeMoho: false,
+        instantiated
+      };
     }
   }
 ];

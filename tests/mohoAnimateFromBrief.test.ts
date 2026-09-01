@@ -3,8 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { MohoAnimatorService } from '../src/services/mohoAnimatorEngine/index.js';
 
+const describeWithLicensedMoho = process.env.RUN_REAL_MOHO_TESTS === '1'
+  && fs.existsSync('/Applications/Moho.app/Contents/MacOS/Moho') ? describe : describe.skip;
 
-describe('moho.animate.from_brief', () => {
+describeWithLicensedMoho('moho.animate.from_brief', () => {
   let tempDir: string;
   let rigPath: string;
 
