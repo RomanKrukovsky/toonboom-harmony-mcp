@@ -160,6 +160,8 @@ git commit -m "feat: add 95 percent Moho production certification"
 
 ### Task 3: Define and validate a production character pack
 
+**Status:** Completed — строгий контракт, проверка файлов и MCP-инструмент реализованы и проверены тестами.
+
 **Files:**
 - Create: `src/schemas/mohoCharacterAssetPackV1.ts`
 - Create: `src/services/mohoCharacterAssetPackValidator/index.ts`
@@ -173,7 +175,7 @@ git commit -m "feat: add 95 percent Moho production certification"
 - Produces MCP tool: `moho.character_pack.validate`.
 - Supplies normalized layered assets to the existing `decomposition` stage.
 
-- [ ] **Step 1: Write failing schema and validator tests**
+- [x] **Step 1: Write failing schema and validator tests**
 
 Cover required body layers, stable IDs, front/three-quarter/side views, mouth choices, eye states, hand choices, joint overlap margins, transparent PNG/SVG files, and source hashes.
 
@@ -183,13 +185,13 @@ expect(validateMohoCharacterAssetPack(packWithoutElbowOverlap).valid).toBe(false
 expect(validateMohoCharacterAssetPack(packWithDuplicateLayerIds).valid).toBe(false);
 ```
 
-- [ ] **Step 2: Verify tests fail**
+- [x] **Step 2: Verify tests fail**
 
 ```bash
 npx jest --runInBand tests/mohoCharacterAssetPack.test.ts
 ```
 
-- [ ] **Step 3: Implement the strict asset contract**
+- [x] **Step 3: Implement the strict asset contract**
 
 The schema must require:
 
@@ -212,14 +214,14 @@ type MohoCharacterAssetPackV1 = {
 
 Reject missing files, empty images, hash mismatches, duplicate IDs, unsupported extensions, absent mouth/eye choices, and zero overlap on articulated limbs.
 
-- [ ] **Step 4: Register the MCP validator and test it**
+- [x] **Step 4: Register the MCP validator and test it**
 
 ```bash
 npx jest --runInBand tests/mohoCharacterAssetPack.test.ts tests/mohoProductionV3Tools.test.ts
 npm run typecheck
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Run tests and commit**
 
 ```bash
 git add src/schemas/mohoCharacterAssetPackV1.ts src/services/mohoCharacterAssetPackValidator src/tools/mohoCharacterAssetPackTools.ts tests/mohoCharacterAssetPack.test.ts src/index.ts docs/moho-production-v3.md
