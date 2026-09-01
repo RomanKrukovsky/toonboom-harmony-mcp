@@ -47,6 +47,16 @@ export const mohoCharacterAssetPackV1Schema = z.object({
     }
   }
 
+  for (const kind of ['body', 'head'] as const) {
+    if (!pack.layers.some(layer => layer.kind === kind)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['layers'],
+        message: `At least one ${kind} layer is required.`
+      });
+    }
+  }
+
   const layerIds = new Set<string>();
   for (const [index, layer] of pack.layers.entries()) {
     if (layerIds.has(layer.layerId)) {
