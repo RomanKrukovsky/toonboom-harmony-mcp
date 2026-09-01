@@ -15,11 +15,7 @@ describe('Moho character asset pack MCP registration', () => {
   it('lists the character pack validator from the running MCP server', async () => {
     const child = spawn(
       process.execPath,
-      [
-        '--loader',
-        'ts-node/esm',
-        path.join(process.cwd(), 'src/index.ts')
-      ],
+      [path.join(process.cwd(), 'dist/index.js')],
       { stdio: ['pipe', 'pipe', 'ignore'] }
     );
     const pending = new Map<number, (response: JsonRpcResponse) => void>();
@@ -40,7 +36,16 @@ describe('Moho character asset pack MCP registration', () => {
     });
 
     const request = (id: number, method: string, params: object = {}): Promise<JsonRpcResponse> => {
-      const response = new Promise<JsonRpcResponse>(resolve => pending.set(id, resolve));
+      const response = new Promise<JsonRpcResponse>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error(`MCP server did not answer ${method}. Run npm run build before this test.`)),
+          10_000
+        );
+        pending.set(id, value => {
+          clearTimeout(timeout);
+          resolve(value);
+        });
+      });
       child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`);
       return response;
     };

@@ -69,6 +69,7 @@ import { mohoReferenceRigTemplateTools } from './tools/mohoReferenceRigTemplateT
 import { mohoRetakeDatasetTools } from './tools/mohoRetakeDatasetTools.js';
 import { mohoFactoryTools } from './tools/mohoFactoryTools.js';
 import { mohoTimeSavingsTools } from './tools/mohoTimeSavingsTools.js';
+import { mohoCharacterAssetPackTools } from './tools/mohoCharacterAssetPackTools.js';
 import { harmonyNativePhase2Tools } from './tools/harmonyNativePhase2Tools.js';
 import { mlTools } from './tools/mlTools.js';
 
@@ -164,6 +165,7 @@ const allTools = [
   ...mohoRetakeDatasetTools,
   ...mohoFactoryTools,
   ...mohoTimeSavingsTools,
+  ...mohoCharacterAssetPackTools,
   ...harmonyNativePhase2Tools,
   ...mlTools,
   ...capabilityTools,

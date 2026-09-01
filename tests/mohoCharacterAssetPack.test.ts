@@ -116,6 +116,19 @@ describe('Moho character asset pack', () => {
     ]));
   });
 
+  it('requires body and head layers', () => {
+    const pack = makePack();
+    pack.layers[0].kind = 'head';
+
+    const parsed = mohoCharacterAssetPackV1Schema.safeParse(pack);
+
+    expect(parsed.success).toBe(false);
+    if (parsed.success) throw new Error('Expected missing body validation to fail.');
+    expect(parsed.error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ['layers'], message: 'At least one body layer is required.' })
+    ]));
+  });
+
   it('rejects an asset whose SHA-256 does not match the manifest', () => {
     const root = createPackRoot();
     cleanup.push(root);
@@ -129,6 +142,26 @@ describe('Moho character asset pack', () => {
     expect(report.valid).toBe(false);
     expect(report.errors).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'HASH_MISMATCH', path: 'layers.0.sha256' })
+    ]));
+  });
+
+  it('rejects missing and empty asset files', () => {
+    const root = createPackRoot();
+    cleanup.push(root);
+    fs.writeFileSync(path.join(root, 'empty.png'), Buffer.alloc(0));
+    const pack = makePack();
+    pack.layers[0].sourcePath = 'missing.png';
+    pack.layers[1].sourcePath = 'empty.png';
+    pack.layers[1].sha256 = sha256(Buffer.alloc(0));
+    const packPath = path.join(root, 'character-pack.json');
+    fs.writeFileSync(packPath, JSON.stringify(pack));
+
+    const report = validateMohoCharacterAssetPack(packPath);
+
+    expect(report.valid).toBe(false);
+    expect(report.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ASSET_NOT_FOUND', path: 'layers.0.sourcePath' }),
+      expect.objectContaining({ code: 'ASSET_EMPTY', path: 'layers.1.sourcePath' })
     ]));
   });
 
