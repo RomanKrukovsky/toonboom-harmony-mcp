@@ -25,6 +25,17 @@ function writeManifest(root: string): string {
       status: index < 2 ? 'failed' : 'completed',
       retakesUsed: index % 3,
       approvals: { rig_blueprint: true, key_pose_animatic: true, final_render: true },
+      jobId: `job-${shotId}`,
+      directorDecisions: (['rig_blueprint', 'key_pose_animatic', 'final_render'] as const).map((gate, gateIndex) => ({
+        shotId,
+        gate,
+        approvalId: `${shotId}-${gate}`,
+        decision: 'approve' as const,
+        feedbackText: `Approved ${gate}.`,
+        reviewerId: 'benchmark-director',
+        decidedAt: `2026-08-31T12:0${gateIndex}:00.000Z`,
+        source: 'director_file' as const
+      })),
       evidence: {
         mohoPath,
         mohoSha256: sha256(mohoPath),
@@ -37,8 +48,11 @@ function writeManifest(root: string): string {
         manualMohoEdits: 0,
         riggerParticipation: false,
         animatorParticipation: false
-      }
-    };
+      },
+      metrics: { wallTimeMs: 1000, modelCalls: 0, modelCostUsd: 0 },
+      modelCallEvidence: [],
+      failure: null
+    } as MohoProductionV3BenchmarkCase;
   });
   const manifestPath = path.join(root, 'benchmark.json');
   fs.writeFileSync(manifestPath, JSON.stringify(cases));
@@ -83,5 +97,22 @@ describe('Moho Production v3 certification CLI', () => {
 
     expect(result.status).toBe(2);
     expect(result.stderr).toContain('Unknown certification profile: optimistic');
+  });
+
+  it('refuses to certify the not-run production95 evidence file', () => {
+    const result = spawnSync(process.execPath, [
+      'scripts/certify_moho_v3_benchmark.mjs',
+      '--profile',
+      'production95',
+      'docs/evidence/moho-production-v3/production95-report.json'
+    ], { cwd: process.cwd(), encoding: 'utf8' });
+
+    expect(result.status).toBe(1);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      profile: 'production95',
+      certified: false,
+      totalShots: 0,
+      autonomousPasses: 0
+    });
   });
 });

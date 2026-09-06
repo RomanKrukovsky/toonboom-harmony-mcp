@@ -65,11 +65,15 @@ export const mohoStage4ArtworkBatchTools = [
     description: 'Compile and natively certify an artwork-backed rig from extracted PSD layers and a real body plan.',
     inputSchema: z.object({
       psd_data: z.record(z.any()).describe('Parsed PSD data'),
-      body_plan: z.enum(['adult_neutral', 'slim', 'stocky', 'child', 'tall', 'short', 'masculine', 'feminine']),
-      body_params: z.record(z.any()).default({}).describe('Parameters like skin_rgb, hair_rgb'),
+      body_plan: z.union([
+        z.enum(['adult_neutral', 'slim', 'stocky', 'child', 'tall', 'short', 'masculine', 'feminine']),
+        z.string(),
+        z.record(z.number()),
+      ]).default('adult_neutral').describe('Body plan name (adult_neutral, slim, stocky, child, tall, short, masculine, feminine, or custom) or proportions dict'),
+      body_params: z.record(z.any()).default({}).describe('Parameters like skin_rgb, hair_rgb, body_proportions'),
       output_path: z.string().describe('Path for the certified .moho file'),
     }),
-    handler: async (args: { psd_data: Record<string, any>; body_plan: string; body_params: Record<string, any>; output_path: string }) => {
+    handler: async (args: { psd_data: Record<string, any>; body_plan?: any; body_params: Record<string, any>; output_path: string }) => {
       for (const layer of args.psd_data.processed_layers || []) {
         if (typeof layer.file_path === 'string') {
           layer.file_path = verifyPathAccess(path.resolve(layer.file_path));
@@ -78,11 +82,12 @@ export const mohoStage4ArtworkBatchTools = [
       const outputPath = verifyPathAccess(path.resolve(args.output_path));
       const psdJson = JSON.stringify(args.psd_data);
       const paramsJson = JSON.stringify(args.body_params);
+      const bodyPlanArg = typeof args.body_plan === 'object' ? JSON.stringify(args.body_plan) : String(args.body_plan || 'adult_neutral');
       const res = await runStage4Cli('compile_from_artwork', [
         '--psd-data',
         psdJson,
         '--body-plan',
-        args.body_plan,
+        bodyPlanArg,
         '--body-params',
         paramsJson,
         '--output',

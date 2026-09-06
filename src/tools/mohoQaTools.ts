@@ -9,7 +9,8 @@ export const mohoQaTools = [
       'applies targeted automatic fixes, and re-certifies projects in an iterative repair loop (max 5 passes).',
     inputSchema: MohoQaRepairSpecSchema,
     handler: async (args: z.infer<typeof MohoQaRepairSpecSchema>) => {
-      const engine = new MohoVisualQaRepairEngine({ projectPath: args.projectId });
+      const targetPath = args.projectPath ?? args.projectId ?? '';
+      const engine = new MohoVisualQaRepairEngine({ projectPath: targetPath });
       const result = await engine.runRepairLoop(args);
       return result;
     }

@@ -1,6 +1,6 @@
 # HONEST REPLACEMENT STATUS — что фабрика реально заменяет
 
-**Дата:** 2026-08-30
+**Дата:** 2026-09-01
 **Версия документа:** v1.0
 **Контекст:** ответ на вопрос «Does this replace a 2D rigger and 2D animator?»
 **Связанные документы:** [ROADMAP.md](../ROADMAP.md), [MOHO_FACTORY_v2.md](./MOHO_FACTORY_v2.md)
@@ -30,6 +30,46 @@
 Фабрика — это не «универсальный AI-аниматор». Это **конвейер для одного
 одобренного шоу**, который убирает 60–77% рутины (зависит от метрики)
 и оставляет супервайзеру approve-чекпойнт и актёрскую игру.
+
+### Production95 — состояние на 2026-09-01
+
+Дополнение 2026-09-05: финальная QA теперь запускает автоматическое
+исправление анимации с повторным рендером и проверкой. История замечаний и
+число попыток сохраняются между запусками. Целевой процесс — подготовка рига
+и анимации без ручной работы риггера и аниматора; Production95 остаётся
+промежуточной проверкой, а не доказательством полной замены профессий.
+
+Программная часть целевого контура реализована: строгие character packs,
+раздельные planning/artwork providers, восстановление плоского арта, temporal
+QA, память утверждённых ретейков, сертификация 38/40 и возобновляемый runner с
+матрицей из 40 шотов.
+
+Это **не означает 95% подтверждённой автономности**. Реальный benchmark ещё не
+запущен: в отчёте 0 из 40 завершённых шотов. Причины — неактивный Moho Pro и
+отсутствующие лицензированные входные материалы. До результата 38/40 документ
+не разрешает формулировки «заменяет риггера/аниматора на 95%».
+
+Текущие доказательства:
+
+- `fixtures/moho95/benchmark-manifest.json` — сбалансированная матрица 40 шотов;
+- `scripts/run_moho_v3_95_benchmark.mjs` — fail-closed и resumable runner;
+- `scripts/preflight_moho_v3_95_benchmark.mjs` — проверка лицензии, провайдеров,
+  20 пакетов, Rhubarb, ffmpeg и всех материалов до запуска;
+- `docs/evidence/moho-production-v3/production95-report.json` — честный статус `not_run`;
+- `docs/evidence/moho-production-v3/production95-summary.md` — условия реального запуска.
+
+Пятишотовый пилот имеет отдельные output, state и report. Approval-гейты не
+подтверждаются автоматически: runner принимает только точное решение из файла
+режиссёра и проверяет, что `reviewerId` совпадает с директором, определённым
+авторизационным токеном. Финальный код успеха runner выдаёт строгий
+сертификатор: одних статусов `completed` недостаточно.
+
+Для ригов также готов закрытый тест `tests/integration/mohoProductionV3.realRigSuite.test.ts`.
+Он требует ровно 20 лицензированных пакетов, проверяет сохранённые кости,
+родителей, привязки, порядок слоёв, Switch, Smart Actions, Smart Warp и
+Vitruvian-группы, а затем принимает только результат 19/20 или лучше. Пока
+пакеты не добавлены и Moho Pro не активирован, фактический результат — 0/20,
+а не 95%.
 
 ---
 
@@ -130,6 +170,9 @@ MohoCommandPlan. SHA-256 fingerprint на каждом этапе.
 
 **Цель:** собрать всё (Sprint 1–5) в единый end-to-end конвейер с approval checkpoints.
 
+**Текущий статус:** реализован и проверен offline; реальный golden-path всё ещё
+требует активированный Moho Pro и входные материалы.
+
 | Deliverable | Описание |
 |-------------|----------|
 | **Stage machine** | Последовательность: ShotManifest → compile → build → render → QA → retake → approve |
@@ -142,6 +185,10 @@ MohoCommandPlan. SHA-256 fingerprint на каждом этапе.
 ### Sprint 7 — Commercial Layer
 
 **Цель:** превратить internal pipeline в продукт, который можно показать студии и продать.
+
+**Текущий статус:** API, документация, demo, `SALES_OFFER.md` и
+`MONETIZATION.md` присутствуют. Acceptance gate 95% остаётся не пройденным до
+реального benchmark.
 
 | Deliverable | Описание |
 |-------------|----------|
@@ -163,11 +210,11 @@ MohoCommandPlan. SHA-256 fingerprint на каждом этапе.
 | Visual diff + QA gate | ✅ Done | 4 |
 | Retake engine | ✅ Done | 4, 5 |
 | Action Recorder + dataset loop | ✅ Done | 5 |
-| **Orchestrator** | ❌ Missing | **6** |
-| **Commercial demo** | ❌ Missing | **7** |
-| **`SALES_OFFER.md`** | ❌ Missing | **7** |
-| **`MONETIZATION.md`** | ❌ Missing | **7** |
-| **≥95% acceptance gate** | ❌ Missing | **7** |
+| **Orchestrator** | ✅ Implemented offline | **6** |
+| **Commercial demo** | ✅ Implemented offline | **7** |
+| **`SALES_OFFER.md`** | ✅ Present | **7** |
+| **`MONETIZATION.md`** | ✅ Present | **7** |
+| **≥95% acceptance gate** | ⏳ Not run: 0/40 | **Production95** |
 
 ---
 

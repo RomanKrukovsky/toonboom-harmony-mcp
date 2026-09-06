@@ -51,6 +51,74 @@ export interface MohoAuditReport {
   repairedMohoPath?: string;
 }
 
+export interface MohoNativeRigStructure {
+  saved_bone_ids: string[];
+  saved_layer_ids: string[];
+  saved_layer_order: string[];
+  parent_bone_pairs: Array<{ boneId: string; parentBoneId: string }>;
+  binding_pairs: Array<{ partId: string; boneId: string }>;
+  switch_choices: Record<string, string[]>;
+  action_driver_targets: Array<{
+    actionId: string;
+    driverBoneId: string | null;
+    targetBoneIds: string[];
+  }>;
+  mesh_point_counts: Record<string, number>;
+  vitruvian_membership: Record<string, string[]>;
+}
+
+export interface MohoNativeStructureComparison {
+  passed: boolean;
+  bonesMatch: boolean;
+  layersMatch: boolean;
+  layerOrderingMatch: boolean;
+  parentGraphMatch: boolean;
+  bindingsMatch: boolean;
+  switchesMatch: boolean;
+  smartActionsMatch: boolean;
+  smartWarpMatch: boolean;
+  vitruvianMatch: boolean;
+  mismatches: Array<'bones' | 'layers' | 'layer_ordering' | 'parent_graph' | 'bindings' | 'switches' | 'smart_actions' | 'smart_warp' | 'vitruvian'>;
+}
+
+function sortedUnique(values: string[]): string[] {
+  return [...new Set(values)].sort();
+}
+
+function sortedStringArrays(values: Record<string, string[]>): Record<string, string[]> {
+  return Object.fromEntries(
+    Object.entries(values)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, items]) => [key, sortedUnique(items)])
+  );
+}
+
+function normalizedNativeStructure(structure: MohoNativeRigStructure): MohoNativeRigStructure {
+  return {
+    saved_bone_ids: sortedUnique(structure.saved_bone_ids),
+    saved_layer_ids: sortedUnique(structure.saved_layer_ids),
+    saved_layer_order: [...structure.saved_layer_order],
+    parent_bone_pairs: [...structure.parent_bone_pairs].sort((left, right) =>
+      `${left.boneId}\0${left.parentBoneId}`.localeCompare(`${right.boneId}\0${right.parentBoneId}`)
+    ),
+    binding_pairs: [...structure.binding_pairs].sort((left, right) =>
+      `${left.partId}\0${left.boneId}`.localeCompare(`${right.partId}\0${right.boneId}`)
+    ),
+    switch_choices: sortedStringArrays(structure.switch_choices),
+    action_driver_targets: structure.action_driver_targets
+      .map(action => ({ ...action, targetBoneIds: sortedUnique(action.targetBoneIds) }))
+      .sort((left, right) => left.actionId.localeCompare(right.actionId)),
+    mesh_point_counts: Object.fromEntries(
+      Object.entries(structure.mesh_point_counts).sort(([left], [right]) => left.localeCompare(right))
+    ),
+    vitruvian_membership: sortedStringArrays(structure.vitruvian_membership)
+  };
+}
+
+function same(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function flattenMohoLayers(layers: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
   const flattened: Array<Record<string, unknown>> = [];
   const visit = (items: Array<Record<string, unknown>>): void => {
@@ -71,6 +139,47 @@ function flattenMohoLayers(layers: Array<Record<string, unknown>>): Array<Record
  * against 10 studio criteria (Borsch / Industry Standard) and automatically repairs issues.
  */
 export class MohoProductionQualityAuditor {
+  public static compareNativeStructure(
+    expectedInput: MohoNativeRigStructure,
+    actualInput: MohoNativeRigStructure
+  ): MohoNativeStructureComparison {
+    const expected = normalizedNativeStructure(expectedInput);
+    const actual = normalizedNativeStructure(actualInput);
+    const bonesMatch = same(expected.saved_bone_ids, actual.saved_bone_ids);
+    const layersMatch = same(expected.saved_layer_ids, actual.saved_layer_ids);
+    const layerOrderingMatch = same(expected.saved_layer_order, actual.saved_layer_order);
+    const parentGraphMatch = same(expected.parent_bone_pairs, actual.parent_bone_pairs);
+    const bindingsMatch = same(expected.binding_pairs, actual.binding_pairs);
+    const switchesMatch = same(expected.switch_choices, actual.switch_choices);
+    const smartActionsMatch = same(expected.action_driver_targets, actual.action_driver_targets);
+    const smartWarpMatch = same(expected.mesh_point_counts, actual.mesh_point_counts);
+    const vitruvianMatch = same(expected.vitruvian_membership, actual.vitruvian_membership);
+    const mismatches: MohoNativeStructureComparison['mismatches'] = [];
+    if (!bonesMatch) mismatches.push('bones');
+    if (!layersMatch) mismatches.push('layers');
+    if (!layerOrderingMatch) mismatches.push('layer_ordering');
+    if (!parentGraphMatch) mismatches.push('parent_graph');
+    if (!bindingsMatch) mismatches.push('bindings');
+    if (!switchesMatch) mismatches.push('switches');
+    if (!smartActionsMatch) mismatches.push('smart_actions');
+    if (!smartWarpMatch) mismatches.push('smart_warp');
+    if (!vitruvianMatch) mismatches.push('vitruvian');
+
+    return {
+      passed: mismatches.length === 0,
+      bonesMatch,
+      layersMatch,
+      layerOrderingMatch,
+      parentGraphMatch,
+      bindingsMatch,
+      switchesMatch,
+      smartActionsMatch,
+      smartWarpMatch,
+      vitruvianMatch,
+      mismatches
+    };
+  }
+
   public static auditDocumentJson(docJson: Record<string, unknown>, projectName = 'Project'): MohoAuditReport {
     const issues: MohoQCIssue[] = [];
     const layers = flattenMohoLayers((docJson.layers as Array<Record<string, unknown>>) || []);

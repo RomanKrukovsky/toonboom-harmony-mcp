@@ -22,10 +22,13 @@ import {
 } from '../../schemas/mohoProductionV3.js';
 import { mohoCommandPlanSchema, type MohoCommandPlan } from '../../schemas/mohoCommandPlan.js';
 import {
-  OpenRouterProductionProvider,
   type StructuredProviderRequest,
   type StructuredProviderResult
 } from '../../adapters/mohoProductionProviders/index.js';
+import {
+  createMohoProductionProvidersFromEnv,
+  type MohoProductionProviders
+} from '../../adapters/mohoProductionProviders/factory.js';
 import { RhubarbForcedAligner, type ForcedAlignmentResultV3 } from '../mohoForcedAlignmentV3/index.js';
 import { compileMohoProductionPlanV3 } from '../mohoProductionV3Compiler/index.js';
 import {
@@ -34,6 +37,13 @@ import {
   type MohoNativeRenderResult
 } from '../mohoProductionV3NativeBackend/index.js';
 import { verifyPathAccess } from '../../security.js';
+import { evaluateMohoTemporalQa } from '../mohoTemporalQa/index.js';
+import type { MohoTemporalQaInput } from '../../schemas/mohoTemporalQa.js';
+import {
+  findRelevantRetakes,
+  retakeExamplesPrompt
+} from '../mohoProductionV3RetakeMemory/index.js';
+import type { MohoRigType } from '../seriesMemory/mohoExtension.js';
 
 const execFileAsync = promisify(execFile) as (
   executable: string,
@@ -80,11 +90,11 @@ const artisticQaSchema = z.object({
   issues: z.array(z.string())
 }).strict();
 
-interface PlannerProvider {
+export interface PlannerProvider {
   generateStructured<T>(request: StructuredProviderRequest<T>): Promise<StructuredProviderResult<T>>;
 }
 
-interface ArtworkProvider {
+export interface ArtworkProvider {
   analyzeStructured<T>(request: Omit<StructuredProviderRequest<T>, 'system'> & { imagePaths: string[] }): Promise<StructuredProviderResult<T>>;
   synthesizeTransparentPart(input: { sourceImagePath: string; outputPath: string; prompt: string }): Promise<{
     outputPath: string;
@@ -110,9 +120,10 @@ interface Aligner {
 export interface MohoProductionV3StageExecutorDependencies {
   planner?: PlannerProvider;
   artworkProvider?: ArtworkProvider;
+  maxImageCallsPerShot?: number;
   aligner?: Aligner;
   nativeBackend?: MohoNativeProductionBackend;
-  extractFrames?: (videoPath: string, outputDir: string, durationFrames: number, fps: number) => Promise<string[]>;
+  extractFrames?: (videoPath: string, outputDir: string, durationFrames: number, fps: number, frameNumbers?: number[]) => Promise<string[]>;
 }
 
 class StageExecutorError extends Error {
@@ -376,9 +387,18 @@ function pngIsValid(filePath: string): boolean {
   return fs.readFileSync(filePath).subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
 }
 
-async function defaultExtractFrames(videoPath: string, outputDir: string, durationFrames: number, fps: number): Promise<string[]> {
+async function defaultExtractFrames(
+  videoPath: string,
+  outputDir: string,
+  durationFrames: number,
+  fps: number,
+  requestedFrames?: number[]
+): Promise<string[]> {
   fs.mkdirSync(outputDir, { recursive: true });
-  const frameNumbers = Array.from(new Set([0, Math.floor(durationFrames / 2), Math.max(0, durationFrames - 1)]));
+  const frameNumbers = Array.from(new Set(
+    (requestedFrames ?? [0, Math.floor(durationFrames / 2), Math.max(0, durationFrames - 1)])
+      .filter(frame => frame >= 0 && frame < durationFrames)
+  )).sort((left, right) => left - right);
   const outputs: string[] = [];
   for (const frameNumber of frameNumbers) {
     const outputPath = path.join(outputDir, `qa_${String(frameNumber).padStart(5, '0')}.png`);
@@ -392,9 +412,152 @@ async function defaultExtractFrames(videoPath: string, outputDir: string, durati
   return outputs;
 }
 
+function temporalSampleFrames(performance: PerformancePlanV3, durationFrames: number): number[] {
+  const frames = new Set<number>();
+  for (let frame = 0; frame < durationFrames; frame += 6) frames.add(frame);
+  frames.add(Math.max(0, durationFrames - 1));
+  for (const camera of performance.cameraKeys) frames.add(camera.frame);
+  for (const character of performance.characters) {
+    for (const key of [
+      ...character.poseKeys, ...character.gazeKeys, ...character.gestureKeys,
+      ...character.secondaryMotionKeys, ...character.interactionKeys
+    ]) frames.add(key.frame);
+    for (const key of [...character.emotionKeys, ...character.mouthKeys, ...character.blinkKeys]) {
+      frames.add(key.frame);
+      frames.add(key.frame - 1);
+      frames.add(key.frame + 1);
+    }
+  }
+  return [...frames].filter(frame => frame >= 0 && frame < durationFrames).sort((left, right) => left - right);
+}
+
+function temporalQaInput(
+  performance: PerformancePlanV3,
+  blueprint: RigBlueprintV3,
+  alignments: ForcedAlignmentResultV3[],
+  frames: string[],
+  durationFrames: number
+): MohoTemporalQaInput {
+  const boneKeys = performance.characters.flatMap(character => [
+    ...character.poseKeys, ...character.gazeKeys, ...character.gestureKeys,
+    ...character.secondaryMotionKeys, ...character.interactionKeys
+  ]);
+  const groupedControllers = new Map<string, typeof boneKeys>();
+  for (const key of boneKeys) {
+    const id = `${key.boneId}:${key.channel}`;
+    groupedControllers.set(id, [...(groupedControllers.get(id) ?? []), key]);
+  }
+  const controllerTracks = [...groupedControllers.entries()].map(([controllerId, keys]) => ({
+    controllerId,
+    channel: keys[0].channel,
+    keys: keys.map(key => ({ frame: key.frame, value: key.value }))
+  }));
+  const limbTracks = blueprint.bones.map(bone => {
+    const scales = boneKeys.filter(key => key.boneId === bone.boneId && key.channel === 'scale');
+    return {
+      limbId: bone.boneId,
+      expectedLengthPx: bone.lengthPx,
+      samples: scales.length > 0
+        ? scales.map(key => ({ frame: key.frame, lengthPx: bone.lengthPx * key.value }))
+        : [{ frame: 0, lengthPx: bone.lengthPx }]
+    };
+  });
+  const switchKeys = performance.characters.flatMap(character => [
+    ...character.emotionKeys, ...character.mouthKeys, ...character.blinkKeys
+  ]);
+  const groupedSwitches = new Map<string, typeof switchKeys>();
+  for (const key of switchKeys) groupedSwitches.set(key.switchId, [...(groupedSwitches.get(key.switchId) ?? []), key]);
+  const mouthKeys = performance.characters.flatMap(character => character.mouthKeys);
+  const lipsyncPairs = alignments.flatMap(alignment => alignment.cues.map(cue => {
+    const candidates = mouthKeys.filter(key => key.choice === cue.viseme);
+    const actualFrame = candidates.reduce(
+      (closest, key) => Math.abs(key.frame - cue.startFrame) < Math.abs(closest - cue.startFrame) ? key.frame : closest,
+      durationFrames + cue.startFrame
+    );
+    return { expectedFrame: cue.startFrame, actualFrame };
+  }));
+  const plantedContacts = performance.continuityChecks.flatMap(check => {
+    const controllerId = check.note.match(/(?:^|\s)planted:([A-Za-z0-9_.-]+)/i)?.[1];
+    if (!controllerId) return [];
+    const positions = boneKeys
+      .filter(key => key.boneId === controllerId && key.channel === 'translation'
+        && key.frame >= check.fromFrame && key.frame <= check.toFrame)
+      .map(key => ({ frame: key.frame, x: key.value, y: 0 }));
+    if (positions.length === 0) return [];
+    if (positions.length === 1) positions.push({ ...positions[0], frame: check.toFrame });
+    return [{ controllerId, fromFrame: check.fromFrame, toFrame: check.toFrame, samples: positions }];
+  });
+  return {
+    durationFrames,
+    controllerTracks,
+    limbTracks,
+    plantedContacts,
+    cameraKeys: performance.cameraKeys,
+    switchTracks: [...groupedSwitches.entries()].map(([switchId, keys]) => ({
+      switchId,
+      keys: keys.map(key => ({ frame: key.frame, choice: key.choice }))
+    })),
+    lipsyncPairs,
+    renderSamples: frames.map(framePath => ({
+      frame: Number(path.basename(framePath).match(/(\d+)(?=\.png$)/)?.[1] ?? 0),
+      sha256: sha256File(framePath)
+    })),
+    collisions: performance.interactionConflicts.map((conflict, index) => ({
+      frame: 0,
+      firstPartId: `conflict_${index}`,
+      secondPartId: conflict
+    }))
+  };
+}
+
+async function createVisionContactSheet(imagePaths: string[], outputPath: string): Promise<string> {
+  if (imagePaths.length === 0) throw new StageExecutorError('QA_FAILED', 'Cannot create an empty QA contact sheet.');
+  const columns = Math.min(4, imagePaths.length);
+  const rows = Math.ceil(imagePaths.length / columns);
+  const labels = imagePaths.map((_, index) => `[${index}:v]`).join('');
+  await execFileAsync('ffmpeg', [
+    '-y', '-v', 'error',
+    ...imagePaths.flatMap(imagePath => ['-i', imagePath]),
+    '-filter_complex', `${labels}concat=n=${imagePaths.length}:v=1:a=0,tile=${columns}x${rows}`,
+    '-frames:v', '1', outputPath
+  ], { timeout: 120_000, maxBuffer: 16 * 1024 * 1024 });
+  if (!pngIsValid(outputPath)) throw new StageExecutorError('QA_FAILED', 'Could not create QA contact sheet.');
+  return outputPath;
+}
+
+async function visionQaImages(frames: string[], animaticFrames: string[], directory: string): Promise<string[]> {
+  if (frames.length + animaticFrames.length <= 24) return [...frames, ...animaticFrames];
+  return [
+    await createVisionContactSheet(frames, path.join(directory, 'final-contact-sheet.png')),
+    await createVisionContactSheet(animaticFrames, path.join(directory, 'animatic-contact-sheet.png'))
+  ];
+}
+
 function patchesText(context: MohoProductionV3StageContext): string {
   const relevant = context.patches.filter(patch => patch.targetStage === context.stage);
   return relevant.length === 0 ? 'No director corrections.' : relevant.map(patch => `${patch.patchType}: ${patch.instruction}`).join('\n');
+}
+
+function retakeMemoryText(
+  context: MohoProductionV3StageContext,
+  artwork: ArtworkPackV3,
+  rigType: MohoRigType = 'humanoid_2leg'
+): string {
+  const datasetPath = process.env.MOHO_RETAKE_DATASET_PATH;
+  if (!datasetPath || !fs.existsSync(datasetPath)) return 'No approved retake examples apply to this shot.';
+  const characterId = context.input.productionContext?.characterId
+    ?? artwork.parts.find(part => part.characterRef !== null)?.characterRef
+    ?? context.input.shotId;
+  const shotType = context.input.productionContext?.shotType
+    ?? (context.input.dialogueTracks.length > 0 ? 'dialogue' : 'silent_acting');
+  const qaCategories = context.patches.map(patch => patch.patchType);
+  return retakeExamplesPrompt(findRelevantRetakes({
+    datasetPath,
+    characterId,
+    rigType: context.input.productionContext?.rigType ?? rigType,
+    shotType,
+    qaCategories
+  }));
 }
 
 function validateCharacterLimit(artwork: ArtworkPackV3): void {
@@ -473,9 +636,23 @@ function assertApprovedKeysPreserved(approved: PerformancePlanV3, final: Perform
 export function createMohoProductionV3StageExecutor(
   dependencies: MohoProductionV3StageExecutorDependencies = {}
 ): MohoProductionV3StageExecutor {
-  const openRouter = new OpenRouterProductionProvider();
-  const planner = dependencies.planner ?? openRouter;
-  const artworkProvider = dependencies.artworkProvider ?? openRouter;
+  let configuredProviders: MohoProductionProviders | undefined;
+  const configured = (): MohoProductionProviders => {
+    configuredProviders ??= createMohoProductionProvidersFromEnv();
+    return configuredProviders;
+  };
+  const planner: PlannerProvider = dependencies.planner ?? {
+    generateStructured: <T>(request: StructuredProviderRequest<T>) => configured().planner.generateStructured(request)
+  };
+  const artworkProvider: ArtworkProvider = dependencies.artworkProvider ?? {
+    analyzeStructured: <T>(request: Omit<StructuredProviderRequest<T>, 'system'> & { imagePaths: string[] }) => (
+      configured().artworkProvider.analyzeStructured(request)
+    ),
+    synthesizeTransparentPart: input => configured().artworkProvider.synthesizeTransparentPart(input)
+  };
+  const maxImageCallsPerShot = (): number => dependencies.maxImageCallsPerShot
+    ?? configuredProviders?.maxImageCallsPerShot
+    ?? (dependencies.artworkProvider ? 24 : configured().maxImageCallsPerShot);
   const aligner = dependencies.aligner ?? new RhubarbForcedAligner();
   const nativeBackend = dependencies.nativeBackend ?? new MohoNativeProductionBackend();
   const extractFrames = dependencies.extractFrames ?? defaultExtractFrames;
@@ -527,6 +704,14 @@ export function createMohoProductionV3StageExecutor(
         const partsDir = path.join(directory, 'parts');
         fs.mkdirSync(partsDir, { recursive: true });
         const calls = [modelCall(analysis)];
+        const generatedPartCount = analysis.data.parts.length + analysis.data.drawings.length;
+        const imageCallBudget = maxImageCallsPerShot();
+        if (generatedPartCount > imageCallBudget) {
+          throw new StageExecutorError(
+            'INPUT_INVALID',
+            `Artwork reconstruction requires ${generatedPartCount} image calls; limit is ${imageCallBudget}.`
+          );
+        }
         const analyzedCharacters = new Set(analysis.data.parts.map(part => part.characterRef).filter((value): value is string => value !== null));
         if (analyzedCharacters.size > 10) {
           throw new StageExecutorError('INPUT_INVALID', `Artwork analysis found ${analyzedCharacters.size} active characters; production limit is 10.`);
@@ -588,7 +773,17 @@ export function createMohoProductionV3StageExecutor(
         validateCharacterLimit(artworkPack);
         const artworkPackPath = writeJson(path.join(directory, 'artwork-pack-v3.json'), artworkPack);
         return {
-          checkpoint: { artworkPackPath, characterCount: new Set(parts.map(part => part.characterRef).filter(Boolean)).size },
+          checkpoint: {
+            artworkPackPath,
+            characterCount: new Set(parts.map(part => part.characterRef).filter(Boolean)).size,
+            generatedPartCount,
+            provenance: {
+              provider: analysis.provider,
+              model: analysis.model,
+              requestSha256: analysis.requestSha256,
+              responseSha256: analysis.responseSha256
+            }
+          },
           confidence: artworkPack.overallConfidence,
           artifacts: [
             artifact(artworkPackPath, 'application/json', artworkPack.provenance),
@@ -600,6 +795,7 @@ export function createMohoProductionV3StageExecutor(
       }
       case 'rig_blueprint': {
         const artwork = readJson(checkpointPath(context, 'decomposition', 'artworkPackPath'), artworkPackV3Schema);
+        const memory = retakeMemoryText(context, artwork);
         const result = await planner.generateStructured({
           schemaName: 'moho_rig_blueprint_v3',
           schema: rigBlueprintV3Schema,
@@ -609,6 +805,7 @@ export function createMohoProductionV3StageExecutor(
             `ArtworkPackV3: ${JSON.stringify(artwork)}`,
             'Use native layer/flexi bindings, switches, Smart Actions, Smart Warp meshes, constraints, Vitruvian groups and projected shadows when needed.',
             'Every referenced ID must exist. Include provenance with any non-empty placeholder values; the server replaces it with actual call evidence.',
+            memory,
             patchesText(context)
           ].join('\n')
         });
@@ -663,6 +860,7 @@ export function createMohoProductionV3StageExecutor(
       case 'performance_plan': {
         const artwork = readJson(checkpointPath(context, 'decomposition', 'artworkPackPath'), artworkPackV3Schema);
         const blueprint = readJson(checkpointPath(context, 'rig_blueprint', 'blueprintPath'), rigBlueprintV3Schema);
+        const memory = retakeMemoryText(context, artwork);
         const alignments: ForcedAlignmentResultV3[] = [];
         for (const dialogue of context.input.dialogueTracks) {
           alignments.push(await aligner.align({ ...dialogue, fps: context.input.fps, workDir: path.join(directory, 'alignment') }));
@@ -678,6 +876,7 @@ export function createMohoProductionV3StageExecutor(
             `Forced alignments: ${JSON.stringify(alignments)}`,
             'Create separate pose, gaze, emotion, gesture, mouth, blink, secondary motion and interaction tracks for every character. Keep unknownControllers and interactionConflicts empty only when proven.',
             'Mouth cues must follow forced alignment with maximum drift of two frames. Include provenance placeholders.',
+            memory,
             patchesText(context)
           ].join('\n')
         });
@@ -723,6 +922,7 @@ export function createMohoProductionV3StageExecutor(
         const artwork = readJson(checkpointPath(context, 'decomposition', 'artworkPackPath'), artworkPackV3Schema);
         const blueprint = readJson(checkpointPath(context, 'rig_blueprint', 'blueprintPath'), rigBlueprintV3Schema);
         const approvedPerformance = readJson(checkpointPath(context, 'performance_plan', 'performancePath'), performancePlanV3Schema);
+        const memory = retakeMemoryText(context, artwork);
         const result = await planner.generateStructured({
           schemaName: 'moho_final_performance_v3',
           schema: performancePlanV3Schema,
@@ -732,6 +932,7 @@ export function createMohoProductionV3StageExecutor(
             `Approved performance: ${JSON.stringify(approvedPerformance)}`,
             `Rig: ${JSON.stringify(blueprint)}`,
             'Do not alter approved key poses without an explicit director patch. Do not invent controller IDs. Maintain lip sync within two frames and all continuity checks passed. Include provenance placeholders.',
+            memory,
             patchesText(context)
           ].join('\n')
         });
@@ -781,12 +982,20 @@ export function createMohoProductionV3StageExecutor(
       case 'qa': {
         const mp4Path = checkpointPath(context, 'native_render', 'mp4Path');
         const animaticPath = checkpointPath(context, 'key_pose_animatic', 'animaticMp4Path');
-        const frames = await extractFrames(mp4Path, path.join(directory, 'frames'), context.input.durationFrames, context.input.fps);
-        const animaticFrames = await extractFrames(animaticPath, path.join(directory, 'animatic-frames'), context.input.durationFrames, context.input.fps);
+        const performance = readJson(checkpointPath(context, 'final_animation', 'finalPerformancePath'), performancePlanV3Schema);
+        const blueprint = readJson(checkpointPath(context, 'rig_blueprint', 'blueprintPath'), rigBlueprintV3Schema);
+        const alignments = JSON.parse(fs.readFileSync(checkpointPath(context, 'performance_plan', 'alignmentPath'), 'utf8')) as ForcedAlignmentResultV3[];
+        const sampleFrames = temporalSampleFrames(performance, context.input.durationFrames);
+        const frames = await extractFrames(mp4Path, path.join(directory, 'frames'), context.input.durationFrames, context.input.fps, sampleFrames);
+        const animaticFrames = await extractFrames(animaticPath, path.join(directory, 'animatic-frames'), context.input.durationFrames, context.input.fps, sampleFrames);
+        const temporal = await evaluateMohoTemporalQa(temporalQaInput(
+          performance, blueprint, alignments, frames, context.input.durationFrames
+        ));
+        const qaImages = await visionQaImages(frames, animaticFrames, directory);
         const result = await artworkProvider.analyzeStructured({
           schemaName: 'moho_artistic_qa_v3',
           schema: artisticQaSchema,
-          imagePaths: [...frames, ...animaticFrames],
+          imagePaths: qaImages,
           prompt: [
             'Perform strict final artistic QA for a Moho production shot.',
             `Brief: ${context.input.brief}`,
@@ -798,15 +1007,22 @@ export function createMohoProductionV3StageExecutor(
         const technicalPassed = nativeCheckpoint?.verified === true
           && typeof nativeCheckpoint.mohoPath === 'string'
           && typeof nativeCheckpoint.mp4Path === 'string';
-        const passed = technicalPassed && result.data.passed
+        const passed = technicalPassed && temporal.passed && result.data.passed
           && result.data.silhouette && result.data.palette && result.data.eyeLine
           && result.data.poseReadability && result.data.emotion && result.data.matchesApprovedAnimatic
           && result.data.issues.length === 0;
-        const report = { technicalPassed, artistic: result.data, passed, frames, animaticFrames, provenance: provenance(result) };
+        const report = { technicalPassed, temporal, artistic: result.data, passed, frames, animaticFrames, provenance: provenance(result) };
         const reportPath = writeJson(path.join(directory, 'qa-report-v3.json'), report);
-        if (!passed) throw new StageExecutorError('QA_FAILED', `Final QA failed: ${result.data.issues.join('; ') || 'one or more required checks failed'}`);
         return {
-          checkpoint: { passed: true, reportPath },
+          checkpoint: {
+            passed, temporal, reportPath,
+            issues: [
+              ...result.data.issues,
+              ...Object.entries(result.data).filter(([, value]) => value === false).map(([name]) => `Artistic check failed: ${name}`),
+              ...(!technicalPassed ? ['Native technical checks failed.'] : []),
+              ...(!temporal.passed ? [`Temporal checks failed: ${JSON.stringify(temporal)}`] : [])
+            ]
+          },
           artifacts: [artifact(reportPath, 'application/json', report.provenance)],
           modelCalls: [modelCall(result)]
         };

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "runStatus": "not_run",
+  "total": 20,
+  "passed": 0,
+  "requiredPasses": 19,
+  "results": [],
+  "blockingReasons": [
+    "Moho Pro command-line rendering is not activated.",
+    "The 20 licensed character fixture directories are not present."
+  ]
+}

@@ -35,6 +35,22 @@ describe('Moho Production v3 provider factory', () => {
     expect(providers.maxImageCallsPerShot).toBe(12);
   });
 
+  it('requires an explicit opt-in for a paid OpenRouter artwork model', () => {
+    const baseEnvironment = {
+      MOHO_PLANNER_PROVIDER: 'openrouter',
+      MOHO_ARTWORK_PROVIDER: 'openrouter',
+      MOHO_MAX_IMAGE_CALLS_PER_SHOT: '12',
+      OPENROUTER_API_KEY: 'openrouter-test',
+      MOHO_OPENROUTER_IMAGE_MODEL: 'openai/gpt-image-1'
+    };
+
+    expect(() => createMohoProductionProvidersFromEnv(baseEnvironment)).toThrow(/explicit opt-in/i);
+    expect(() => createMohoProductionProvidersFromEnv({
+      ...baseEnvironment,
+      MOHO_ALLOW_PAID_OPENROUTER_IMAGE: 'true'
+    })).not.toThrow();
+  });
+
   it('fails before construction when credentials or image-call budget are missing', () => {
     expect(() => createMohoProductionProvidersFromEnv({
       MOHO_PLANNER_PROVIDER: 'openrouter',

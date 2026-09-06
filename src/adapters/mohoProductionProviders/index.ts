@@ -46,6 +46,16 @@ function requireFreeOpenRouterModel(model: string, label: string, allowEmpty = f
   }
 }
 
+function requireOpenRouterImageModel(model: string, allowPaidImageModel: boolean): void {
+  if (model.length === 0 || model.endsWith(':free')) return;
+  if (!allowPaidImageModel) {
+    throw new ProductionProviderError(
+      'PROVIDER_REQUEST_FAILED',
+      `Paid OpenRouter image model "${model}" requires explicit opt-in with MOHO_ALLOW_PAID_OPENROUTER_IMAGE=true.`
+    );
+  }
+}
+
 interface OpenRouterChatResponse {
   id?: string;
   model?: string;
@@ -71,6 +81,7 @@ export class OpenRouterProductionProvider {
     plannerModel?: string;
     visionModel?: string;
     imageModel?: string;
+    allowPaidImageModel?: boolean;
     fetchImpl?: typeof fetch;
   } = {}) {
     this.apiKey = options.apiKey ?? process.env.OPENROUTER_API_KEY ?? '';
@@ -85,7 +96,7 @@ export class OpenRouterProductionProvider {
     this.fetchImpl = options.fetchImpl ?? fetch;
     requireFreeOpenRouterModel(this.plannerModel, 'OpenRouter planner model');
     requireFreeOpenRouterModel(this.visionModel, 'OpenRouter vision model');
-    requireFreeOpenRouterModel(this.imageModel, 'OpenRouter image model', true);
+    requireOpenRouterImageModel(this.imageModel, options.allowPaidImageModel ?? false);
   }
 
   private headers(): Record<string, string> {
@@ -202,7 +213,10 @@ export class OpenRouterProductionProvider {
   }> {
     if (!this.apiKey) throw new ProductionProviderError('PROVIDER_UNAVAILABLE', 'OPENROUTER_API_KEY is required for production.');
     if (!this.imageModel) {
-      throw new ProductionProviderError('PROVIDER_UNAVAILABLE', 'No free OpenRouter image-generation model is available. Set MOHO_OPENROUTER_IMAGE_MODEL only to a verified :free image model.');
+      throw new ProductionProviderError(
+        'PROVIDER_UNAVAILABLE',
+        'MOHO_OPENROUTER_IMAGE_MODEL is required. Paid image models also require MOHO_ALLOW_PAID_OPENROUTER_IMAGE=true.'
+      );
     }
     const sourcePath = verifyPathAccess(input.sourceImagePath);
     const outputPath = verifyPathAccess(input.outputPath);
@@ -512,3 +526,9 @@ export class OpenAiArtworkProvider {
     }
   }
 }
+
+export { createMohoProductionProvidersFromEnv } from './factory.js';
+export type {
+  MohoProductionProviderEnvironment,
+  MohoProductionProviders
+} from './factory.js';

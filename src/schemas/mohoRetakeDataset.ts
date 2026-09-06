@@ -18,7 +18,18 @@ export const mohoDatasetEntrySchema = z.object({
     afterPerformanceId: z.string(),
     beforeSnapshotPath: z.string().optional(),
     afterSnapshotPath: z.string().optional()
-  })
+  }),
+  productionMemory: z.object({
+    characterId: z.string().min(1),
+    shotType: z.string().min(1),
+    qaCategories: z.array(z.string().min(1)),
+    directorInstruction: z.string().min(1),
+    approved: z.boolean(),
+    artifactHashes: z.object({
+      before: z.string().regex(/^[a-f0-9]{64}$/),
+      after: z.string().regex(/^[a-f0-9]{64}$/)
+    }).strict()
+  }).strict().optional()
 }).strict();
 
 export const mohoRetakeDatasetSchema = z.object({

@@ -37,6 +37,59 @@ function addMinimumFailure(actual: number, minimum: number, label: string, failu
   if (actual < minimum) failures.push(`Benchmark requires at least ${minimum} ${label}; found ${actual}.`);
 }
 
+export function validateMohoProductionV3CaseAt95Percent(
+  benchmarkCase: MohoProductionV3BenchmarkCase
+): string[] {
+  const failures: string[] = [];
+  const parsed = mohoProductionV3BenchmarkCaseSchema.safeParse(benchmarkCase);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      failures.push(`${issue.path.join('.') || 'case'}: ${issue.message}`);
+    }
+  }
+
+  if (benchmarkCase.status !== 'completed') failures.push(`status is ${benchmarkCase.status}`);
+  if (benchmarkCase.retakesUsed > 2) failures.push('retake budget exceeds two');
+  if (!benchmarkCase.approvals.rig_blueprint) failures.push('rig blueprint approval is missing');
+  if (!benchmarkCase.approvals.key_pose_animatic) failures.push('key pose animatic approval is missing');
+  if (!benchmarkCase.approvals.final_render) failures.push('final render approval is missing');
+  const directorDecisions = Array.isArray(benchmarkCase.directorDecisions)
+    ? benchmarkCase.directorDecisions
+    : [];
+  for (const gate of ['rig_blueprint', 'key_pose_animatic', 'final_render'] as const) {
+    const matchingDecisions = directorDecisions.filter(decision =>
+      decision.shotId === benchmarkCase.shotId
+      && decision.gate === gate
+      && decision.source === 'director_file'
+    );
+    if (matchingDecisions.length === 0) {
+      failures.push(`external director decision for ${gate} is missing`);
+    } else if (matchingDecisions[matchingDecisions.length - 1].decision !== 'approve') {
+      failures.push(`latest external director decision for ${gate} is not approve`);
+    }
+  }
+  if (!benchmarkCase.metrics) failures.push('benchmark metrics are missing');
+  if (!benchmarkCase.modelCallEvidence) {
+    failures.push('model call evidence is missing');
+  } else if (benchmarkCase.metrics && benchmarkCase.modelCallEvidence.length !== benchmarkCase.metrics.modelCalls) {
+    failures.push('model call evidence count does not match benchmark metrics');
+  }
+  if (!benchmarkCase.evidence.nativeRoundTripPassed) failures.push('native round-trip evidence is missing');
+  if (!benchmarkCase.evidence.technicalQaPassed) failures.push('technical QA did not pass');
+  if (!benchmarkCase.evidence.artisticQaPassed) failures.push('artistic QA did not pass');
+  if (!benchmarkCase.evidence.ffprobePassed) failures.push('ffprobe did not pass');
+  if (benchmarkCase.evidence.manualMohoEdits !== 0) failures.push('manual Moho edits are forbidden');
+  if (benchmarkCase.evidence.riggerParticipation) failures.push('rigger participation is forbidden');
+  if (benchmarkCase.evidence.animatorParticipation) failures.push('animator participation is forbidden');
+  if (fileSha256(benchmarkCase.evidence.mohoPath) !== benchmarkCase.evidence.mohoSha256) {
+    failures.push('MOHO SHA-256 does not match a non-empty file');
+  }
+  if (fileSha256(benchmarkCase.evidence.mp4Path) !== benchmarkCase.evidence.mp4Sha256) {
+    failures.push('MP4 SHA-256 does not match a non-empty file');
+  }
+  return [...new Set(failures)];
+}
+
 export function certifyMohoProductionV3At95Percent(
   cases: MohoProductionV3BenchmarkCase[]
 ): MohoProductionV3Certification95Report {
@@ -62,31 +115,7 @@ export function certifyMohoProductionV3At95Percent(
     if (shotIds.has(benchmarkCase.shotId)) failures.push('duplicate shotId');
     shotIds.add(benchmarkCase.shotId);
 
-    const parsed = mohoProductionV3BenchmarkCaseSchema.safeParse(benchmarkCase);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        failures.push(`${issue.path.join('.') || 'case'}: ${issue.message}`);
-      }
-    }
-
-    if (benchmarkCase.status !== 'completed') failures.push(`status is ${benchmarkCase.status}`);
-    if (benchmarkCase.retakesUsed > 2) failures.push('retake budget exceeds two');
-    if (!benchmarkCase.approvals.rig_blueprint) failures.push('rig blueprint approval is missing');
-    if (!benchmarkCase.approvals.key_pose_animatic) failures.push('key pose animatic approval is missing');
-    if (!benchmarkCase.approvals.final_render) failures.push('final render approval is missing');
-    if (!benchmarkCase.evidence.nativeRoundTripPassed) failures.push('native round-trip evidence is missing');
-    if (!benchmarkCase.evidence.technicalQaPassed) failures.push('technical QA did not pass');
-    if (!benchmarkCase.evidence.artisticQaPassed) failures.push('artistic QA did not pass');
-    if (!benchmarkCase.evidence.ffprobePassed) failures.push('ffprobe did not pass');
-    if (benchmarkCase.evidence.manualMohoEdits !== 0) failures.push('manual Moho edits are forbidden');
-    if (benchmarkCase.evidence.riggerParticipation) failures.push('rigger participation is forbidden');
-    if (benchmarkCase.evidence.animatorParticipation) failures.push('animator participation is forbidden');
-    if (fileSha256(benchmarkCase.evidence.mohoPath) !== benchmarkCase.evidence.mohoSha256) {
-      failures.push('MOHO SHA-256 does not match a non-empty file');
-    }
-    if (fileSha256(benchmarkCase.evidence.mp4Path) !== benchmarkCase.evidence.mp4Sha256) {
-      failures.push('MP4 SHA-256 does not match a non-empty file');
-    }
+    failures.push(...validateMohoProductionV3CaseAt95Percent(benchmarkCase));
 
     if (failures.length > 0) {
       failedShotIds.push(benchmarkCase.shotId);

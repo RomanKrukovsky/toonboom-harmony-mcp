@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
@@ -55,6 +56,7 @@ export type RhubarbExecute = (
 function detectRhubarbExecutable(): string | null {
   const candidates = [
     process.env.RHUBARB_BIN,
+    path.join(os.homedir(), '.local', 'bin', 'rhubarb'),
     '/opt/homebrew/bin/rhubarb',
     '/usr/local/bin/rhubarb',
     '/usr/bin/rhubarb'

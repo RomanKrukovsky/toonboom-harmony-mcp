@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import concurrent.futures
 import hashlib
 import html
 import json
@@ -9,6 +10,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Optional
@@ -36,7 +38,7 @@ def _sha256(path: Path) -> str:
 
 
 def _safe_name(name: str) -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", name).strip("._")
+    cleaned = re.sub(r"[^\w.-]+", "_", name, flags=re.UNICODE).strip("._")
     return cleaned or "layer"
 
 
@@ -53,12 +55,32 @@ def _bbox_values(bbox: Any) -> tuple[int, int, int, int]:
 
 class RigCompiler:
     SEMANTIC_MAP = {
+        # Pre-split limb aliases checked first to avoid redundant re-splitting
+        "LArmUpper": ["upperarm_l", "arm_up_l", "плечо_л", "bicep_l", "l_arm_upper", "larmupper"],
+        "LArmLower": ["lowerarm_l", "forearm_l", "предплечье_л", "arm_low_l", "l_arm_lower", "larmlower"],
+        "LHand": ["hand_l", "l_hand", "lhand", "кисть_л", "ладонь_л", "fist_l"],
+        "RArmUpper": ["upperarm_r", "arm_up_r", "плечо_п", "плечо_р", "bicep_r", "r_arm_upper", "rarmupper"],
+        "RArmLower": ["lowerarm_r", "forearm_r", "предплечье_п", "предплечье_р", "arm_low_r", "r_arm_lower", "rarmlower"],
+        "RHand": ["hand_r", "r_hand", "rhand", "кисть_п", "кисть_р", "ладонь_п", "fist_r"],
+        "LLegUpper": ["thigh_l", "upperleg_l", "бедро_л", "l_leg_upper", "llegupper"],
+        "LLegLower": ["shin_l", "calf_l", "голень_л", "lowerleg_l", "l_leg_lower", "lleglower"],
+        "LFoot": ["foot_l", "l_foot", "lfoot", "стопа_л", "ботинок_л", "shoe_l"],
+        "RLegUpper": ["thigh_r", "upperleg_r", "бедро_п", "бедро_р", "r_leg_upper", "rlegupper"],
+        "RLegLower": ["shin_r", "calf_r", "голень_п", "голень_р", "lowerleg_r", "r_leg_lower", "rleglower"],
+        "RFoot": ["foot_r", "r_foot", "rfoot", "стопа_п", "стопа_р", "ботинок_п", "shoe_r"],
+        # Full limbs & core anatomy
+        "Pelvis": ["pelvis", "таз", "hips", "бедра", "crotch"],
+        "Neck": ["neck", "шея"],
         "Head": ["head", "golova", "голова", "череп", "лицо", "face"],
         "Torso": ["torso", "telo", "тело", "туловище", "body", "грудь"],
         "LArm": ["l_arm", "larm", "l_ruka", "л_рука", "левая_рука", "left_arm", "arm_l"],
         "RArm": ["r_arm", "rarm", "r_ruka", "п_рука", "правая_рука", "right_arm", "arm_r"],
         "LLeg": ["l_leg", "lleg", "l_noga", "л_нога", "левая_нога", "left_leg", "leg_l"],
         "RLeg": ["r_leg", "rleg", "r_noga", "п_нога", "правая_нога", "right_leg", "leg_r"],
+        "Eyes": ["eyes", "глаза", "глаз", "pupil", "iris"],
+        "Mouth": ["mouth", "рот", "губы", "lips"],
+        "Brows": ["brows", "брови", "бровь"],
+        "Hair": ["hair", "волосы", "прическа"],
     }
     BODY_PLAN_PROPORTIONS = {
         "adult_neutral": {"head_scale": 1.0, "limb_scale": 1.0, "torso_width": 1.0},
@@ -82,6 +104,34 @@ class RigCompiler:
         "RLegUpper": ("Thigh R", "hip_R"),
         "RLegLower": ("Shin R", "knee_R"),
     }
+    EXTENDED_BINDINGS = {
+        "Pelvis": ("Pelvis", "hip"),
+        "Neck": ("Neck", "neck_base"),
+        "LArm": ("UpperArm L", "shoulder_L"),
+        "RArm": ("UpperArm R", "shoulder_R"),
+        "LLeg": ("Thigh L", "hip_L"),
+        "RLeg": ("Thigh R", "hip_R"),
+        "LHand": ("Hand L", "hand_L"),
+        "RHand": ("Hand R", "hand_R"),
+        "LFoot": ("Foot L", "ankle_L"),
+        "RFoot": ("Foot R", "ankle_R"),
+        "Eyes": ("Head", "head_base"),
+        "Mouth": ("Head", "head_base"),
+        "Brows": ("Head", "head_base"),
+        "Hair": ("Head", "head_base"),
+    }
+
+    @classmethod
+    def register_body_plan(cls, name: str, proportions: dict[str, float]) -> None:
+        """Register a new body plan without modifying any emitter code."""
+        required = {"head_scale", "limb_scale", "torso_width"}
+        if not required.issubset(proportions.keys()):
+            raise ValueError(f"Body plan must specify all required keys: {required}")
+        cls.BODY_PLAN_PROPORTIONS[name] = {
+            "head_scale": float(proportions["head_scale"]),
+            "limb_scale": float(proportions["limb_scale"]),
+            "torso_width": float(proportions["torso_width"]),
+        }
 
     @staticmethod
     def classify_layer(name: str) -> str:
@@ -112,15 +162,37 @@ class RigCompiler:
     @staticmethod
     def compile_from_artwork(
         psd_data: dict[str, Any],
-        body_plan: str = "adult_neutral",
+        body_plan: str | dict[str, float] = "adult_neutral",
         body_params: Optional[dict[str, Any]] = None,
         output_path: Optional[str] = None,
     ) -> dict[str, Any]:
-        if body_plan not in RigCompiler.BODY_PLAN_PROPORTIONS:
+        body_params = body_params or {}
+        if isinstance(body_plan, dict):
+            required = {"head_scale", "limb_scale", "torso_width"}
+            if not required.issubset(body_plan.keys()):
+                raise ValueError(f"Custom body plan dict must specify {required}")
+            proportions = {
+                "head_scale": float(body_plan["head_scale"]),
+                "limb_scale": float(body_plan["limb_scale"]),
+                "torso_width": float(body_plan["torso_width"]),
+            }
+            plan_name = "custom"
+        elif body_plan in RigCompiler.BODY_PLAN_PROPORTIONS:
+            proportions = dict(RigCompiler.BODY_PLAN_PROPORTIONS[body_plan])
+            plan_name = str(body_plan)
+        else:
             raise ValueError(
                 f"Invalid body plan: {body_plan}. Must be one of "
-                f"{sorted(RigCompiler.BODY_PLAN_PROPORTIONS)}"
+                f"{sorted(RigCompiler.BODY_PLAN_PROPORTIONS)} or a proportions dict"
             )
+
+        # Allow proportion overrides via body_params
+        prop_overrides = body_params.get("body_proportions") or body_params.get("proportion_overrides")
+        if isinstance(prop_overrides, dict):
+            for k in ("head_scale", "limb_scale", "torso_width"):
+                if k in prop_overrides:
+                    proportions[k] = float(prop_overrides[k])
+
         processed_layers = psd_data.get("processed_layers")
         if not isinstance(processed_layers, list) or not processed_layers:
             raise ValueError("compile_from_artwork requires processed_layers from import_psd_character")
@@ -131,10 +203,8 @@ class RigCompiler:
         if missing_assets:
             raise FileNotFoundError("Processed artwork assets are missing: " + ", ".join(missing_assets))
 
-        body_params = body_params or {}
         colors = RigCompiler._validate_colors(body_params)
-        proportions = RigCompiler.BODY_PLAN_PROPORTIONS[body_plan]
-        target = Path(output_path or tempfile.mktemp(suffix=f"_{body_plan}.moho")).resolve()
+        target = Path(output_path or tempfile.mktemp(suffix=f"_{plan_name}.moho")).resolve()
         target.parent.mkdir(parents=True, exist_ok=True)
         metadata = psd_data.get("metadata") or {}
         canvas_width = int(metadata.get("width", 400))
@@ -187,7 +257,7 @@ class RigCompiler:
                 destination = asset_root / filename
                 shutil.copy2(source, destination)
                 semantic_part = str(layer.get("semantic_part", "GenericPart"))
-                binding = RigCompiler.PART_BINDINGS.get(semantic_part)
+                binding = RigCompiler.PART_BINDINGS.get(semantic_part) or RigCompiler.EXTENDED_BINDINGS.get(semantic_part)
                 bone_name, _joint_name = binding if binding else ("Body", "hip")
                 bounds = layer.get("canvas_bounds") or layer.get("source_bounds")
                 center_px = (
@@ -275,6 +345,38 @@ class PSDParser:
         return path, PSDImage.open(path)
 
     @staticmethod
+    def _extract_layers_and_groups(psd):
+        groups = []
+        leaf_layers = []
+
+        def _traverse(container, prefix="", parent_visible=True):
+            for item in container:
+                hierarchy = f"{prefix}/{item.name}" if prefix else str(item.name)
+                is_grp = item.is_group() if hasattr(item, "is_group") else False
+                visible = bool(item.is_visible()) if hasattr(item, "is_visible") else True
+                effective_visible = parent_visible and visible
+                opacity = float(getattr(item, "opacity", 255)) / 255.0
+
+                if is_grp:
+                    bbox = item.bbox if getattr(item, "bbox", None) else (0, 0, 0, 0)
+                    left, top, right, bottom = _bbox_values(bbox)
+                    groups.append({
+                        "name": str(item.name),
+                        "hierarchy": hierarchy,
+                        "visible": visible,
+                        "effective_visible": effective_visible,
+                        "opacity": opacity,
+                        "bounds": [left, top, right, bottom],
+                        "child_count": len(item),
+                    })
+                    _traverse(item, hierarchy, effective_visible)
+                else:
+                    leaf_layers.append((item, hierarchy, effective_visible))
+
+        _traverse(psd, "", True)
+        return groups, leaf_layers
+
+    @staticmethod
     def _leaf_layers(group, prefix: str = ""):
         for layer in group:
             hierarchy = f"{prefix}/{layer.name}" if prefix else str(layer.name)
@@ -286,28 +388,66 @@ class PSDParser:
     @staticmethod
     def inspect_psd(file_path: str) -> dict[str, Any]:
         path, psd = PSDParser._open(file_path)
+        groups, leaf_layers = PSDParser._extract_layers_and_groups(psd)
         layers = []
-        for index, (layer, hierarchy) in enumerate(PSDParser._leaf_layers(psd)):
+        for index, (layer, hierarchy, effective_visible) in enumerate(leaf_layers):
             bbox = layer.bbox
             left, top, right, bottom = _bbox_values(bbox)
+            width = right - left
+            height = bottom - top
+            cx = (left + right) / 2.0
+            cy = (top + bottom) / 2.0
+
+            has_mask = False
+            mask_info = None
+            if hasattr(layer, "has_mask") and callable(layer.has_mask):
+                has_mask = bool(layer.has_mask())
+            elif getattr(layer, "mask", None) is not None:
+                has_mask = True
+
+            if has_mask and getattr(layer, "mask", None) is not None:
+                mask_obj = layer.mask
+                m_bbox = _bbox_values(mask_obj.bbox) if getattr(mask_obj, "bbox", None) else (0, 0, 0, 0)
+                mask_info = {
+                    "bounds": list(m_bbox),
+                    "disabled": bool(getattr(mask_obj, "disabled", False)),
+                }
+
             layers.append({
-                "index": index, "name": str(layer.name), "hierarchy": hierarchy,
+                "index": index,
+                "layer_order": index,
+                "z_order": index,
+                "name": str(layer.name),
+                "hierarchy": hierarchy,
                 "kind": str(layer.kind),
                 "bounds": [left, top, right, bottom],
                 "opacity": int(layer.opacity) / 255.0,
                 "visible": bool(layer.is_visible()),
-                "width": right - left, "height": bottom - top,
+                "effective_visible": effective_visible,
+                "has_mask": has_mask,
+                "mask": mask_info,
+                "width": width,
+                "height": height,
+                "pivot": {
+                    "center_px": [round(cx, 2), round(cy, 2)],
+                    "normalized": [0.5, 0.5],
+                },
                 "semantic": RigCompiler.classify_layer(str(layer.name)),
             })
         if not layers:
             raise ValueError("PSD has no extractable pixel layers")
         return {
-            "status": "success", "file": str(path), "is_psd_format": True,
+            "status": "success",
+            "file": str(path),
+            "is_psd_format": True,
             "source_sha256": _sha256(path),
             "metadata": {
-                "color_mode": str(psd.color_mode), "width": psd.width,
-                "height": psd.height, "file_size_bytes": path.stat().st_size,
+                "color_mode": str(psd.color_mode),
+                "width": psd.width,
+                "height": psd.height,
+                "file_size_bytes": path.stat().st_size,
             },
+            "groups": groups,
             "layers": layers,
         }
 
@@ -345,8 +485,12 @@ class PSDParser:
             options.get("output_dir") or tempfile.mkdtemp(prefix="moho-psd-import-")
         ).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
+        split_limbs = bool(options.get("split_limbs", True))
+        custom_overlap = float(options.get("joint_overlap_ratio", 0.15))
+
+        _groups, leaf_layers = PSDParser._extract_layers_and_groups(psd)
         processed: list[dict[str, Any]] = []
-        for index, (layer, hierarchy) in enumerate(PSDParser._leaf_layers(psd)):
+        for index, (layer, hierarchy, _eff_vis) in enumerate(leaf_layers):
             if not layer.is_visible():
                 continue
             cropped = layer.composite()
@@ -356,29 +500,38 @@ class PSDParser:
             full.alpha_composite(cropped.convert("RGBA"), (layer.left, layer.top))
             semantic = RigCompiler.classify_layer(str(layer.name))
             base = f"{index:02d}_{_safe_name(str(layer.name))}"
-            if semantic in {"LArm", "RArm", "LLeg", "RLeg"}:
+
+            # Only split whole limbs into Upper/Lower if split_limbs is on and not pre-split
+            if split_limbs and semantic in {"LArm", "RArm", "LLeg", "RLeg"}:
                 left, top_bound, right, bottom_bound = _bbox_values(layer.bbox)
                 layer_height = bottom_bound - top_bound
                 split = top_bound + layer_height // 2
-                overlap = max(1, round(layer_height * 0.075))
+                half_overlap_ratio = custom_overlap / 2.0
+                overlap = max(1, round(layer_height * half_overlap_ratio))
                 segments = [
                     (f"{semantic}Upper", None, min(psd.height, split + overlap)),
                     (f"{semantic}Lower", max(0, split - overlap), None),
                 ]
+                applied_overlap_ratio = custom_overlap
             else:
                 segments = [(semantic, None, None)]
                 overlap = 0
+                applied_overlap_ratio = 0.0
+
             for segment_name, top, bottom in segments:
                 output = output_dir / f"{base}_{segment_name}.png"
                 pixels, canvas_bounds = PSDParser._save_segment(full, output, top, bottom)
                 processed.append({
-                    "layer_name": str(layer.name), "hierarchy": hierarchy,
-                    "semantic_part": segment_name, "file_path": str(output),
+                    "layer_name": str(layer.name),
+                    "hierarchy": hierarchy,
+                    "semantic_part": segment_name,
+                    "file_path": str(output),
                     "source_bounds": [layer.left, layer.top, layer.right, layer.bottom],
                     "canvas_bounds": list(canvas_bounds),
-                    "joint_overlap_ratio": 0.15 if overlap else 0.0,
+                    "joint_overlap_ratio": applied_overlap_ratio,
                     "overlap_prepared": bool(overlap),
-                    "alpha_pixels": pixels, "sha256": _sha256(output),
+                    "alpha_pixels": pixels,
+                    "sha256": _sha256(output),
                     "width": canvas_bounds[2] - canvas_bounds[0],
                     "height": canvas_bounds[3] - canvas_bounds[1],
                 })
@@ -386,11 +539,13 @@ class PSDParser:
             raise ValueError("PSD produced no visible non-empty layers")
         inspection = PSDParser.inspect_psd(str(path))
         return {
-            "status": "success", "source_file": str(path),
+            "status": "success",
+            "source_file": str(path),
             "source_sha256": inspection["source_sha256"],
             "promotion_dir": str(output_dir),
             "extraction_dir": str(output_dir),
             "metadata": inspection["metadata"],
+            "groups": inspection.get("groups", []),
             "layers": inspection["layers"],
             "processed_layers": processed,
             "message": "Real PSD layers extracted; limb segments include measured 15% overlap",
@@ -402,44 +557,85 @@ class PSDParser:
         if not project.is_file():
             raise FileNotFoundError(f"Moho project not found: {project_path}")
         sources = [Path(asset).resolve() for asset in asset_paths]
-        missing = [str(source) for source in sources if not source.is_file()]
-        if missing:
-            return {
-                "status": "failed", "project": str(project),
-                "errors": ["Missing source assets: " + ", ".join(missing)],
-                "relinked_assets": [],
-            }
+        supplied_existing = [s for s in sources if s.is_file()]
+        supplied_missing = [str(s) for s in sources if not s.is_file()]
+
         rig = extract_from_file(str(project))
         image_parts = [part for part in rig.walk_parts() if part.type == "image"]
         if not image_parts:
             return {
-                "status": "failed", "project": str(project),
+                "status": "failed",
+                "project": str(project),
                 "errors": ["Project has no image layers to relink"],
                 "relinked_assets": [],
+                "missing_assets": [],
+                "already_valid_assets": [],
             }
+
         assets_dir = project.parent / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
-        by_name = {source.name: source for source in sources}
+        by_name = {source.name: source for source in supplied_existing}
+        by_stem = {source.stem: source for source in supplied_existing}
+
         relinked = []
+        already_valid = []
+        unresolved_missing = []
+
         for part in image_parts:
-            current_name = Path(part.image_ref or "").name
-            source = by_name.get(current_name)
-            if source is None:
+            ref = part.image_ref or ""
+            current_target = (project.parent / ref).resolve() if ref else None
+            current_name = Path(ref).name if ref else ""
+            current_stem = Path(ref).stem if ref else ""
+
+            if current_target and current_target.is_file():
+                already_valid.append({
+                    "layer_id": part.id,
+                    "layer_name": part.name,
+                    "path": str(current_target),
+                    "status": "valid",
+                })
                 continue
-            destination = assets_dir / f"{_sha256(source)[:10]}_{source.name}"
-            shutil.copy2(source, destination)
-            relative = destination.relative_to(project.parent).as_posix()
-            part.image_ref = relative
-            relinked.append({
-                "original": str(source), "relative": relative,
-                "exists": True, "status": "relinked", "sha256": _sha256(destination),
-            })
+
+            match = by_name.get(current_name) or by_stem.get(current_stem)
+            if match:
+                destination = assets_dir / f"{_sha256(match)[:10]}_{match.name}"
+                if not destination.is_file() or destination.stat().st_size != match.stat().st_size:
+                    shutil.copy2(match, destination)
+                relative = destination.relative_to(project.parent).as_posix()
+                part.image_ref = relative
+                relinked.append({
+                    "layer_id": part.id,
+                    "original": str(match),
+                    "relative": relative,
+                    "exists": True,
+                    "status": "relinked",
+                    "sha256": _sha256(destination),
+                })
+            else:
+                unresolved_missing.append({
+                    "layer_id": part.id,
+                    "layer_name": part.name,
+                    "referenced_path": ref,
+                    "status": "unresolved",
+                })
+
         if not relinked:
+            error_msgs = []
+            if supplied_missing:
+                error_msgs.append("Supplied assets missing on disk: " + ", ".join(supplied_missing))
+            if unresolved_missing:
+                error_msgs.append("No matching assets found for layers: " + ", ".join(m["layer_id"] for m in unresolved_missing))
+            else:
+                error_msgs.append("None of the supplied assets match project image layers")
             return {
-                "status": "failed", "project": str(project),
-                "errors": ["None of the supplied assets match project image layers"],
+                "status": "failed",
+                "project": str(project),
+                "errors": error_msgs,
                 "relinked_assets": [],
+                "missing_assets": unresolved_missing,
+                "already_valid_assets": already_valid,
             }
+
         candidate_handle = tempfile.NamedTemporaryFile(
             dir=project.parent, prefix=f".{project.name}.", suffix=".relink.moho", delete=False,
         )
@@ -452,14 +648,22 @@ class PSDParser:
             certified = native.opened and native.saved and native.reopened and not native.errors
             if not certified:
                 return {
-                    "status": "failed", "project": str(project),
+                    "status": "failed",
+                    "project": str(project),
                     "errors": native.errors or ["Relinked project failed native acceptance"],
                     "relinked_assets": relinked,
+                    "missing_assets": unresolved_missing,
+                    "already_valid_assets": already_valid,
                 }
             os.replace(candidate, project)
+            status = "certified" if not unresolved_missing else "partial_relink"
             return {
-                "status": "certified", "project": str(project),
-                "errors": [], "relinked_assets": relinked,
+                "status": status,
+                "project": str(project),
+                "errors": [],
+                "relinked_assets": relinked,
+                "missing_assets": unresolved_missing,
+                "already_valid_assets": already_valid,
                 "native_acceptance": {"opened": True, "saved": True, "reopened": True},
             }
         finally:
@@ -469,40 +673,74 @@ class PSDParser:
 
 class BatchProducer:
     @staticmethod
+    def _produce_single_scene(
+        index: int,
+        spec: dict[str, Any],
+        workspace: Path,
+    ) -> dict[str, Any]:
+        task_id = str(spec.get("task_id") or spec.get("scene_id") or spec.get("id") or f"scene_{index + 1:03d}")
+        scene_name = _safe_name(str(spec.get("scene_name", task_id)))
+        scene_dir = workspace / task_id
+        scene_dir.mkdir(parents=True, exist_ok=True)
+        output = scene_dir / f"{scene_name}.moho"
+        compiled = RigCompiler.compile_from_artwork(
+            psd_data=spec.get("psd_data", {}),
+            body_plan=spec.get("body_plan", "adult_neutral"),
+            body_params=spec.get("body_params", {}),
+            output_path=str(output),
+        )
+        if not compiled.get("certified"):
+            raise RuntimeError("Scene did not pass native certification")
+        return {
+            "task_id": task_id,
+            "scene": scene_name,
+            "path": str(output),
+            "status": "certified",
+            "rendered": True,
+            "score": compiled["score"],
+            "body_plan": compiled["body_plan"],
+            "duration_frames": int(spec.get("duration_frames", 60)),
+            "evidence_directory": compiled["evidence_directory"],
+        }
+
+    @staticmethod
     def batch_produce(specs: list[dict[str, Any]], concurrency: int = 4) -> dict[str, Any]:
         if concurrency < 1:
             raise ValueError("concurrency must be at least 1")
         if not specs:
             raise ValueError("specs must contain at least one scene")
-        workspace = Path(tempfile.mkdtemp(prefix="moho-certified-batch-"))
+
+        batch_id = f"batch_{uuid.uuid4().hex[:8]}"
+        start_time = time.time()
+        workspace = Path(tempfile.mkdtemp(prefix=f"moho-{batch_id}-"))
         successes: list[dict[str, Any]] = []
         failures: list[dict[str, Any]] = []
-        for index, spec in enumerate(specs):
-            scene_name = _safe_name(str(spec.get("scene_name", f"Scene_{index + 1}")))
-            scene_dir = workspace / scene_name
-            scene_dir.mkdir(parents=True, exist_ok=True)
-            output = scene_dir / f"{scene_name}.moho"
-            try:
-                compiled = RigCompiler.compile_from_artwork(
-                    psd_data=spec.get("psd_data", {}),
-                    body_plan=str(spec.get("body_plan", "adult_neutral")),
-                    body_params=spec.get("body_params", {}),
-                    output_path=str(output),
-                )
-                if not compiled.get("certified"):
-                    raise RuntimeError("Scene did not pass native certification")
-                successes.append({
-                    "scene": scene_name, "path": str(output), "status": "certified",
-                    "rendered": True, "score": compiled["score"],
-                    "body_plan": compiled["body_plan"],
-                    "duration_frames": int(spec.get("duration_frames", 60)),
-                    "evidence_directory": compiled["evidence_directory"],
-                })
-            except (OSError, ValueError, RuntimeError) as error:
-                failures.append({
-                    "scene": scene_name, "error": str(error),
-                    "diagnostics": {"scene_index": index, "error_type": type(error).__name__},
-                })
+
+        max_workers = min(concurrency, max(1, len(specs)))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_index = {
+                executor.submit(BatchProducer._produce_single_scene, idx, spec, workspace): (idx, spec)
+                for idx, spec in enumerate(specs)
+            }
+            for future in concurrent.futures.as_completed(future_to_index):
+                idx, spec = future_to_index[future]
+                task_id = str(spec.get("task_id") or spec.get("scene_id") or spec.get("id") or f"scene_{idx + 1:03d}")
+                scene_name = _safe_name(str(spec.get("scene_name", task_id)))
+                try:
+                    res = future.result()
+                    successes.append(res)
+                except Exception as error:
+                    failures.append({
+                        "task_id": task_id,
+                        "scene": scene_name,
+                        "error": str(error),
+                        "diagnostics": {
+                            "scene_index": idx,
+                            "error_type": type(error).__name__,
+                        },
+                    })
+
+        successes.sort(key=lambda s: s.get("task_id", ""))
 
         clips = "\n".join(
             f"            <asset-clip name='{html.escape(result['scene'])}' "
@@ -520,13 +758,34 @@ class BatchProducer:
         )
         timeline_path = workspace / "timeline.fcpxml"
         timeline_path.write_text(timeline_xml, encoding="utf-8")
+
+        duration = time.time() - start_time
         status = "completed" if not failures else ("partial_success" if successes else "failed")
+        summary = {
+            "batch_id": batch_id,
+            "total_scenes": len(specs),
+            "succeeded": len(successes),
+            "failed": len(failures),
+            "success_rate": round(len(successes) / len(specs), 3) if specs else 0.0,
+            "duration_seconds": round(duration, 3),
+            "status": status,
+        }
+        summary_path = workspace / "batch_summary.json"
+        summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
         return {
-            "status": status, "workspace": str(workspace),
+            "status": status,
+            "batch_id": batch_id,
+            "workspace": str(workspace),
             "requested_concurrency": concurrency,
             "effective_concurrency": 1,
-            "successful_scenes": successes, "failed_scenes": failures,
+            "worker_concurrency": max_workers,
+            "summary": summary,
+            "successful_scenes": successes,
+            "failed_scenes": failures,
             "timeline": {
-                "format": "fcpxml", "path": str(timeline_path), "data": timeline_xml,
+                "format": "fcpxml",
+                "path": str(timeline_path),
+                "data": timeline_xml,
             },
         }

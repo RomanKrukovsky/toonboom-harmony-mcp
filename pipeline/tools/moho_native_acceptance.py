@@ -61,6 +61,15 @@ class NativeAcceptanceResult:
     stdout: str
     stderr: str
     roundtrip_path: str
+    saved_bone_ids: list[str] = field(default_factory=list)
+    saved_layer_ids: list[str] = field(default_factory=list)
+    saved_layer_order: list[str] = field(default_factory=list)
+    parent_bone_pairs: list[dict[str, str]] = field(default_factory=list)
+    binding_pairs: list[dict[str, str]] = field(default_factory=list)
+    switch_choices: dict[str, list[str]] = field(default_factory=dict)
+    action_driver_targets: list[dict[str, object]] = field(default_factory=list)
+    mesh_point_counts: dict[str, int] = field(default_factory=dict)
+    vitruvian_membership: dict[str, list[str]] = field(default_factory=dict)
 
 
 def _moho_executable() -> Path:
@@ -71,7 +80,7 @@ def _moho_executable() -> Path:
     return executable
 
 
-def _run(command: list[str], timeout: int = 30) -> ProcessEvidence:
+def _run(command: list[str], timeout: int = 10) -> ProcessEvidence:
     """Run one serialized Moho process and preserve its real exit evidence."""
     env = os.environ.copy()
     for var in (
@@ -116,7 +125,7 @@ def _run(command: list[str], timeout: int = 30) -> ProcessEvidence:
                     stdout=completed.stdout or "",
                     stderr=completed.stderr or "",
                 )
-                if completed.returncode not in TRANSIENT_MOHO_RETURN_CODES:
+                if completed.returncode not in TRANSIENT_MOHO_RETURN_CODES or "SOAP invalid license" in evidence.stderr:
                     return evidence
             return evidence
         finally:
@@ -137,6 +146,201 @@ def _read_moho_project(moho_path: Path) -> dict | None:
                 return json.loads(entry.read().decode("utf-8"))
     except (OSError, KeyError, ValueError, zipfile.BadZipFile):
         return None
+
+
+def _native_structure(project: dict | None) -> dict[str, object]:
+    """Extract deterministic structural evidence from saved Moho JSON."""
+    report: dict[str, object] = {
+        "saved_bone_ids": [],
+        "saved_layer_ids": [],
+        "saved_layer_order": [],
+        "parent_bone_pairs": [],
+        "binding_pairs": [],
+        "switch_choices": {},
+        "action_driver_targets": [],
+        "mesh_point_counts": {},
+        "vitruvian_membership": {},
+    }
+    if project is None:
+        return report
+    bone_ids: set[str] = set()
+    layer_ids: set[str] = set()
+    layer_order: list[str] = []
+    parent_pairs: set[tuple[str, str]] = set()
+    bindings: set[tuple[str, str]] = set()
+    switches: dict[str, list[str]] = {}
+    actions: dict[str, dict[str, object]] = {}
+    meshes: dict[str, int] = {}
+    vitruvian: dict[str, list[str]] = {}
+
+    def identifier(value: dict, *keys: str) -> str | None:
+        for key in keys:
+            candidate = value.get(key)
+            if isinstance(candidate, (str, int)) and str(candidate):
+                return str(candidate)
+        return None
+
+    def record_action(
+        action_id: str,
+        driver_id: str | None,
+        target_ids: list[str],
+    ) -> None:
+        existing = actions.setdefault(action_id, {
+            "actionId": action_id,
+            "driverBoneId": driver_id,
+            "targetBoneIds": set(),
+        })
+        if existing["driverBoneId"] is None and driver_id is not None:
+            existing["driverBoneId"] = driver_id
+        targets = existing["targetBoneIds"]
+        if isinstance(targets, set):
+            targets.update(target_ids)
+
+    def visit(
+        value: object,
+        bone_names: list[str] | None = None,
+        current_bone_id: str | None = None,
+    ) -> None:
+        if isinstance(value, list):
+            for item in value:
+                visit(item, bone_names, current_bone_id)
+            return
+        if not isinstance(value, dict):
+            return
+        value_type = str(value.get("type", "")).lower()
+        is_native_layer = (
+            value_type.endswith("layer")
+            and identifier(value, "name") is not None
+            and identifier(value, "uuid") is not None
+        )
+        layer_id = identifier(value, "layer_id", "layerId")
+        if layer_id is None and is_native_layer:
+            layer_id = identifier(value, "name")
+        if layer_id:
+            if layer_id not in layer_ids:
+                layer_order.append(layer_id)
+            layer_ids.add(layer_id)
+            parent_bone = value.get("parent_bone", value.get("parentBone"))
+            if isinstance(parent_bone, int) and parent_bone >= 0 and bone_names and parent_bone < len(bone_names):
+                bindings.add((layer_id, bone_names[parent_bone]))
+            elif isinstance(parent_bone, str) and parent_bone and parent_bone != "-1":
+                bindings.add((layer_id, parent_bone))
+        skeleton = value.get("skeleton")
+        bones = value.get("bones")
+        used_nested_skeleton = False
+        if not isinstance(bones, list) and isinstance(skeleton, dict) and isinstance(skeleton.get("bones"), list):
+            bones = skeleton["bones"]
+            used_nested_skeleton = True
+        if isinstance(bones, list):
+            local_bone_names = [
+                identifier(bone, "bone_id", "boneId", "id", "name") or str(index)
+                for index, bone in enumerate(bones)
+                if isinstance(bone, dict)
+            ]
+            for bone in bones:
+                if isinstance(bone, dict):
+                    bone_id = identifier(bone, "bone_id", "boneId", "id", "name")
+                    if bone_id:
+                        bone_ids.add(bone_id)
+                        parent_value = bone.get(
+                            "parent_bone_id",
+                            bone.get(
+                                "parentBoneId",
+                                bone.get("parent_id", bone.get("parentId", bone.get("parent"))),
+                            ),
+                        )
+                        parent_id: str | None = None
+                        if isinstance(parent_value, int) and parent_value >= 0 and parent_value < len(local_bone_names):
+                            parent_id = local_bone_names[parent_value]
+                        elif isinstance(parent_value, str) and parent_value and parent_value != "-1":
+                            parent_id = parent_value
+                        if parent_id and parent_id != bone_id:
+                            parent_pairs.add((bone_id, parent_id))
+                        visit(bone, local_bone_names, bone_id)
+            bone_names = local_bone_names
+        for key in ("bindings", "binding_pairs"):
+            values = value.get(key)
+            if isinstance(values, list):
+                for binding in values:
+                    if not isinstance(binding, dict):
+                        continue
+                    part_id = identifier(binding, "part_id", "partId", "layer_id", "layerId")
+                    bone_id = identifier(binding, "bone_id", "boneId")
+                    if part_id and bone_id:
+                        bindings.add((part_id, bone_id))
+        if "switch" in value_type:
+            switch_id = layer_id or identifier(value, "switch_id", "switchId", "name")
+            children = value.get("layers", value.get("layer_list", []))
+            if switch_id and isinstance(children, list):
+                switches[switch_id] = sorted(filter(None, [
+                    identifier(child, "choice_id", "choiceId", "layer_id", "layerId", "name")
+                    for child in children if isinstance(child, dict)
+                ]))
+        action_values = value.get("actions")
+        if isinstance(action_values, list):
+            for action in action_values:
+                if not isinstance(action, dict):
+                    continue
+                action_id = identifier(action, "action_id", "actionId", "name")
+                driver = identifier(action, "driver_bone_id", "driverBoneId")
+                targets = action.get("targets", [])
+                target_ids = sorted(filter(None, [
+                    identifier(target, "bone_id", "boneId", "id", "name")
+                    for target in targets if isinstance(target, dict)
+                ])) if isinstance(targets, list) else []
+                if action_id:
+                    if current_bone_id and not target_ids:
+                        target_ids = [current_bone_id]
+                    record_action(action_id, driver, target_ids)
+        points = value.get("points")
+        mesh_id = identifier(value, "mesh_id", "meshId")
+        if mesh_id and isinstance(points, list):
+            meshes[mesh_id] = len(points)
+        native_mesh = value.get("mesh")
+        if is_native_layer and layer_id and isinstance(native_mesh, dict) and isinstance(native_mesh.get("points"), list):
+            meshes[layer_id] = len(native_mesh["points"])
+        groups = value.get("vitruvian_groups", value.get("vitruvianGroups"))
+        if isinstance(groups, list):
+            for group in groups:
+                if not isinstance(group, dict):
+                    continue
+                group_id = identifier(group, "group_name", "groupName", "name")
+                members = group.get("bone_ids", group.get("boneIds", []))
+                if group_id and isinstance(members, list):
+                    vitruvian[group_id] = sorted(str(member) for member in members)
+        for key, nested in value.items():
+            if key in ("bones", "actions") or (key == "skeleton" and used_nested_skeleton):
+                continue
+            visit(nested, bone_names, current_bone_id)
+
+    visit(project)
+    for action in actions.values():
+        action_id = str(action["actionId"])
+        if action["driverBoneId"] is None and action_id in bone_ids:
+            action["driverBoneId"] = action_id
+    report["saved_bone_ids"] = sorted(bone_ids)
+    report["saved_layer_ids"] = sorted(layer_ids)
+    report["saved_layer_order"] = layer_order
+    report["parent_bone_pairs"] = sorted(
+        ({"boneId": bone_id, "parentBoneId": parent_id}
+         for bone_id, parent_id in parent_pairs),
+        key=lambda item: (item["boneId"], item["parentBoneId"]),
+    )
+    report["binding_pairs"] = sorted(
+        ({"partId": part_id, "boneId": bone_id}
+         for part_id, bone_id in bindings),
+        key=lambda item: (item["partId"], item["boneId"]),
+    )
+    report["switch_choices"] = dict(sorted(switches.items()))
+    report["action_driver_targets"] = sorted(({
+        "actionId": str(action["actionId"]),
+        "driverBoneId": action["driverBoneId"],
+        "targetBoneIds": sorted(action["targetBoneIds"])
+        if isinstance(action["targetBoneIds"], set) else [],
+    } for action in actions.values()), key=lambda item: item["actionId"])
+    report["mesh_point_counts"] = dict(sorted(meshes.items()))
+    report["vitruvian_membership"] = dict(sorted(vitruvian.items()))
+    return report
 
 
 def _extract_preview(moho_path: Path, output_path: Path) -> bool:
@@ -365,6 +569,7 @@ def accept_project(
             render_status = "failed"
 
     all_runs = [source_run] + reopen_runs + render_runs
+    structure = _native_structure(_read_moho_project(reopened_path) if reopened else None)
     return NativeAcceptanceResult(
         opened=opened,
         saved=saved,
@@ -376,6 +581,7 @@ def accept_project(
         stdout="\n".join(run.stdout for run in all_runs if run.stdout),
         stderr="\n".join(run.stderr for run in all_runs if run.stderr),
         roundtrip_path=str(roundtrip_path),
+        **structure,
     )
 
 

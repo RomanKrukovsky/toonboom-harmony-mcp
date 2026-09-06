@@ -7,7 +7,10 @@ import type { MohoProductionV3ErrorCode } from '../../schemas/mohoProductionV3.j
 import { MohoRenderManager } from '../mohoRenderManager/index.js';
 import { MohoRenderMetrics, type MohoProbeRenderResult } from '../mohoRenderMetrics/index.js';
 import { MohoRenderRunner, type MohoProcessResult } from '../mohoRenderRunner/index.js';
-import { MohoProductionQualityAuditor } from '../mohoProductionQualityAuditor/index.js';
+import {
+  MohoProductionQualityAuditor,
+  type MohoNativeRigStructure
+} from '../mohoProductionQualityAuditor/index.js';
 
 const execFileAsync = promisify(execFile) as (
   executable: string,
@@ -15,7 +18,7 @@ const execFileAsync = promisify(execFile) as (
   options: { timeout: number; maxBuffer: number }
 ) => Promise<{ stdout: string; stderr: string }>;
 
-export interface NativeAcceptanceEvidence {
+export interface NativeAcceptanceEvidence extends MohoNativeRigStructure {
   opened: boolean;
   saved: boolean;
   reopened: boolean;

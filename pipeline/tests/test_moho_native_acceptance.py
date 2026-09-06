@@ -16,6 +16,7 @@ from pipeline.tools.moho_native_acceptance import (
     ProcessEvidence,
     _process_errors,
     _run,
+    _native_structure,
     accept_project,
 )
 
@@ -29,6 +30,49 @@ REFERENCE = REPO / "fixtures/moho_reference/gramps_rig.moho"
 
 
 class NativeMohoAcceptanceTests(unittest.TestCase):
+    def test_extracts_typed_native_structure_from_saved_project_json(self):
+        report = _native_structure({"layers": [{
+            "layer_id": "arm_layer",
+            "type": "SwitchLayer",
+            "layers": [{"layer_id": "open"}, {"layer_id": "closed"}],
+            "skeleton": {"bones": [
+                {"bone_id": "root", "parent_bone_id": -1},
+                {"bone_id": "arm", "parent_bone_id": "root"},
+            ]},
+            "bindings": [{"part_id": "forearm", "bone_id": "arm"}],
+            "actions": [{"action_id": "bend", "driver_bone_id": "arm", "targets": [{"bone_id": "hand"}]}],
+            "vitruvian_groups": [{"group_name": "arm_group", "bone_ids": ["arm", "hand"]}],
+            "mesh": {"mesh_id": "arm_mesh", "points": [{}, {}, {}, {}]}
+        }]})
+
+        self.assertEqual(report["saved_bone_ids"], ["arm", "root"])
+        self.assertEqual(report["saved_layer_ids"], ["arm_layer", "closed", "open"])
+        self.assertEqual(report["saved_layer_order"], ["arm_layer", "open", "closed"])
+        self.assertEqual(report["parent_bone_pairs"], [{"boneId": "arm", "parentBoneId": "root"}])
+        self.assertEqual(report["binding_pairs"], [{"partId": "forearm", "boneId": "arm"}])
+        self.assertEqual(report["switch_choices"], {"arm_layer": ["closed", "open"]})
+        self.assertEqual(report["mesh_point_counts"], {"arm_mesh": 4})
+        self.assertEqual(report["vitruvian_membership"], {"arm_group": ["arm", "hand"]})
+
+    def test_maps_native_layer_parent_index_to_bone_name(self):
+        report = _native_structure({"layers": [{
+            "name": "Rig",
+            "uuid": "rig-uuid",
+            "type": "BoneLayer",
+            "skeleton": {"bones": [
+                {"name": "Root", "parent": -1},
+                {"name": "Arm", "parent": 0},
+            ]},
+            "layers": [{
+                "name": "Forearm Art",
+                "uuid": "forearm-uuid",
+                "type": "ImageLayer",
+                "parent_bone": 1,
+            }],
+        }]})
+
+        self.assertEqual(report["binding_pairs"], [{"partId": "Forearm Art", "boneId": "Arm"}])
+        self.assertEqual(report["parent_bone_pairs"], [{"boneId": "Arm", "parentBoneId": "Root"}])
     def test_retries_one_transient_native_crash(self):
         with patch(
             "pipeline.tools.moho_native_acceptance.subprocess.run",

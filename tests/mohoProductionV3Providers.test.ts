@@ -135,4 +135,18 @@ describe('Moho Production v3 cloud adapters', () => {
       prompt: 'isolate'
     })).rejects.toMatchObject({ code: 'PROVIDER_UNAVAILABLE' });
   });
+
+  it('allows an explicitly opted-in paid OpenRouter image model without allowing paid planning', () => {
+    expect(() => new OpenRouterProductionProvider({
+      apiKey: 'test',
+      imageModel: 'openai/gpt-image-1',
+      allowPaidImageModel: true
+    })).not.toThrow();
+    expect(() => new OpenRouterProductionProvider({
+      apiKey: 'test',
+      plannerModel: 'anthropic/claude-opus-4.1',
+      imageModel: 'openai/gpt-image-1',
+      allowPaidImageModel: true
+    })).toThrow(/planner model.*:free/i);
+  });
 });

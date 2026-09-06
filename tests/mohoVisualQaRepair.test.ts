@@ -62,3 +62,57 @@ describeWithLicensedMoho('MohoVisualQaRepairEngine', () => {
     expect(lastLog.status).toBe('certified');
   }, 45000);
 });
+
+describe('moho.qa.certify_and_repair contract', () => {
+  it('validates input schema with projectPath, manifestPath, maxRepairPasses, evidenceDir, outputPath', () => {
+    const { MohoQaRepairSpecSchema } = require('../src/services/mohoVisualQaRepair/index.js');
+    const parsed = MohoQaRepairSpecSchema.parse({
+      projectPath: '/path/to/hero.moho',
+      manifestPath: '/path/to/manifest.json',
+      maxRepairPasses: 4,
+      evidenceDir: '/path/to/evidence',
+      outputPath: '/path/to/output.moho',
+      autoRepair: true
+    });
+    expect(parsed.projectPath).toBe('/path/to/hero.moho');
+    expect(parsed.manifestPath).toBe('/path/to/manifest.json');
+    expect(parsed.maxRepairPasses).toBe(4);
+    expect(parsed.evidenceDir).toBe('/path/to/evidence');
+    expect(parsed.outputPath).toBe('/path/to/output.moho');
+    expect(parsed.autoRepair).toBe(true);
+  });
+
+  it('validates output schema with status, certified, initialScore, finalScore, repairPasses, detectedDefects, appliedRepairs, evidenceDirectory', () => {
+    const { MohoQaRepairResultSchema } = require('../src/services/mohoVisualQaRepair/index.js');
+    const parsed = MohoQaRepairResultSchema.parse({
+      status: 'success',
+      certified: true,
+      initialScore: 65.0,
+      finalScore: 100.0,
+      repairPasses: 2,
+      detectedDefects: [
+        { issue_type: 'missing_blink', frame: 24, severity: 'medium', description: 'Missing blink' }
+      ],
+      appliedRepairs: [
+        { pass: 1, issue: 'missing_blink', action: 'Inserted natural blink keys' }
+      ],
+      evidenceDirectory: '/path/to/evidence'
+    });
+    expect(parsed.status).toBe('success');
+    expect(parsed.certified).toBe(true);
+    expect(parsed.initialScore).toBe(65.0);
+    expect(parsed.finalScore).toBe(100.0);
+    expect(parsed.repairPasses).toBe(2);
+    expect(parsed.detectedDefects).toHaveLength(1);
+    expect(parsed.appliedRepairs).toHaveLength(1);
+    expect(parsed.evidenceDirectory).toBe('/path/to/evidence');
+  });
+
+  it('exposes moho.qa.certify_and_repair tool', () => {
+    const { mohoQaTools } = require('../src/tools/mohoQaTools.js');
+    const tool = mohoQaTools.find((t: any) => t.name === 'moho.qa.certify_and_repair');
+    expect(tool).toBeDefined();
+    expect(tool.inputSchema).toBeDefined();
+    expect(typeof tool.handler).toBe('function');
+  });
+});

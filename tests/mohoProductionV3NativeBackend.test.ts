@@ -59,7 +59,27 @@ describe('Moho Production v3 native backend', () => {
         order.push('roundtrip');
         const roundtripPath = path.join(outputDir, 'roundtrip.moho');
         fs.copyFileSync(projectPath, roundtripPath);
-        return { opened: true, saved: true, reopened: true, rendered_frames: ['frame.png'], preview_frames: [], render_status: 'rendered', errors: [], stdout: '', stderr: '', roundtrip_path: roundtripPath };
+        return {
+          opened: true,
+          saved: true,
+          reopened: true,
+          rendered_frames: ['frame.png'],
+          preview_frames: [],
+          render_status: 'rendered',
+          errors: [],
+          stdout: '',
+          stderr: '',
+          roundtrip_path: roundtripPath,
+          saved_bone_ids: [],
+          saved_layer_ids: [],
+          saved_layer_order: [],
+          parent_bone_pairs: [],
+          binding_pairs: [],
+          switch_choices: {},
+          action_driver_targets: [],
+          mesh_point_counts: {},
+          vitruvian_membership: {}
+        };
       },
       probeRender: async () => {
         order.push('ffprobe');

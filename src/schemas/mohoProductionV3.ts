@@ -94,7 +94,12 @@ export const mohoProductionV3StartInputSchema = z.object({
   width: z.number().int().min(16).max(16384).default(1920),
   height: z.number().int().min(16).max(16384).default(1080),
   outputFormat: z.literal('mp4_h264').default('mp4_h264'),
-  dialogueTracks: z.array(mohoProductionV3DialogueTrackSchema).default([])
+  dialogueTracks: z.array(mohoProductionV3DialogueTrackSchema).default([]),
+  productionContext: z.object({
+    characterId: z.string().min(1),
+    rigType: z.enum(['humanoid_2leg', 'quadruped', 'creature', 'mechanical']),
+    shotType: z.string().min(1)
+  }).strict().optional()
 }).strict();
 
 export const modelProvenanceV3Schema = z.object({
@@ -367,3 +372,12 @@ export type ArtworkPackV3 = z.infer<typeof artworkPackV3Schema>;
 export type RigBlueprintV3 = z.infer<typeof rigBlueprintV3Schema>;
 export type PerformancePlanV3 = z.infer<typeof performancePlanV3Schema>;
 export type MohoProductionV3ErrorCode = z.infer<typeof mohoProductionV3ErrorCodeSchema>;
+
+export {
+  mohoTemporalQaInputSchema,
+  mohoTemporalQaReportSchema
+} from './mohoTemporalQa.js';
+export type {
+  MohoTemporalQaInput,
+  MohoTemporalQaReport
+} from './mohoTemporalQa.js';

@@ -95,6 +95,52 @@ describe('Moho Production v3 stage executor', () => {
     }
   });
 
+  it('stops before image generation when the per-shot budget would be exceeded', async () => {
+    const { input } = fixture();
+    let synthesisCalls = 0;
+    const executor = createMohoProductionV3StageExecutor({
+      maxImageCallsPerShot: 1,
+      artworkProvider: {
+        analyzeStructured: async request => ({
+          data: request.schema.parse({
+            parts: [{
+              partId: 'body', characterRef: 'hero', sourceIndex: 0, zIndex: 1,
+              confidence: 0.9, pivot: { x: 0, y: 0 }, view: 'front', synthesisPrompt: 'body'
+            }],
+            occlusionGraph: [], joints: [], requiredViews: ['front'],
+            drawings: [{
+              drawingId: 'mouth_rest', kind: 'mouth', sourceIndex: 0, choiceName: 'Rest',
+              confidence: 0.9, synthesisPrompt: 'mouth'
+            }],
+            overallConfidence: 0.9
+          }),
+          provider: 'openai' as const,
+          model: 'vision-test',
+          callId: 'vision-budget',
+          requestSha256: 'a'.repeat(64),
+          responseSha256: 'b'.repeat(64)
+        }),
+        synthesizeTransparentPart: async request => {
+          synthesisCalls += 1;
+          return {
+            outputPath: request.outputPath,
+            provider: 'openai',
+            model: 'image-test',
+            callId: 'unexpected',
+            requestSha256: 'c'.repeat(64),
+            responseSha256: 'd'.repeat(64)
+          };
+        }
+      }
+    });
+
+    await expect(executor({
+      jobId: 'job-budget', stage: 'decomposition', input,
+      previousCheckpoints: { ingest: { manifestPath: 'unused' } }, patches: [], attempt: 1
+    })).rejects.toThrow(/requires 2 image calls; limit is 1/);
+    expect(synthesisCalls).toBe(0);
+  });
+
   it('builds a complete layered artwork pack without calling image models', async () => {
     const root = fs.mkdtempSync(path.join(process.cwd(), 'output', 'v3-layered-executor-'));
     cleanup.push(root);

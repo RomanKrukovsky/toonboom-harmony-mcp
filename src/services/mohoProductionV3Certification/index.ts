@@ -4,10 +4,34 @@ import { z } from 'zod';
 
 export {
   certifyMohoProductionV3At95Percent,
+  validateMohoProductionV3CaseAt95Percent,
   type MohoProductionV3Certification95Report
 } from './production95.js';
 
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
+const directorDecisionSchema = z.object({
+  shotId: z.string().min(1),
+  gate: z.enum(['rig_blueprint', 'key_pose_animatic', 'final_render']),
+  approvalId: z.string().min(1),
+  decision: z.enum(['approve', 'reject']),
+  feedbackText: z.string().min(1),
+  reviewerId: z.string().min(1),
+  decidedAt: z.string().datetime(),
+  source: z.literal('director_file')
+}).strict();
+const benchmarkMetricsSchema = z.object({
+  wallTimeMs: z.number().int().nonnegative(),
+  modelCalls: z.number().int().nonnegative(),
+  modelCostUsd: z.number().nonnegative().nullable()
+}).strict();
+const modelCallEvidenceSchema = z.object({
+  provider: z.string().min(1),
+  model: z.string().min(1),
+  requestSha256: sha256Schema,
+  responseSha256: sha256Schema.nullable(),
+  status: z.enum(['running', 'completed', 'failed']),
+  costUsd: z.number().nonnegative().nullable()
+}).strict();
 
 export const mohoProductionV3BenchmarkCaseSchema = z.object({
   shotId: z.string().min(1),
@@ -22,6 +46,8 @@ export const mohoProductionV3BenchmarkCaseSchema = z.object({
     key_pose_animatic: z.literal(true),
     final_render: z.literal(true)
   }).strict(),
+  jobId: z.string().min(1).optional(),
+  directorDecisions: z.array(directorDecisionSchema).optional(),
   evidence: z.object({
     mohoPath: z.string().min(1),
     mohoSha256: sha256Schema,
@@ -34,7 +60,13 @@ export const mohoProductionV3BenchmarkCaseSchema = z.object({
     manualMohoEdits: z.literal(0),
     riggerParticipation: z.literal(false),
     animatorParticipation: z.literal(false)
-  }).strict()
+  }).strict(),
+  metrics: benchmarkMetricsSchema.optional(),
+  modelCallEvidence: z.array(modelCallEvidenceSchema).optional(),
+  failure: z.object({
+    category: z.enum(['asset', 'provider', 'rig', 'native_moho', 'qa', 'approval', 'animation', 'unknown']),
+    message: z.string()
+  }).strict().nullable().optional()
 }).strict();
 
 export interface MohoProductionV3BenchmarkCase {
@@ -50,6 +82,17 @@ export interface MohoProductionV3BenchmarkCase {
     key_pose_animatic: boolean;
     final_render: boolean;
   };
+  jobId?: string;
+  directorDecisions?: Array<{
+    shotId: string;
+    gate: 'rig_blueprint' | 'key_pose_animatic' | 'final_render';
+    approvalId: string;
+    decision: 'approve' | 'reject';
+    feedbackText: string;
+    reviewerId: string;
+    decidedAt: string;
+    source: 'director_file';
+  }>;
   evidence: {
     mohoPath: string;
     mohoSha256: string;
@@ -63,6 +106,23 @@ export interface MohoProductionV3BenchmarkCase {
     riggerParticipation: boolean;
     animatorParticipation: boolean;
   };
+  metrics?: {
+    wallTimeMs: number;
+    modelCalls: number;
+    modelCostUsd: number | null;
+  };
+  modelCallEvidence?: Array<{
+    provider: string;
+    model: string;
+    requestSha256: string;
+    responseSha256: string | null;
+    status: 'running' | 'completed' | 'failed';
+    costUsd: number | null;
+  }>;
+  failure?: {
+    category: 'asset' | 'provider' | 'rig' | 'native_moho' | 'qa' | 'approval' | 'animation' | 'unknown';
+    message: string;
+  } | null;
 }
 
 export interface MohoProductionV3CertificationReport {

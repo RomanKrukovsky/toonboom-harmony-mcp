@@ -50,8 +50,15 @@ def main() -> None:
     elif args.command == "compile_from_artwork":
         psd_data = json.loads(args.psd_data)
         body_params = json.loads(args.body_params)
+        body_plan = args.body_plan
+        try:
+            parsed_plan = json.loads(body_plan)
+            if isinstance(parsed_plan, dict):
+                body_plan = parsed_plan
+        except (ValueError, json.JSONDecodeError):
+            pass
         res = RigCompiler.compile_from_artwork(
-            psd_data, args.body_plan, body_params, args.output,
+            psd_data, body_plan, body_params, args.output,
         )
     elif args.command == "batch_produce":
         specs = json.loads(args.specs)

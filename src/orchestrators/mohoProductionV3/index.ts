@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import {
   FactoryFoundationStore,
   type FactoryApproval,
@@ -17,6 +18,7 @@ import {
   type MohoProductionV3Status
 } from '../../schemas/mohoProductionV3.js';
 import { verifyPathAccess } from '../../security.js';
+import { persistApprovedRetake } from '../../services/mohoProductionV3RetakeMemory/index.js';
 
 export interface MohoProductionV3StageArtifactOutput {
   path: string;
@@ -240,7 +242,7 @@ export class MohoProductionV3Orchestrator {
       : [];
     await this.store.decideApproval(approvalId, decision, principal.id, { ...feedback, annotationPaths, patches });
     if (decision === 'reject') {
-      const rejects = await this.store.countApprovalRejects(jobId);
+      const rejects = await this.retakesUsed(jobId);
       if (rejects >= 2) {
         await this.store.setJob(jobId, 'blocked', (await this.store.getJob(jobId)).progress, undefined, {
           code: 'RETAKE_BUDGET_EXHAUSTED',
@@ -263,6 +265,40 @@ export class MohoProductionV3Orchestrator {
       return this.status(jobId);
     }
     const job = await this.store.getJob(jobId);
+    const retakeDatasetPath = process.env.MOHO_RETAKE_DATASET_PATH;
+    const rejected = approvals.filter(item => item.status === 'rejected');
+    if (approval.gate === 'final_render' && retakeDatasetPath && rejected.length > 0) {
+      const beforePath = job.steps.find(item => item.name === 'performance_plan')?.checkpoint?.performancePath;
+      const afterPath = job.steps.find(item => item.name === 'final_animation')?.checkpoint?.finalPerformancePath;
+      if (typeof beforePath === 'string' && typeof afterPath === 'string'
+        && fs.existsSync(beforePath) && fs.existsSync(afterPath)) {
+        const input = mohoProductionV3StartInputSchema.parse(job.input);
+        const decisions = rejected.map(item => item.decision as {
+          text?: string;
+          patches?: Array<{ patchType?: string }>;
+        } | null);
+        const characterId = input.productionContext?.characterId ?? (input.artwork.mode === 'flat_characters'
+          ? input.artwork.characterRefs?.[0] ?? input.shotId
+          : input.shotId);
+        persistApprovedRetake({
+          datasetPath: retakeDatasetPath,
+          entryId: `${jobId}-${approvalId}`,
+          sessionId: jobId,
+          shotId: input.shotId,
+          characterId,
+          rigType: input.productionContext?.rigType ?? 'humanoid_2leg',
+          shotType: input.productionContext?.shotType
+            ?? (input.dialogueTracks.length > 0 ? 'dialogue' : 'silent_acting'),
+          qaCategories: [...new Set(decisions.flatMap(item => item?.patches?.map(patch => patch.patchType ?? 'stage_instruction') ?? []))],
+          directorInstruction: decisions.map(item => item?.text).filter((text): text is string => Boolean(text)).join('\n'),
+          beforePerformanceId: path.basename(beforePath),
+          afterPerformanceId: path.basename(afterPath),
+          beforeArtifactSha256: crypto.createHash('sha256').update(fs.readFileSync(beforePath)).digest('hex'),
+          afterArtifactSha256: crypto.createHash('sha256').update(fs.readFileSync(afterPath)).digest('hex'),
+          approvedBy: principal.id
+        });
+      }
+    }
     await this.store.setJob(jobId, 'queued', job.progress, { approvedGate: approval.gate });
     return this.status(jobId);
   }
@@ -289,6 +325,7 @@ export class MohoProductionV3Orchestrator {
     step: Record<string, unknown> | null;
     artifacts: Awaited<ReturnType<FactoryFoundationStore['listStageArtifacts']>>;
     approvals: FactoryApproval[];
+    modelCalls: Awaited<ReturnType<FactoryFoundationStore['listModelCalls']>>;
   }> {
     const job = await this.store.getJob(jobId);
     return {
@@ -296,7 +333,8 @@ export class MohoProductionV3Orchestrator {
       stage,
       step: job.steps.find(item => item.name === stage) ?? null,
       artifacts: await this.store.listStageArtifacts(jobId, stage),
-      approvals: (await this.store.listApprovals(jobId)).filter(item => item.stage === stage)
+      approvals: (await this.store.listApprovals(jobId)).filter(item => item.stage === stage),
+      modelCalls: (await this.store.listModelCalls(jobId)).filter(item => item.stage === stage)
     };
   }
 
@@ -315,11 +353,18 @@ export class MohoProductionV3Orchestrator {
       currentStage: (currentStep?.name as MohoProductionV3Stage | undefined) ?? null,
       pendingApproval,
       approvals,
-      retakesUsed: await this.store.countApprovalRejects(jobId),
+      retakesUsed: await this.retakesUsed(jobId),
       error: job.error,
       delivery,
       steps: job.steps
     };
+  }
+
+  private async retakesUsed(jobId: string): Promise<number> {
+    const automatic = (await this.store.listModelCalls(jobId)).filter(
+      call => call.stage === 'qa' && call.metadata.automaticRetake === true
+    ).length;
+    return automatic + await this.store.countApprovalRejects(jobId);
   }
 
   private async advance(jobId: string): Promise<MohoProductionV3StatusView> {
@@ -355,6 +400,15 @@ export class MohoProductionV3Orchestrator {
             const decisionPatches = approval.decision?.patches;
             return Array.isArray(decisionPatches) ? decisionPatches : [];
           }) as ApprovalPatchV3[];
+        for (const call of await this.store.listModelCalls(jobId)) {
+          if (call.stage === 'qa' && call.metadata.automaticRetake === true
+            && typeof call.metadata.retakeInstruction === 'string') {
+            patches.push({
+              patchType: 'stage_instruction', targetStage: 'final_animation',
+              instruction: call.metadata.retakeInstruction, annotationPaths: []
+            });
+          }
+        }
         const result = await this.executor({
           jobId,
           stage,
@@ -363,8 +417,21 @@ export class MohoProductionV3Orchestrator {
           patches,
           attempt: Number(step?.attempt ?? 0) + 1
         });
-        for (const modelCall of result.modelCalls ?? []) {
-          await this.store.recordModelCall({ jobId, stage, ...modelCall });
+        const failedQa = stage === 'qa' && result.checkpoint.passed !== true;
+        const canRepair = failedQa && (await this.retakesUsed(jobId)) < 2
+          && Boolean(result.modelCalls?.length);
+        const qaIssues = Array.isArray(result.checkpoint.issues)
+          ? result.checkpoint.issues.filter((issue): issue is string => typeof issue === 'string')
+          : [];
+        const repairInstruction = qaIssues.join('; ') || 'Correct the failed final QA checks while preserving approved key poses.';
+        for (const [index, modelCall] of (result.modelCalls ?? []).entries()) {
+          await this.store.recordModelCall({
+            jobId, stage, ...modelCall,
+            metadata: {
+              ...modelCall.metadata,
+              ...(canRepair && index === 0 ? { automaticRetake: true, retakeInstruction: repairInstruction } : {})
+            }
+          });
         }
         const linkedArtifacts = [];
         for (const artifact of result.artifacts) {
@@ -386,6 +453,18 @@ export class MohoProductionV3Orchestrator {
             : {})
         };
         await this.store.setStep(jobId, stage, 'completed', checkpoint);
+        if (failedQa) {
+          if (!canRepair) {
+            throw new ProductionStageError(
+              (await this.retakesUsed(jobId)) >= 2 ? 'RETAKE_BUDGET_EXHAUSTED' : 'QA_FAILED',
+              `Final QA did not pass: ${repairInstruction}`, 'blocked'
+            );
+          }
+          await this.store.invalidateStagesFrom(
+            jobId, 'final_animation', [...MOHO_PRODUCTION_V3_STAGES], 'artist', repairInstruction
+          );
+          return this.advance(jobId);
+        }
         const progress = (stageIndex + 1) / MOHO_PRODUCTION_V3_STAGES.length;
         await this.store.setJob(jobId, 'running', progress);
         if (stage === 'decomposition' && (result.confidence === undefined || result.confidence < 0.6)) {
@@ -440,7 +519,7 @@ export class MohoProductionV3Orchestrator {
     if (nativeRender?.verified !== true || !nativeRender?.ffprobe) {
       throw new ProductionStageError('RENDER_FAILED', 'Verified MP4 and ffprobe evidence is missing.');
     }
-    if (qa?.passed !== true) {
+    if (qa?.passed !== true || (qa.temporal as { passed?: unknown } | undefined)?.passed !== true) {
       throw new ProductionStageError('QA_FAILED', 'Final QA did not pass.');
     }
     for (const artifactPath of [delivery.mohoPath, delivery.mp4Path]) {

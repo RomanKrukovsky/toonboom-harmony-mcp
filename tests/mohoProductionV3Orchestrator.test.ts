@@ -28,7 +28,10 @@ describe('Moho Production v3 orchestrator', () => {
       if (context.stage === 'native_render') {
         checkpoint.ffprobe = { codec: 'h264', fps: context.input.fps, width: context.input.width, height: context.input.height, frames: context.input.durationFrames };
       }
-      if (context.stage === 'qa') checkpoint.passed = true;
+      if (context.stage === 'qa') {
+        checkpoint.passed = true;
+        checkpoint.temporal = { passed: true };
+      }
       return {
         checkpoint,
         confidence: context.stage === 'decomposition' ? 0.92 : undefined,
@@ -128,5 +131,42 @@ describe('Moho Production v3 orchestrator', () => {
     expect(blocked.status).toBe('blocked');
     expect(blocked.error?.code).toBe('RETAKE_BUDGET_EXHAUSTED');
     expect(blocked.delivery).toBeNull();
+  });
+
+  it.each([false, true])('repairs failed QA with persisted feedback; persistent failure=%s', async persistent => {
+    const { root, image, executor } = fixture('v3-auto-retake');
+    let qaRuns = 0;
+    const repairInstructions: string[] = [];
+    const repairExecutor: MohoProductionV3StageExecutor = async context => {
+      if (context.stage === 'final_animation') {
+        repairInstructions.push(...context.patches.map(patch => patch.instruction));
+      }
+      const result = await executor(context);
+      if (context.stage !== 'qa') return result;
+      qaRuns += 1;
+      return {
+        ...result,
+        checkpoint: { ...result.checkpoint, passed: !persistent && qaRuns > 1, issues: ['Hand drifts during the hold.'] },
+        modelCalls: [{ provider: 'test', model: 'critic', requestSha256: 'a'.repeat(64), responseSha256: 'b'.repeat(64), status: 'completed' }]
+      };
+    };
+    const store = new FactoryFoundationStore(root);
+    const orchestrator = new MohoProductionV3Orchestrator({ store, executor: repairExecutor });
+    const first = await orchestrator.start(startInput(root, image));
+    await approvePending(orchestrator, first.jobId);
+    await orchestrator.resume(first.jobId);
+    await approvePending(orchestrator, first.jobId);
+    const result = await orchestrator.resume(first.jobId);
+
+    expect(qaRuns).toBe(persistent ? 3 : 2);
+    expect(repairInstructions).toContain('Hand drifts during the hold.');
+    expect(result.retakesUsed).toBe(persistent ? 2 : 1);
+    expect(result.status).toBe(persistent ? 'blocked' : 'awaiting_approval');
+    expect(result.delivery).toBeNull();
+    if (persistent) expect(result.error?.code).toBe('RETAKE_BUDGET_EXHAUSTED');
+    else expect(result.pendingApproval?.gate).toBe('final_render');
+    const restored = new MohoProductionV3Orchestrator({ store: new FactoryFoundationStore(root), executor: repairExecutor });
+    expect((await restored.status(first.jobId)).retakesUsed).toBe(result.retakesUsed);
+    expect((await store.listModelCalls(first.jobId)).filter(call => call.stage === 'qa')).toHaveLength(qaRuns);
   });
 });

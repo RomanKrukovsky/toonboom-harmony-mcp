@@ -31,6 +31,17 @@ function makeCases(root: string): MohoProductionV3BenchmarkCase[] {
         key_pose_animatic: true,
         final_render: true
       },
+      jobId: `job-${shotId}`,
+      directorDecisions: (['rig_blueprint', 'key_pose_animatic', 'final_render'] as const).map((gate, gateIndex) => ({
+        shotId,
+        gate,
+        approvalId: `${shotId}-${gate}`,
+        decision: 'approve' as const,
+        feedbackText: `Approved ${gate}.`,
+        reviewerId: 'benchmark-director',
+        decidedAt: `2026-08-31T12:0${gateIndex}:00.000Z`,
+        source: 'director_file' as const
+      })),
       evidence: {
         mohoPath,
         mohoSha256: sha256(mohoPath),
@@ -43,8 +54,11 @@ function makeCases(root: string): MohoProductionV3BenchmarkCase[] {
         manualMohoEdits: 0,
         riggerParticipation: false,
         animatorParticipation: false
-      }
-    };
+      },
+      metrics: { wallTimeMs: 1000, modelCalls: 0, modelCostUsd: 0 },
+      modelCallEvidence: [],
+      failure: null
+    } as MohoProductionV3BenchmarkCase;
   });
 }
 
@@ -114,6 +128,27 @@ describe('Moho Production v3 95 percent certification', () => {
     expect(report.failures).toEqual(expect.arrayContaining([
       'Benchmark requires at least 10 flat_characters shots; found 0.',
       'Benchmark requires at least 10 flat_scene shots; found 0.'
+    ]));
+  });
+
+  it('does not count a completed shot without all external director decisions', () => {
+    const cases = makeCases(root);
+    cases[0].status = 'failed';
+    cases[1].status = 'blocked';
+    const caseWithoutFinalDecision = cases[2] as MohoProductionV3BenchmarkCase & {
+      directorDecisions: Array<{ gate: string }>;
+    };
+    caseWithoutFinalDecision.directorDecisions = caseWithoutFinalDecision.directorDecisions.filter(
+      decision => decision.gate !== 'final_render'
+    );
+
+    const report = certifyMohoProductionV3At95Percent(cases);
+
+    expect(report.certified).toBe(false);
+    expect(report.autonomousPasses).toBe(37);
+    expect(report.failedShotIds).toContain('production95-03');
+    expect(report.failures).toEqual(expect.arrayContaining([
+      expect.stringContaining('external director decision for final_render is missing')
     ]));
   });
 });

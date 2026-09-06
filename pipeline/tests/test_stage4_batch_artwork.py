@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pipeline.moho.extract import extract_from_file
 from pipeline.riggen.master_character_compiler import compile_master_character
-from pipeline.stage4_batch_artwork import BatchProducer, PSDParser, RigCompiler
+from pipeline.stage4_batch_artwork import BatchProducer, PSDParser, RigCompiler, _safe_name
 
 
 REPO = Path(__file__).resolve().parents[2]
@@ -146,5 +146,78 @@ class Stage4BatchArtworkTests(unittest.TestCase):
             self.assertEqual(result["effective_concurrency"], 1)
 
 
+    def test_inspect_psd_reports_groups_masks_pivot_and_order(self):
+        result = PSDParser.inspect_psd(str(PSD_FIXTURE))
+        self.assertIn("groups", result)
+        self.assertIsInstance(result["groups"], list)
+
+        for index, layer in enumerate(result["layers"]):
+            self.assertEqual(layer["layer_order"], index)
+            self.assertEqual(layer["z_order"], index)
+            self.assertIn("pivot", layer)
+            self.assertIn("center_px", layer["pivot"])
+            self.assertEqual(layer["pivot"]["normalized"], [0.5, 0.5])
+            self.assertIn("has_mask", layer)
+            self.assertIn("effective_visible", layer)
+
+    def test_safe_name_preserves_unicode(self):
+        self.assertEqual(_safe_name("голова"), "голова")
+        self.assertEqual(_safe_name("左腕"), "左腕")
+        self.assertEqual(_safe_name("Layer-1.part_A"), "Layer-1.part_A")
+        self.assertEqual(_safe_name("   "), "layer")
+
+    def test_body_plans_extensibility(self):
+        RigCompiler.register_body_plan("heroic", {
+            "head_scale": 0.85,
+            "limb_scale": 1.35,
+            "torso_width": 1.40,
+        })
+        self.assertIn("heroic", RigCompiler.BODY_PLAN_PROPORTIONS)
+        self.assertEqual(RigCompiler.BODY_PLAN_PROPORTIONS["heroic"]["limb_scale"], 1.35)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            heroic_path = Path(temp_dir) / "heroic.moho"
+            compile_master_character(
+                out_path=str(heroic_path), canvas_w=400, canvas_h=600,
+                body_proportions=RigCompiler.BODY_PLAN_PROPORTIONS["heroic"],
+            )
+            heroic_rig = extract_from_file(str(heroic_path))
+            self.assertGreater(heroic_rig.bone_by_id("Thigh L").length, 0.4)
+
+    def test_relink_handles_missing_files_and_diagnostics(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            tmp_moho = Path(temp_dir) / "test.moho"
+            compile_master_character(out_path=str(tmp_moho), canvas_w=400, canvas_h=600)
+            res = PSDParser.relink(str(tmp_moho), ["/nonexistent/image.png"])
+            self.assertEqual(res["status"], "failed")
+            self.assertIn("no image layers", res["errors"][0].lower())
+
+    def test_batch_production_summary_and_stable_ids(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            imported = PSDParser.import_psd_character(
+                str(PSD_FIXTURE), {"output_dir": str(Path(temp_dir) / "imported")},
+            )
+            res = BatchProducer.batch_produce([
+                {
+                    "task_id": "shot_101",
+                    "scene_name": "scene_intro",
+                    "body_plan": "invalid_plan_123",
+                    "psd_data": imported,
+                }
+            ], concurrency=1)
+
+            self.assertEqual(res["status"], "failed")
+            self.assertEqual(len(res["failed_scenes"]), 1)
+            self.assertEqual(res["failed_scenes"][0]["task_id"], "shot_101")
+            self.assertEqual(res["failed_scenes"][0]["scene"], "scene_intro")
+            self.assertIn("summary", res)
+            self.assertEqual(res["summary"]["total_scenes"], 1)
+            self.assertEqual(res["summary"]["failed"], 1)
+            self.assertEqual(res["summary"]["succeeded"], 0)
+            self.assertTrue(Path(res["workspace"]).is_dir())
+            self.assertTrue((Path(res["workspace"]) / "batch_summary.json").is_file())
+
+
 if __name__ == "__main__":
     unittest.main()
+

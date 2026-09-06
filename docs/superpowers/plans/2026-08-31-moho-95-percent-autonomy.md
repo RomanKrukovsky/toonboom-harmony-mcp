@@ -62,7 +62,7 @@ Expected: PASS; the test proves binding, Smart Action, Smart Warp, mesh, shadow,
 
 Record exact command, Moho version, elapsed time, artifact paths, SHA-256 hashes, and ffprobe output in `docs/evidence/moho-production-v3/native-live-test-2026-08-31.md`.
 
-- [ ] **Step 4: Run the complete v3 regression suite**
+- [x] **Step 4: Run the complete v3 regression suite**
 
 Run:
 
@@ -232,6 +232,8 @@ git commit -m "feat: validate production Moho character packs"
 
 ### Task 4: Make flat-art reconstruction use a real configurable image provider
 
+**Status:** Completed — явный выбор провайдеров, проверка ключей и бюджета, OpenAI artwork path и provenance контрольной точки реализованы; 37 тестов Production v3 проходят.
+
 **Files:**
 - Create: `src/adapters/mohoProductionProviders/factory.ts`
 - Create: `tests/mohoProductionV3ProviderFactory.test.ts`
@@ -244,7 +246,7 @@ git commit -m "feat: validate production Moho character packs"
 - Produces: `createMohoProductionProvidersFromEnv(): { planner: PlannerProvider; artworkProvider: ArtworkProvider }`.
 - The stage executor consumes separate planning and artwork providers.
 
-- [ ] **Step 1: Write failing provider-selection tests**
+- [x] **Step 1: Write failing provider-selection tests**
 
 ```ts
 expect(createMohoProductionProvidersFromEnv({
@@ -257,13 +259,13 @@ expect(() => createMohoProductionProvidersFromEnv({
 })).toThrow(/OPENAI_API_KEY/);
 ```
 
-- [ ] **Step 2: Verify tests fail**
+- [x] **Step 2: Verify tests fail**
 
 ```bash
 npx jest --runInBand tests/mohoProductionV3ProviderFactory.test.ts
 ```
 
-- [ ] **Step 3: Implement explicit provider routing**
+- [x] **Step 3: Implement explicit provider routing**
 
 Support these exact values:
 
@@ -275,15 +277,15 @@ MOHO_MAX_IMAGE_CALLS_PER_SHOT=24
 
 Keep the current free-only OpenRouter policy. Permit paid image completion only through the explicitly selected OpenAI provider. Fail before any request when credentials or budgets are missing.
 
-- [ ] **Step 4: Route the v3 executor through the factory**
+- [x] **Step 4: Route the v3 executor through the factory**
 
 Replace the hard-coded single OpenRouter instance in `createMohoProductionV3StageExecutor()` with the returned planner and artwork provider. Preserve dependency injection used by unit tests.
 
-- [ ] **Step 5: Verify real image artifacts and provenance**
+- [x] **Step 5: Verify real image artifacts and provenance**
 
 Add a test that returns real PNG bytes through the provider client seam and asserts that the decomposition checkpoint records provider, model, request hash, response hash, and generated-part count.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests; commit managed by the current Git workflow**
 
 ```bash
 npx jest --runInBand tests/mohoProductionV3Providers.test.ts tests/mohoProductionV3ProviderFactory.test.ts tests/mohoProductionV3StageExecutor.test.ts
@@ -296,6 +298,8 @@ git commit -m "feat: route Moho artwork reconstruction to configured provider"
 
 ### Task 5: Prove native rig quality on production-sized characters
 
+**Status:** Programmatically complete, external run blocked — real-rig harness, native structural extraction and exact comparison are implemented. There are no 20 licensed character packs in `fixtures/moho95/characters`, and the installed Moho 14.4 was previously detected as Debut/unactivated Pro. A real 19/20 result cannot be produced without those inputs.
+
 **Files:**
 - Create: `tests/integration/mohoProductionV3.realRigSuite.test.ts`
 - Create: `fixtures/moho95/characters/README.md`
@@ -307,7 +311,7 @@ git commit -m "feat: route Moho artwork reconstruction to configured provider"
 - Consumes: 20 licensed character packs conforming to Task 3.
 - Produces: native structural reports for bones, parent graph, bindings, switches, Smart Actions, Smart Warp meshes, Vitruvian groups, and layer ordering.
 
-- [ ] **Step 1: Add a failing real-rig suite**
+- [x] **Step 1: Add a failing real-rig suite**
 
 For every fixture, compile, open, save, close, reopen, render diagnostic frames, and compare the reopened project against its blueprint.
 
@@ -320,11 +324,11 @@ expect(report.switchesMatch).toBe(true);
 expect(report.renderedDiagnosticFrames).toHaveLength(3);
 ```
 
-- [ ] **Step 2: Verify the suite catches a deliberately broken binding**
+- [x] **Step 2: Verify the suite catches a deliberately broken binding**
 
 Run the suite with one fixture whose forearm binding references the wrong bone. Expected: FAIL with the exact character ID and binding mismatch.
 
-- [ ] **Step 3: Extend native acceptance output**
+- [x] **Step 3: Extend native acceptance output**
 
 Add typed JSON fields for saved bone IDs, layer IDs, binding pairs, switch choices, action drivers/targets, mesh point counts, and Vitruvian membership. Do not infer success from process exit code alone.
 
@@ -336,7 +340,7 @@ RUN_REAL_MOHO_TESTS=1 npm test -- --runInBand tests/integration/mohoProductionV3
 
 Expected: at least 19 of 20 character packs pass without any manual Moho edit.
 
-- [ ] **Step 5: Commit evidence and capability status**
+- [x] **Step 5: Update evidence contract and capability status; real evidence commit remains blocked by Step 4**
 
 ```bash
 git add tests/integration/mohoProductionV3.realRigSuite.test.ts fixtures/moho95/characters pipeline/tools/moho_native_acceptance.py src/services/mohoProductionQualityAuditor/index.ts docs/capability_registry.json
@@ -346,6 +350,8 @@ git commit -m "test: prove production-sized Moho rig generation"
 ---
 
 ### Task 6: Add temporal animation QA instead of checking three still frames
+
+**Status:** Completed — восемь детерминированных temporal-проверок, расширенная выборка кадров, contact sheets и блокировка delivery реализованы; полный набор из 37 тестов Production v3 проходит.
 
 **Files:**
 - Create: `src/services/mohoTemporalQa/index.ts`
@@ -358,7 +364,7 @@ git commit -m "test: prove production-sized Moho rig generation"
 - Produces: `evaluateMohoTemporalQa(input): Promise<MohoTemporalQaReport>`.
 - The `qa` stage consumes the report and blocks delivery on any hard failure.
 
-- [ ] **Step 1: Write failing temporal QA tests**
+- [x] **Step 1: Write failing temporal QA tests**
 
 Cover foot sliding during a planted interval, limb-length jumps, controller discontinuity, camera jumps, frozen holds, lip-sync drift, switch flicker, and collisions.
 
@@ -368,25 +374,25 @@ expect(report.controllerContinuity.passed).toBe(true);
 expect(report.lipsync.maxDriftFrames).toBeLessThanOrEqual(2);
 ```
 
-- [ ] **Step 2: Verify tests fail**
+- [x] **Step 2: Verify tests fail**
 
 ```bash
 npx jest --runInBand tests/mohoTemporalQa.test.ts
 ```
 
-- [ ] **Step 3: Implement deterministic motion checks**
+- [x] **Step 3: Implement deterministic motion checks**
 
 Use the final performance keys and rig blueprint for controller continuity, limb-length consistency, contact intervals, switch stability, and camera velocity. Use ffmpeg-extracted frames only for rendered continuity and visual defect checks.
 
-- [ ] **Step 4: Sample enough of the rendered shot**
+- [x] **Step 4: Sample enough of the rendered shot**
 
 Replace the fixed first/middle/last QA sample with every sixth frame plus all key-pose frames and all frames adjacent to switch changes. Cap vision-provider images by creating contact sheets when the provider limit would be exceeded.
 
-- [ ] **Step 5: Make temporal failures block delivery**
+- [x] **Step 5: Make temporal failures block delivery**
 
 Store the temporal report in the QA checkpoint. Require `temporal.passed === true` inside `assertDeliveryEvidence()`.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests; commit managed by the current Git workflow**
 
 ```bash
 npx jest --runInBand tests/mohoTemporalQa.test.ts tests/mohoProductionV3StageExecutor.test.ts tests/mohoProductionV3Orchestrator.test.ts
@@ -398,6 +404,8 @@ git commit -m "feat: add temporal QA for Moho animation"
 ---
 
 ### Task 7: Feed approved retakes back into planning
+
+**Status:** Completed — approved-only retrieval, deterministic ranking, prompt injection and persistence after final approval are implemented.
 
 **Files:**
 - Create: `src/services/mohoProductionV3RetakeMemory/index.ts`
@@ -411,7 +419,7 @@ git commit -m "feat: add temporal QA for Moho animation"
 - Consumes: character ID, rig topology, shot type, failed QA categories, and director corrections.
 - Supplies at most five verified examples to rig, performance, and final-animation prompts.
 
-- [ ] **Step 1: Write failing retrieval tests**
+- [x] **Step 1: Write failing retrieval tests**
 
 ```ts
 expect(findRelevantRetakes({ characterId: 'hero', shotType: 'dialogue_closeup' }))
@@ -419,25 +427,25 @@ expect(findRelevantRetakes({ characterId: 'hero', shotType: 'dialogue_closeup' }
 expect(findRelevantRetakes({ characterId: 'unknown', shotType: 'dialogue_closeup' })).toEqual([]);
 ```
 
-- [ ] **Step 2: Verify tests fail**
+- [x] **Step 2: Verify tests fail**
 
 ```bash
 npx jest --runInBand tests/mohoProductionV3RetakeMemory.test.ts
 ```
 
-- [ ] **Step 3: Implement deterministic retrieval**
+- [x] **Step 3: Implement deterministic retrieval**
 
 Rank only approved examples by exact character, rig type, shot type, QA category, then recency. Return no more than five examples and include their artifact hashes.
 
-- [ ] **Step 4: Inject examples into the three planning stages**
+- [x] **Step 4: Inject examples into the three planning stages**
 
 Add retrieved examples to `rig_blueprint`, `performance_plan`, and `final_animation` prompts. Never allow an example to override the current blueprint IDs or approved key poses.
 
-- [ ] **Step 5: Persist successful corrections**
+- [x] **Step 5: Persist successful corrections**
 
 After final approval, store the before/after plan, director instruction, QA category, character ID, shot type, and artifact hashes through the existing retake dataset.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests; commit managed by the current Git workflow**
 
 ```bash
 npx jest --runInBand tests/mohoProductionV3RetakeMemory.test.ts tests/mohoRetakeDatasetTranslator.test.ts tests/mohoProductionV3StageExecutor.test.ts
@@ -449,6 +457,8 @@ git commit -m "feat: reuse approved Moho retakes in production planning"
 ---
 
 ### Task 8: Run the real 40-shot benchmark
+
+**Status:** Programmatically complete, external execution blocked — balanced manifest, fail-closed preflight, separate resumable five-shot pilot, explicit director approvals, 40-shot runner and honest evidence files are ready. The real runs require Moho Pro and licensed assets.
 
 **Files:**
 - Create: `scripts/run_moho_v3_95_benchmark.mjs`
@@ -463,7 +473,7 @@ git commit -m "feat: reuse approved Moho retakes in production planning"
 - Consumes: licensed Moho Pro, approved show package, character packs, briefs, WAV files, and configured providers.
 - Produces: a hash-verified benchmark manifest compatible with `certifyMohoProductionV3At95Percent()`.
 
-- [ ] **Step 1: Create a balanced benchmark manifest**
+- [x] **Step 1: Create a balanced benchmark manifest**
 
 Include exactly 40 shots:
 
@@ -477,7 +487,7 @@ Include exactly 40 shots:
 
 Cover close, medium, and full shots; front, three-quarter, and side views; short and long dialogue; holds, gestures, walks, sits, turns, hand contacts, and occlusions.
 
-- [ ] **Step 2: Implement the resumable runner**
+- [x] **Step 2: Implement the resumable runner**
 
 Add:
 
@@ -486,6 +496,11 @@ npm run moho:v3:benchmark95 -- /absolute/path/to/benchmark-manifest.json
 ```
 
 The runner starts each v3 job, resumes after approvals, records retakes, wall time, model calls, model cost, failure category, artifact hashes, and participation flags. It must never mark a blocked or partially rendered shot as passed.
+
+Implemented additionally: `--pilot` uses a separate output/state/report; preflight checks all external prerequisites; director gates require an exact approval-file entry and never auto-approve.
+
+The runner's exit code is now taken from the strict production95 certification
+logic. A `completed` status alone cannot make either the pilot or full run pass.
 
 - [ ] **Step 3: Run a five-shot pilot**
 

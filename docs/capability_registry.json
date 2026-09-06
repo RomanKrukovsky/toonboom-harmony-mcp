@@ -825,10 +825,22 @@
         "src/services/mohoProductionV3StageExecutor/index.ts",
         "src/services/mohoProductionV3Compiler/index.ts",
         "src/services/mohoProductionV3NativeBackend/index.ts",
+        "src/services/mohoProductionQualityAuditor/index.ts",
         "src/services/mohoProductionV3Certification/index.ts",
+        "src/services/mohoProductionV3Certification/production95.ts",
+        "src/services/mohoProductionV3RetakeMemory/index.ts",
+        "src/services/mohoProductionV3BenchmarkInputs/index.ts",
+        "src/services/mohoProductionV3BenchmarkApprovals/index.ts",
+        "src/services/mohoTemporalQa/index.ts",
+        "src/schemas/mohoTemporalQa.ts",
         "src/adapters/mohoProductionProviders/index.ts",
+        "src/adapters/mohoProductionProviders/factory.ts",
         "src/services/mohoForcedAlignmentV3/index.ts",
-        "src/tools/mohoProductionV3Tools.ts"
+        "src/tools/mohoProductionV3Tools.ts",
+        "scripts/run_moho_v3_95_benchmark.mjs",
+        "scripts/preflight_moho_v3_95_benchmark.mjs",
+        "pipeline/tools/moho_native_acceptance.py",
+        "tests/integration/mohoProductionV3.realRigSuite.test.ts"
       ],
       "publicTools": [
         "moho.production.v3.start",
@@ -842,18 +854,23 @@
       "backendType": "stateful_cloud_and_native_moho",
       "verificationLevel": "contract_verified",
       "evidencePaths": [
-        "docs/evidence/moho-production-v3/native-live-test-2026-08-31.md"
+        "docs/evidence/moho-production-v3/native-live-test-2026-08-31.md",
+        "docs/evidence/moho-production-v3/real-rig-suite/real-rig-suite-report.json",
+        "docs/evidence/moho-production-v3/production95-pilot-report.json",
+        "docs/evidence/moho-production-v3/production95-report.json",
+        "docs/evidence/moho-production-v3/production95-summary.md"
       ],
       "knownFailures": [
-        "Production execution uses OPENROUTER_API_KEY with a hard :free-only policy, plus Rhubarb Lip Sync for dialogue shots, ffmpeg/ffprobe and a licensed Moho Pro 14 command-line renderer; there is no mock fallback.",
-        "Live OpenRouter planning and vision probes passed on free models, but OpenRouter currently lists no :free image-generation model, so flat artwork requiring reconstruction blocks instead of using paid generation.",
+        "Production execution requires an explicitly selected planning provider, artwork provider, Rhubarb Lip Sync for dialogue shots, ffmpeg/ffprobe and a licensed Moho Pro 14 command-line renderer; there is no mock fallback. Rhubarb 1.14.0 is installed and locally detected on the current host.",
+        "OpenRouter planning and vision remain restricted to :free models. A paid OpenRouter image model is accepted only with explicit MOHO_ALLOW_PAID_OPENROUTER_IMAGE=true; OpenAI artwork remains a separate explicit option.",
         "The installed Moho reports that command-line rendering is a Pro-only feature; v3 now fails fast with MOHO_PRO_REQUIRED before Lua build, so local native certification cannot proceed until a Pro license is activated.",
-        "The required 30/30 benchmark has not been run, so this capability is not certified as a full replacement for a 2D rigger or animator.",
+        "The production95 runner, balanced 40-shot manifest, separate five-shot pilot, external director approvals and fail-closed preflight are implemented, but the real benchmark has not been run; the evidence reports contain zero completed shots and the capability remains uncertified.",
+        "The licensed 20-character native rig harness is implemented and checks bones, parent graph, bindings, layer order, switches, Smart Actions, mesh point counts and Vitruvian groups after a real open/save/reopen. Its 19/20 result is still blocked because the approved packs are not present.",
         "PSD remains intentionally unsupported in v3."
       ],
-      "blockingReason": null,
-      "lastVerifiedAt": "2026-08-31",
-      "nextRequiredProof": "Run one real layered, one flat-character and one flat-scene shot end to end, then complete the specified 30-shot benchmark with valid .moho/.mp4 evidence and at most two total retakes per shot."
+      "blockingReason": "Activate Moho Pro 14, supply 20 validated licensed character packs and the artwork/WAV inputs referenced by fixtures/moho95/benchmark-manifest.json, then explicitly configure providers and the director token.",
+      "lastVerifiedAt": "2026-09-01",
+      "nextRequiredProof": "Run the five-shot pilot, then all 40 production95 shots. Retain valid .moho/.mp4 hashes, temporal and artistic QA, three director approvals, no manual Moho edits and no rigger/animator participation; certify only at 38/40 or better."
     },
     {
       "capabilityId": "production.moho_batch_produce",
