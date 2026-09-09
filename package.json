@@ -54,7 +54,8 @@
     "moho:v3:benchmark95": "npm run build && node scripts/run_moho_v3_95_benchmark.mjs",
     "harmony:v4:preflight95": "npm run build && node scripts/preflight_harmony_v4_95_benchmark.mjs",
     "harmony:v4:benchmark95": "npm run build && node scripts/run_harmony_v4_95_benchmark.mjs",
-    "test:harmony:v4:real-rigs": "jest --runInBand tests/integration/harmonyProductionV4.realRigSuite.test.ts"
+    "test:harmony:v4:real-rigs": "jest --runInBand tests/integration/harmonyProductionV4.realRigSuite.test.ts",
+    "showcase:combat": "npm run build && node scripts/run_combat_turnaround_showcase.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

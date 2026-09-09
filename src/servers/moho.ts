@@ -6,6 +6,7 @@ import {
   mohoRigSynthesizeTurnaroundTool
 } from '../tools/combatAndTurnaroundTools.js';
 import { mohoAutomationExpansionTools } from '../tools/mohoAutomationExpansionTools.js';
+import { mohoKitsuIngestTool, mohoKitsuWritebackTool } from '../tools/mohoKitsuTools.js';
 import { diagnosticTool } from './diagnostics.js';
 import { serveEngine } from './server.js';
 
@@ -19,5 +20,7 @@ await serveEngine('moho', [
   ...mohoCharacterAssetPackTools,
   mohoActionSolveCombatTool,
   mohoRigSynthesizeTurnaroundTool,
-  ...mohoAutomationExpansionTools
+  ...mohoAutomationExpansionTools,
+  mohoKitsuIngestTool,
+  mohoKitsuWritebackTool
 ], profile);

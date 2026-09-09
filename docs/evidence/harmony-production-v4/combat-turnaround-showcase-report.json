@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-09-09T18:29:06.916Z",
+  "status": "passed",
+  "showcase": {
+    "type": "combat_and_360_turnaround",
+    "durationSec": 2,
+    "totalFrames": 48,
+    "fps": 24,
+    "width": 1920,
+    "height": 1080,
+    "codec": "h264",
+    "mp4Path": "output/combat_showcase.mp4",
+    "fileSizeBytes": 5866,
+    "sha256": "46fb9d65f6ef0c0f2ad372fbc7c1cf4cfdf9c4a6ab872293c6c71b60ca094a83"
+  },
+  "combatSolver": {
+    "specId": "showcase_combat_roundhouse_hook",
+    "originalContactFrame": 16,
+    "effectiveContactFrame": 16,
+    "hitStopFrames": 3,
+    "contactSocketDistanceAtImpact": 0,
+    "impactWorldPosition": {
+      "x": 75,
+      "y": 20
+    },
+    "peakCameraShakeOffset": 16,
+    "cameraShakeFramesCount": 16,
+    "constraintHandoffEnabled": true,
+    "attackerTrajectoryPoints": 51,
+    "defenderTrajectoryPoints": 51
+  },
+  "turnaround360": {
+    "characterId": "licensed-character-01",
+    "canonicalAnglesCount": 5,
+    "layerOrderingIntervalsCount": 17,
+    "deformedMeshesCount": 5,
+    "noInvertedTriangles": true,
+    "masterControllerEmitted": true
+  },
+  "sceneStructure": {
+    "totalNodes": 37,
+    "totalLinks": 52,
+    "pegsCount": 15,
+    "drawingsCount": 19
+  }
+}
