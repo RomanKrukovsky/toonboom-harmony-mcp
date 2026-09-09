@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { config, validatePath } from './config.js';
+import { config, validatePath, animateConfig, validateAnimatePath } from './config.js';
 
 export type HarmonyErrorCode =
   | 'HARMONY_NOT_INSTALLED'
@@ -40,6 +40,23 @@ export type HarmonyErrorCode =
   | 'CAPTURE_LIMIT_EXCEEDED'
   | 'CAPTURE_STATE_PROVIDER_UNAVAILABLE'
   | 'CAPTURE_SCENE_ROOT_NOT_ALLOWED';
+
+export type AnimateErrorCode =
+  | 'ANIMATE_NOT_INSTALLED'
+  | 'ANIMATE_NOT_RUNNING'
+  | 'ANIMATE_BRIDGE_UNAVAILABLE'
+  | 'ANIMATE_NO_DOCUMENT'
+  | 'ANIMATE_DOCUMENT_NOT_FOUND'
+  | 'ANIMATE_JSFL_ERROR'
+  | 'ANIMATE_SCRIPT_TIMEOUT'
+  | 'ANIMATE_UNSUPPORTED_CAPABILITY'
+  | 'ANIMATE_INVALID_ARGUMENT'
+  | 'ANIMATE_PATH_NOT_ALLOWED'
+  | 'ANIMATE_PATH_TRAVERSAL_BLOCKED'
+  | 'ANIMATE_DESTRUCTIVE_OPERATION_BLOCKED'
+  | 'ANIMATE_EXPORT_FAILED'
+  | 'ANIMATE_PROTOCOL_ERROR'
+  | 'RAW_JSFL_DISABLED';
 
 /**
  * Unified result verification status for all tools.
@@ -93,6 +110,29 @@ export class HarmonyError extends Error {
     this.code = code;
     this.details = details;
     Object.setPrototypeOf(this, HarmonyError.prototype);
+  }
+
+  toJSON() {
+    return {
+      error: true,
+      code: this.code,
+      message: this.message,
+      details: this.details
+    };
+  }
+}
+
+export class AnimateError extends Error {
+  code: AnimateErrorCode;
+  details?: any;
+
+  constructor(code: AnimateErrorCode, message: string, details?: any) {
+    const fullMessage = message.includes(code) ? message : `[${code}] ${message}`;
+    super(fullMessage);
+    this.name = 'AnimateError';
+    this.code = code;
+    this.details = details;
+    Object.setPrototypeOf(this, AnimateError.prototype);
   }
 
   toJSON() {
@@ -190,6 +230,8 @@ export interface ConfirmationParams {
 }
 
 const EXPECTED_CONFIRMATION = 'Я понимаю, что это действие изменит базу данных Harmony';
+const EXPECTED_ANIMATE_CONFIRMATION = 'Я понимаю, что это действие изменит документ Adobe Animate';
+const EXPECTED_ANIMATE_CONFIRMATION_EN = 'I understand this destructive operation modifies Adobe Animate documents';
 
 export function enforceDestructiveSafety(operationName: string, confirmation?: ConfirmationParams) {
   if (!config.allowDestructive) {
@@ -205,6 +247,48 @@ export function enforceDestructiveSafety(operationName: string, confirmation?: C
       `Деструктивное действие "${operationName}" требует явного подтверждения: параметр "confirm" должен быть равен true, а "confirmationText" должен содержать точную фразу "${EXPECTED_CONFIRMATION}".`
     );
   }
+}
+
+export function enforceAnimateDestructiveSafety(operationName: string, confirmation?: ConfirmationParams) {
+  if (!animateConfig.allowDestructive) {
+    throw new AnimateError(
+      'ANIMATE_DESTRUCTIVE_OPERATION_BLOCKED',
+      `Деструктивное действие "${operationName}" отключено в конфигурации сервера (ANIMATE_ALLOW_DESTRUCTIVE=false).`
+    );
+  }
+
+  if (
+    !confirmation ||
+    confirmation.confirm !== true ||
+    (confirmation.confirmationText !== EXPECTED_ANIMATE_CONFIRMATION &&
+      confirmation.confirmationText !== EXPECTED_ANIMATE_CONFIRMATION_EN)
+  ) {
+    throw new AnimateError(
+      'ANIMATE_DESTRUCTIVE_OPERATION_BLOCKED',
+      `Деструктивное действие "${operationName}" требует явного подтверждения: confirm=true и confirmationText="${EXPECTED_ANIMATE_CONFIRMATION}".`
+    );
+  }
+}
+
+export function verifyAnimatePathAccess(filePath: string): string {
+  const normalized = path.resolve(filePath);
+  if (!validateAnimatePath(normalized)) {
+    throw new AnimateError(
+      'ANIMATE_PATH_NOT_ALLOWED',
+      `Доступ к пути "${filePath}" ограничен настройками безопасности ANIMATE_ALLOWED_ROOTS.`
+    );
+  }
+  const existingAncestor = findExistingAncestor(normalized);
+  const realAncestor = fs.realpathSync(existingAncestor);
+  const suffix = path.relative(existingAncestor, normalized);
+  const realCandidate = path.resolve(realAncestor, suffix);
+  if (!validateAnimatePath(realCandidate)) {
+    throw new AnimateError(
+      'ANIMATE_PATH_TRAVERSAL_BLOCKED',
+      `Путь "${filePath}" выходит из разрешённого корня через символическую ссылку.`
+    );
+  }
+  return normalized;
 }
 
 // Обертка для поддержки dry-run (симуляции выполнения)

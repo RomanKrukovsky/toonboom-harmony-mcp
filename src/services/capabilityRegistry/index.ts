@@ -14,7 +14,7 @@ export interface CapabilityInfo {
   operation: string;
   status: CapabilityStatus;
   description: string;
-  backend: 'python_api' | 'qt_script' | 'control_center_cli' | 'control_center_telnet' | 'harmony_cli' | 'ui_automation' | 'simulation';
+  backend: 'python_api' | 'qt_script' | 'control_center_cli' | 'control_center_telnet' | 'harmony_cli' | 'ui_automation' | 'simulation' | 'animate_jsfl' | 'animate_bridge' | 'animate_cli';
   requiresLicense: boolean;
   requiresRealHarmony: boolean;
   notes?: string;
@@ -118,6 +118,54 @@ export class CapabilityRegistry {
       requiresLicense: false,
       requiresRealHarmony: true,
       notes: 'Requires HARMONY_ALLOW_UI_AUTOMATION=true and visual confidence >= 0.75'
+    },
+    'animate_create_document': {
+      operation: 'animate_create_document',
+      status: 'adapter_contract_verified',
+      description: 'Create new document in Adobe Animate with dimensions and frame rate',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
+    },
+    'animate_create_layer': {
+      operation: 'animate_create_layer',
+      status: 'adapter_contract_verified',
+      description: 'Create timeline layer in Adobe Animate',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
+    },
+    'animate_create_symbol': {
+      operation: 'animate_create_symbol',
+      status: 'adapter_contract_verified',
+      description: 'Create movie clip, graphic or button symbol in Animate library',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
+    },
+    'animate_create_shape': {
+      operation: 'animate_create_shape',
+      status: 'adapter_contract_verified',
+      description: 'Draw primitive vector shape on stage in Adobe Animate',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
+    },
+    'animate_create_tween': {
+      operation: 'animate_create_tween',
+      status: 'adapter_contract_verified',
+      description: 'Create classic or motion tween in Adobe Animate',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
+    },
+    'animate_export_image': {
+      operation: 'animate_export_image',
+      status: 'adapter_contract_verified',
+      description: 'Export PNG preview from Adobe Animate with artifact verification',
+      backend: 'animate_jsfl',
+      requiresLicense: false,
+      requiresRealHarmony: false
     }
   };
 

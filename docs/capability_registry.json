@@ -896,6 +896,31 @@
       "blockingReason": null,
       "lastVerifiedAt": "2026-08-29",
       "nextRequiredProof": "Verified with test suite: partial failure, invalid body plan, PSD import, relink, compile_from_artwork."
+    },
+    {
+      "capabilityId": "production.animate_backend",
+      "productionStage": "authoring",
+      "implementationFiles": [
+        "src/adapters/animate/bridge.ts",
+        "src/adapters/animate/jsflGenerator.ts",
+        "src/tools/animateTools.ts"
+      ],
+      "publicTools": [
+        "animate_system_status",
+        "animate_create_document",
+        "animate_create_layer",
+        "animate_create_symbol",
+        "animate_export_image"
+      ],
+      "backendType": "animate_jsfl",
+      "verificationLevel": "contract_verified",
+      "evidencePaths": [],
+      "knownFailures": [
+        "Requires installed Adobe Animate for live execution; runs in mock bridge mode during offline tests."
+      ],
+      "blockingReason": null,
+      "lastVerifiedAt": "2026-09-09",
+      "nextRequiredProof": "Verify schema contract via npm run test:animate and real execution via npm run test:animate-real."
     }
   ],
   "fixtureNotes": [

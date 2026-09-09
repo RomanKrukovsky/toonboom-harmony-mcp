@@ -14,7 +14,7 @@ export const universalStudioTools = [
       productionName: z.string().describe('Название мультсериала или проекта.'),
       episodeCode: z.string().default('E01').describe('Код эпизода (например E01, SH01).'),
       scriptText: z.string().describe('Текст сценария (с репликами, сценами INT./EXT., указаниями камеры).'),
-      targetEngine: z.enum(['moho', 'harmony', 'dual']).default('dual').describe('Целевой движок анимации.'),
+      targetEngine: z.enum(['moho', 'harmony', 'animate', 'dual', 'all']).default('dual').describe('Целевой движок анимации.'),
       fps: z.number().default(24),
       outputDirectory: z.string().optional().describe('Папка для сохранения скомпилированных проектов.')
     }),
@@ -22,7 +22,7 @@ export const universalStudioTools = [
       productionName: string;
       episodeCode?: string;
       scriptText: string;
-      targetEngine?: 'moho' | 'harmony' | 'dual';
+      targetEngine?: 'moho' | 'harmony' | 'animate' | 'dual' | 'all';
       fps?: number;
       outputDirectory?: string;
     }) => {

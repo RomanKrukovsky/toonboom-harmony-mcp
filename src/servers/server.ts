@@ -6,7 +6,7 @@ import { validateToolRegistry, type McpTool } from './toolRegistry.js';
 export { selectTools } from './toolRegistry.js';
 export type { McpTool } from './toolRegistry.js';
 
-export function createEngineServer(engine: 'moho' | 'harmony', tools: McpTool[], profile = 'production'): Server {
+export function createEngineServer(engine: 'moho' | 'harmony' | 'animate', tools: McpTool[], profile = 'production'): Server {
   validateToolRegistry(tools, profile === 'production' ? 25 : undefined);
   const registry = new Map(tools.map(tool => [tool.name, tool]));
   const server = new Server({ name: `${engine}-mcp`, version: '1.0.0' }, { capabilities: { tools: {} } });
@@ -37,7 +37,7 @@ export function createEngineServer(engine: 'moho' | 'harmony', tools: McpTool[],
   return server;
 }
 
-export async function serveEngine(engine: 'moho' | 'harmony', tools: McpTool[], profile: string): Promise<void> {
+export async function serveEngine(engine: 'moho' | 'harmony' | 'animate', tools: McpTool[], profile: string): Promise<void> {
   const server = createEngineServer(engine, tools, profile);
   await server.connect(new StdioServerTransport());
   process.stderr.write(`${engine}-mcp: ${profile}, ${tools.length} tools; runtime acceptance required.\n`);

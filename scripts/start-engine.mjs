@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 
 // Set the process boundary before importing modules that construct stores/configuration.
 const engine = process.argv[2];
-if (engine !== 'moho' && engine !== 'harmony') {
-  throw new Error('Usage: node scripts/start-engine.mjs <moho|harmony>');
+if (engine !== 'moho' && engine !== 'harmony' && engine !== 'animate') {
+  throw new Error('Usage: node scripts/start-engine.mjs <moho|harmony|animate>');
 }
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const prefix = engine.toUpperCase();
@@ -30,6 +30,9 @@ if (engine === 'moho') {
   process.env.HARMONY_FACTORY_TOKENS = process.env.MOHO_FACTORY_TOKENS || '';
   process.env.HARMONY_ENGINE_MODE = 'real';
   process.env.RECONSTRUCTION_CACHE_ROOT = path.join(dataRoot, 'cache');
+}
+if (engine === 'animate') {
+  process.env.ANIMATE_BRIDGE_DIR = path.join(dataRoot, 'bridge');
 }
 process.chdir(repositoryRoot);
 await import(pathToFileURL(path.join(repositoryRoot, 'dist', 'servers', `${engine}.js`)).href);

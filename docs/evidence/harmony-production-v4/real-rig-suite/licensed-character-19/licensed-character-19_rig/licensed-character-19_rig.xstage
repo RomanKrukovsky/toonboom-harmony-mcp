@@ -9,7 +9,7 @@
     <cameraInSymbols val="true"/>
   </options>
   <scenes>
-    <scene name="Top" id="086f82d15f3b7d90" nbframes="24">
+    <scene name="Top" id="412af1a280409830" nbframes="24">
       <columns/>
       <options><defaultDisplay val="Display"/></options>
       <rootgroup name="Top">
@@ -193,7 +193,7 @@
     </scene>
   </scenes>
   <symbols>
-    <folder name="Symbols"><scene id="086f82d15f3b7d90"/></folder>
+    <folder name="Symbols"><scene id="412af1a280409830"/></folder>
   </symbols>
-  <timeline><scene id="086f82d15f3b7d90"/></timeline>
+  <timeline><scene id="412af1a280409830"/></timeline>
 </project>

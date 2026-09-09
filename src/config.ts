@@ -29,6 +29,25 @@ export interface BackendConfig {
   openrouterModel?: string;
 }
 
+export type AnimateBridgeMode = 'auto' | 'companion' | 'jsfl_cli' | 'mock';
+
+export interface AnimateConfig {
+  animateInstall: string;
+  animateAppPath: string;
+  animateBin: string;
+  animateVersion: string;
+  enabled: boolean;
+  bridgeMode: AnimateBridgeMode;
+  bridgeDir: string;
+  bridgePort: number;
+  allowedRoots: string[];
+  dryRunDefault: boolean;
+  allowDestructive: boolean;
+  allowRawJsfl: boolean;
+  requestTimeoutMs: number;
+  realTests: boolean;
+}
+
 export interface HarmonyConfig {
   harmonyInstall: string;
   harmonyCcBin: string;
@@ -255,11 +274,151 @@ export const REQUIRED_VIEWS_360 = [
   'front','front_3q_left','side_left','back_3q_left','back','back_3q_right','side_right','front_3q_right'
 ] as const;
 
+export function detectAnimatePaths(): {
+  install: string;
+  appPath: string;
+  bin: string;
+  version: string;
+} {
+  const platform = process.platform;
+  let appPath = process.env.ANIMATE_APP_PATH || '';
+  let bin = process.env.ANIMATE_BIN || '';
+  let install = process.env.ANIMATE_INSTALL || '';
+  let version = process.env.ANIMATE_VERSION || '';
+
+  if (platform === 'darwin') {
+    if (!appPath && !bin) {
+      const parentDirs = ['/Applications', path.join(process.env.HOME || '', 'Applications')];
+      for (const parentDir of parentDirs) {
+        if (!fs.existsSync(parentDir)) continue;
+        try {
+          const entries = fs.readdirSync(parentDir);
+          const animateDirs = entries.filter(e => e.toLowerCase().includes('animate'));
+          animateDirs.sort().reverse();
+          for (const match of animateDirs) {
+            const fullMatch = path.join(parentDir, match);
+            if (match.endsWith('.app')) {
+              appPath = fullMatch;
+              install = parentDir;
+              break;
+            }
+            try {
+              if (fs.statSync(fullMatch).isDirectory()) {
+                const innerFiles = fs.readdirSync(fullMatch);
+                const innerApp = innerFiles.find(f => f.endsWith('.app') && f.toLowerCase().includes('animate'));
+                if (innerApp) {
+                  appPath = path.join(fullMatch, innerApp);
+                  install = fullMatch;
+                  break;
+                }
+              }
+            } catch {}
+          }
+        } catch {}
+        if (appPath) break;
+      }
+    }
+
+    if (appPath && !bin) {
+      const macosDir = path.join(appPath, 'Contents', 'MacOS');
+      if (fs.existsSync(macosDir)) {
+        try {
+          const macosFiles = fs.readdirSync(macosDir);
+          const mainExecutable = macosFiles.find(f => f.toLowerCase().includes('animate') && !f.endsWith('.app'));
+          if (mainExecutable) {
+            bin = path.join(macosDir, mainExecutable);
+          }
+        } catch {}
+      }
+    }
+
+    if (appPath && !version) {
+      const infoPlist = path.join(appPath, 'Contents', 'Info.plist');
+      if (fs.existsSync(infoPlist)) {
+        try {
+          const plistContent = fs.readFileSync(infoPlist, 'utf-8');
+          const match = plistContent.match(/<key>CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/);
+          if (match) {
+            version = match[1];
+          }
+        } catch {}
+      }
+      if (!version) {
+        const yearMatch = appPath.match(/20\d\d/);
+        if (yearMatch) version = yearMatch[0];
+      }
+    }
+  } else if (platform === 'win32') {
+    if (!bin) {
+      const winDirs = [
+        'C:\\Program Files\\Adobe',
+        'C:\\Program Files (x86)\\Adobe'
+      ];
+      for (const pDir of winDirs) {
+        if (!fs.existsSync(pDir)) continue;
+        try {
+          const entries = fs.readdirSync(pDir);
+          const animateDirs = entries.filter(e => e.toLowerCase().includes('animate'));
+          animateDirs.sort().reverse();
+          for (const ad of animateDirs) {
+            const testBin = path.join(pDir, ad, 'Animate.exe');
+            if (fs.existsSync(testBin)) {
+              bin = testBin;
+              appPath = testBin;
+              install = path.join(pDir, ad);
+              const yearMatch = ad.match(/20\d\d/);
+              if (yearMatch) version = yearMatch[0];
+              break;
+            }
+          }
+        } catch {}
+        if (bin) break;
+      }
+    }
+  }
+
+  return { install, appPath, bin, version: version || 'unknown' };
+}
+
+const detectedAnimate = detectAnimatePaths();
+
+export const animateConfig: AnimateConfig = {
+  animateInstall: detectedAnimate.install,
+  animateAppPath: detectedAnimate.appPath,
+  animateBin: detectedAnimate.bin,
+  animateVersion: detectedAnimate.version,
+  enabled: process.env.ANIMATE_ENABLED !== undefined ? process.env.ANIMATE_ENABLED === 'true' : Boolean(detectedAnimate.bin || detectedAnimate.appPath),
+  bridgeMode: (process.env.ANIMATE_BRIDGE_MODE as AnimateBridgeMode) || 'auto',
+  bridgeDir: path.resolve(process.env.ANIMATE_BRIDGE_DIR || path.join(getProjectRoot(), 'output', 'animate-mcp', 'bridge')),
+  bridgePort: process.env.ANIMATE_BRIDGE_PORT ? parseInt(process.env.ANIMATE_BRIDGE_PORT, 10) : 8768,
+  allowedRoots: process.env.ANIMATE_ALLOWED_ROOTS
+    ? process.env.ANIMATE_ALLOWED_ROOTS.split(',').map(p => path.resolve(p.trim()))
+    : [getProjectRoot(), path.resolve(getProjectRoot(), 'output')],
+  dryRunDefault: process.env.ANIMATE_DRY_RUN_DEFAULT === 'true',
+  allowDestructive: process.env.ANIMATE_ALLOW_DESTRUCTIVE === 'true',
+  allowRawJsfl: process.env.ANIMATE_ALLOW_RAW_JSFL === 'true',
+  requestTimeoutMs: process.env.ANIMATE_REQUEST_TIMEOUT_MS ? parseInt(process.env.ANIMATE_REQUEST_TIMEOUT_MS, 10) : 30000,
+  realTests: process.env.ANIMATE_REAL_TESTS === '1' || process.env.ANIMATE_REAL_TESTS === 'true'
+};
+
 // Валидация разрешенных путей для безопасности
 export function validatePath(filePath: string): boolean {
   try {
     const resolvedPath = canonicalPath(filePath);
     return config.allowedRoots.some(root => {
+      const resolvedRoot = canonicalPath(root);
+      const relative = path.relative(resolvedRoot, resolvedPath);
+      return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+    });
+  } catch {
+    return false;
+  }
+}
+
+export function validateAnimatePath(filePath: string): boolean {
+  try {
+    const resolvedPath = canonicalPath(filePath);
+    return animateConfig.allowedRoots.some(root => {
       const resolvedRoot = canonicalPath(root);
       const relative = path.relative(resolvedRoot, resolvedPath);
       return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));

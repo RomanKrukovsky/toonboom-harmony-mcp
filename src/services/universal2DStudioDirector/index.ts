@@ -6,7 +6,7 @@ import { MohoScenePlanCompiler, type MohoShotPlanSpec } from '../mohoScenePlanCo
 import { MohoLipsyncSynthesizer, type PhonemeCue } from '../mohoLipsyncSynthesizer/index.js';
 import { MohoNativeBridge } from '../mohoNativeBridge/index.js';
 
-export type Target2DEngine = 'moho' | 'harmony' | 'dual';
+export type Target2DEngine = 'moho' | 'harmony' | 'animate' | 'dual' | 'all';
 
 export interface DirectScriptInput {
   productionName: string;
@@ -26,6 +26,8 @@ export interface DirectSceneOutput {
   cameraMoves: string;
   mohoFile?: string;
   harmonyPlanId?: string;
+  animateFile?: string;
+  animatePlanId?: string;
 }
 
 export interface DirectStudioPackageResult {
@@ -68,9 +70,11 @@ export class Universal2DStudioDirector {
 
       let mohoFilePath: string | undefined;
       let harmonyPlanId: string | undefined;
+      let animateFilePath: string | undefined;
+      let animatePlanId: string | undefined;
 
       // 2. Build for Moho if requested
-      if (targetEngine === 'moho' || targetEngine === 'dual') {
+      if (targetEngine === 'moho' || targetEngine === 'dual' || targetEngine === 'all') {
         const charactersInScene = s.characters.map(charName => {
           const charResult = MohoAutoCharacterSynthesizer.synthesizeFromPrompt({
             prompt: `${charName} animated cartoon character`
@@ -116,8 +120,21 @@ export class Universal2DStudioDirector {
       }
 
       // 3. Build for Harmony if requested
-      if (targetEngine === 'harmony' || targetEngine === 'dual') {
+      if (targetEngine === 'harmony' || targetEngine === 'dual' || targetEngine === 'all') {
         harmonyPlanId = `HARMONY_PLAN_${sceneId}`;
+      }
+
+      // 4. Build for Animate if requested
+      if (targetEngine === 'animate' || targetEngine === 'all') {
+        animatePlanId = `ANIMATE_PLAN_${sceneId}`;
+        if (input.outputDirectory) {
+          const animateOut = path.join(input.outputDirectory, `${sceneId}.jsfl`);
+          const jsfl = `// Adobe Animate Scene Build Script: ${sceneId}\nvar dom = fl.createDocument("timeline");\nif (dom) {\n  dom.width = 1920;\n  dom.height = 1080;\n  dom.frameRate = ${fps};\n  var tl = dom.getTimeline();\n  if (tl) tl.name = "${sceneId}";\n}\n`;
+          fs.writeFileSync(animateOut, jsfl, 'utf-8');
+          animateFilePath = animateOut;
+        } else {
+          animateFilePath = `memory://${sceneId}.jsfl`;
+        }
       }
 
       scenesOutput.push({
@@ -128,7 +145,9 @@ export class Universal2DStudioDirector {
         characters: s.characters,
         cameraMoves: s.camera,
         mohoFile: mohoFilePath,
-        harmonyPlanId
+        harmonyPlanId,
+        animateFile: animateFilePath,
+        animatePlanId
       });
     }
 

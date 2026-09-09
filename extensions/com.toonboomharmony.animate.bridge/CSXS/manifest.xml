@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.toonboomharmony.animate.bridge" ExtensionBundleVersion="1.0.0"
+    ExtensionBundleName="Animate MCP Bridge" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ExtensionList>
+        <Extension Id="com.toonboomharmony.animate.bridge.panel" Version="1.0.0" />
+    </ExtensionList>
+    <ExecutionEnvironment>
+        <HostList>
+            <!-- FLPR is the Adobe Animate / Flash Professional host ID -->
+            <Host Name="FLPR" Version="[16.0,99.9]" />
+        </HostList>
+        <LocaleList>
+            <Locale Code="All" />
+        </LocaleList>
+        <RequiredRuntimeList>
+            <RequiredRuntime Name="CSXS" Version="9.0" />
+        </RequiredRuntimeList>
+    </ExecutionEnvironment>
+    <DispatchInfoList>
+        <Extension Id="com.toonboomharmony.animate.bridge.panel">
+            <DispatchInfo>
+                <Resources>
+                    <MainPath>./index.html</MainPath>
+                    <ScriptPath>./host.jsx</ScriptPath>
+                    <CEPEngine>
+                        <CommandLine>
+                            <Argument>--enable-nodejs</Argument>
+                            <Argument>--mixed-context</Argument>
+                        </CommandLine>
+                    </CEPEngine>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>true</AutoVisible>
+                </Lifecycle>
+                <UI>
+                    <Type>Panel</Type>
+                    <Menu>Animate MCP Bridge</Menu>
+                    <Geometry>
+                        <Size>
+                            <Height>320</Height>
+                            <Width>280</Width>
+                        </Size>
+                        <MinSize>
+                            <Height>200</Height>
+                            <Width>200</Width>
+                        </MinSize>
+                    </Geometry>
+                </UI>
+            </DispatchInfo>
+        </Extension>
+    </DispatchInfoList>
+</ExtensionManifest>

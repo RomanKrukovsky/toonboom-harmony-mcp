@@ -95,10 +95,12 @@ import { systemHealthTools } from './tools/systemHealthTools.js';
 import { vectorizationTools } from './tools/vectorizationTools.js';
 import { studioPackageTools } from './tools/studioPackageTools.js';
 import { harmonyActionRecorderTools } from './tools/harmonyActionRecorderTools.js';
+import { animateTools } from './tools/animateTools.js';
+import { countryballsTools } from './tools/countryballsTools.js';
 
 import { resources } from './resources.js';
 import { prompts } from './prompts.js';
-import { HarmonyError } from './security.js';
+import { HarmonyError, AnimateError } from './security.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateToolRegistry } from './servers/toolRegistry.js';
 
@@ -188,7 +190,9 @@ const allTools = [
   ...productionMemoryTools,
   ...approvalTools,
   ...legalTools,
-  ...systemHealthTools
+  ...systemHealthTools,
+  ...animateTools,
+  ...countryballsTools
 ];
 
 function zodFieldToJsonSchema(schema: any): any {
@@ -311,11 +315,12 @@ class HarmonyMcpServer {
         };
       } catch (error: any) {
         const isHarmonyErr = error instanceof HarmonyError;
+        const isAnimateErr = error instanceof AnimateError;
         const errObj = {
           error: true,
-          code: isHarmonyErr ? error.code : 'UNKNOWN_ERROR',
+          code: isHarmonyErr || isAnimateErr ? error.code : 'UNKNOWN_ERROR',
           message: error.message || 'Произошла непредвиденная ошибка.',
-          details: isHarmonyErr ? error.details : undefined
+          details: isHarmonyErr || isAnimateErr ? error.details : undefined
         };
 
         return {

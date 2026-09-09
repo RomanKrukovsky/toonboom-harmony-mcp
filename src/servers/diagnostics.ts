@@ -1,16 +1,23 @@
 import fs from 'fs';
 import { z } from 'zod';
-import { config } from '../config.js';
+import { config, animateConfig } from '../config.js';
 import { MohoRenderManager } from '../services/mohoRenderManager/index.js';
 import type { McpTool } from './server.js';
 
-export function diagnosticTool(engine: 'moho' | 'harmony'): McpTool {
+export function diagnosticTool(engine: 'moho' | 'harmony' | 'animate'): McpTool {
   return {
     name: `${engine}.system.status`,
     description: 'Report executable discovery and isolated storage. Discovery does not verify a license, scene execution or production readiness.',
     inputSchema: z.object({}).strict(),
     handler: async () => {
-      const executable = engine === 'moho' ? MohoRenderManager.detectMohoExecutable() : config.harmonyBin;
+      let executable = '';
+      if (engine === 'moho') {
+        executable = MohoRenderManager.detectMohoExecutable() ?? '';
+      } else if (engine === 'harmony') {
+        executable = config.harmonyBin;
+      } else {
+        executable = animateConfig.animateBin || animateConfig.animateAppPath;
+      }
       return {
         engine, executable: executable || null,
         installed: Boolean(executable && fs.existsSync(executable)),
