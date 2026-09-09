@@ -190,19 +190,12 @@ export class RealSceneExecutor {
       assetsImported.push(path.basename(bgFile));
       assetsImported.push('character_placeholder.png (simulated)');
 
-      const previewPath = path.join(pkgDir, 'previews', `${sceneName}_preview.mp4`);
-      
-      if (!fs.existsSync(path.dirname(previewPath))) {
-        fs.mkdirSync(path.dirname(previewPath), { recursive: true });
-      }
-      fs.writeFileSync(previewPath, 'SIMULATED_VIDEO_STREAM_PLACEHOLDER');
-
       const res: RealSceneExecutionResult = {
-        ok: mode === 'simulation',
+        ok: false,
         mode: 'simulation',
         isRealHarmonyExecution: false,
         sceneName,
-        createdFiles: [previewPath],
+        createdFiles: [],
         performedSteps: [
           'open_project',
           'create_composite_display_write_chain',
@@ -211,24 +204,23 @@ export class RealSceneExecutor {
           'set_node_position',
           'set_node_scale',
           'create_camera_move',
-          'save_scene',
-          'render_preview'
+          'save_scene'
         ],
-        skippedSteps: [],
-        warnings: ['Running in simulation fallback mode.'],
-        requiresHuman: false,
+        skippedSteps: ['render_preview'],
+        warnings: ['Simulation mode: real video rendering requires licensed Harmony execution; fake media generation is prohibited.'],
+        requiresHuman: true,
         assetsImported,
         nodesCreated,
         connectionsCreated,
         keyframesCreated,
         preview: {
-          rendered: false, // simulation preview is not considered real rendered preview
-          path: previewPath,
-          fileExists: true,
-          fileSizeBytes: 33,
-          simulatedPreviewCreated: true,
+          rendered: false,
+          path: '',
+          fileExists: false,
+          fileSizeBytes: 0,
+          simulatedPreviewCreated: false,
           isValidVideoFile: false,
-          truth: 'This is not a real rendered video. It is a simulation placeholder.'
+          truth: 'Simulation mode: real video rendering requires licensed Harmony execution; fake media generation is prohibited.'
         }
       };
 

@@ -5,6 +5,8 @@ import { z } from 'zod';
 export {
   certifyMohoProductionV3At95Percent,
   validateMohoProductionV3CaseAt95Percent,
+  type MohoProductionV3ArtifactValidation,
+  type MohoProductionV3Certification95Options,
   type MohoProductionV3Certification95Report
 } from './production95.js';
 

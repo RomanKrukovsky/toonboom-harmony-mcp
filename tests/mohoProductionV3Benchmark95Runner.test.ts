@@ -96,20 +96,23 @@ describe('Moho Production v3 95 percent benchmark runner', () => {
       expect.objectContaining({ id: 'rhubarb', status: 'fail' }),
       expect.objectContaining({ id: 'providers', status: 'fail' }),
       expect.objectContaining({ id: 'director_token', status: 'fail' }),
-      expect.objectContaining({ id: 'character_packs', status: 'fail' }),
-      expect.objectContaining({ id: 'shot_assets', status: 'fail' })
-    ]));
-    expect(report.missingAssets).toEqual(expect.arrayContaining([
-      expect.stringMatching(/p95-01\/layered-manifest-v3\.json$/),
-      expect.stringMatching(/p95-02\/character-02\.png$/),
-      expect.stringMatching(/p95-01\/dialogue\.wav$/)
+      expect.objectContaining({ id: 'character_packs', status: 'pass' }),
+      expect.objectContaining({ id: 'shot_assets', status: 'pass' })
     ]));
   });
 
   it('pilot preflight limits shot-asset checks to the selected five shots', () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'moho-v3-missing-assets-'));
+    const tempManifestPath = path.join(directory, 'manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.assetRoot = 'missing-assets';
+    manifest.characterPackRoot = path.join(process.cwd(), 'fixtures', 'moho95', 'characters');
+    manifest.directorApprovalPath = path.join(process.cwd(), 'fixtures', 'moho95', 'director-approvals.json');
+    fs.writeFileSync(tempManifestPath, JSON.stringify(manifest, null, 2));
+
     const result = spawnSync(process.execPath, [
       path.join(process.cwd(), 'scripts', 'preflight_moho_v3_95_benchmark.mjs'),
-      manifestPath,
+      tempManifestPath,
       '--pilot'
     ], {
       encoding: 'utf8',

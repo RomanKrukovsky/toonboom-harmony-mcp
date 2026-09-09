@@ -100,6 +100,7 @@ import { resources } from './resources.js';
 import { prompts } from './prompts.js';
 import { HarmonyError } from './security.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { validateToolRegistry } from './servers/toolRegistry.js';
 
 const allTools = [
   ...harmonyActionRecorderTools,
@@ -123,7 +124,7 @@ const allTools = [
   ...autopilotTools,
   ...templateTools,
   ...sceneAssemblyTools,
-  ...commercialWorkflowTools,
+  ...commercialWorkflowTools.filter(tool => tool.name !== 'harmony.production.generate_time_savings_report'),
   ...plannerTools,
   ...studioTools,
   ...animationBlockingTools,
@@ -175,7 +176,8 @@ const allTools = [
   ...storyboardTools,
   ...assetRegistryTools,
   ...styleTools,
-  ...riggingEngineTools,
+  // Retain the historically dispatched implementations for the two legacy collisions.
+  ...riggingEngineTools.filter(tool => tool.name !== 'harmony.rig.validate'),
   ...actingEngineTools,
   ...audioEngineTools,
   ...layoutCameraTools,
@@ -245,6 +247,8 @@ class HarmonyMcpServer {
   private server: Server;
 
   constructor() {
+    validateToolRegistry(allTools);
+    process.stderr.write('Deprecated combined MCP: use start:moho or start:harmony.\n');
     this.server = new Server(
       {
         name: 'toonboom-harmony-mcp',

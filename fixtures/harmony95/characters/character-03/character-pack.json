@@ -1,0 +1,186 @@
+{
+  "schemaVersion": "1.0",
+  "characterId": "licensed-character-03",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "views": [
+    "front",
+    "three_quarter",
+    "side"
+  ],
+  "layers": [
+    {
+      "layerId": "body",
+      "kind": "body",
+      "choiceName": null,
+      "sourcePath": "assets/body.png",
+      "parentLayerId": null,
+      "jointOverlapPx": 0,
+      "sha256": "0f416da181e9cec66f265a0e88c05cd7c834b5c648932b6c61d2a47d7f95d773"
+    },
+    {
+      "layerId": "head",
+      "kind": "head",
+      "choiceName": null,
+      "sourcePath": "assets/head.png",
+      "parentLayerId": "body",
+      "jointOverlapPx": 0,
+      "sha256": "8f9b49317b06fa17b2c6a13293044713deb0cc9d78533dafddefff1530f30c6c"
+    },
+    {
+      "layerId": "arm_l",
+      "kind": "limb",
+      "choiceName": null,
+      "sourcePath": "assets/arm_l.png",
+      "parentLayerId": "body",
+      "jointOverlapPx": 16,
+      "sha256": "42a6d87ae05775cf667c0a3e40547a9be830b7236d526cd83a4f384b157543c2"
+    },
+    {
+      "layerId": "arm_r",
+      "kind": "limb",
+      "choiceName": null,
+      "sourcePath": "assets/arm_r.png",
+      "parentLayerId": "body",
+      "jointOverlapPx": 16,
+      "sha256": "42a6d87ae05775cf667c0a3e40547a9be830b7236d526cd83a4f384b157543c2"
+    },
+    {
+      "layerId": "leg_l",
+      "kind": "limb",
+      "choiceName": null,
+      "sourcePath": "assets/leg_l.png",
+      "parentLayerId": "body",
+      "jointOverlapPx": 16,
+      "sha256": "729aefd60e619d985084d342bc55878798ff6c1bd981d537e07000319ba7276a"
+    },
+    {
+      "layerId": "leg_r",
+      "kind": "limb",
+      "choiceName": null,
+      "sourcePath": "assets/leg_r.png",
+      "parentLayerId": "body",
+      "jointOverlapPx": 16,
+      "sha256": "729aefd60e619d985084d342bc55878798ff6c1bd981d537e07000319ba7276a"
+    },
+    {
+      "layerId": "mouth_A",
+      "kind": "mouth",
+      "choiceName": "A",
+      "sourcePath": "assets/mouth_A.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_B",
+      "kind": "mouth",
+      "choiceName": "B",
+      "sourcePath": "assets/mouth_B.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_C",
+      "kind": "mouth",
+      "choiceName": "C",
+      "sourcePath": "assets/mouth_C.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_D",
+      "kind": "mouth",
+      "choiceName": "D",
+      "sourcePath": "assets/mouth_D.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_E",
+      "kind": "mouth",
+      "choiceName": "E",
+      "sourcePath": "assets/mouth_E.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_F",
+      "kind": "mouth",
+      "choiceName": "F",
+      "sourcePath": "assets/mouth_F.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_G",
+      "kind": "mouth",
+      "choiceName": "G",
+      "sourcePath": "assets/mouth_G.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "mouth_X",
+      "kind": "mouth",
+      "choiceName": "X",
+      "sourcePath": "assets/mouth_X.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "b19f4da81810b15ec8b9fcd06697c12625dac8fcd4c209de15f9461eb0613c71"
+    },
+    {
+      "layerId": "eye_open",
+      "kind": "eye",
+      "choiceName": "open",
+      "sourcePath": "assets/eye_open.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "021ebbcff9d1e15ec7e48321bc84fe52cb96745bd9d9bc0aed9b2a9f1d1882bc"
+    },
+    {
+      "layerId": "eye_closed",
+      "kind": "eye",
+      "choiceName": "closed",
+      "sourcePath": "assets/eye_closed.png",
+      "parentLayerId": "head",
+      "jointOverlapPx": 0,
+      "sha256": "021ebbcff9d1e15ec7e48321bc84fe52cb96745bd9d9bc0aed9b2a9f1d1882bc"
+    },
+    {
+      "layerId": "hand_open",
+      "kind": "hand",
+      "choiceName": "open",
+      "sourcePath": "assets/hand_open.png",
+      "parentLayerId": "arm_l",
+      "jointOverlapPx": 0,
+      "sha256": "18d82e9d2c0247087ebd57615c72682537667db0275921eab949de5f74eb16ff"
+    },
+    {
+      "layerId": "hand_fist",
+      "kind": "hand",
+      "choiceName": "fist",
+      "sourcePath": "assets/hand_fist.png",
+      "parentLayerId": "arm_l",
+      "jointOverlapPx": 0,
+      "sha256": "18d82e9d2c0247087ebd57615c72682537667db0275921eab949de5f74eb16ff"
+    },
+    {
+      "layerId": "hand_point",
+      "kind": "hand",
+      "choiceName": "point",
+      "sourcePath": "assets/hand_point.png",
+      "parentLayerId": "arm_l",
+      "jointOverlapPx": 0,
+      "sha256": "18d82e9d2c0247087ebd57615c72682537667db0275921eab949de5f74eb16ff"
+    }
+  ]
+}

@@ -1,0 +1,267 @@
+{
+  "schemaVersion": "3.0",
+  "shotId": "shot-char-10",
+  "parts": [
+    {
+      "partId": "body",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/body.png",
+      "maskPath": null,
+      "zIndex": 10,
+      "confidence": 1,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "synthesized": false,
+      "view": "front"
+    },
+    {
+      "partId": "head",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/head.png",
+      "maskPath": null,
+      "zIndex": 20,
+      "confidence": 1,
+      "pivot": {
+        "x": 0,
+        "y": 150
+      },
+      "synthesized": false,
+      "view": "front"
+    },
+    {
+      "partId": "arm_l",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/arm_l.png",
+      "maskPath": null,
+      "zIndex": 15,
+      "confidence": 1,
+      "pivot": {
+        "x": -50,
+        "y": 80
+      },
+      "synthesized": false,
+      "view": "front"
+    },
+    {
+      "partId": "arm_r",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/arm_r.png",
+      "maskPath": null,
+      "zIndex": 5,
+      "confidence": 1,
+      "pivot": {
+        "x": 50,
+        "y": 80
+      },
+      "synthesized": false,
+      "view": "front"
+    },
+    {
+      "partId": "leg_l",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/leg_l.png",
+      "maskPath": null,
+      "zIndex": 8,
+      "confidence": 1,
+      "pivot": {
+        "x": -30,
+        "y": -100
+      },
+      "synthesized": false,
+      "view": "front"
+    },
+    {
+      "partId": "leg_r",
+      "characterRef": "licensed-character-10",
+      "sourcePath": "assets/leg_r.png",
+      "maskPath": null,
+      "zIndex": 7,
+      "confidence": 1,
+      "pivot": {
+        "x": 30,
+        "y": -100
+      },
+      "synthesized": false,
+      "view": "front"
+    }
+  ],
+  "occlusionGraph": [
+    {
+      "frontPartId": "head",
+      "backPartId": "body"
+    },
+    {
+      "frontPartId": "arm_l",
+      "backPartId": "body"
+    }
+  ],
+  "joints": [
+    {
+      "jointId": "neck",
+      "parentPartId": "body",
+      "childPartId": "head",
+      "x": 0,
+      "y": 150,
+      "confidence": 1
+    },
+    {
+      "jointId": "shoulder_l",
+      "parentPartId": "body",
+      "childPartId": "arm_l",
+      "x": -50,
+      "y": 80,
+      "confidence": 1
+    },
+    {
+      "jointId": "shoulder_r",
+      "parentPartId": "body",
+      "childPartId": "arm_r",
+      "x": 50,
+      "y": 80,
+      "confidence": 1
+    },
+    {
+      "jointId": "hip_l",
+      "parentPartId": "body",
+      "childPartId": "leg_l",
+      "x": -30,
+      "y": -100,
+      "confidence": 1
+    },
+    {
+      "jointId": "hip_r",
+      "parentPartId": "body",
+      "childPartId": "leg_r",
+      "x": 30,
+      "y": -100,
+      "confidence": 1
+    }
+  ],
+  "requiredViews": [
+    "front",
+    "three_quarter",
+    "side"
+  ],
+  "drawingSets": {
+    "mouth": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "X"
+    ],
+    "eyes": [
+      "open",
+      "closed"
+    ],
+    "hands": [
+      "open",
+      "fist",
+      "point"
+    ]
+  },
+  "drawingAssets": [
+    {
+      "drawingId": "mouth_A",
+      "kind": "mouth",
+      "choiceName": "A",
+      "sourcePath": "assets/mouth_A.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_B",
+      "kind": "mouth",
+      "choiceName": "B",
+      "sourcePath": "assets/mouth_B.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_C",
+      "kind": "mouth",
+      "choiceName": "C",
+      "sourcePath": "assets/mouth_C.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_D",
+      "kind": "mouth",
+      "choiceName": "D",
+      "sourcePath": "assets/mouth_D.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_E",
+      "kind": "mouth",
+      "choiceName": "E",
+      "sourcePath": "assets/mouth_E.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_F",
+      "kind": "mouth",
+      "choiceName": "F",
+      "sourcePath": "assets/mouth_F.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_G",
+      "kind": "mouth",
+      "choiceName": "G",
+      "sourcePath": "assets/mouth_G.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "mouth_X",
+      "kind": "mouth",
+      "choiceName": "X",
+      "sourcePath": "assets/mouth_X.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "eye_open",
+      "kind": "eye",
+      "choiceName": "open",
+      "sourcePath": "assets/eye_open.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "eye_closed",
+      "kind": "eye",
+      "choiceName": "closed",
+      "sourcePath": "assets/eye_closed.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "hand_open",
+      "kind": "hand",
+      "choiceName": "open",
+      "sourcePath": "assets/hand_open.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "hand_fist",
+      "kind": "hand",
+      "choiceName": "fist",
+      "sourcePath": "assets/hand_fist.png",
+      "confidence": 1
+    },
+    {
+      "drawingId": "hand_point",
+      "kind": "hand",
+      "choiceName": "point",
+      "sourcePath": "assets/hand_point.png",
+      "confidence": 1
+    }
+  ],
+  "overallConfidence": 1,
+  "provenance": {
+    "provider": "openrouter",
+    "model": "benchmark-v3",
+    "callId": "art-10"
+  }
+}

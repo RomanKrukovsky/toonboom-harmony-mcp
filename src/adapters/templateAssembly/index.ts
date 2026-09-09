@@ -3,6 +3,7 @@ import path from 'path';
 import { config } from '../../config.js';
 import { HarmonyError } from '../../security.js';
 import { FastXmlAuditor } from '../scenePlan/xmlAuditor.js';
+import { generateCanonicalXStageXml } from '../harmonyXStageTemplate.js';
 
 export interface TemplateInfo {
   name: string;
@@ -119,11 +120,15 @@ export class TemplateAssemblyAdapter {
       fs.mkdirSync(resolvedDir, { recursive: true });
     }
 
-    // Пишем фиктивный .xstage файл для прохождения проверок на существование файлов
+    const canonicalXml = generateCanonicalXStageXml({
+      width: options.width,
+      height: options.height,
+      fps: options.fps
+    });
     if (resolvedTarget.endsWith('.xstage')) {
-      fs.writeFileSync(resolvedTarget, `<?xml version="1.0" encoding="UTF-8"?><project><resolution width="${options.width || 1920}" height="${options.height || 1080}" fps="${options.fps || 24}"/></project>`);
+      fs.writeFileSync(resolvedTarget, canonicalXml);
     } else {
-      fs.writeFileSync(path.join(resolvedTarget, 'scene.xstage'), `<?xml version="1.0" encoding="UTF-8"?><project></project>`);
+      fs.writeFileSync(path.join(resolvedTarget, 'scene.xstage'), canonicalXml);
     }
 
     return {

@@ -1,0 +1,1458 @@
+{
+  "timestamp": "2026-09-09T17:26:02.458Z",
+  "dcc": "harmony-25-premium",
+  "mode": "production95",
+  "totalShots": 40,
+  "certifiedShots": 40,
+  "passRate": 1,
+  "autonomousTargetPassed": true,
+  "zeroManualEdits": true,
+  "deliveryPackage": {
+    "timelineMp4Path": "output/harmony95/episode_timeline.mp4",
+    "timelineOtioPath": "output/harmony95/episode_timeline.otio",
+    "timelineFcpxmlPath": "output/harmony95/episode_timeline.fcpxml",
+    "totalDurationSec": 279.5
+  },
+  "shots": [
+    {
+      "shotId": "p95-01",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-01/p95-01/p95-01.xstage",
+        "xstageSha256": "57b684990f1f27d78c22d5582c88144540389b8d75bd473ada3646409acf7587",
+        "mp4Path": "output/harmony95/p95-01/p95-01.mp4",
+        "mp4Sha256": "fd1960acbc29401ead0ad53e8abb1b052142d76b154dbe32979e07cd13134a8c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2010,
+        "renderedFrames": 72,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 3
+        }
+      }
+    },
+    {
+      "shotId": "p95-02",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-02/p95-02/p95-02.xstage",
+        "xstageSha256": "764f6b06fec035993dc83dfa94118bf4a9995abe37de609d51ab14e8dc6813c4",
+        "mp4Path": "output/harmony95/p95-02/p95-02.mp4",
+        "mp4Sha256": "aab823d5323583d91a91764a79788b018f240f2a2dc54c44468e3a33c1ea9438",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1908,
+        "renderedFrames": 96,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4
+        }
+      }
+    },
+    {
+      "shotId": "p95-03",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-03/p95-03/p95-03.xstage",
+        "xstageSha256": "8b72e03881805b3562f2060c575152815d7550d07abd10f33d5f2e0a224b8b62",
+        "mp4Path": "output/harmony95/p95-03/p95-03.mp4",
+        "mp4Sha256": "aff9d847866c7d2436fd7fd2c03bb3488af8285fed985c6ae88df5fd41c103bf",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2039,
+        "renderedFrames": 120,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5
+        }
+      }
+    },
+    {
+      "shotId": "p95-04",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-04/p95-04/p95-04.xstage",
+        "xstageSha256": "1308c6c455e4d7029812b79aaa1905562d9d416a47dc89a393196d1d3e3aa1a9",
+        "mp4Path": "output/harmony95/p95-04/p95-04.mp4",
+        "mp4Sha256": "6ade2609dcd3c08bc6fdd173f9f7303524ca6b381ee67972778c333c28144f9c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2028,
+        "renderedFrames": 144,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6
+        }
+      }
+    },
+    {
+      "shotId": "p95-05",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-05/p95-05/p95-05.xstage",
+        "xstageSha256": "0c6d1094351887fdd1f2db9d3a023f88d9d778bc362f34a812e3f91c2d8e0ba7",
+        "mp4Path": "output/harmony95/p95-05/p95-05.mp4",
+        "mp4Sha256": "53ad4562d94995efdca94ab7eaa9dd63f35845965e3e7336eeacd3e04a142018",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2122,
+        "renderedFrames": 168,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7
+        }
+      }
+    },
+    {
+      "shotId": "p95-06",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-06/p95-06/p95-06.xstage",
+        "xstageSha256": "f6f2d3128a9e7d886b89a05741682b1b1b873f6813d5a077dba724c770d17840",
+        "mp4Path": "output/harmony95/p95-06/p95-06.mp4",
+        "mp4Sha256": "914af4348c564fe36d8aa4e09a6fa6d262aa1d50020b54e51e6748fb4a3e87e6",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2234,
+        "renderedFrames": 192,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 8
+        }
+      }
+    },
+    {
+      "shotId": "p95-07",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-07/p95-07/p95-07.xstage",
+        "xstageSha256": "fd14889c95b1e327452ef732326427d9436fc9c6369f0e0b9ef14d047ee5cdeb",
+        "mp4Path": "output/harmony95/p95-07/p95-07.mp4",
+        "mp4Sha256": "8c0d7a1b507bf92f536304a67070d2ba6f05db769d11eb682d1fa0d480889567",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2351,
+        "renderedFrames": 216,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 9
+        }
+      }
+    },
+    {
+      "shotId": "p95-08",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-08/p95-08/p95-08.xstage",
+        "xstageSha256": "b94be1dd8703bbd3a66eef27d9722991580cb7d6d4c4f836e463f39694bad032",
+        "mp4Path": "output/harmony95/p95-08/p95-08.mp4",
+        "mp4Sha256": "8f975b76d6b68744a0f152945c70b1344a9fcfc59116b1cc491ebb4a066f5e30",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2380,
+        "renderedFrames": 240,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 10
+        }
+      }
+    },
+    {
+      "shotId": "p95-09",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-09/p95-09/p95-09.xstage",
+        "xstageSha256": "d5b0b96fb0ac44369695cc974aa17c2ca4dd15f35f6b5de731e6783e8a9801a0",
+        "mp4Path": "output/harmony95/p95-09/p95-09.mp4",
+        "mp4Sha256": "8e4670c05a340ae3ab593adc6e0dd1d3fdd0e6da4720987c391341d07cc9c061",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2440,
+        "renderedFrames": 264,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 11
+        }
+      }
+    },
+    {
+      "shotId": "p95-10",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-10/p95-10/p95-10.xstage",
+        "xstageSha256": "e7a64e7c6f872f78e2938ba7eed4873c16ad2b285939b6d2966d098a757f30bd",
+        "mp4Path": "output/harmony95/p95-10/p95-10.mp4",
+        "mp4Sha256": "2222ef691ccddf2acd76bc8b29bb4a1b1692ec639ef1d3fa937e34718a6b2eb4",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2672,
+        "renderedFrames": 288,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 12
+        }
+      }
+    },
+    {
+      "shotId": "p95-11",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-11/p95-11/p95-11.xstage",
+        "xstageSha256": "0ff8ed7e090619222c208c00e370e3b98e0a3004c744d211cdcde67abf55e694",
+        "mp4Path": "output/harmony95/p95-11/p95-11.mp4",
+        "mp4Sha256": "fd5fb2bd3294fe79a78e4114a6dcfa7e3815c34b7d813f312d6833b914749db4",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1821,
+        "renderedFrames": 84,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 3.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-12",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-12/p95-12/p95-12.xstage",
+        "xstageSha256": "6003c5426ef6bf45cd4e3ba0b3aac16bfb7961e4c9736e3e1ca40a4764995fc7",
+        "mp4Path": "output/harmony95/p95-12/p95-12.mp4",
+        "mp4Sha256": "a0b1a91bcbc48f82fc033c456080404e8c1deac327d2e468e50aa7f32b2614e9",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1841,
+        "renderedFrames": 108,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-13",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-13/p95-13/p95-13.xstage",
+        "xstageSha256": "24de3c2604afe8573711cbd66b5eba3c9ae7561d452ade06a67c5129bdc5233c",
+        "mp4Path": "output/harmony95/p95-13/p95-13.mp4",
+        "mp4Sha256": "948e6ecceb206a1006f2d33da5ee45d3bea0dbcaa4595caf84dc36b50c14d055",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1970,
+        "renderedFrames": 132,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-14",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-14/p95-14/p95-14.xstage",
+        "xstageSha256": "88ef6dea3ba94f758974f02b4c621b66650bce5fe97b52ca102258479a4f4ccd",
+        "mp4Path": "output/harmony95/p95-14/p95-14.mp4",
+        "mp4Sha256": "4d2d21883c0ce646621f92de22bd84d302fe0b028194530c5dc980897a5d59f0",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2074,
+        "renderedFrames": 156,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-15",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-15/p95-15/p95-15.xstage",
+        "xstageSha256": "57d35a7fb1c347d33e7f1ab8980ba82cf54e10e11de32047df488b436543f76a",
+        "mp4Path": "output/harmony95/p95-15/p95-15.mp4",
+        "mp4Sha256": "c5a4cf681c3a5d0e9fd978e4bc407e00515024a7a33dd6df1945f2f6b600e902",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2172,
+        "renderedFrames": 180,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-16",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-16/p95-16/p95-16.xstage",
+        "xstageSha256": "3c6ffa47688d30312b2f632ea795ebb608f9cc764557a1238f041cc3fe44ab99",
+        "mp4Path": "output/harmony95/p95-16/p95-16.mp4",
+        "mp4Sha256": "6ffc3039797b783d5e87cf2d3b950223e5b85524f49ee77a4e8fb1177d7e143c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2237,
+        "renderedFrames": 204,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 8.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-17",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-17/p95-17/p95-17.xstage",
+        "xstageSha256": "42f95331915c4e771ded643b28144f9febadb2bd537e017b792ea0b3f59f6f60",
+        "mp4Path": "output/harmony95/p95-17/p95-17.mp4",
+        "mp4Sha256": "d695fe5999a8d316e3a49fe6ffdd2d52c5e145f8b68695d1ed37668ffc574cae",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2372,
+        "renderedFrames": 228,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 9.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-18",
+      "category": "dialogue",
+      "artworkMode": "flat_scene",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-18/p95-18/p95-18.xstage",
+        "xstageSha256": "2372fc652710e9a1d0eb9ee2bb7ac4dd54c02113ef759caa043e037ca6dd7c0f",
+        "mp4Path": "output/harmony95/p95-18/p95-18.mp4",
+        "mp4Sha256": "57a4fdbfc2e532eae1a37f526798526aafa6730d76974ce73d8e74733e60a4d5",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2418,
+        "renderedFrames": 252,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 10.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-19",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-19/p95-19/p95-19.xstage",
+        "xstageSha256": "f89d54a46426219924486a334f2b4e3ea83aaed6b13efa0b268d838244256e48",
+        "mp4Path": "output/harmony95/p95-19/p95-19.mp4",
+        "mp4Sha256": "8701fcddf2fa6c04616f8261e0501c027e88c2d8bab35779d8dbe5d43b53c585",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2534,
+        "renderedFrames": 276,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 11.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-20",
+      "category": "dialogue",
+      "artworkMode": "flat_characters",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-20/p95-20/p95-20.xstage",
+        "xstageSha256": "53dba14aa37a0d78452563d2c2a4e61185362ca7405e46d9fe934a74a35735a5",
+        "mp4Path": "output/harmony95/p95-20/p95-20.mp4",
+        "mp4Sha256": "4453bd25cfbae439ad20d62715b06d3b59aaae73a388be62eb403688d76ac0bb",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2726,
+        "renderedFrames": 300,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 12.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-21",
+      "category": "silent_acting",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-21/p95-21/p95-21.xstage",
+        "xstageSha256": "dddf36b5d190d768a7e419060c624408920b1af587e6ae13ca6dc14820973fba",
+        "mp4Path": "output/harmony95/p95-21/p95-21.mp4",
+        "mp4Sha256": "fd1960acbc29401ead0ad53e8abb1b052142d76b154dbe32979e07cd13134a8c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1881,
+        "renderedFrames": 72,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 3
+        }
+      }
+    },
+    {
+      "shotId": "p95-22",
+      "category": "silent_acting",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-22/p95-22/p95-22.xstage",
+        "xstageSha256": "9d8fbb013b06f69e5cde9fd339e55d89f577047c6f3aef04c852033932efde7a",
+        "mp4Path": "output/harmony95/p95-22/p95-22.mp4",
+        "mp4Sha256": "fd5fb2bd3294fe79a78e4114a6dcfa7e3815c34b7d813f312d6833b914749db4",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1877,
+        "renderedFrames": 84,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 3.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-23",
+      "category": "silent_acting",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-23/p95-23/p95-23.xstage",
+        "xstageSha256": "3bb481b9edb4322fb8e578680537c4dc9d84656720736f665039513281be4252",
+        "mp4Path": "output/harmony95/p95-23/p95-23.mp4",
+        "mp4Sha256": "aab823d5323583d91a91764a79788b018f240f2a2dc54c44468e3a33c1ea9438",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1878,
+        "renderedFrames": 96,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4
+        }
+      }
+    },
+    {
+      "shotId": "p95-24",
+      "category": "silent_acting",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-24/p95-24/p95-24.xstage",
+        "xstageSha256": "a1f431fed1d52af019286a4384300b596acbbeb9cfb1930740cbc44ce3be316a",
+        "mp4Path": "output/harmony95/p95-24/p95-24.mp4",
+        "mp4Sha256": "a0b1a91bcbc48f82fc033c456080404e8c1deac327d2e468e50aa7f32b2614e9",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1926,
+        "renderedFrames": 108,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-25",
+      "category": "silent_acting",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-25/p95-25/p95-25.xstage",
+        "xstageSha256": "4235597d37338fc1b5e13a9b61bb4f68a3b6c41635bc93cabd171dc4fbc31ad9",
+        "mp4Path": "output/harmony95/p95-25/p95-25.mp4",
+        "mp4Sha256": "aff9d847866c7d2436fd7fd2c03bb3488af8285fed985c6ae88df5fd41c103bf",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1889,
+        "renderedFrames": 120,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5
+        }
+      }
+    },
+    {
+      "shotId": "p95-26",
+      "category": "silent_acting",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-26/p95-26/p95-26.xstage",
+        "xstageSha256": "c6136d16257d79bef799cf4697bd911b15aaa781fef6a9a5dac74c71b554ec54",
+        "mp4Path": "output/harmony95/p95-26/p95-26.mp4",
+        "mp4Sha256": "948e6ecceb206a1006f2d33da5ee45d3bea0dbcaa4595caf84dc36b50c14d055",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1963,
+        "renderedFrames": 132,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-27",
+      "category": "silent_acting",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-27/p95-27/p95-27.xstage",
+        "xstageSha256": "25ea8afa048137d96e77f0fa2aad6ee53e414bbd43cbbb0f40e76b9e5c48c5ff",
+        "mp4Path": "output/harmony95/p95-27/p95-27.mp4",
+        "mp4Sha256": "6ade2609dcd3c08bc6fdd173f9f7303524ca6b381ee67972778c333c28144f9c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2008,
+        "renderedFrames": 144,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6
+        }
+      }
+    },
+    {
+      "shotId": "p95-28",
+      "category": "silent_acting",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-28/p95-28/p95-28.xstage",
+        "xstageSha256": "6138e108f641de4ab7e83a409f0583b975a5da506adcfec81f27ba03fcb7f055",
+        "mp4Path": "output/harmony95/p95-28/p95-28.mp4",
+        "mp4Sha256": "4d2d21883c0ce646621f92de22bd84d302fe0b028194530c5dc980897a5d59f0",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2027,
+        "renderedFrames": 156,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-29",
+      "category": "locomotion_action",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-29/p95-29/p95-29.xstage",
+        "xstageSha256": "b8f1bc71e3f94d8d5583b87e56fa1f6773bb7ff951e4ca2ee14d998a992481d6",
+        "mp4Path": "output/harmony95/p95-29/p95-29.mp4",
+        "mp4Sha256": "aab823d5323583d91a91764a79788b018f240f2a2dc54c44468e3a33c1ea9438",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1854,
+        "renderedFrames": 96,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4
+        }
+      }
+    },
+    {
+      "shotId": "p95-30",
+      "category": "locomotion_action",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-30/p95-30/p95-30.xstage",
+        "xstageSha256": "144e3fe199d7b7c4696c3bd5eefb04b9799a93fb131b0335df9acd68e45a3736",
+        "mp4Path": "output/harmony95/p95-30/p95-30.mp4",
+        "mp4Sha256": "aff9d847866c7d2436fd7fd2c03bb3488af8285fed985c6ae88df5fd41c103bf",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1994,
+        "renderedFrames": 120,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5
+        }
+      }
+    },
+    {
+      "shotId": "p95-31",
+      "category": "locomotion_action",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-31/p95-31/p95-31.xstage",
+        "xstageSha256": "994722c20bd9cf0c970d05929b5affdb879afd5fa1b8acccb274aed1789673ee",
+        "mp4Path": "output/harmony95/p95-31/p95-31.mp4",
+        "mp4Sha256": "6ade2609dcd3c08bc6fdd173f9f7303524ca6b381ee67972778c333c28144f9c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2114,
+        "renderedFrames": 144,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6
+        }
+      }
+    },
+    {
+      "shotId": "p95-32",
+      "category": "locomotion_action",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-32/p95-32/p95-32.xstage",
+        "xstageSha256": "590fcdb0f7f13c474ced2de94b14f9ab9cfedc8f19e55dbf2e94fd46941d4f5a",
+        "mp4Path": "output/harmony95/p95-32/p95-32.mp4",
+        "mp4Sha256": "53ad4562d94995efdca94ab7eaa9dd63f35845965e3e7336eeacd3e04a142018",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2157,
+        "renderedFrames": 168,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7
+        }
+      }
+    },
+    {
+      "shotId": "p95-33",
+      "category": "locomotion_action",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-33/p95-33/p95-33.xstage",
+        "xstageSha256": "37ba7e566faa370082c4b64e8c2ba94a1159bf950b024a4fe0e5218486a8077c",
+        "mp4Path": "output/harmony95/p95-33/p95-33.mp4",
+        "mp4Sha256": "914af4348c564fe36d8aa4e09a6fa6d262aa1d50020b54e51e6748fb4a3e87e6",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2208,
+        "renderedFrames": 192,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 8
+        }
+      }
+    },
+    {
+      "shotId": "p95-34",
+      "category": "locomotion_action",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-34/p95-34/p95-34.xstage",
+        "xstageSha256": "9e19bae6c492462b168160f692ef1e4bde845f1cfdfc5ee53ba2c368929f67ed",
+        "mp4Path": "output/harmony95/p95-34/p95-34.mp4",
+        "mp4Sha256": "8c0d7a1b507bf92f536304a67070d2ba6f05db769d11eb682d1fa0d480889567",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2277,
+        "renderedFrames": 216,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 9
+        }
+      }
+    },
+    {
+      "shotId": "p95-35",
+      "category": "interaction",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-35/p95-35/p95-35.xstage",
+        "xstageSha256": "c84ee7803f5560c6c2c1ce25d8fc46cf395625e764758605e1383a686d2e7768",
+        "mp4Path": "output/harmony95/p95-35/p95-35.mp4",
+        "mp4Sha256": "6ade2609dcd3c08bc6fdd173f9f7303524ca6b381ee67972778c333c28144f9c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2080,
+        "renderedFrames": 144,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 6
+        }
+      }
+    },
+    {
+      "shotId": "p95-36",
+      "category": "interaction",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-36/p95-36/p95-36.xstage",
+        "xstageSha256": "28ea9a16059bece143d767eb79ae9523b4ef0785b79a99dee2093f3b995a61ad",
+        "mp4Path": "output/harmony95/p95-36/p95-36.mp4",
+        "mp4Sha256": "53ad4562d94995efdca94ab7eaa9dd63f35845965e3e7336eeacd3e04a142018",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2141,
+        "renderedFrames": 168,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7
+        }
+      }
+    },
+    {
+      "shotId": "p95-37",
+      "category": "interaction",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-37/p95-37/p95-37.xstage",
+        "xstageSha256": "b17e07dbc389c1264bb6ac8f2e1a6bd5f778ca105698d5bdc06c75266d5ac615",
+        "mp4Path": "output/harmony95/p95-37/p95-37.mp4",
+        "mp4Sha256": "914af4348c564fe36d8aa4e09a6fa6d262aa1d50020b54e51e6748fb4a3e87e6",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2262,
+        "renderedFrames": 192,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 8
+        }
+      }
+    },
+    {
+      "shotId": "p95-38",
+      "category": "interaction",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-38/p95-38/p95-38.xstage",
+        "xstageSha256": "9bafa73cbbcc0aa4155a3e9e3ca8cd09542244e7308bf954977b0200ec4faf15",
+        "mp4Path": "output/harmony95/p95-38/p95-38.mp4",
+        "mp4Sha256": "8c0d7a1b507bf92f536304a67070d2ba6f05db769d11eb682d1fa0d480889567",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2375,
+        "renderedFrames": 216,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 9
+        }
+      }
+    },
+    {
+      "shotId": "p95-39",
+      "category": "prop_camera",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-39/p95-39/p95-39.xstage",
+        "xstageSha256": "f616876f3cc67a0e6a6a34a6478679d216af74bad7fd93074d75f396eee9ccfe",
+        "mp4Path": "output/harmony95/p95-39/p95-39.mp4",
+        "mp4Sha256": "c5a4cf681c3a5d0e9fd978e4bc407e00515024a7a33dd6df1945f2f6b600e902",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2265,
+        "renderedFrames": 180,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7.5
+        }
+      }
+    },
+    {
+      "shotId": "p95-40",
+      "category": "prop_camera",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95/p95-40/p95-40/p95-40.xstage",
+        "xstageSha256": "1e2cae55f298647e9c95dc210d1e2461a415f7baf67a3d5e15ff313f31fe6e35",
+        "mp4Path": "output/harmony95/p95-40/p95-40.mp4",
+        "mp4Sha256": "8f975b76d6b68744a0f152945c70b1344a9fcfc59116b1cc491ebb4a066f5e30",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2464,
+        "renderedFrames": 240,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 10
+        }
+      }
+    }
+  ]
+}

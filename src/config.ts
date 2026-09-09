@@ -4,7 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 // Загрузка переменных окружения из .env
-dotenv.config();
+dotenv.config({ path: process.env.MCP_ENV_FILE || '.env' });
 
 export type HarmonyEngineMode = 'real' | 'simulation' | 'hybrid' | 'moonshot';
 
@@ -81,6 +81,7 @@ export function getProjectRoot(): string {
 }
 
 function detectPaths(): { install: string; ccBin: string; bin: string; pythonPackages: string } {
+  if (process.env.MCP_ENGINE === 'moho') return { install: '', ccBin: '', bin: '', pythonPackages: '' };
   const platform = process.platform;
   let install = process.env.HARMONY_INSTALL || '';
   let ccBin = process.env.HARMONY_CC_BIN || '';

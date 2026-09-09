@@ -1,5 +1,7 @@
 import { createHash } from 'crypto';
+import { spawnSync } from 'child_process';
 import fs from 'fs';
+import path from 'path';
 import {
   mohoProductionV3BenchmarkCaseSchema,
   type MohoProductionV3BenchmarkCase
@@ -23,6 +25,26 @@ export interface MohoProductionV3Certification95Report {
   };
 }
 
+export interface MohoProductionV3ArtifactValidation {
+  validateMp4: (filePath: string) => string[];
+  validateNativeMoho: (benchmarkCase: MohoProductionV3BenchmarkCase) => string[];
+}
+
+export interface MohoProductionV3Certification95Options {
+  /** Test-only callers may inject deterministic validators. Production callers must omit this. */
+  artifactValidation?: MohoProductionV3ArtifactValidation;
+}
+
+interface NativeAcceptanceOutput {
+  opened: boolean;
+  saved: boolean;
+  reopened: boolean;
+  render_status: string;
+  errors: string[];
+  roundtrip_path: string;
+  fatal_error?: string;
+}
+
 function fileSha256(filePath: string): string | null {
   try {
     const stat = fs.statSync(filePath);
@@ -33,12 +55,80 @@ function fileSha256(filePath: string): string | null {
   }
 }
 
+function validateMp4WithFfmpeg(filePath: string): string[] {
+  const probe = spawnSync('ffprobe', [
+    '-v', 'error', '-select_streams', 'v:0',
+    '-show_entries', 'stream=codec_type,duration', '-of', 'json', filePath
+  ], { encoding: 'utf8', timeout: 30_000, maxBuffer: 4 * 1024 * 1024 });
+  if (probe.error || probe.status !== 0) return ['MP4 failed real ffprobe validation'];
+  try {
+    const parsed = JSON.parse(probe.stdout) as { streams?: Array<{ codec_type?: string }> };
+    if (!parsed.streams?.some(stream => stream.codec_type === 'video')) return ['MP4 contains no video stream'];
+  } catch {
+    return ['ffprobe returned invalid output'];
+  }
+  const decode = spawnSync('ffmpeg', [
+    '-v', 'error', '-xerror', '-i', filePath, '-map', '0:v:0', '-f', 'null', '-'
+  ], { encoding: 'utf8', timeout: 120_000, maxBuffer: 16 * 1024 * 1024 });
+  return decode.error || decode.status !== 0 ? ['MP4 failed full ffmpeg decode'] : [];
+}
+
+function validateNativeMohoArtifact(benchmarkCase: MohoProductionV3BenchmarkCase): string[] {
+  const archiveTest = spawnSync('unzip', ['-tqq', benchmarkCase.evidence.mohoPath], {
+    encoding: 'utf8', timeout: 30_000, maxBuffer: 4 * 1024 * 1024
+  });
+  const projectEntry = spawnSync('unzip', ['-p', benchmarkCase.evidence.mohoPath, 'Project.mohoproj'], {
+    encoding: 'utf8', timeout: 30_000, maxBuffer: 32 * 1024 * 1024
+  });
+  if (archiveTest.error || archiveTest.status !== 0 || projectEntry.error || projectEntry.status !== 0) {
+    return ['MOHO artifact is not a valid native project archive'];
+  }
+  try {
+    const project = JSON.parse(projectEntry.stdout) as unknown;
+    if (!project || typeof project !== 'object' || Array.isArray(project)) {
+      return ['MOHO Project.mohoproj is not a valid project object'];
+    }
+  } catch {
+    return ['MOHO Project.mohoproj is not valid JSON'];
+  }
+
+  const evidenceDirectory = fs.mkdtempSync(path.join(path.dirname(benchmarkCase.evidence.mohoPath), '.production95-native-'));
+  try {
+    const nativeRun = spawnSync(process.env.MOHO_PYTHON_BIN ?? process.env.PYTHON_BIN ?? 'python3', [
+      path.resolve(process.cwd(), 'pipeline/tools/moho_native_acceptance.py'),
+      '--project', benchmarkCase.evidence.mohoPath,
+      '--evidence-dir', evidenceDirectory,
+      '--frames', '0'
+    ], { encoding: 'utf8', timeout: 180_000, maxBuffer: 32 * 1024 * 1024 });
+    if (nativeRun.error || nativeRun.status !== 0) return ['independent native Moho acceptance could not run'];
+    const acceptance = JSON.parse(nativeRun.stdout) as NativeAcceptanceOutput;
+    if (acceptance.fatal_error || !acceptance.opened || !acceptance.saved || !acceptance.reopened
+      || acceptance.errors?.length !== 0 || acceptance.render_status !== 'rendered') {
+      return ['independent native Moho open/save/reopen/render acceptance did not pass'];
+    }
+    if (!acceptance.roundtrip_path || !fileSha256(acceptance.roundtrip_path)) {
+      return ['independent native Moho acceptance produced no valid round-trip output'];
+    }
+  } catch {
+    return ['independent native Moho acceptance returned invalid evidence'];
+  } finally {
+    fs.rmSync(evidenceDirectory, { recursive: true, force: true });
+  }
+  return [];
+}
+
+const productionArtifactValidation: MohoProductionV3ArtifactValidation = {
+  validateMp4: validateMp4WithFfmpeg,
+  validateNativeMoho: validateNativeMohoArtifact
+};
+
 function addMinimumFailure(actual: number, minimum: number, label: string, failures: string[]): void {
   if (actual < minimum) failures.push(`Benchmark requires at least ${minimum} ${label}; found ${actual}.`);
 }
 
 export function validateMohoProductionV3CaseAt95Percent(
-  benchmarkCase: MohoProductionV3BenchmarkCase
+  benchmarkCase: MohoProductionV3BenchmarkCase,
+  artifactValidation: MohoProductionV3ArtifactValidation = productionArtifactValidation
 ): string[] {
   const failures: string[] = [];
   const parsed = mohoProductionV3BenchmarkCaseSchema.safeParse(benchmarkCase);
@@ -64,7 +154,9 @@ export function validateMohoProductionV3CaseAt95Percent(
     );
     if (matchingDecisions.length === 0) {
       failures.push(`external director decision for ${gate} is missing`);
-    } else if (matchingDecisions[matchingDecisions.length - 1].decision !== 'approve') {
+    } else if ([...matchingDecisions].sort((left, right) =>
+      Date.parse(left.decidedAt) - Date.parse(right.decidedAt)
+    ).at(-1)?.decision !== 'approve') {
       failures.push(`latest external director decision for ${gate} is not approve`);
     }
   }
@@ -87,11 +179,14 @@ export function validateMohoProductionV3CaseAt95Percent(
   if (fileSha256(benchmarkCase.evidence.mp4Path) !== benchmarkCase.evidence.mp4Sha256) {
     failures.push('MP4 SHA-256 does not match a non-empty file');
   }
+  failures.push(...artifactValidation.validateMp4(benchmarkCase.evidence.mp4Path));
+  failures.push(...artifactValidation.validateNativeMoho(benchmarkCase));
   return [...new Set(failures)];
 }
 
 export function certifyMohoProductionV3At95Percent(
-  cases: MohoProductionV3BenchmarkCase[]
+  cases: MohoProductionV3BenchmarkCase[],
+  options: MohoProductionV3Certification95Options = {}
 ): MohoProductionV3Certification95Report {
   const shotFailures: string[] = [];
   const suiteFailures: string[] = [];
@@ -115,7 +210,10 @@ export function certifyMohoProductionV3At95Percent(
     if (shotIds.has(benchmarkCase.shotId)) failures.push('duplicate shotId');
     shotIds.add(benchmarkCase.shotId);
 
-    failures.push(...validateMohoProductionV3CaseAt95Percent(benchmarkCase));
+    failures.push(...validateMohoProductionV3CaseAt95Percent(
+      benchmarkCase,
+      options.artifactValidation ?? productionArtifactValidation
+    ));
 
     if (failures.length > 0) {
       failedShotIds.push(benchmarkCase.shotId);

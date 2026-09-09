@@ -1,0 +1,183 @@
+{
+  "schemaVersion": "3.0",
+  "shotId": "shot-char-11",
+  "bones": [
+    {
+      "boneId": "root",
+      "name": "Root",
+      "parentBoneId": null,
+      "x": 0,
+      "y": 0,
+      "angleDeg": 0,
+      "lengthPx": 50
+    },
+    {
+      "boneId": "torso",
+      "name": "Torso",
+      "parentBoneId": "root",
+      "x": 0,
+      "y": 50,
+      "angleDeg": 90,
+      "lengthPx": 100
+    },
+    {
+      "boneId": "head",
+      "name": "Head",
+      "parentBoneId": "torso",
+      "x": 0,
+      "y": 150,
+      "angleDeg": 90,
+      "lengthPx": 60
+    },
+    {
+      "boneId": "arm_l",
+      "name": "Arm_L",
+      "parentBoneId": "torso",
+      "x": -50,
+      "y": 130,
+      "angleDeg": -90,
+      "lengthPx": 80
+    },
+    {
+      "boneId": "arm_r",
+      "name": "Arm_R",
+      "parentBoneId": "torso",
+      "x": 50,
+      "y": 130,
+      "angleDeg": -90,
+      "lengthPx": 80
+    },
+    {
+      "boneId": "leg_l",
+      "name": "Leg_L",
+      "parentBoneId": "root",
+      "x": -30,
+      "y": 0,
+      "angleDeg": -90,
+      "lengthPx": 100
+    },
+    {
+      "boneId": "leg_r",
+      "name": "Leg_R",
+      "parentBoneId": "root",
+      "x": 30,
+      "y": 0,
+      "angleDeg": -90,
+      "lengthPx": 100
+    }
+  ],
+  "bindings": [
+    {
+      "partId": "body",
+      "boneId": "torso",
+      "mode": "layer"
+    },
+    {
+      "partId": "head",
+      "boneId": "head",
+      "mode": "layer"
+    },
+    {
+      "partId": "arm_l",
+      "boneId": "arm_l",
+      "mode": "layer"
+    },
+    {
+      "partId": "arm_r",
+      "boneId": "arm_r",
+      "mode": "layer"
+    },
+    {
+      "partId": "leg_l",
+      "boneId": "leg_l",
+      "mode": "layer"
+    },
+    {
+      "partId": "leg_r",
+      "boneId": "leg_r",
+      "mode": "layer"
+    }
+  ],
+  "constraints": [],
+  "switches": [
+    {
+      "switchId": "mouth_switch",
+      "layerName": "Mouth",
+      "choices": [
+        {
+          "choiceId": "A",
+          "partId": "mouth_A"
+        },
+        {
+          "choiceId": "B",
+          "partId": "mouth_B"
+        },
+        {
+          "choiceId": "C",
+          "partId": "mouth_C"
+        },
+        {
+          "choiceId": "D",
+          "partId": "mouth_D"
+        },
+        {
+          "choiceId": "E",
+          "partId": "mouth_E"
+        },
+        {
+          "choiceId": "F",
+          "partId": "mouth_F"
+        },
+        {
+          "choiceId": "G",
+          "partId": "mouth_G"
+        },
+        {
+          "choiceId": "X",
+          "partId": "mouth_X"
+        }
+      ]
+    },
+    {
+      "switchId": "eye_switch",
+      "layerName": "Eyes",
+      "choices": [
+        {
+          "choiceId": "open",
+          "partId": "eye_open"
+        },
+        {
+          "choiceId": "closed",
+          "partId": "eye_closed"
+        }
+      ]
+    },
+    {
+      "switchId": "hand_switch",
+      "layerName": "Hands",
+      "choices": [
+        {
+          "choiceId": "open",
+          "partId": "hand_open"
+        },
+        {
+          "choiceId": "fist",
+          "partId": "hand_fist"
+        },
+        {
+          "choiceId": "point",
+          "partId": "hand_point"
+        }
+      ]
+    }
+  ],
+  "actions": [],
+  "warpMeshes": [],
+  "controlPoses": [],
+  "vitruvianGroups": [],
+  "provenance": {
+    "provider": "openrouter",
+    "model": "benchmark-v3",
+    "callId": "rig-11"
+  }
+}

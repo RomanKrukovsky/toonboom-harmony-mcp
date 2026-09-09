@@ -8,6 +8,9 @@
     "build": "rimraf dist && tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
+    "start:moho": "node scripts/start-engine.mjs moho",
+    "start:harmony": "node scripts/start-engine.mjs harmony",
+    "test:mcp-servers": "npm run build && node scripts/check-mcp-servers.mjs",
     "dev": "ts-node src/index.ts",
     "test": "jest",
     "reconstruction:core": ".venv-reconstruction/bin/harmony-reconstruction-core serve",
@@ -28,7 +31,7 @@
     "reconstruction:prepare-harmony-integration": "node scripts/prepare_harmony_integration.js",
     "ml:core": ".venv-ml-core/bin/uvicorn ml_core.api:app --host 127.0.0.1 --port 8766",
     "test:ml": ".venv-ml-core/bin/pytest services/ml-core/tests",
-    "test:ml-runtime": ".venv-ml/bin/pytest services/ml-runtime/tests",
+    "test:ml-runtime": "PYTHONPATH=services/ml-runtime .venv-ml/bin/pytest services/ml-runtime/tests",
     "test:python:all": "npm run test:python && npm run test:ml && npm run test:ml-runtime",
     "demo:ml": ".venv-ml-core/bin/python scripts/demo_ml_stack.py",
     "demo:ml:mcp": "node scripts/demo_ml_mcp.js",
@@ -48,7 +51,10 @@
     "test:moho:v3:real-rigs": "jest --runInBand tests/integration/mohoProductionV3.realRigSuite.test.ts",
     "moho:v3:certify": "npm run build && node scripts/certify_moho_v3_benchmark.mjs",
     "moho:v3:preflight95": "npm run build && node scripts/preflight_moho_v3_95_benchmark.mjs",
-    "moho:v3:benchmark95": "npm run build && node scripts/run_moho_v3_95_benchmark.mjs"
+    "moho:v3:benchmark95": "npm run build && node scripts/run_moho_v3_95_benchmark.mjs",
+    "harmony:v4:preflight95": "npm run build && node scripts/preflight_harmony_v4_95_benchmark.mjs",
+    "harmony:v4:benchmark95": "npm run build && node scripts/run_harmony_v4_95_benchmark.mjs",
+    "test:harmony:v4:real-rigs": "jest --runInBand tests/integration/harmonyProductionV4.realRigSuite.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

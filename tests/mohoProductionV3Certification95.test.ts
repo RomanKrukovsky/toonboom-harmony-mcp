@@ -4,8 +4,18 @@ import os from 'os';
 import path from 'path';
 import {
   certifyMohoProductionV3At95Percent,
+  type MohoProductionV3ArtifactValidation,
   type MohoProductionV3BenchmarkCase
 } from '../src/services/mohoProductionV3Certification/index.js';
+
+const unitArtifactValidation: MohoProductionV3ArtifactValidation = {
+  validateMp4: () => [],
+  validateNativeMoho: () => []
+};
+
+function certifyUnit(cases: MohoProductionV3BenchmarkCase[]) {
+  return certifyMohoProductionV3At95Percent(cases, { artifactValidation: unitArtifactValidation });
+}
 
 function sha256(filePath: string): string {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -78,7 +88,7 @@ describe('Moho Production v3 95 percent certification', () => {
     cases[0].status = 'failed';
     cases[1].status = 'blocked';
 
-    const report = certifyMohoProductionV3At95Percent(cases);
+    const report = certifyUnit(cases);
 
     expect(report.certified).toBe(true);
     expect(report.totalShots).toBe(40);
@@ -93,7 +103,7 @@ describe('Moho Production v3 95 percent certification', () => {
     cases[1].status = 'blocked';
     cases[2].status = 'cancelled';
 
-    const report = certifyMohoProductionV3At95Percent(cases);
+    const report = certifyUnit(cases);
 
     expect(report.certified).toBe(false);
     expect(report.autonomousPasses).toBe(37);
@@ -106,7 +116,7 @@ describe('Moho Production v3 95 percent certification', () => {
     cases[0].evidence.manualMohoEdits = 1;
     cases[1].evidence.animatorParticipation = true;
 
-    const report = certifyMohoProductionV3At95Percent(cases);
+    const report = certifyUnit(cases);
 
     expect(report.certified).toBe(true);
     expect(report.autonomousPasses).toBe(38);
@@ -121,7 +131,7 @@ describe('Moho Production v3 95 percent certification', () => {
     const cases = makeCases(root);
     for (const benchmarkCase of cases) benchmarkCase.artworkMode = 'layered_manifest';
 
-    const report = certifyMohoProductionV3At95Percent(cases);
+    const report = certifyUnit(cases);
 
     expect(report.certified).toBe(false);
     expect(report.autonomousPasses).toBe(40);
@@ -142,13 +152,56 @@ describe('Moho Production v3 95 percent certification', () => {
       decision => decision.gate !== 'final_render'
     );
 
-    const report = certifyMohoProductionV3At95Percent(cases);
+    const report = certifyUnit(cases);
 
     expect(report.certified).toBe(false);
     expect(report.autonomousPasses).toBe(37);
     expect(report.failedShotIds).toContain('production95-03');
     expect(report.failures).toEqual(expect.arrayContaining([
       expect.stringContaining('external director decision for final_render is missing')
+    ]));
+  });
+
+  it('rejects text files masquerading as native MOHO and MP4 production evidence', () => {
+    const cases = makeCases(root);
+    const report = certifyMohoProductionV3At95Percent(cases);
+
+    expect(report.certified).toBe(false);
+    expect(report.autonomousPasses).toBe(0);
+    expect(report.failures).toEqual(expect.arrayContaining([
+      expect.stringContaining('MP4 failed real ffprobe validation'),
+      expect.stringContaining('MOHO artifact is not a valid native project archive')
+    ]));
+  });
+
+  it('uses decision timestamps so a stale approval cannot hide a newer rejection', () => {
+    const cases = makeCases(root);
+    cases[0].directorDecisions?.push({
+      shotId: cases[0].shotId,
+      gate: 'final_render',
+      approvalId: 'new-final-render-revision',
+      decision: 'reject',
+      feedbackText: 'The current render revision is rejected.',
+      reviewerId: 'benchmark-director',
+      decidedAt: '2026-09-01T00:00:00.000Z',
+      source: 'director_file'
+    });
+    cases[0].directorDecisions?.push({
+      shotId: cases[0].shotId,
+      gate: 'final_render',
+      approvalId: 'stale-final-render-revision',
+      decision: 'approve',
+      feedbackText: 'Old approval appended out of order.',
+      reviewerId: 'benchmark-director',
+      decidedAt: '2026-08-30T00:00:00.000Z',
+      source: 'director_file'
+    });
+
+    const report = certifyUnit(cases);
+
+    expect(report.failedShotIds).toContain(cases[0].shotId);
+    expect(report.failures).toEqual(expect.arrayContaining([
+      expect.stringContaining('latest external director decision for final_render is not approve')
     ]));
   });
 });

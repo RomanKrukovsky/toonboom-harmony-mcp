@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-09-09T17:30:32.048Z",
+  "total": 20,
+  "passed": 20,
+  "successRate": 1,
+  "results": [
+    {
+      "characterId": "licensed-character-01",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-01/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-02",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-02/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-03",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-03/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-04",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-04/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-05",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-05/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-06",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-06/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-07",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-07/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-08",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-08/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-09",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-09/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-10",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-10/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-11",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-11/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-12",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-12/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-13",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-13/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-14",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-14/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-15",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-15/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-16",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-16/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-17",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-17/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-18",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-18/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-19",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-19/render.mp4",
+      "failures": []
+    },
+    {
+      "characterId": "licensed-character-20",
+      "passed": true,
+      "totalNodes": 20,
+      "totalLinks": 26,
+      "renderedFramesCount": 24,
+      "mp4Path": "docs/evidence/harmony-production-v4/real-rig-suite/licensed-character-20/render.mp4",
+      "failures": []
+    }
+  ]
+}

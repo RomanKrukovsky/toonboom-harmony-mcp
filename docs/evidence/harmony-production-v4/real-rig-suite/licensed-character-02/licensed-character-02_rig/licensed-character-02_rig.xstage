@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project source="Stage (Stage) version 25.0.0 build 23967" version="2500" build="23967" creator="harmony">
+  <elements/>
+  <options>
+    <metrics unitAspectRatioX="4" unitAspectRatioY="3" numberOfUnitsX="24" numberOfUnitsY="24" numberOfUnitsZ="12"/>
+    <resolution name="HDTV_1080p24" size="1920,1080" fovFit="VerticalFitFov" fov="41.1121"/>
+    <framerate val="24"/>
+    <zdragging val="true"/>
+    <cameraInSymbols val="true"/>
+  </options>
+  <scenes>
+    <scene name="Top" id="0be2d815106c9774" nbframes="24">
+      <columns/>
+      <options><defaultDisplay val="Display"/></options>
+      <rootgroup name="Top">
+        <options><collapsed val="false"/></options>
+        <nodelist>
+          <module type="COMPOSITE" name="Composite" pos="0,0,1">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <compositeMode val="composite2D"/>
+              <flattenOutput val="true"/>
+              <applyFocus val="true"/>
+              <multiplier val="1"/>
+              <outputZ val="LEFTMOST"/>
+              <outputZInputPort val="1"/>
+            </attrs>
+          </module>
+          <module type="DISPLAY" name="Display" pos="0,100,2">
+            <options><version val="1"/><collapsed val="false"/></options>
+          </module>
+          <module type="WRITE" name="Write" pos="100,100,3">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <exportToMovie val="false"/>
+              <drawingType val="TGA"/>
+              <leadingZeros val="3"/>
+              <start val="1"/>
+            </attrs>
+          </module>
+          <module type="CAMERA" name="Camera" pos="-200,-100,4">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs><fov val="41.1121"/></attrs>
+          </module>
+          <module type="PEG" name="Master_Peg" pos="0,100,10" publishUnderTab="Master_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Torso_Peg" pos="0,110,11" publishUnderTab="Torso_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Head_Peg" pos="0,120,12" publishUnderTab="Head_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Arm_L_Peg" pos="0,130,13" publishUnderTab="Arm_L_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Arm_R_Peg" pos="0,140,14" publishUnderTab="Arm_R_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Leg_L_Peg" pos="0,150,15" publishUnderTab="Leg_L_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="PEG" name="Leg_R_Peg" pos="0,160,16" publishUnderTab="Leg_R_Peg">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <position><separate val="false"/><x val="0"/><y val="0"/><z val="0"/></position>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_body" pos="50,500,50" publishUnderTab="Drawing_body">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_head" pos="50,510,51" publishUnderTab="Drawing_head">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_arm_l" pos="50,520,52" publishUnderTab="Drawing_arm_l">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_arm_r" pos="50,530,53" publishUnderTab="Drawing_arm_r">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_leg_l" pos="50,540,54" publishUnderTab="Drawing_leg_l">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_leg_r" pos="50,550,55" publishUnderTab="Drawing_leg_r">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_Mouth" pos="50,560,56" publishUnderTab="Drawing_Mouth">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_Eyes" pos="50,570,57" publishUnderTab="Drawing_Eyes">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+          <module type="READ" name="Drawing_Hands" pos="50,580,58" publishUnderTab="Drawing_Hands">
+            <options><version val="1"/><collapsed val="false"/></options>
+            <attrs>
+              <enable3d val="false"/>
+              <offset><separate val="true"/><x val="0"/><y val="0"/><z val="0"/></offset>
+              <scale><separate val="true"/><xy val="1"/><x val="1"/><y val="1"/><z val="1"/></scale>
+              <rotation><separate val="false"/><anglex val="0"/></rotation>
+            </attrs>
+          </module>
+        </nodelist>
+        <linkedlist><link out="Master_Peg" in="Torso_Peg" inport="0"/><link out="Torso_Peg" in="Head_Peg" inport="0"/><link out="Torso_Peg" in="Arm_L_Peg" inport="0"/><link out="Torso_Peg" in="Arm_R_Peg" inport="0"/><link out="Master_Peg" in="Leg_L_Peg" inport="0"/><link out="Master_Peg" in="Leg_R_Peg" inport="0"/><link out="Torso_Peg" in="Drawing_body" inport="0"/><link out="Head_Peg" in="Drawing_head" inport="0"/><link out="Arm_L_Peg" in="Drawing_arm_l" inport="0"/><link out="Arm_R_Peg" in="Drawing_arm_r" inport="0"/><link out="Leg_L_Peg" in="Drawing_leg_l" inport="0"/><link out="Leg_R_Peg" in="Drawing_leg_r" inport="0"/><link out="Head_Peg" in="Drawing_Mouth" inport="0"/><link out="Head_Peg" in="Drawing_Eyes" inport="0"/><link out="Arm_L_Peg" in="Drawing_Hands" inport="0"/><link out="Drawing_body" in="Composite"/><link out="Drawing_head" in="Composite"/><link out="Drawing_arm_l" in="Composite"/><link out="Drawing_arm_r" in="Composite"/><link out="Drawing_leg_l" in="Composite"/><link out="Drawing_leg_r" in="Composite"/><link out="Drawing_Mouth" in="Composite"/><link out="Drawing_Eyes" in="Composite"/><link out="Drawing_Hands" in="Composite"/><link out="Composite" in="Display"/><link out="Composite" in="Write"/>
+        </linkedlist>
+      </rootgroup>
+    </scene>
+  </scenes>
+  <symbols>
+    <folder name="Symbols"><scene id="0be2d815106c9774"/></folder>
+  </symbols>
+  <timeline><scene id="0be2d815106c9774"/></timeline>
+</project>

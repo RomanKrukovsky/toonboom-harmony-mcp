@@ -1,0 +1,105 @@
+{
+  "saved_bone_ids": [
+    "arm_l",
+    "arm_r",
+    "head",
+    "leg_l",
+    "leg_r",
+    "root",
+    "torso"
+  ],
+  "saved_layer_ids": [
+    "arm_l",
+    "arm_r",
+    "body",
+    "eye_switch",
+    "head",
+    "leg_l",
+    "leg_r",
+    "mouth_switch"
+  ],
+  "saved_layer_order": [
+    "body",
+    "head",
+    "arm_l",
+    "arm_r",
+    "leg_l",
+    "leg_r"
+  ],
+  "parent_bone_pairs": [
+    {
+      "boneId": "torso",
+      "parentBoneId": "root"
+    },
+    {
+      "boneId": "head",
+      "parentBoneId": "torso"
+    },
+    {
+      "boneId": "arm_l",
+      "parentBoneId": "torso"
+    },
+    {
+      "boneId": "arm_r",
+      "parentBoneId": "torso"
+    },
+    {
+      "boneId": "leg_l",
+      "parentBoneId": "root"
+    },
+    {
+      "boneId": "leg_r",
+      "parentBoneId": "root"
+    }
+  ],
+  "binding_pairs": [
+    {
+      "partId": "body",
+      "boneId": "torso"
+    },
+    {
+      "partId": "head",
+      "boneId": "head"
+    },
+    {
+      "partId": "arm_l",
+      "boneId": "arm_l"
+    },
+    {
+      "partId": "arm_r",
+      "boneId": "arm_r"
+    },
+    {
+      "partId": "leg_l",
+      "boneId": "leg_l"
+    },
+    {
+      "partId": "leg_r",
+      "boneId": "leg_r"
+    }
+  ],
+  "switch_choices": {
+    "Mouth": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "X"
+    ],
+    "Eyes": [
+      "open",
+      "closed"
+    ],
+    "Hands": [
+      "open",
+      "fist",
+      "point"
+    ]
+  },
+  "action_driver_targets": [],
+  "mesh_point_counts": {},
+  "vitruvian_membership": {}
+}

@@ -70,7 +70,7 @@ describe('Moho Production v3 certification CLI', () => {
     fs.rmSync(root, { recursive: true, force: true });
   });
 
-  it('runs the production95 profile and exits successfully at 38 of 40', () => {
+  it('rejects asserted flags when artifacts are text masquerading as MOHO and MP4', () => {
     const result = spawnSync(process.execPath, [
       'scripts/certify_moho_v3_benchmark.mjs',
       '--profile',
@@ -78,13 +78,17 @@ describe('Moho Production v3 certification CLI', () => {
       writeManifest(root)
     ], { cwd: process.cwd(), encoding: 'utf8' });
 
-    expect(result.status).toBe(0);
+    expect(result.status).toBe(1);
     expect(JSON.parse(result.stdout)).toMatchObject({
       profile: 'production95',
-      certified: true,
+      certified: false,
       totalShots: 40,
-      autonomousPasses: 38
+      autonomousPasses: 0
     });
+    expect(JSON.parse(result.stdout).failures).toEqual(expect.arrayContaining([
+      expect.stringContaining('MP4 failed real ffprobe validation'),
+      expect.stringContaining('MOHO artifact is not a valid native project archive')
+    ]));
   });
 
   it('rejects an unknown certification profile before reading a manifest', () => {

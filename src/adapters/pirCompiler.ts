@@ -3,6 +3,7 @@ import path from 'path';
 import { PIRv1 } from '../schemas/pirV1.js';
 import { buildHumanoidStandardRigTemplate, HumanoidStandardRigTemplate } from './rigTemplates/humanoidStandardRig.js';
 import { ActingPrimitivesEngine, ActingPerformanceCurves } from './actingPrimitives/actingPrimitivesEngine.js';
+import { generateCanonicalXStageXml } from './harmonyXStageTemplate.js';
 
 export interface CompiledSceneBundle {
   scenePath: string;
@@ -69,20 +70,10 @@ export class PIRCompiler {
   }
 
   private generateXStageXml(pir: PIRv1, rig: HumanoidStandardRigTemplate, perf: ActingPerformanceCurves): string {
-    const nodesXml = rig.nodes.map(n => `      <node id="${n.id}" name="${n.name}" type="${n.type}" />`).join('\n');
-    const autopatchXml = rig.autopatchJoints.map(a => `      <autopatch joint="${a.jointName}" cutter="${a.cutterNode}" matte="${a.matteLayer}" target="${a.targetLayer}" />`).join('\n');
-    
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<project version="3" sceneName="${pir.shotId}_scene" fps="${pir.fps}" frameCount="${pir.durationFrames}">
-  <elements>
-${nodesXml}
-  </elements>
-  <autopatchRules>
-${autopatchXml}
-  </autopatchRules>
-  <timeline frameCount="${pir.durationFrames}">
-    <actingPrimitives evaluated="${perf.primitivesEvaluated.join(',')}" maxRecoil="${perf.maxPeakRecoilAngle}" />
-  </timeline>
-</project>`;
+    return generateCanonicalXStageXml({
+      sceneName: `${pir.shotId}_scene`,
+      fps: pir.fps,
+      frameCount: pir.durationFrames
+    });
   }
 }

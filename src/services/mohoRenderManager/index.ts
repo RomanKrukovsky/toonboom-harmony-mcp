@@ -46,6 +46,8 @@ interface RenderInvocation {
  */
 export class MohoRenderManager {
   public static detectMohoExecutable(): string | null {
+    const configured = process.env.MOHO_EXECUTABLE?.trim();
+    if (configured) return fs.existsSync(configured) ? configured : null;
     const candidates = [
       '/Applications/Moho.app/Contents/MacOS/Moho',
       '/Applications/Moho Pro 14.app/Contents/MacOS/Moho',

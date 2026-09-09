@@ -60,7 +60,7 @@ export class FactoryAuth {
 
 export class FactoryFoundationStore {
   readonly root:string; private db:sqlite3.Database; private initializePromise:Promise<void>|null=null;
-  constructor(root=path.join(config.allowedRoots[0],'output','factory')){this.root=verifyPathAccess(root);fs.mkdirSync(this.root,{recursive:true});this.db=new sqlite3.Database(path.join(this.root,'factory.db'));}
+  constructor(root=process.env.MCP_FACTORY_ROOT || path.join(config.allowedRoots[0],'output','factory')){this.root=verifyPathAccess(root);fs.mkdirSync(this.root,{recursive:true});this.db=new sqlite3.Database(path.join(this.root,'factory.db'));}
   async initialize(){
     if(!this.initializePromise)this.initializePromise=this.initializeInternal();
     return this.initializePromise;

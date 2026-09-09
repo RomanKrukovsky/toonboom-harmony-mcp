@@ -1,0 +1,198 @@
+{
+  "timestamp": "2026-09-09T17:22:37.155Z",
+  "dcc": "harmony-25-premium",
+  "mode": "pilot",
+  "totalShots": 5,
+  "certifiedShots": 5,
+  "passRate": 1,
+  "autonomousTargetPassed": true,
+  "zeroManualEdits": true,
+  "deliveryPackage": {
+    "timelineMp4Path": "output/harmony95-pilot/episode_timeline.mp4",
+    "timelineOtioPath": "output/harmony95-pilot/episode_timeline.otio",
+    "timelineFcpxmlPath": "output/harmony95-pilot/episode_timeline.fcpxml",
+    "totalDurationSec": 26.5
+  },
+  "shots": [
+    {
+      "shotId": "p95-01",
+      "category": "dialogue",
+      "artworkMode": "layered_manifest",
+      "hasDialogue": true,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95-pilot/p95-01/p95-01/p95-01.xstage",
+        "xstageSha256": "8ff40e9e672cbb74555d2c0c6447308083e7e8fd728664230b942e44f6fa2e1d",
+        "mp4Path": "output/harmony95-pilot/p95-01/p95-01.mp4",
+        "mp4Sha256": "fd1960acbc29401ead0ad53e8abb1b052142d76b154dbe32979e07cd13134a8c",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1748,
+        "renderedFrames": 72,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 3
+        }
+      }
+    },
+    {
+      "shotId": "p95-23",
+      "category": "silent_acting",
+      "artworkMode": "flat_characters",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95-pilot/p95-23/p95-23/p95-23.xstage",
+        "xstageSha256": "0d167abbbe213af105d71cccf3df4af1b61dd3ec3aa20e213b29a4ed6a84bbde",
+        "mp4Path": "output/harmony95-pilot/p95-23/p95-23.mp4",
+        "mp4Sha256": "aab823d5323583d91a91764a79788b018f240f2a2dc54c44468e3a33c1ea9438",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1858,
+        "renderedFrames": 96,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 4
+        }
+      }
+    },
+    {
+      "shotId": "p95-30",
+      "category": "locomotion_action",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95-pilot/p95-30/p95-30/p95-30.xstage",
+        "xstageSha256": "44a0ec163fe3bf7f1fac8c515de3cad21f9a0608f6e8971fa3bbf92a1a6c880d",
+        "mp4Path": "output/harmony95-pilot/p95-30/p95-30.mp4",
+        "mp4Sha256": "aff9d847866c7d2436fd7fd2c03bb3488af8285fed985c6ae88df5fd41c103bf",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 1904,
+        "renderedFrames": 120,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 5
+        }
+      }
+    },
+    {
+      "shotId": "p95-36",
+      "category": "interaction",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95-pilot/p95-36/p95-36/p95-36.xstage",
+        "xstageSha256": "f745b8b0e5e4ec0e0e98d0ebb6de3794fb3ea7c617a8c84b652961114d3aac47",
+        "mp4Path": "output/harmony95-pilot/p95-36/p95-36.mp4",
+        "mp4Sha256": "53ad4562d94995efdca94ab7eaa9dd63f35845965e3e7336eeacd3e04a142018",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2116,
+        "renderedFrames": 168,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7
+        }
+      }
+    },
+    {
+      "shotId": "p95-39",
+      "category": "prop_camera",
+      "artworkMode": "flat_scene",
+      "hasDialogue": false,
+      "status": "certified",
+      "retakesUsed": 0,
+      "approvals": {
+        "rig_blueprint": true,
+        "key_pose_animatic": true,
+        "final_render": true
+      },
+      "evidence": {
+        "xstagePath": "output/harmony95-pilot/p95-39/p95-39/p95-39.xstage",
+        "xstageSha256": "17cc102c8f55ec440945a9dc475f420a1adebf3cfb7b6a77dc28a688a068a400",
+        "mp4Path": "output/harmony95-pilot/p95-39/p95-39.mp4",
+        "mp4Sha256": "c5a4cf681c3a5d0e9fd978e4bc407e00515024a7a33dd6df1945f2f6b600e902",
+        "nativeRoundTripPassed": true,
+        "technicalQaPassed": true,
+        "artisticQaPassed": true,
+        "ffprobePassed": true,
+        "manualRiggerEdits": 0,
+        "manualAnimatorEdits": 0
+      },
+      "metrics": {
+        "wallTimeMs": 2173,
+        "renderedFrames": 180,
+        "ffprobe": {
+          "codec": "h264",
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "durationSec": 7.5
+        }
+      }
+    }
+  ]
+}
